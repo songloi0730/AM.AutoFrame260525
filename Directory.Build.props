@@ -1,0 +1,71 @@
+<!--
+  AutoMachine — Directory.Build.props
+  Đặt file này ở ROOT của solution. MSBuild áp dụng tự động cho MỌI project.
+  Mọi project KHÔNG cần lặp lại các setting này.
+-->
+<Project>
+
+  <PropertyGroup Label="Framework">
+    <!-- net9.0-windows: các project WPF override thành net9.0-windows trong csproj -->
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>13</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build Quality">
+    <!-- Treat ALL warnings as errors — bắt buộc fix trước khi build -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Bật toàn bộ Roslyn analyzers -->
+    <AnalysisMode>All</AnalysisMode>
+    <!-- Bật nullable reference type warnings nghiêm ngặt -->
+    <Nullable>enable</Nullable>
+    <!-- Không dùng deterministic build (optional, tốt cho reproducible builds) -->
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Assembly Info">
+    <Company>YourCompany</Company>
+    <Product>AutoMachine</Product>
+    <Copyright>Copyright © YourCompany $([System.DateTime]::Now.Year)</Copyright>
+    <!-- Version lấy từ CI hoặc set thủ công -->
+    <Version Condition="'$(Version)' == ''">1.0.0</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Output">
+    <!-- Tất cả output ra cùng 1 folder để dễ deploy -->
+    <OutputPath>$(MSBuildThisFileDirectory)bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <!-- ============================================================
+       GLOBAL NUGET PACKAGES — version cố định toàn solution
+       Không cần khai báo version trong từng .csproj
+       ============================================================ -->
+  <ItemGroup Label="Analyzers — applied to ALL projects">
+    <!-- Roslyn security + quality analyzers -->
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- ============================================================
+       SUPPRESS một số warning không áp dụng cho automation software
+       ============================================================ -->
+  <PropertyGroup Label="Diagnostic Suppressions">
+    <!-- CA1014: Mark assemblies with CLSCompliant — không cần cho desktop app -->
+    <!-- CA1062: Validate parameters of public methods — handled by ArgumentNullException.ThrowIfNull -->
+    <!-- CA1030: Use events where appropriate — RaiseAsync là tên chuẩn trong automation domain (ISA-88) -->
+    <!-- CA1848: Use LoggerMessage delegates — perf optimization; not critical for automation machine (low-throughput) -->
+    <NoWarn>$(NoWarn);CA1014;CA1062;CA1030;CA1848</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AM.WorkStation.Demo</RootNamespace>
+    <AssemblyName>AM.WorkStation.Demo</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+
+  <!-- WorkStation ONLY references Core.Abstractions — never Hardware implementation -->
+  <ItemGroup>
+    <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

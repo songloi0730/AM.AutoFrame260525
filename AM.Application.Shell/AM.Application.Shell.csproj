@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>AM.Application.Shell</RootNamespace>
+    <AssemblyName>AM.Application.Shell</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Prism + DryIoc DI container -->
+    <PackageReference Include="Prism.DryIoc" Version="9.0.537" />
+
+    <!-- Logging: Serilog -->
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+
+    <!-- EF Core + SQLite -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+
+    <!-- BCrypt for password hashing (R-SEC-01) -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
+    <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\AM.Infrastructure\AM.Infrastructure.csproj" />
+    <ProjectReference Include="..\AM.Data\AM.Data.csproj" />
+    <ProjectReference Include="..\AM.Services\AM.Services.csproj" />
+    <ProjectReference Include="..\AM.Hardware.Motion\AM.Hardware.Motion.csproj" />
+    <ProjectReference Include="..\AM.Hardware.Vision\AM.Hardware.Vision.csproj" />
+    <ProjectReference Include="..\AM.Hardware.IO\AM.Hardware.IO.csproj" />
+    <ProjectReference Include="..\AM.WorkStation.Demo\AM.WorkStation.Demo.csproj" />
+  </ItemGroup>
+
+</Project>

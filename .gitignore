@@ -1,0 +1,29 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# NuGet
+packages/
+
+# Logs
+*.log
+
+# Temp
+Temp/
+Debug/
+Release/
+
+# VisionPro temp
+*.vpp.bak
+
+# Windows
+Thumbs.db
+Desktop.ini

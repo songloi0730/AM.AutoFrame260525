@@ -1,0 +1,261 @@
+// -------------------------------------------------------
+// File:    SimulatedMotionController.cs
+// Project: AM.Hardware.Motion
+// Purpose: Giả lập motion controller — không cần phần cứng thật
+//          Toggle qua appsettings.json: "UseSimulation": true
+// -------------------------------------------------------
+
+using AM.Core.Abstractions.Interfaces.Hardware;
+using AM.Core.Constants;
+using AM.Core.Exceptions;
+using Microsoft.Extensions.Logging;
+
+namespace AM.Hardware.Motion;
+
+/// <summary>
+/// Simulator cho motion controller.
+/// Lưu trạng thái trục trong memory, giả lập thời gian di chuyển.
+/// Dùng trong development và test không cần phần cứng.
+/// </summary>
+public sealed class SimulatedMotionController : IMotionController
+{
+    // ─── Constants ─────────────────────────────────────────────────────────────
+    private const int HomeTimeoutMs   = 10_000;
+    private const int MoveTimeoutMs   = 15_000;
+    private const double DefaultVelocity = 100.0; // mm/s
+    private const string StationName  = "SIMULATED_MOTION";
+
+    // ─── Private fields ─────────────────────────────────────────────────────────
+    private readonly ILogger<SimulatedMotionController> _logger;
+    private readonly SemaphoreSlim _lock = new(1, 1);
+    private readonly double[] _positions;
+    private readonly bool[] _homed;
+    private readonly bool[] _moving;
+    private bool _isConnected;
+    private bool _disposed;
+
+    // ─── Constructor ─────────────────────────────────────────────────────────────
+    public SimulatedMotionController(ILogger<SimulatedMotionController> logger, int axisCount = 4)
+    {
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(axisCount);
+
+        _logger   = logger;
+        AxisCount = axisCount;
+        _positions = new double[axisCount];
+        _homed     = new bool[axisCount];
+        _moving    = new bool[axisCount];
+    }
+
+    // ─── Public properties ───────────────────────────────────────────────────────
+    /// <inheritdoc/>
+    public int AxisCount { get; }
+
+    /// <inheritdoc/>
+    public bool IsConnected => _isConnected;
+
+    // ─── Public methods ──────────────────────────────────────────────────────────
+
+    /// <inheritdoc/>
+    public async Task ConnectAsync(CancellationToken ct = default)
+    {
+        _logger.LogDebug("Starting {Method}", nameof(ConnectAsync));
+        await Task.Delay(200, ct).ConfigureAwait(false); // Giả lập latency
+        _isConnected = true;
+        _logger.LogInformation("[SimMotion] Connected ({AxisCount} axes)", AxisCount);
+    }
+
+    /// <inheritdoc/>
+    public async Task DisconnectAsync(CancellationToken ct = default)
+    {
+        _logger.LogDebug("Starting {Method}", nameof(DisconnectAsync));
+        await Task.Delay(100, ct).ConfigureAwait(false);
+        _isConnected = false;
+        _logger.LogInformation("[SimMotion] Disconnected");
+    }
+
+    /// <inheritdoc/>
+    public async Task HomeAllAxesAsync(CancellationToken ct = default)
+    {
+        _logger.LogInformation("[SimMotion] Homing all {AxisCount} axes", AxisCount);
+        for (int i = 0; i < AxisCount; i++)
+            await HomeAxisAsync(i, ct).ConfigureAwait(false);
+        _logger.LogInformation("[SimMotion] All axes homed successfully");
+    }
+
+    /// <inheritdoc/>
+    public async Task HomeAxisAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        EnsureConnected();
+
+        _logger.LogDebug("[SimMotion] Homing axis {Axis}", axisIndex);
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(HomeTimeoutMs);
+
+        try
+        {
+            await _lock.WaitAsync(cts.Token).ConfigureAwait(false);
+            try
+            {
+                _moving[axisIndex] = true;
+                await Task.Delay(500, cts.Token).ConfigureAwait(false); // Giả lập thời gian home
+                _positions[axisIndex] = 0.0;
+                _homed[axisIndex] = true;
+                _moving[axisIndex] = false;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            _moving[axisIndex] = false;
+            throw new AlarmException(AlarmCodes.MotionTimeout, $"AXIS_{axisIndex}",
+                $"Home timeout after {HomeTimeoutMs}ms");
+        }
+
+        _logger.LogDebug("[SimMotion] Axis {Axis} homed OK", axisIndex);
+    }
+
+    /// <inheritdoc/>
+    public async Task MoveAbsAsync(int axisIndex, double position,
+        double velocity = 0, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        EnsureConnected();
+        EnsureHomed(axisIndex);
+
+        double v = velocity <= 0 ? DefaultVelocity : velocity;
+        double distance = Math.Abs(position - _positions[axisIndex]);
+        int moveMs = (int)(distance / v * 1000) + 50; // Giả lập thời gian di chuyển
+        moveMs = Math.Clamp(moveMs, 50, 5000);
+
+        _logger.LogDebug("[SimMotion] MoveAbs axis={Axis} target={Position:F2}mm vel={Velocity}mm/s",
+            axisIndex, position, v);
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(MoveTimeoutMs);
+
+        try
+        {
+            await _lock.WaitAsync(cts.Token).ConfigureAwait(false);
+            try
+            {
+                _moving[axisIndex] = true;
+                await Task.Delay(moveMs, cts.Token).ConfigureAwait(false);
+                _positions[axisIndex] = position;
+                _moving[axisIndex] = false;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            _moving[axisIndex] = false;
+            throw new AlarmException(AlarmCodes.MotionTimeout, $"AXIS_{axisIndex}",
+                $"MoveAbs timeout: axis={axisIndex} target={position:F2}mm");
+        }
+
+        _logger.LogDebug("[SimMotion] Axis {Axis} arrived at {Position:F2}mm", axisIndex, position);
+    }
+
+    /// <inheritdoc/>
+    public async Task MoveRelAsync(int axisIndex, double distance,
+        double velocity = 0, CancellationToken ct = default)
+    {
+        double target = _positions[axisIndex] + distance;
+        await MoveAbsAsync(axisIndex, target, velocity, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task StopAxisAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        _moving[axisIndex] = false;
+        _logger.LogDebug("[SimMotion] Axis {Axis} stopped", axisIndex);
+        await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task StopAllAxesAsync(CancellationToken ct = default)
+    {
+        for (int i = 0; i < AxisCount; i++)
+            _moving[i] = false;
+        _logger.LogInformation("[SimMotion] All axes stopped");
+        await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public Task<double> GetPositionAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        return Task.FromResult(_positions[axisIndex]);
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> IsHomedAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        return Task.FromResult(_homed[axisIndex]);
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> IsMovingAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        return Task.FromResult(_moving[axisIndex]);
+    }
+
+    /// <inheritdoc/>
+    public Task<int> GetDriverStatusAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        return Task.FromResult(0); // 0 = no error
+    }
+
+    /// <inheritdoc/>
+    public Task ClearDriverFaultAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        _logger.LogDebug("[SimMotion] ClearDriverFault axis={Axis}", axisIndex);
+        return Task.CompletedTask;
+    }
+
+    // ─── IDisposable ─────────────────────────────────────────────────────────────
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _lock.Dispose();
+        _isConnected = false;
+        _disposed = true;
+        _logger.LogDebug("[SimMotion] Disposed");
+    }
+
+    // ─── Private helpers ─────────────────────────────────────────────────────────
+
+    private void ValidateAxis(int axisIndex)
+    {
+        if (axisIndex < 0 || axisIndex >= AxisCount)
+            throw new ArgumentOutOfRangeException(nameof(axisIndex),
+                $"Axis {axisIndex} out of range [0..{AxisCount - 1}]");
+    }
+
+    private void EnsureConnected()
+    {
+        if (!_isConnected)
+            throw new AlarmException(AlarmCodes.MotionConnectionFail, StationName,
+                "Motion controller not connected");
+    }
+
+    private void EnsureHomed(int axisIndex)
+    {
+        if (!_homed[axisIndex])
+            throw new AlarmException(AlarmCodes.MotionNotHomed, $"AXIS_{axisIndex}",
+                $"Axis {axisIndex} must be homed before moving");
+    }
+}

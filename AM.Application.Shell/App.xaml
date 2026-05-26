@@ -1,0 +1,45 @@
+﻿<Application x:Class="AM.Application.Shell.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:local="clr-namespace:AM.Application.Shell">
+    <!-- StartupUri removed — MainWindow is created in App.xaml.cs OnStartup with DI -->
+    <Application.Resources>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             COLOR TOKENS — theo QUICK_REFERENCE.md color table
+             Dùng {DynamicResource TokenName} trong XAML, KHÔNG hardcode hex
+             ═══════════════════════════════════════════════════════════════ -->
+
+        <!-- Backgrounds -->
+        <SolidColorBrush x:Key="Screen.BackgroundBrush"      Color="#FF1E1E1E"/>
+        <SolidColorBrush x:Key="Panel.BackgroundBrush"       Color="#FF252526"/>
+        <SolidColorBrush x:Key="Panel.BackgroundAltBrush"    Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="Header.BackgroundBrush"      Color="#FF252526"/>
+        <SolidColorBrush x:Key="Border.DefaultBrush"         Color="#FF3F3F46"/>
+        <SolidColorBrush x:Key="Border.StrongBrush"          Color="#FF007ACC"/>
+
+        <!-- Text -->
+        <SolidColorBrush x:Key="Text.PrimaryBrush"           Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Text.SecondaryBrush"         Color="#FF9D9D9D"/>
+        <SolidColorBrush x:Key="Text.HeadingBrush"           Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Text.LiveValueBrush"         Color="#FF00D4FF"/>
+        <SolidColorBrush x:Key="Text.DisabledBrush"          Color="#FF656565"/>
+
+        <!-- Status — màu cố định theo ISA-101 HMI standard -->
+        <SolidColorBrush x:Key="Status.NormalBrush"          Color="#FF4CAF50"/>
+        <SolidColorBrush x:Key="Status.WarningBrush"         Color="#FFFFC107"/>
+        <SolidColorBrush x:Key="Status.AlarmBrush"           Color="#FFF44336"/>
+        <SolidColorBrush x:Key="Status.CriticalBrush"        Color="#FFB71C1C"/>
+        <SolidColorBrush x:Key="Status.DisabledBrush"        Color="#FF9E9E9E"/>
+        <SolidColorBrush x:Key="Status.ManualBrush"          Color="#FF1E88E5"/>
+        <SolidColorBrush x:Key="Status.InterlockBrush"       Color="#FF7B1FA2"/>
+
+        <!-- String resources — thay thế cho {lang:Text Key='...'} khi chưa có I18n -->
+        <sys:String x:Key="Shell.Title">AutoMachine Framework v1.0</sys:String>
+        <sys:String x:Key="Shell.WelcomeMessage">Chọn module từ menu để bắt đầu</sys:String>
+        <sys:String x:Key="Shell.StatusReady">✓ System Ready</sys:String>
+        <sys:String x:Key="Shell.StatusAlarmPrefix">⚠ ALARM: </sys:String>
+
+    </Application.Resources>
+</Application>

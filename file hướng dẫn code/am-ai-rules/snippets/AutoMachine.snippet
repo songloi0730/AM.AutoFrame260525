@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  AutoMachine — Visual Studio Code Snippets
+  Cài đặt: Tools > Code Snippets Manager > Import... → chọn file này
+  Hoặc copy vào: %USERPROFILE%\Documents\Visual Studio 2022\Code Snippets\Visual C#\My Code Snippets\
+
+  Dùng bằng cách gõ prefix + Tab Tab trong Visual Studio
+-->
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+
+  <!-- ==========================================
+       am-fileheader — File header comment
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM File Header</Title>
+      <Shortcut>am-fileheader</Shortcut>
+      <Description>AutoMachine standard file header comment</Description>
+      <Author>AutoMachine Framework</Author>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>purpose</ID><ToolTip>Mô tả mục đích class</ToolTip><Default>TODO: Add description</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[// -------------------------------------------------------
+// File:    $end$$CLASSNAME$.cs
+// Project: $rootnamespace$
+// Purpose: $purpose$
+// -------------------------------------------------------
+]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-service — Service class template
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Service Class</Title>
+      <Shortcut>am-service</Shortcut>
+      <Description>AutoMachine service class with DI, logging, null checks</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>name</ID><ToolTip>Service name (e.g. Alarm)</ToolTip><Default>MyService</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[/// <summary>$name$ service — TODO: describe responsibility</summary>
+public sealed class $name$Service : I$name$Service
+{
+    private readonly I$name$Repository _repository;
+    private readonly ILogger<$name$Service> _logger;
+
+    public $name$Service(
+        I$name$Repository repository,
+        ILogger<$name$Service> logger)
+    {
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _logger     = logger     ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    $end$
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-hwdriver — Hardware driver template
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Hardware Driver</Title>
+      <Shortcut>am-hwdriver</Shortcut>
+      <Description>Hardware driver with interface, simulator, dispose pattern</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>name</ID><ToolTip>Device name (e.g. Ltdmc, Cognex)</ToolTip><Default>MyDevice</Default></Literal>
+        <Literal><ID>interface</ID><ToolTip>Interface name</ToolTip><Default>IMotionController</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[/// <summary>$name$ hardware driver — implements $interface$</summary>
+public sealed class $name$Driver : $interface$, IDisposable
+{
+    private readonly ILogger<$name$Driver> _logger;
+    private bool _disposed;
+    private bool _isConnected;
+
+    public $name$Driver(ILogger<$name$Driver> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public async Task<bool> ConnectAsync(CancellationToken ct = default)
+    {
+        _logger.LogInformation("[{Device}] Connecting...", nameof($name$Driver));
+        try
+        {
+            // TODO: SDK connect call
+            _isConnected = true;
+            _logger.LogInformation("[{Device}] Connected successfully", nameof($name$Driver));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[{Device}] Connection failed", nameof($name$Driver));
+            throw new AlarmException(AlarmCode.CONNECTION_FAILED, nameof($name$Driver));
+        }
+    }
+
+    $end$
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        // TODO: SDK disconnect/release
+        _isConnected = false;
+        _disposed = true;
+        _logger.LogInformation("[{Device}] Disposed", nameof($name$Driver));
+    }
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-step — Machine step template
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Machine Step</Title>
+      <Shortcut>am-step</Shortcut>
+      <Description>AutoMachine sequence step with timeout and alarm handling</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>nn</ID><ToolTip>Step number (e.g. 05)</ToolTip><Default>01</Default></Literal>
+        <Literal><ID>name</ID><ToolTip>Step name (e.g. Inspect)</ToolTip><Default>DoSomething</Default></Literal>
+        <Literal><ID>timeout</ID><ToolTip>Timeout in ms</ToolTip><Default>5000</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[/// <summary>Step $nn$: $name$ — TODO: describe what this step does</summary>
+public sealed class Step$nn$_$name$ : IStep
+{
+    private readonly IMotionController _motion;
+    private readonly IAlarmService _alarmService;
+    private readonly ILogger<Step$nn$_$name$> _logger;
+    private const int TimeoutMs = $timeout$;
+
+    public Step$nn$_$name$(
+        IMotionController motion,
+        IAlarmService alarmService,
+        ILogger<Step$nn$_$name$> logger)
+    {
+        _motion       = motion       ?? throw new ArgumentNullException(nameof(motion));
+        _alarmService = alarmService ?? throw new ArgumentNullException(nameof(alarmService));
+        _logger       = logger       ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public void Validate()
+    {
+        // TODO: check preconditions before executing
+        // throw AlarmException if preconditions not met
+    }
+
+    public async Task ExecuteAsync(CancellationToken ct = default)
+    {
+        _logger.LogDebug("Step $nn$ $name$: Starting");
+        using var stepCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        stepCts.CancelAfter(TimeoutMs);
+        try
+        {
+            $end$
+            _logger.LogDebug("Step $nn$ $name$: Completed");
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new AlarmException(AlarmCode.STEP_TIMEOUT, $"Step{$nn$}_{$name$}");
+        }
+    }
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-viewmodel — ViewModel template
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM ViewModel</Title>
+      <Shortcut>am-viewmodel</Shortcut>
+      <Description>WPF ViewModel with CommunityToolkit.Mvvm, DI, threading</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>name</ID><ToolTip>Screen/Feature name</ToolTip><Default>MyScreen</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[/// <summary>ViewModel for $name$ screen</summary>
+public sealed partial class $name$ViewModel : ObservableObject, IDisposable
+{
+    private readonly ILogger<$name$ViewModel> _logger;
+    private CancellationTokenSource _cts = new();
+
+    public $name$ViewModel(ILogger<$name$ViewModel> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    [ObservableProperty]
+    private bool _isBusy;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DoActionCommand))]
+    private bool _isReady;
+
+    [RelayCommand(CanExecute = nameof(CanDoAction))]
+    private async Task DoAction()
+    {
+        IsBusy = true;
+        try
+        {
+            $end$
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[$name$VM] DoAction failed");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool CanDoAction() => IsReady && !IsBusy;
+
+    /// <summary>Called when this ViewModel is navigated to (Prism)</summary>
+    public void OnNavigatedTo(NavigationContext ctx) { }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-hwcall — Hardware call with timeout
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Hardware Call with Timeout</Title>
+      <Shortcut>am-hwcall</Shortcut>
+      <Description>Hardware call pattern with linked CancellationToken timeout</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>timeout</ID><ToolTip>Timeout ms</ToolTip><Default>5000</Default></Literal>
+        <Literal><ID>alarmCode</ID><ToolTip>AlarmCode constant</ToolTip><Default>AlarmCode.HARDWARE_TIMEOUT</Default></Literal>
+        <Literal><ID>deviceName</ID><ToolTip>Device identifier string</ToolTip><Default>_deviceName</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+timeoutCts.CancelAfter($timeout$);
+try
+{
+    $end$
+}
+catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+{
+    _logger.LogWarning("[{Device}] Operation timed out after {Timeout}ms",
+        $deviceName$, $timeout$);
+    throw new AlarmException($alarmCode$, $deviceName$,
+        $"Timeout after {$timeout$}ms");
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-seqloop — Main sequence loop
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Sequence Main Loop</Title>
+      <Shortcut>am-seqloop</Shortcut>
+      <Description>Main machine sequence loop with proper exception handling</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Code Language="CSharp">
+        <![CDATA[while (!ct.IsCancellationRequested)
+{
+    try
+    {
+        $end$
+    }
+    catch (AlarmException ex)
+    {
+        _logger.LogError("[Sequence] Alarm {Code} at {Station}: {Message}",
+            ex.AlarmCode, ex.Station, ex.Message);
+        await _alarmService.RaiseAsync(ex.AlarmCode, ex.Station, ct);
+        await WaitForAlarmClearAsync(ct);
+    }
+    catch (OperationCanceledException)
+    {
+        _logger.LogInformation("[Sequence] Stopped by operator");
+        break;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogCritical(ex, "[Sequence] Unhandled exception — stopping");
+        await _alarmService.RaiseAsync(AlarmCode.SYSTEM_CRITICAL, "SEQUENCE", ct);
+        break;
+    }
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-dispatchprop — Dispatcher property update
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Dispatcher Property Update</Title>
+      <Shortcut>am-dispatchprop</Shortcut>
+      <Description>Update ObservableProperty safely from background thread</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>property</ID><ToolTip>Property name</ToolTip><Default>MyProperty</Default></Literal>
+        <Literal><ID>value</ID><ToolTip>New value expression</ToolTip><Default>newValue</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[Application.Current.Dispatcher.InvokeAsync(
+    () => $property$ = $value$,
+    DispatcherPriority.Background);
+$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-unittest — Unit test method
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Unit Test Method</Title>
+      <Shortcut>am-unittest</Shortcut>
+      <Description>xUnit test with AAA pattern and FluentAssertions</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>method</ID><ToolTip>Method being tested</ToolTip><Default>DoSomething</Default></Literal>
+        <Literal><ID>condition</ID><ToolTip>Test condition</ToolTip><Default>WhenCondition</Default></Literal>
+        <Literal><ID>expected</ID><ToolTip>Expected result</ToolTip><Default>ShouldReturnExpected</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[[Fact]
+public async Task $method$_$condition$_$expected$()
+{
+    // Arrange
+    $end$
+
+    // Act
+
+
+    // Assert
+    .Should().Be();
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-alarmex — Throw AlarmException
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Throw AlarmException</Title>
+      <Shortcut>am-alarmex</Shortcut>
+      <Description>Throw typed AlarmException with code and station</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>code</ID><ToolTip>AlarmCode constant</ToolTip><Default>AlarmCode.MOTION_TIMEOUT</Default></Literal>
+        <Literal><ID>station</ID><ToolTip>Station or device name</ToolTip><Default>_stationName</Default></Literal>
+        <Literal><ID>message</ID><ToolTip>Error details</ToolTip><Default>"Detail message here"</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[throw new AlarmException($code$, $station$, $message$);$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+  <!-- ==========================================
+       am-prismmodule — Prism Module registration
+       ========================================== -->
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>AM Prism Module</Title>
+      <Shortcut>am-prismmodule</Shortcut>
+      <Description>Prism IModule with RegisterTypes and OnInitialized</Description>
+      <SnippetTypes><SnippetType>Expansion</SnippetType></SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal><ID>name</ID><ToolTip>Module name (e.g. Alarm)</ToolTip><Default>MyFeature</Default></Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[/// <summary>Prism module for $name$ feature</summary>
+public sealed class $name$Module : IModule
+{
+    public void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.RegisterForNavigation<$name$View, $name$ViewModel>(
+            NavigationKeys.$name$);
+    }
+
+    public void OnInitialized(IContainerProvider containerProvider)
+    {
+        var regionManager = containerProvider.Resolve<IRegionManager>();
+        regionManager.RegisterViewWithRegion(
+            RegionNames.SideMenu,
+            typeof($name$MenuItemView));
+        $end$
+    }
+}]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+
+</CodeSnippets>
