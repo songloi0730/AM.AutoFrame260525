@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------
+// -------------------------------------------------------
 // File:    App.xaml.cs
 // Project: AM.Application.Shell
 // Purpose: Entry point WPF — khởi tạo DI, logging, database, launch MainWindow
@@ -9,17 +9,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Windows;
 
-// Alias để giải quyết xung đột tên: namespace AM.Application.Shell chứa "Application"
-// dẫn đến ambiguity với System.Windows.Application khi dùng implicit using
-using WpfApp = System.Windows.Application;
-
 namespace AM.Application.Shell;
 
 /// <summary>
 /// Entry point của AutoMachine application.
 /// Khởi tạo DI, logging, database, rồi launch MainWindow.
+/// Base class System.Windows.Application được khai báo trong App.g.cs (generated từ App.xaml).
 /// </summary>
-public partial class App : Application
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1515",
+    Justification = "WPF App partial class must match public modifier from XAML-generated App.g.cs")]
+public partial class App
 {
     private IServiceProvider? _serviceProvider;
 
@@ -42,8 +41,10 @@ public partial class App : Application
             Bootstrapper.RegisterServices(services, config);
             _serviceProvider = services.BuildServiceProvider();
 
-            // 4. Initialize database
+            // 4. Initialize database — không dùng ConfigureAwait(false) vì cần ở lại UI thread sau await
+#pragma warning disable CA2007 // Shell OnStartup: phải giữ UI thread context để tạo MainWindow sau khi await
             await Bootstrapper.InitializeDatabaseAsync(_serviceProvider);
+#pragma warning restore CA2007
 
             base.OnStartup(e);
 
@@ -53,10 +54,13 @@ public partial class App : Application
 
             Log.Information("AutoMachine Shell started successfully");
         }
+#pragma warning disable CA1031 // OnStartup phải catch tất cả để hiển thị dialog lỗi cho người dùng
         catch (Exception ex)
+#pragma warning restore CA1031
         {
             Log.Fatal(ex, "AutoMachine Shell failed to start");
-            MessageBox.Show($"Lỗi khởi động: {ex.Message}", "AutoMachine", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Lỗi khởi động: {ex.Message}", "AutoMachine",
+                MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }

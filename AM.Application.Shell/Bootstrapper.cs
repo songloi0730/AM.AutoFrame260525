@@ -4,6 +4,7 @@
 // Purpose: DI registration toàn bộ services, hardware, data — entry point DI
 // -------------------------------------------------------
 
+using System.Globalization;
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Repositories;
 using AM.Core.Abstractions.Interfaces.Services;
@@ -25,31 +26,35 @@ namespace AM.Application.Shell;
 /// Bootstrapper: đăng ký DI container, cấu hình logging, database.
 /// Được gọi từ App.xaml.cs khi application khởi động.
 /// </summary>
-public static class Bootstrapper
+internal static class Bootstrapper
 {
     /// <summary>
     /// Cấu hình Serilog logging.
     /// Gọi TRƯỚC khi build ServiceProvider.
     /// </summary>
-    public static void ConfigureLogging()
+    internal static void ConfigureLogging()
     {
+#pragma warning disable CA1305 // Serilog sinks: locale sensitivity là acceptable cho logging infra
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console(outputTemplate:
-                "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+                "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}",
+                formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
                 path: @"logs\automachine-.log",
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 30,
                 outputTemplate:
-                    "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+                    "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}",
+                formatProvider: CultureInfo.InvariantCulture)
             .CreateLogger();
+#pragma warning restore CA1305
     }
 
     /// <summary>
     /// Đăng ký tất cả services vào DI container.
     /// </summary>
-    public static void RegisterServices(IServiceCollection services, IConfiguration config)
+    internal static void RegisterServices(IServiceCollection services, IConfiguration config)
     {
         // ─── Logging ──────────────────────────────────────────────────────────────
         services.AddLogging(lb =>
@@ -73,7 +78,7 @@ public static class Bootstrapper
         // ─── Business Logic Services ──────────────────────────────────────────────
         services.AddSingleton<IAlarmService, AlarmService>();
         services.AddSingleton<IRecipeService, RecipeService>();
-        // ParameterService implements IDisposable — AddSingleton disposes it when container disposes
+        // ParameterService implements IDisposable — AddSingleton disposes it khi container bị dispose
         services.AddSingleton<IParameterService, ParameterService>(sp =>
             new ParameterService(
                 sp.GetRequiredService<ILogger<ParameterService>>(),
@@ -82,7 +87,6 @@ public static class Bootstrapper
         // ─── Hardware — toggle Simulated / Real via appsettings ──────────────────
         if (useSimulation)
         {
-            // DI registration: Simulated hardware (không cần phần cứng thật)
             services.AddSingleton<IMotionController>(sp =>
             {
                 var logger = sp.GetRequiredService<ILogger<SimulatedMotionController>>();
@@ -103,21 +107,23 @@ public static class Bootstrapper
         }
         else
         {
-            // TODO: Đăng ký hardware thật tại đây khi có
-            // services.AddSingleton<IMotionController, LtdmcController>();
-            // services.AddSingleton<ICameraDevice, CognexCameraDevice>();
-            throw new NotImplementedException("Real hardware drivers not yet registered. Set UseSimulation=true in appsettings.json");
+            // Real hardware drivers chưa được implement.
+            // Để thêm hardware thật: tạo driver class implement interface,
+            // đăng ký qua services.AddSingleton<IMotionController, YourDriverClass>(),
+            // sau đó xóa dòng throw bên dưới.
+            throw new NotSupportedException(
+                "Real hardware drivers not yet registered. Set UseSimulation=true in appsettings.json");
         }
     }
 
     /// <summary>
     /// Tạo và migrate database khi khởi động.
     /// </summary>
-    public static async Task InitializeDatabaseAsync(IServiceProvider services)
+    internal static async Task InitializeDatabaseAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AutoMachineDbContext>();
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
         Log.Information("Database initialized: {DbPath}", db.Database.GetDbConnection().DataSource);
     }
 }

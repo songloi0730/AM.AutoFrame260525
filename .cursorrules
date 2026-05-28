@@ -1,7 +1,7 @@
 # ============================================================
 # AutoMachine Framework — AI Coding Rules
 # Áp dụng cho: Cursor, Cline, GitHub Copilot, Claude Code
-# Dự án: Phần mềm điều khiển máy tự động hoá | C# / .NET 8 / WPF
+# Dự án: Phần mềm điều khiển máy tự động hoá | C# / .NET 9 / WPF
 # ============================================================
 
 ## IDENTITY — Bạn là ai
@@ -43,6 +43,50 @@ WorkStation → Core.Abstractions ONLY (không reference Hardware trực tiếp)
 - Mỗi Step trong WorkStation là 1 class riêng biệt implement IStep
 - MachineSequence chỉ orchestrate các Step, không chứa logic phức tạp
 
+### R-ARCH-05: 3-Tier Machine Architecture (CỨNG)
+```
+MasterController (điều phối toàn bộ, quản lý state machine)
+   ├── Station A  (tập hợp cơ học thực hiện một công đoạn)
+   │     ├── Mechanism 1  (cụm cơ học cơ bản: pick/place/inspect/dispense)
+   │     └── Mechanism 2
+   └── Station B
+         └── Mechanism 3
+```
+- **Mechanism** = đơn vị cơ học nhỏ nhất, bao gồm 1–N hardware devices
+- **Station** = tập hợp Mechanisms cùng thực hiện một công đoạn hoàn chỉnh
+- **MasterController** = điều phối pipeline, quản lý ISA-88 state machine
+- KHÔNG bao giờ để Station gọi trực tiếp station khác — qua IStationSyncService
+
+### R-ARCH-06: State Machine (CỨNG)
+```
+MachineState:  Uninitialized → Initializing → Idle → Running ↔ Paused
+               InitAlarm ← (lỗi từ Initializing)
+               RunAlarm  ← (lỗi từ Running)
+               Resetting ← Reset từ InitAlarm/RunAlarm → Idle hoặc Uninitialized
+```
+- KHÔNG bao giờ thay đổi State trực tiếp — chỉ qua MachineTrigger
+- MasterController là nơi DUY NHẤT fire trigger
+- Mọi UI button Start/Stop/Reset/Pause phải gọi qua IMasterController
+
+### R-ARCH-07: Mechanism Pattern (CỨNG)
+```csharp
+// Mechanism chứa hardware interfaces, cung cấp thao tác cấp cao
+[MechanismUI("Cụm gắp", group: "Station A", order: 1)]
+public class PickMechanism : BaseMechanism
+{
+    private readonly IMotionController _motion;
+    private readonly IIoModule _io;
+
+    // Thao tác cấp cao — KHÔNG expose raw hardware
+    public Task PickAsync(PickTarget target, CancellationToken ct) { ... }
+    public Task PlaceAsync(PlaceTarget target, CancellationToken ct) { ... }
+
+    // Implement IMechanism: InitializeAsync, HomeAsync, EmergencyStop
+}
+```
+- Mechanism KHÔNG chứa business logic của Station
+- Station gọi mechanism.PickAsync(), không gọi _motion.MoveAbsAsync() trực tiếp
+
 ---
 
 ## CODE STYLE RULES
@@ -75,8 +119,18 @@ private const string DEFAULT_RECIPE = "Default";
 // Event: PascalCase, không prefix On
 public event EventHandler<AlarmEventArgs> AlarmRaised;
 
-// Step class: Step{NN}_{PascalCase}
-public class Step05_Inspect : IStep { }
+// Step class: Step{NN}PascalCase (không dùng underscore — CA1707)
+public class Step05Inspect : IStep { }
+
+// Mechanism: {Chức năng}Mechanism
+public class PickMechanism : BaseMechanism { }
+public class InspectMechanism : BaseMechanism { }
+
+// Station: {Chức năng}Station
+public class PickPlaceStation : StationBase<PickPlaceStation> { }
+
+// MasterController: {Project}MasterController
+public class DemoMasterController : BaseMasterController { }
 
 // Alarm codes: namespace prefix + number
 // 10xxx = Motion, 20xxx = Vision, 30xxx = IO, 40xxx = System
@@ -430,11 +484,183 @@ public async Task MethodName_Scenario_ExpectedResult()
 
 ---
 
+## MECHANISM DEVELOPMENT RULES
+
+### R-MECH-01: BaseMechanism Constructor (CỨNG)
+```csharp
+// Constructor chuẩn của Mechanism
+public class PickMechanism : BaseMechanism
+{
+    // Constructor: nhận services qua DI, KHÔNG new() hardware trực tiếp
+    public PickMechanism(
+        IHardwareManagerService hwManager,
+        IAlarmService alarmService,
+        ILogger<PickMechanism> logger)
+        : base("PickMechanism", hwManager, alarmService, logger)
+    {
+        // Resolve hardware từ HardwareManagerService, không inject trực tiếp
+        _motion = hwManager.Resolve<IMotionController>("AxisXY");
+        _io     = hwManager.Resolve<IIoModule>("MainIO");
+    }
+}
+```
+
+### R-MECH-02: Mechanism chỉ expose thao tác cấp cao
+```csharp
+// ✅ ĐÚNG — cung cấp thao tác domain-specific
+public Task PickAsync(PickTarget target, CancellationToken ct) { ... }
+public Task PlaceAsync(double x, double y, CancellationToken ct) { ... }
+
+// ❌ SAI — expose raw hardware method thẳng
+public IMotionController Motion => _motion; // KHÔNG làm thế này
+public Task MoveRawAsync(double pos, CancellationToken ct) => _motion.MoveAbsAsync(...);
+```
+
+### R-MECH-03: Mechanism EmergencyStop không được throw
+```csharp
+public void EmergencyStop()
+{
+    try { _motion.StopAll(); } catch { /* nuốt - safety critical */ }
+    try { _io.WriteOutput(SafetyOutput, false); } catch { /* nuốt */ }
+}
+```
+
+### R-MECH-04: Dùng [MechanismUI] attribute
+```csharp
+// LUÔN đánh dấu Mechanism class để UI tự đăng ký debug panel
+[MechanismUI("Cụm gắp linh kiện", group: "Station A", order: 1)]
+public class PickMechanism : BaseMechanism { ... }
+```
+
+---
+
+## STATION DEVELOPMENT RULES
+
+### R-STATION-01: Station chỉ orchestrate Mechanisms
+```csharp
+// ✅ ĐÚNG — Station gọi mechanism, không gọi hardware trực tiếp
+public async Task RunCycleAsync(CancellationToken ct)
+{
+    await _pickMech.PickAsync(target, ct).ConfigureAwait(false);
+    await _inspectMech.InspectAsync(ct).ConfigureAwait(false);
+    await _placeMech.PlaceAsync(result.Position, ct).ConfigureAwait(false);
+}
+
+// ❌ SAI — Station gọi thẳng hardware
+await _motion.MoveAbsAsync(0, 100.0, ct); // KHÔNG — đây là việc của Mechanism
+```
+
+### R-STATION-02: Pipeline sync qua IStationSyncService
+```csharp
+// Station A signal workpiece sẵn sàng
+_syncService.Signal("A→B");
+
+// Station B chờ workpiece từ A
+await _syncService.WaitAsync("A→B", TimeSpan.FromSeconds(10), ct).ConfigureAwait(false);
+// KHÔNG bao giờ dùng Thread.Sleep hay busy-wait giữa các stations
+```
+
+### R-STATION-03: Dùng [StationUI] attribute
+```csharp
+[StationUI("Station A — Gắp & Kiểm tra", icon: "robot_arm", order: 1)]
+public class StationA : StationBase<StationA> { ... }
+```
+
+### R-STATION-04: StationBase pattern (CỨNG)
+```csharp
+public class PickPlaceStation : StationBase<PickPlaceStation>
+{
+    // Inject Mechanisms, không inject hardware trực tiếp
+    public PickPlaceStation(
+        PickMechanism pick,
+        InspectMechanism inspect,
+        IAlarmService alarmService,
+        ILogger<PickPlaceStation> logger)
+        : base("PickPlaceStation", alarmService, logger)
+    {
+        _pick    = pick;
+        _inspect = inspect;
+    }
+
+    // Subclass implements 2 abstract methods:
+    protected override async Task ProcessNormalLoopAsync(CancellationToken ct)  { ... }
+    protected override async Task ProcessDryRunLoopAsync(CancellationToken ct)  { ... }
+}
+```
+
+---
+
+## PERMISSION / USER LEVEL RULES
+
+### R-PERM-01: Check UserLevel trước mọi thao tác nguy hiểm
+```csharp
+// Trong ViewModel — check trước khi gọi service
+[RelayCommand(CanExecute = nameof(CanEditParameter))]
+private async Task EditParameter() { ... }
+
+private bool CanEditParameter() =>
+    _userService.CurrentLevel >= UserLevel.Engineer;
+
+// Trong Service — defend-in-depth check
+public void SetParameter(string key, object value)
+{
+    if (_userService.CurrentLevel < UserLevel.Engineer)
+        throw new UnauthorizedAccessException(
+            $"UserLevel.Engineer required to edit parameters");
+    // ...
+}
+```
+
+### R-PERM-02: Phân quyền theo UserLevel
+```
+Operator (0)    — Start/Stop, Acknowledge alarm, xem recipe/parameter
+Engineer (1)    — Chỉnh recipe, parameter thông thường, manual jog
+Administrator (2) — Cấu hình hệ thống, quản lý user, export data
+SuperUser (3)   — Override safety, debug hardware trực tiếp
+```
+
+### R-PERM-03: Audit log bắt buộc khi UserLevel ≥ Engineer thay đổi dữ liệu
+```csharp
+// Phải ghi audit khi: thay đổi parameter, recipe, user, hardware config
+_logger.LogInformation(
+    "[AUDIT] {Action} by {User}({Level}): {Key} {OldValue}→{NewValue}",
+    "PARAMETER_CHANGED", user.Name, user.Level, key, oldVal, newVal);
+```
+
+---
+
+## ATTRIBUTES USAGE RULES
+
+### R-ATTR-01: AlarmInfoAttribute trên mọi AlarmCode constant
+```csharp
+// Trong AlarmCodes.cs — LUÔN khai báo [AlarmInfo] trên mỗi code
+[AlarmInfo("Motion timeout", "Kiểm tra servo drive và cáp kết nối", isStoppable: true)]
+public const int MotionTimeout = 10001;
+
+[AlarmInfo("Camera disconnect", "Kiểm tra cáp GigE và nguồn camera", isStoppable: true)]
+public const int CameraDisconnect = 20001;
+```
+
+### R-ATTR-02: ParamViewAttribute trên Recipe/Parameter properties
+```csharp
+// Recipe class — LUÔN khai báo [ParamView] để UI tự render input
+public class PickRecipe
+{
+    [ParamView("Tốc độ gắp", unit: "mm/s", min: 10, max: 500, group: "Motion", order: 1)]
+    public double PickVelocity { get; set; } = 100.0;
+
+    [ParamView("Thời gian chờ hút chân không", unit: "ms", min: 50, max: 2000, group: "IO", order: 2)]
+    public int VacuumWaitMs { get; set; } = 300;
+}
+```
+
+---
+
 ## WHAT TO ALWAYS DO (khi tạo code mới)
 
 1. ✅ Thêm file header comment
 2. ✅ Thêm XML doc cho public members
-3. ✅ Implement IDisposable nếu subscribe event hoặc hold unmanaged resource
+3. ✅ Implement IDisposable/IAsyncDisposable nếu subscribe event hoặc hold unmanaged resource
 4. ✅ Dùng CancellationToken cho mọi async method
 5. ✅ Dùng interface type cho field/parameter (IAlarmService, không AlarmService)
 6. ✅ Thêm null check ở constructor: ArgumentNullException.ThrowIfNull(service)
@@ -442,6 +668,9 @@ public async Task MethodName_Scenario_ExpectedResult()
 8. ✅ Đặt timeout cho hardware call
 9. ✅ Gọi DispatchIfNeeded khi update property từ background thread
 10. ✅ Viết unit test song song với implementation
+11. ✅ Đánh dấu [MechanismUI] / [StationUI] / [AlarmInfo] / [ParamView] đúng chỗ
+12. ✅ Check UserLevel trước thao tác nguy hiểm trong ViewModel và Service
+13. ✅ Pipeline sync giữa stations qua IStationSyncService, KHÔNG busy-wait trực tiếp
 
 ## WHAT TO NEVER DO
 
@@ -473,14 +702,32 @@ public async Task MethodName_Scenario_ExpectedResult()
 
 ## PROJECT PREFIXES
 ```
-AM.Core.Abstractions     — Interfaces only, no dependencies
-AM.Core                  — Enums, Models, StateMachine, Constants
-AM.Infrastructure        — Logging, I18n, Security, Config
+AM.Core.Abstractions     — Interfaces, enums, attributes only — no dependencies
+AM.Core                  — Models, Constants, Exceptions
+AM.Infrastructure        — Logging, I18n, Security, Config, base classes
 AM.Data                  — EF Entities, Repositories, DbContext
 AM.CommonTools           — Pure utilities, no domain knowledge
-AM.Hardware.*            — Device-specific drivers
+AM.Hardware.*            — Device-specific drivers (implement AM.Core.Abstractions)
 AM.Services              — Business logic services
-AM.Modules.*             — Prism UI modules
-AM.WorkStation.*         — Machine-specific sequence (CHANGE THIS)
+AM.Modules.*             — Prism UI modules (View + ViewModel)
+AM.WorkStation.*         — Machine-specific (THAY ĐỔI KHI LÀM MÁY MỚI):
+                            ├── Mechanisms/   — cụm cơ học (BaseMechanism)
+                            ├── Stations/     — công đoạn (StationBase)
+                            └── Controllers/  — chủ điều khiển (BaseMasterController)
 AM.Application.Shell     — Entry point, DI bootstrap
+```
+
+## NEW FILE LOCATIONS (bổ sung từ PF.AutoFramework)
+```
+AM.Core/Enums/           — MachineState, MachineTrigger, OperationMode,
+                            HardwareCategory, UserLevel, AlarmLevel
+AM.Core/Attributes/      — AlarmInfoAttribute, MechanismUIAttribute,
+                            StationUIAttribute, ModuleNavigationAttribute, ParamViewAttribute
+AM.Core.Abstractions/
+  Interfaces/Machine/    — IMechanism, IStation, IMasterController
+  Interfaces/Services/   — IHardwareManagerService, IStationSyncService,
+                            IAlarmService, IRecipeService, IParameterService
+AM.Infrastructure/
+  Machine/               — BaseMechanism, StationBase<T>, BaseMasterController (TODO)
+  Services/              — HardwareManagerService, StationSyncService (TODO)
 ```

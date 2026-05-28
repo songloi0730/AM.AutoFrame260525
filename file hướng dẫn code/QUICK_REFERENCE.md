@@ -131,3 +131,121 @@ git push origin feature/ten-tinh-nang
 
 **Commit prefix:**
 `feat:` `fix:` `refactor:` `test:` `docs:` `chore:`
+
+---
+
+## 🏭 KIẾN TRÚC 3 TẦNG — LUẬT KHÔNG VI PHẠM
+
+```
+MasterController ← nơi DUY NHẤT fire MachineTrigger / thay đổi State
+   └── Station   ← KHÔNG gọi hardware trực tiếp, chỉ gọi Mechanism methods
+         └── Mechanism ← bao bọc 1–N hardware devices, expose domain methods
+               └── Hardware (IMotionController / ICameraDevice / IIoModule)
+
+✅ Mechanism.PickAsync()          ← Station gọi đây
+❌ Station → _motion.MoveAbsAsync() ← Station KHÔNG gọi trực tiếp hardware
+✅ _hwManager.Resolve<T>("name")  ← Mechanism lấy hardware qua manager
+❌ new LtdmcController()          ← KHÔNG new hardware trực tiếp bao giờ
+```
+
+### Khi nào dùng gì:
+```
+Thêm cụm cơ học mới     → Mechanism  [MechanismUI]  BaseMechanism
+Thêm công đoạn mới      → Station    [StationUI]    StationBase<T>
+Thêm máy mới            → MasterController           BaseMasterController
+Pipeline giữa stations  → IStationSyncService.Signal/WaitAsync
+```
+
+---
+
+## ⌨️ SLASH COMMANDS (Claude Code / .claude/commands)
+
+```
+/am-new-driver     → Tạo hardware driver (interface + real + simulator)
+/am-new-step       → Tạo machine sequence step (Step{NN}{Name}, no underscore)
+/am-new-mechanism  → Tạo Mechanism [MechanismUI], dùng IHardwareManagerService
+/am-new-station    → Tạo Station [StationUI], inject Mechanisms, dùng IStationSyncService
+/am-new-screen     → Tạo màn hình WPF (View + ViewModel + Module ISA-101 compliant)
+/am-alarm          → Thêm alarm code với [AlarmInfo] attribute
+/am-review         → Review code (10 categories: arch, async, roslyn, alarm...)
+/am-test           → Tạo unit tests (xUnit + Moq + FluentAssertions)
+```
+
+### Dùng slash command:
+```
+# Trong Claude Code terminal hoặc chat
+/am-new-mechanism
+> Tên: PickMechanism, Hardware: IMotionController "AxisXY" + IIoModule "Vacuum"
+> Alarm range: 10100–10109, Timeout: 5s
+
+/am-new-station
+> Tên: PickStation, Mechanisms: PickMechanism + InspectMechanism
+> Pipeline: wait "Feed→Pick", signal "Pick→Place", Timeout: 8s/cycle
+```
+
+---
+
+## 🏷️ ATTRIBUTES NHANH
+
+```csharp
+[MechanismUI("Cụm gắp", group: "Station A", order: 0)]
+class PickMechanism : BaseMechanism { }
+
+[StationUI("Trạm gắp", icon: "robot-arm", order: 1)]
+class PickStation : StationBase<PickStation> { }
+
+[AlarmInfo("Axis timeout", "Kiểm tra cơ học", isStoppable: true)]
+public const int AXIS_TIMEOUT = 10001;
+
+[ParamView("Pick speed", "mm/s", min: 10, max: 500, group: "Motion", order: 0)]
+public double PickSpeed { get; set; }
+```
+
+---
+
+## 🤖 AGENT NHANH (cập nhật)
+
+```
+Tạo hardware driver      → paste AGENT: HardwareDriver      + mô tả thiết bị
+Tạo sequence step        → paste AGENT: MachineSequence     + mô tả bước
+Tạo màn hình WPF         → paste AGENT: UIModule            + mô tả màn hình
+Tạo service + test       → paste AGENT: ServiceLayer        + mô tả service
+Tạo Mechanism            → paste AGENT: MechanismDeveloper  + tên + hardware + alarm range
+Tạo Station              → paste AGENT: StationDeveloper    + tên + mechanisms + pipeline
+Tạo MasterController     → paste AGENT: MasterControllerDeveloper + stations + pipeline
+Review code              → paste AGENT: CodeReview          + paste code
+Refactor code            → paste AGENT: Refactor            + paste code
+```
+
+---
+
+## 📐 NAMING CONVENTIONS (quan trọng — vi phạm = build fail)
+
+```
+Step class:     Step01Initialize   ✅  Step01_Initialize  ❌ (CA1707)
+Mechanism:      PickMechanism      ✅  Pick_Mechanism     ❌
+Station:        PickStation        ✅  Pick_Station       ❌
+Controller:     DemoMasterController ✅
+
+Event handler:  AlarmEventArgs     ✅  AlarmModel trực tiếp ❌ (CA1003)
+Param name:     endDate, getValue  ✅  to, Get            ❌ (CA1716)
+```
+
+---
+
+## 🔄 ISA-88 STATE MACHINE
+
+```
+Uninitialized ──[Initialize]──► Initializing ──[InitializeDone]──► Idle
+                                     │[Error]                       │[Start]
+                                     ▼                              ▼
+                                 InitAlarm       Paused ◄──[Pause]── Running
+                                     │[Reset]      │[Resume]─────────►│
+                                     ▼             │[Stop]            │[Error]
+                                 Resetting ◄───────┤                  ▼
+                                     │          RunAlarm ──[Reset]──► Resetting
+                              [ResetDone]▼
+                                     Idle
+                    [ResetDoneUninitialized]▼
+                                 Uninitialized
+```

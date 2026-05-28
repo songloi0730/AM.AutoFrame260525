@@ -346,3 +346,133 @@ Extract tất cả magic numbers và strings thành named constants hoặc confi
 [DÁN CODE]
 Constants đặt ở đâu phù hợp nhất trong project structure?
 ```
+
+---
+
+## PT-12: Tạo Mechanism (Cụm Cơ Học)
+
+```
+Tạo Mechanism hoàn chỉnh: [TÊN]Mechanism
+
+Mô tả: [Cụm này làm gì — ví dụ: gắp linh kiện từ tray bằng 2 trục XY + vacuum]
+
+Hardware cần dùng (via IHardwareManagerService):
+- [T1]: [device name]   ← ví dụ: IMotionController "AxisXY"
+- [T2]: [device name]   ← ví dụ: IIoModule "Vacuum"
+
+Domain methods cần expose (KHÔNG expose raw hardware):
+- [Method1Async]: [mô tả — ví dụ: PickAsync(PickPoint point)]
+- [Method2Async]: [mô tả — ví dụ: PlaceAsync(PlacePoint point)]
+- [Method3Async]: [mô tả — ví dụ: HomeAsync()]
+
+Alarm codes (range [Nxxx]–[Nyyy]):
+- [Nxxx] = [tên]: [điều kiện lỗi]
+- [Nxxx+1] = [tên]: [điều kiện lỗi]
+
+Timeout: [N]ms cho mỗi chuyển động
+
+Attributes:
+- group: "[Tên Station]"
+- order: [N]
+
+Đầu ra cần:
+1. [Name]Mechanism.cs với [MechanismUI], extends BaseMechanism
+2. [PointTable].cs enum nếu có point table
+3. Unit test: [Name]MechanismTests.cs (Mock<IHardwareManagerService>)
+4. DI registration comment
+
+Tuân thủ rules:
+- Constructor: hwManager.Resolve<T>("name") để lấy device
+- EmergencyStop() KHÔNG throw — wrap trong try-catch
+- IsBusy guard trước khi accept new command
+- Timeout với using var toCts = CancellationTokenSource.CreateLinkedTokenSource(ct)
+```
+
+---
+
+## PT-13: Tạo Station (Công Đoạn)
+
+```
+Tạo Station hoàn chỉnh: [TÊN]Station
+
+Mô tả: [Công đoạn này làm gì — ví dụ: gắp linh kiện, kiểm tra vision, đặt vào jig]
+
+Mechanisms cần inject (KHÔNG inject hardware trực tiếp):
+- [Mechanism1]: [mô tả vai trò]
+- [Mechanism2]: [mô tả vai trò]
+
+Pipeline sync:
+- Chờ trước khi chạy: IStationSyncService.WaitAsync("[UpstreamSlot]", timeout: [N]s)
+- Signal sau khi xong: IStationSyncService.Signal("[DownstreamSlot]")
+
+Cycle bình thường (ProcessNormalLoopAsync):
+1. [Bước 1 — ví dụ: chờ tín hiệu từ Station trước]
+2. [Bước 2 — ví dụ: gắp linh kiện]
+3. [Bước 3 — ví dụ: kiểm tra vision]
+4. [Bước 4 — ví dụ: đặt vào jig]
+5. [Bước 5 — ví dụ: signal station tiếp theo]
+
+Dry run (ProcessDryRunLoopAsync):
+- [Bước nào bị disable khi DryRun — ví dụ: skip vacuum, skip signal output]
+
+Timeout: [N]s cho toàn bộ một cycle
+
+Attributes:
+- icon: "[icon-name]"  ← ví dụ: "robot-arm", "camera", "conveyor"
+- order: [N]
+
+Đầu ra cần:
+1. [Name]Station.cs với [StationUI], extends StationBase<T>
+2. Unit test: [Name]StationTests.cs (Mock<Mechanisms>)
+3. DI registration comment trong Bootstrapper
+
+Tuân thủ rules:
+- Gán CurrentStepDescription trước mỗi bước (hiển thị HMI)
+- AlarmException từ Mechanism → tự động chuyển RunAlarm
+- Parallel init: await Task.WhenAll(mech1.InitAsync(), mech2.InitAsync())
+- DryRun: disable output nguy hiểm nhưng vẫn chạy cơ học
+```
+
+---
+
+## PT-14: Tạo MasterController
+
+```
+Tạo MasterController: [TÊN]MasterController
+
+Mô tả: [Máy này làm gì, bao nhiêu stations]
+
+Stations trong máy:
+1. [Station1] — [mô tả]
+2. [Station2] — [mô tả]
+3. [Station3] — [mô tả nếu có]
+
+Pipeline sync slots (thứ tự chạy):
+- "[Slot1]": [Station nguồn] → [Station đích], timeout [N]s
+- "[Slot2]": [Station nguồn] → [Station đích], timeout [N]s
+
+State machine transitions cần xử lý:
+- Initialize: [mô tả logic khởi tạo — ví dụ: home tất cả axes, kết nối hardware]
+- Start: [mô tả logic bắt đầu chạy]
+- Stop: [mô tả — e.g., hoàn thành cycle hiện tại rồi dừng, hay dừng ngay]
+- Reset: [mô tả logic reset sau alarm]
+- E-Stop: [mô tả — bắt buộc: gọi EmergencyStop() trên tất cả stations]
+
+Dependencies:
+- Alarm service: dùng để raise/clear alarms
+- Station sync service: manage pipeline slots
+- Hardware manager: connect/disconnect tất cả devices khi init/shutdown
+
+Đầu ra cần:
+1. [Name]MasterController.cs với BaseMasterController, ISA-88 state machine
+2. Unit test: [Name]MasterControllerTests.cs (Mock<IStation>)
+3. DI registration trong Bootstrapper.cs
+4. Comment sơ đồ pipeline trong file
+
+Tuân thủ rules:
+- Chỉ fire MachineTrigger qua FireTrigger(MachineTrigger) — KHÔNG set State trực tiếp
+- Init parallel: await Task.WhenAll(stations.Select(s => s.InitializeAsync(ct))) timeout 120s
+- E-Stop: KHÔNG throw, KHÔNG await, gọi ngay tất cả stations
+- Log mọi state transition với Info level
+- ResetAsync: ResetAll pipeline slots → Home stations → về Idle
+```
