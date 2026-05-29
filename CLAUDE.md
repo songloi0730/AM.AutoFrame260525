@@ -1,7 +1,25 @@
 # CLAUDE.md — AM.AutoFrame Project
 
 > Hướng dẫn dành riêng cho Claude (và các AI assistant) khi làm việc với dự án này.
-> Đọc file này trước khi viết bất kỳ dòng code nào.
+
+## ⚡ BẮT BUỘC — Đọc theo thứ tự này trước khi làm bất cứ thứ gì:
+
+1. **`PROJECT_STATUS.md`** — Trạng thái hiện tại, TODO list, known bugs → đọc trước nhất
+2. **`CLAUDE.md`** (file này) — Kiến trúc, build rules, conventions
+3. **`CHANGELOG.md`** — Khi cần hiểu lý do của một quyết định kiến trúc
+
+> Không cần đọc toàn bộ source files — PROJECT_STATUS.md đã tóm tắt đủ để bắt đầu.
+
+## ⚡ BẮT BUỘC — Cuối mỗi session (trước khi kết thúc):
+
+```
+1. Cập nhật PROJECT_STATUS.md  — đổi trạng thái, thêm/xoá TODO
+2. Thêm entry vào CHANGELOG.md — ghi rõ file nào thay đổi, lý do gì
+3. Commit + push:  bash scripts/am-commit.sh "loại: mô tả"
+```
+
+> **Nếu không làm được push** (sandbox bị chặn): vẫn commit, báo user chạy `git push origin main`.
+> **Slash command nhanh**: `/am-done` — tự động làm cả 3 bước trên.
 
 ---
 
@@ -196,4 +214,34 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
     csharp/csharp-patterns.md    — 15 patterns (Step naming, timeout, exception filter...)
   commands/
     am-new-driver.md             — /am-new-driver   : tạo hardware driver
-    am-new-step.md               — /am-new-ste
+    am-new-step.md               — /am-new-step     : tạo sequence step (no underscore)
+    am-new-mechanism.md          — /am-new-mechanism: tạo Mechanism [MechanismUI]
+    am-new-station.md            — /am-new-station  : tạo Station [StationUI]
+    am-new-screen.md             — /am-new-screen   : tạo WPF screen ISA-101
+    am-alarm.md                  — /am-alarm        : thêm alarm code [AlarmInfo]
+    am-review.md                 — /am-review       : review code (10 categories)
+    am-test.md                   — /am-test         : tạo unit tests xUnit+Moq
+  skills/
+    am-hardware-patterns/        — interface, driver, simulator templates
+    am-sequence-patterns/        — Step, MachineSequence, exception filter
+    am-mechanism-patterns/       — [MechanismUI], hwManager.Resolve, EmergencyStop
+    am-station-patterns/         — [StationUI], pipeline, WaitAsync/Signal
+    am-testing/                  — xUnit+Moq+FluentAssertions templates
+    am-wpf-mvvm/                 — ViewModel, XAML, Prism Module, ISA-101 checklist
+```
+
+---
+
+## Tài liệu tham khảo trong dự án
+
+| File | Nội dung |
+|------|----------|
+| `.cursorrules` | Toàn bộ coding rules (AI coding assistant rules) |
+| `.claude/rules/` | Claude Code rules — áp dụng tự động cho mọi session |
+| `.claude/commands/` | Slash commands `/am-*` |
+| `.claude/skills/` | Skill templates — code patterns tham khảo |
+| `file hướng dẫn code/AGENTS.md` | Agent definitions + ECC routing table |
+| `file hướng dẫn code/PROMPT_TEMPLATES.md` | PT-01 đến PT-14 — copy & fill |
+| `file hướng dẫn code/QUICK_REFERENCE.md` | In ra dán cạnh màn hình |
+| `CLAUDE.md` | File này — project instructions cho Claude |
+| `README.md` | *(chưa có — TODO)* Tổng quan kiến trúc solution |

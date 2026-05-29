@@ -2,7 +2,30 @@
   "permissions": {
     "allow": [
       "Bash(dotnet build *)",
-      "Bash(dotnet restore *)"
+      "Bash(dotnet restore *)",
+      "Bash(dotnet test *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git mv *)",
+      "Bash(mv .git/index.lock*)",
+      "Bash(bash scripts/am-commit.sh *)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');const s=fs.readFileSync('.claude/hooks/check-session-end.js','utf8');eval(s);\" 2>/dev/null || bash .claude/hooks/check-session-end.sh 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }
