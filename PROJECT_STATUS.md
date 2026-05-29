@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-05-29
-**Session:** #3 — Hệ thống tracking + Auto-commit workflow
-**Commit:** `TBD`
+**Session:** #4 — Claude Code Hooks
+**Commit:** `eaca6df`
 
 ---
 
@@ -25,7 +25,7 @@
 | AM.WorkStation.Demo | ⚠️ Cần sửa | Step01_Initialize vi phạm CA1707 (có underscore) |
 | AM.Application.Shell | ✅ Hoàn thành | Prism + DryIoc Bootstrapper |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
-| .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills + hooks + am-done |
+| .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills + 4 hooks (pre-write-arch, post-write-cs, post-build, stop) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system + auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows lock file |
 | Unit Tests | ❌ Chưa có | Chưa tạo test project nào |
@@ -186,4 +186,4 @@ CA1869  — JsonSerializerOptions phải static readonly
 4. `Known Issues & TODO` — thêm/xoá items
 5. Bất kỳ interface/enum/file quan trọng mới nào
 
-**Claude cập nhật file này bằng cách:** Đọc file, chỉnh sửa trực tiếp các bảng, commit cùng với code thay đổi.
+**Claude cập nhật file này bằng cách:** Đọc file, chỉnh sửa trực tiếp các bảng, commit cùng với cod
