@@ -4,6 +4,7 @@
       "Bash(dotnet build *)",
       "Bash(dotnet restore *)",
       "Bash(dotnet test *)",
+      "Bash(dotnet run *)",
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
@@ -12,17 +13,59 @@
       "Bash(git diff *)",
       "Bash(git mv *)",
       "Bash(mv .git/index.lock*)",
-      "Bash(bash scripts/am-commit.sh *)"
+      "Bash(mv .git/HEAD.lock*)",
+      "Bash(bash scripts/am-commit.sh *)",
+      "Bash(bash .claude/hooks/*.sh)"
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-write-arch.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-write-cs.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-write-cs.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-build.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const fs=require('fs');const s=fs.readFileSync('.claude/hooks/check-session-end.js','utf8');eval(s);\" 2>/dev/null || bash .claude/hooks/check-session-end.sh 2>/dev/null || true"
+            "command": "bash .claude/hooks/check-session-end.sh"
           }
         ]
       }
