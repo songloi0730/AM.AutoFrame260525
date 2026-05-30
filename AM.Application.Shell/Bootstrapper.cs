@@ -10,6 +10,11 @@ using AM.Core.Abstractions.Interfaces.Repositories;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Data;
 using AM.Data.Repositories;
+using AM.Hardware.Comm.EthernetIp;
+using AM.Hardware.Comm.Modbus;
+using AM.Hardware.Comm.OpcUa;
+using AM.Hardware.Comm.Serial;
+using AM.Hardware.Comm.Tcp;
 using AM.Hardware.IO;
 using AM.Hardware.Motion;
 using AM.Hardware.Vision;
@@ -102,6 +107,39 @@ internal static class Bootstrapper
                 var logger = sp.GetRequiredService<ILogger<SimulatedIoModule>>();
                 return new SimulatedIoModule(logger, diCount: 32, doCount: 32);
             });
+
+            // ─── Comm devices (tất cả simulated) ─────────────────────────────────
+            services.AddSingleton<IModbusClient>(sp =>
+                new SimulatedModbusClient(
+                    sp.GetRequiredService<ILogger<SimulatedModbusClient>>(),
+                    host: "192.168.1.10", port: 502));
+
+            services.AddSingleton<ISerialDevice>(sp =>
+                new SimulatedSerialDevice(
+                    sp.GetRequiredService<ILogger<SimulatedSerialDevice>>(),
+                    portName: "SIM_COM1", baudRate: 9600));
+
+            services.AddSingleton<ITcpDevice>(sp =>
+                new SimulatedTcpDevice(
+                    sp.GetRequiredService<ILogger<SimulatedTcpDevice>>(),
+                    host: "192.168.1.20", port: 9000));
+
+            // OPC UA endpoint đọc từ config (tránh hardcode URI — S1075)
+            var opcEndpoint = config.GetValue<string>("AutoMachine:Comm:OpcUaEndpoint")
+                              ?? "opc.tcp://127.0.0.1:4840";
+            services.AddSingleton<IOpcUaClient>(sp =>
+                new SimulatedOpcUaClient(
+                    sp.GetRequiredService<ILogger<SimulatedOpcUaClient>>(),
+                    endpointUri: new Uri(opcEndpoint)));
+
+            services.AddSingleton<IEthernetIpClient>(sp =>
+                new SimulatedEthernetIpClient(
+                    sp.GetRequiredService<ILogger<SimulatedEthernetIpClient>>(),
+                    host: "192.168.1.40", slot: 0));
+
+            // Hướng dẫn chuyển sang real hardware: đổi Simulated* thành real driver class,
+            // đảm bảo đã cài NuGet tương ứng (FluentModbus / System.IO.Ports / OPC Foundation SDK)
+            // và cập nhật config strings bên dưới trong appsettings.json.
 
             Log.Information(">>> Simulation mode ENABLED <<<");
         }

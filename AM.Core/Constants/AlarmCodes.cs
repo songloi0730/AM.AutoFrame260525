@@ -45,10 +45,20 @@ public static class AlarmCodes
     public const int SystemInitFail        = 40005;
 
     // ─── 50000–50999  Communication / Network ────────────────────────────────
-    public const int CommConnectionFail    = 50001;
-    public const int CommTimeout           = 50002;
-    public const int CommCrcError          = 50003;
-    public const int CommProtocolError     = 50004;
+    public const int CommConnectionFail    = 50001;  // Generic: kết nối thất bại
+    public const int CommTimeout           = 50002;  // Generic: timeout
+    public const int CommCrcError          = 50003;  // Generic: CRC / checksum sai
+    public const int CommProtocolError     = 50004;  // Generic: protocol error
+
+    public const int CommModbusException   = 50010;  // Modbus: PLC trả về exception code
+    public const int CommModbusSlaveNotResp = 50011; // Modbus: slave không trả lời
+    public const int CommSerialFrameError  = 50020;  // Serial: framing / parity error
+    public const int CommSerialBufferFull  = 50021;  // Serial: receive buffer overflow
+    public const int CommTcpSocketError    = 50030;  // TCP: socket error (reset, broken pipe)
+    public const int CommOpcBadQuality     = 50040;  // OPC UA: tag chất lượng Bad/Uncertain
+    public const int CommOpcNodeNotFound   = 50041;  // OPC UA: nodeId không tồn tại
+    public const int CommEipTagNotFound    = 50050;  // EthernetIP: tag name không tồn tại
+    public const int CommEipTypeMismatch   = 50051;  // EthernetIP: kiểu dữ liệu không khớp
 
     // ─── 60000–60999  Production / Recipe ────────────────────────────────────
     public const int ProdRecipeInvalid     = 60001;

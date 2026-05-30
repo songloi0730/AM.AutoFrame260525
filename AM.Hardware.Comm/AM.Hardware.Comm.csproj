@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AM.Hardware.Comm</RootNamespace>
+    <AssemblyName>AM.Hardware.Comm</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+
+    <!-- Serial port support (System.IO.Ports là separate NuGet trên .NET) -->
+    <PackageReference Include="System.IO.Ports" Version="9.0.0" />
+
+    <!--
+      Real Modbus TCP driver — uncomment khi cần:
+      <PackageReference Include="FluentModbus" Version="5.*" />
+      hoặc: <PackageReference Include="NModbus4" Version="2.*" />
+
+      Real OPC UA driver — uncomment khi cần:
+      <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.*" />
+
+      Real Ethernet/IP driver — uncomment khi cần:
+      <PackageReference Include="libplctag.NETCore" Version="2.*" />
+    -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
+    <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

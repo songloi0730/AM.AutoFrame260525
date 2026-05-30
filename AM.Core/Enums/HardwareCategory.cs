@@ -37,5 +37,22 @@ public enum HardwareCategory
     MotionCard = 7,
 
     /// <summary>Bộ điều khiển đèn chiếu sáng (light controller).</summary>
-    LightController = 8
+    LightController = 8,
+
+    // ─── Communication devices (AM.Hardware.Comm) ────────────────────────────
+
+    /// <summary>Modbus TCP/RTU client (PLC, VFD, sensor hỗ trợ Modbus).</summary>
+    ModbusTcp = 9,
+
+    /// <summary>Cổng serial RS-232 / RS-485 (scale, printer, custom device).</summary>
+    SerialPort = 10,
+
+    /// <summary>OPC UA client (SCADA, modern PLC như Siemens S7-1500, Beckhoff).</summary>
+    OpcUaClient = 11,
+
+    /// <summary>Ethernet/IP client (Allen-Bradley ControlLogix, CompactLogix).</summary>
+    EthernetIp = 12,
+
+    /// <summary>TCP device dùng giao thức tùy chỉnh (cân điện tử, barcode reader via TCP).</summary>
+    TcpDevice = 13
 }

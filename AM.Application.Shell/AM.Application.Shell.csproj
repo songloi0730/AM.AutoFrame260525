@@ -41,6 +41,7 @@
     <ProjectReference Include="..\AM.Hardware.Motion\AM.Hardware.Motion.csproj" />
     <ProjectReference Include="..\AM.Hardware.Vision\AM.Hardware.Vision.csproj" />
     <ProjectReference Include="..\AM.Hardware.IO\AM.Hardware.IO.csproj" />
+    <ProjectReference Include="..\AM.Hardware.Comm\AM.Hardware.Comm.csproj" />
     <ProjectReference Include="..\AM.WorkStation.Demo\AM.WorkStation.Demo.csproj" />
   </ItemGroup>
 

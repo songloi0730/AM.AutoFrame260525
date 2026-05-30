@@ -118,13 +118,18 @@ public sealed class HardwareManagerService : IHardwareManagerService
         {
             ct.ThrowIfCancellationRequested();
 
-            // Pattern match các hardware interfaces đã biết — tất cả đều có ConnectAsync
+            // Pattern match tất cả hardware interfaces — mỗi interface đều có ConnectAsync / OpenAsync
             Task connectTask = entry.Device switch
             {
-                IMotionController mc  => mc.ConnectAsync(ct),
-                ICameraDevice     cam => cam.ConnectAsync(ct),
-                IIoModule         io  => io.ConnectAsync(ct),
-                _ => Task.CompletedTask // Unknown device type — skip silently
+                IMotionController   mc   => mc.ConnectAsync(ct),
+                ICameraDevice       cam  => cam.ConnectAsync(ct),
+                IIoModule           io   => io.ConnectAsync(ct),
+                IModbusClient       mbus => mbus.ConnectAsync(ct),
+                ITcpDevice          tcp  => tcp.ConnectAsync(ct),
+                IOpcUaClient        opc  => opc.ConnectAsync(ct),
+                IEthernetIpClient   eip  => eip.ConnectAsync(ct),
+                ISerialDevice       ser  => ser.OpenAsync(ct),   // Serial dùng OpenAsync, không ConnectAsync
+                _ => Task.CompletedTask                          // Unknown — đăng ký nhưng không auto-connect
             };
 
             await connectTask.ConfigureAwait(false);
@@ -146,9 +151,14 @@ public sealed class HardwareManagerService : IHardwareManagerService
         {
             Task disconnectTask = entry.Device switch
             {
-                IMotionController mc  => mc.DisconnectAsync(ct),
-                ICameraDevice     cam => cam.DisconnectAsync(ct),
-                IIoModule         io  => io.DisconnectAsync(ct),
+                IMotionController   mc   => mc.DisconnectAsync(ct),
+                ICameraDevice       cam  => cam.DisconnectAsync(ct),
+                IIoModule           io   => io.DisconnectAsync(ct),
+                IModbusClient       mbus => mbus.DisconnectAsync(ct),
+                ITcpDevice          tcp  => tcp.DisconnectAsync(ct),
+                IOpcUaClient        opc  => opc.DisconnectAsync(ct),
+                IEthernetIpClient   eip  => eip.DisconnectAsync(ct),
+                ISerialDevice       ser  => ser.CloseAsync(ct),   // Serial dùng CloseAsync
                 _ => Task.CompletedTask
             };
 
