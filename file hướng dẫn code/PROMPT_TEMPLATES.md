@@ -3,6 +3,40 @@
 
 ---
 
+## PT-00: Plan Template — Dùng trước mọi task > 30 phút
+
+```
+Task: [Mô tả yêu cầu]
+
+1. PHÂN TÍCH
+   - Files sẽ thay đổi: [liệt kê cụ thể]
+   - Files KHÔNG thay đổi: [liệt kê — tránh scope creep]
+   - Dependencies mới: [NuGet, project refs, nếu có]
+   - Potential risks: [threading, AlarmException, ...]
+
+2. APPROACH
+   - Option A: [mô tả] — Pros: ... Cons: ...
+   - Option B: [mô tả] — Pros: ... Cons: ...
+   - Tôi chọn Option [X] vì [lý do]
+
+3. STEPS
+   Step 1: [cụ thể, có thể verify]
+   Step 2: [cụ thể]
+   ...
+
+4. SUCCESS CRITERIA
+   - [ ] Build không có warning/error
+   - [ ] Unit test pass
+   - [ ] Behavior cụ thể: [mô tả có thể kiểm chứng]
+
+Bạn confirm plan này không?
+```
+
+> **Khi nào dùng:** Task tạo file mới, task sửa nhiều file, task thêm tính năng phức tạp.
+> **Khi nào KHÔNG cần:** Fix typo, đổi tên biến, sửa 1 dòng rõ ràng.
+
+---
+
 ## PT-01: Tạo Hardware Interface + Driver + Simulator
 
 ```
@@ -454,25 +488,4 @@ Pipeline sync slots (thứ tự chạy):
 State machine transitions cần xử lý:
 - Initialize: [mô tả logic khởi tạo — ví dụ: home tất cả axes, kết nối hardware]
 - Start: [mô tả logic bắt đầu chạy]
-- Stop: [mô tả — e.g., hoàn thành cycle hiện tại rồi dừng, hay dừng ngay]
-- Reset: [mô tả logic reset sau alarm]
-- E-Stop: [mô tả — bắt buộc: gọi EmergencyStop() trên tất cả stations]
-
-Dependencies:
-- Alarm service: dùng để raise/clear alarms
-- Station sync service: manage pipeline slots
-- Hardware manager: connect/disconnect tất cả devices khi init/shutdown
-
-Đầu ra cần:
-1. [Name]MasterController.cs với BaseMasterController, ISA-88 state machine
-2. Unit test: [Name]MasterControllerTests.cs (Mock<IStation>)
-3. DI registration trong Bootstrapper.cs
-4. Comment sơ đồ pipeline trong file
-
-Tuân thủ rules:
-- Chỉ fire MachineTrigger qua FireTrigger(MachineTrigger) — KHÔNG set State trực tiếp
-- Init parallel: await Task.WhenAll(stations.Select(s => s.InitializeAsync(ct))) timeout 120s
-- E-Stop: KHÔNG throw, KHÔNG await, gọi ngay tất cả stations
-- Log mọi state transition với Info level
-- ResetAsync: ResetAll pipeline slots → Home stations → về Idle
-```
+- Stop: [mô tả — e.g., hoàn thành cycle hiện tại rồi dừng,

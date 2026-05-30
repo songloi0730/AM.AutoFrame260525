@@ -4,9 +4,59 @@
 
 ---
 
-## [Session 3] 2026-05-29 — Hệ thống tracking + Auto-commit workflow
+## [Session 5] 2026-05-30 — Karpathy Rules + Alarm Dictionary + Context Management
 
 **Commit:** `TBD`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Nguồn tham khảo:** `Claude_Effective_Usage_AutoMachine.md` (Karpathy/ECC/Anthropic best practices)
+
+### ✅ Thêm mới / Cập nhật
+
+- `CLAUDE.md` — Thêm **Karpathy 4 Rules** (Think First / Surgical / Simple / Success First) dưới dạng bảng ngắn gọn. Claude tự áp dụng trong mọi task, kể cả khi user không nhắc.
+- `file hướng dẫn code/PROMPT_TEMPLATES.md` — Thêm **PT-00 Plan Template**: format plan chuẩn cho task > 30 phút (Files thay đổi, Approach options, Steps, Success Criteria, Confirm).
+- `file hướng dẫn code/QUICK_REFERENCE.md` — Thêm 4 section mới:
+  - **Magic Phrases** — 8 câu thêm vào prompt để điều chỉnh hành vi Claude
+  - **Anti-patterns** — 6 lỗi phổ biến + cách đúng
+  - **Hallucination signs** — 6 dấu hiệu Claude đang bịa + cách xử lý
+  - **Context Health** — 5 dấu hiệu session đang có vấn đề
+- `.claude/skills/am-alarm-dictionary/SKILL.md` — **Skill mới**: alarm code ranges, format message chuẩn, template AlarmCodes.cs, cách throw AlarmException, checklist thêm alarm, giải thích isStoppable.
+
+### 🔧 Quyết định chọn lọc nội dung
+Từ 730 dòng tài liệu gốc, chỉ lấy 4 thứ **chưa có** trong dự án:
+1. Karpathy rules → CLAUDE.md (hành vi Claude, không phải coding rules)
+2. Magic phrases + anti-patterns → QUICK_REFERENCE.md (tham khảo nhanh)
+3. Plan template → PROMPT_TEMPLATES.md (dùng trước task lớn)
+4. Alarm dictionary skill → skills/ (lazy-load khi cần)
+
+**Không thêm:** model selection table (đã có trong AGENTS.md), daily workflow (đã có), phase workflow (quá meta), context % advice (không kiểm soát được từ user).
+
+---
+
+## [Session 4] 2026-05-29 — Claude Code Hooks
+
+**Commit:** `TBD`
+**Người thực hiện:** Claude (Cowork) + Nhan
+
+### ✅ Thêm mới
+
+- `.claude/hooks/pre-write-arch.sh` — **PreToolUse Write**: Kiểm tra file C# sắp viết đúng layer chưa (interface → Abstractions, hardware driver → Hardware.*, Step naming CA1707, Service không new concrete class)
+- `.claude/hooks/post-write-cs.sh` — **PostToolUse Write+Edit**: Sau khi lưu file .cs, tự động kiểm tra CA1707 (underscore), CA2000 (CancellationTokenSource), RSPEC-6602/6605 (LINQ), CA1031 (bare catch), thiếu file header, thiếu XML doc
+- `.claude/hooks/post-build.sh` — **PostToolUse Bash**: Sau `dotnet build/test`, parse output thành bảng tóm tắt — violations theo rule code, files có lỗi, top errors cần fix
+- `.claude/hooks/check-session-end.sh` — **Stop**: Khi Claude kết thúc, kiểm tra uncommitted changes + hiển thị TODO list từ PROJECT_STATUS.md, nhắc chạy `/am-done`
+
+### 🔧 Sửa đổi
+- `.claude/settings.local.json` — Wire 4 hooks: PreToolUse(Write), PostToolUse(Write), PostToolUse(Edit), PostToolUse(Bash), Stop
+
+### 🔧 Quyết định thiết kế
+1. **Exit 0 cho tất cả hooks (không block)**: Hooks chỉ cảnh báo, không chặn Claude — tránh false positive làm gián đoạn workflow. Nếu muốn chặn hoàn toàn đổi `exit 0` → `exit 2` trong `pre-write-arch.sh`.
+2. **Shell script thay vì Node.js**: Không cần runtime cài thêm, portable trên mọi môi trường Linux/WSL/sandbox.
+3. **post-write-cs chạy trên file path** (không phải stdin content): Đọc trực tiếp file vừa lưu để phân tích chính xác hơn là phân tích content từ JSON input.
+
+---
+
+## [Session 3] 2026-05-29 — Hệ thống tracking + Auto-commit workflow
+
+**Commit:** `d068d2e`
 **Người thực hiện:** Claude (Cowork) + Nhan
 
 ### ✅ Thêm mới

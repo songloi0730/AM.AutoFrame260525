@@ -249,3 +249,70 @@ Uninitialized ──[Initialize]──► Initializing ──[InitializeDone]─
                     [ResetDoneUninitialized]▼
                                  Uninitialized
 ```
+
+---
+
+## 💬 MAGIC PHRASES — Thêm vào prompt khi cần
+
+```
+"Plan trước khi code"              → Claude không code ngay, trình bày approach
+"Liệt kê file sẽ thay đổi"        → Transparency, tránh scope creep bất ngờ
+"Chỉ sửa file [X]"                 → Ngăn Claude sửa lung tung
+"Không refactor code không liên quan" → Surgical changes only
+"Hỏi tôi nếu không chắc"          → Ngăn silent assumptions
+"Viết test trước khi implement"    → TDD discipline
+"Giải thích choice của bạn"        → Bắt buộc Claude reasoning, catch wrong assumptions
+"Phân tích root cause TRƯỚC khi sửa" → Cho bug fixes
+```
+
+---
+
+## ⚠️ ANTI-PATTERNS — Nhận ra ngay, sửa ngay
+
+| ❌ Anti-pattern | ✅ Cách đúng |
+|-----------------|-------------|
+| Prompt mơ hồ: "Tạo machine sequence" | Đặc tả rõ: steps, files, skeleton trước |
+| Session > 2 tiếng liên tục | `/compact` ở 50% context, `/clear` khi thấy lạc |
+| Để Claude làm 2 tiếng rồi mới review | Review sau mỗi 15-20 phút / mỗi step nhỏ |
+| "Thiết kế architecture cho máy X" | "Tạo WorkStation theo kiến trúc trong CLAUDE.md" |
+| Implement xong rồi mới test | Yêu cầu test cases TRƯỚC khi implement |
+| Mở toàn bộ solution | Chỉ pin đúng file cần thiết |
+
+---
+
+## 🔍 DẤU HIỆU CLAUDE ĐANG HALLUCINATE
+
+| Dấu hiệu | Nguyên nhân | Xử lý |
+|----------|------------|-------|
+| Dùng method không có trong SDK | Context quá đầy | `/clear` + paste SDK docs |
+| AlarmCode ngoài range đã định | Quên context | Nhắc lại ranges |
+| WorkStation import concrete class | Context degradation | `/clear` + nhắc rule |
+| Async method không có CT | Quên rule | Session mới |
+| Đề xuất `Thread.Sleep` | Wrong pattern | Explicit: dùng `await Task.Delay(ms, ct)` |
+| Sửa file không được yêu cầu | Scope creep | Nhắc "chỉ sửa file X" |
+
+---
+
+## ✅ DẤU HIỆU SESSION ĐANG ĐI ĐÚNG HƯỚNG
+
+```
+✅ Claude hỏi trước khi đoán
+✅ Claude liệt kê files sẽ thay đổi trước khi code
+✅ Claude đưa ra plan và chờ confirm (task > 30 phút)
+✅ Code tuân thủ interface pattern, không new concrete
+✅ Mọi async method có CancellationToken
+✅ Không có Thread.Sleep, .Result, .Wait()
+✅ Test viết cùng lúc với implementation
+```
+
+---
+
+## 📊 CONTEXT HEALTH — Khi nào cần hành động
+
+| Dấu hiệu | Hành động |
+|----------|-----------|
+| Claude bắt đầu sửa file không liên quan | `/clear` ngay |
+| Claude "quên" rules cơ bản (viết Thread.Sleep) | `/compact` hoặc `/clear` |
+| Response chậm, lạc đề | Tách task nhỏ hơn |
+| Claude thêm abstraction không cần thiết | Nhắc: "đơn giản nhất đủ dùng" |
+| Session đã > 1.5 tiếng | `/compact` để tóm tắt trước khi tiếp |

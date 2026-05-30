@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-05-29
-**Session:** #4 — Claude Code Hooks
-**Commit:** `eaca6df`
+**Session:** #5 — Karpathy Rules + Alarm Dictionary + Context Management
+**Commit:** `TBD`
 
 ---
 
@@ -25,7 +25,7 @@
 | AM.WorkStation.Demo | ⚠️ Cần sửa | Step01_Initialize vi phạm CA1707 (có underscore) |
 | AM.Application.Shell | ✅ Hoàn thành | Prism + DryIoc Bootstrapper |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
-| .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills + 4 hooks (pre-write-arch, post-write-cs, post-build, stop) |
+| .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills (7) + 4 hooks — thêm am-alarm-dictionary skill |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system + auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows lock file |
 | Unit Tests | ❌ Chưa có | Chưa tạo test project nào |
