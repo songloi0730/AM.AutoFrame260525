@@ -5,6 +5,7 @@
 // -------------------------------------------------------
 
 using AM.Core.Enums;
+using AM.Core.Models.EventArgs;
 
 namespace AM.Core.Abstractions.Interfaces.Machine;
 
@@ -39,10 +40,10 @@ public interface IMasterController : IAsyncDisposable
     IReadOnlyList<IStation> Stations { get; }
 
     /// <summary>Event raised khi State thay đổi.</summary>
-    event EventHandler<MachineState>? StateChanged;
+    event EventHandler<MachineStateChangedEventArgs>? StateChanged;
 
-    /// <summary>Event raised khi cycle count tăng.</summary>
-    event EventHandler<int>? CycleCompleted;
+    /// <summary>Event raised khi một cycle hoàn thành.</summary>
+    event EventHandler<CycleCompletedEventArgs>? CycleCompleted;
 
     // ─── Operator Commands ────────────────────────────────────────────────────────
 

@@ -488,4 +488,25 @@ Pipeline sync slots (thứ tự chạy):
 State machine transitions cần xử lý:
 - Initialize: [mô tả logic khởi tạo — ví dụ: home tất cả axes, kết nối hardware]
 - Start: [mô tả logic bắt đầu chạy]
-- Stop: [mô tả — e.g., hoàn thành cycle hiện tại rồi dừng,
+- Stop: [mô tả — e.g., hoàn thành cycle hiện tại rồi dừng, hay dừng ngay]
+- Reset: [mô tả logic reset sau alarm]
+- E-Stop: [mô tả — bắt buộc: gọi EmergencyStop() trên tất cả stations]
+
+Dependencies:
+- Alarm service: dùng để raise/clear alarms
+- Station sync service: manage pipeline slots
+- Hardware manager: connect/disconnect tất cả devices khi init/shutdown
+
+Đầu ra cần:
+1. [Name]MasterController.cs với BaseMasterController, ISA-88 state machine
+2. Unit test: [Name]MasterControllerTests.cs (Mock<IStation>)
+3. DI registration trong Bootstrapper.cs
+4. Comment sơ đồ pipeline trong file
+
+Tuân thủ rules:
+- Chỉ fire MachineTrigger qua FireTrigger(MachineTrigger) — KHÔNG set State trực tiếp
+- Init parallel: await Task.WhenAll(stations.Select(s => s.InitializeAsync(ct))) timeout 120s
+- E-Stop: KHÔNG throw, KHÔNG await, gọi ngay tất cả stations
+- Log mọi state transition với Info level
+- ResetAsync: ResetAll pipeline slots → Home stations → về Idle
+```

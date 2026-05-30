@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
+    <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

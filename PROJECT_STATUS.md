@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-05-29
-**Session:** #5 — Karpathy Rules + Alarm Dictionary + Context Management
-**Commit:** `be47f2a`
+**Ngày:** 2026-05-31
+**Session:** #6 — 3-Tier Base Classes + HardwareMgr + StationSync + Coding Rules Alignment
+**Commit:** `TBD`
 
 ---
 
@@ -21,9 +21,9 @@
 | AM.Hardware.* (Simulators) | ✅ Hoàn thành | Motion, Vision, IO — chỉ simulated |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter |
 | AM.Data (EF Core + SQLite) | ✅ Hoàn thành | DbContext, 2 repositories |
-| AM.Infrastructure | ⚠️ Skeleton | Chỉ có DispatcherHelper — cần BaseMechanism, StationBase, BaseMasterController |
-| AM.WorkStation.Demo | ⚠️ Cần sửa | Step01_Initialize vi phạm CA1707 (có underscore) |
-| AM.Application.Shell | ✅ Hoàn thành | Prism + DryIoc Bootstrapper |
+| AM.Infrastructure | ✅ Hoàn thành | DispatcherHelper + BaseMechanism + StationBase<T> + BaseMasterController |
+| AM.WorkStation.Demo | ✅ Hoàn thành | B1/B2 fixed — file names không còn underscore |
+| AM.Application.Shell | ✅ Hoàn thành | Prism + DryIoc Bootstrapper, color tokens, string resources |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills (7) + 4 hooks — thêm am-alarm-dictionary skill |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system + auto-commit workflow |
@@ -45,19 +45,19 @@ AM.Hardware.Vision         — SimulatedCameraDevice
 AM.Hardware.IO             — SimulatedIoModule
 AM.Services                — AlarmService, RecipeService, ParameterService
 AM.Data                    — AutoMachineDbContext, AlarmRepository, ProductionRepository
-AM.Infrastructure          — DispatcherHelper [TODO: BaseMechanism, StationBase, BaseMasterController]
+AM.Infrastructure          — DispatcherHelper, BaseMechanism, StationBase<T>, BaseMasterController
 AM.WorkStation.Demo        — DemoMachineSequence, Step01Initialize, Step02Inspect
 AM.Application.Shell       — WPF entry point, Prism + DryIoc Bootstrapper
 ```
 
-### 3-Tier Machine Hierarchy (chưa implement đầy đủ)
+### 3-Tier Machine Hierarchy (✅ Đầy đủ)
 ```
-[✅ Interface] IMasterController  — AM.Core.Abstractions/Interfaces/Machine/
-[✅ Interface] IStation           — AM.Core.Abstractions/Interfaces/Machine/
-[✅ Interface] IMechanism         — AM.Core.Abstractions/Interfaces/Machine/
-[❌ Base class] BaseMasterController — TODO: AM.Infrastructure/
-[❌ Base class] StationBase<T>       — TODO: AM.Infrastructure/
-[❌ Base class] BaseMechanism        — TODO: AM.Infrastructure/
+[✅ Interface]  IMasterController     — AM.Core.Abstractions/Interfaces/Machine/
+[✅ Interface]  IStation              — AM.Core.Abstractions/Interfaces/Machine/
+[✅ Interface]  IMechanism            — AM.Core.Abstractions/Interfaces/Machine/
+[✅ Base class] BaseMasterController  — AM.Infrastructure/BaseMasterController.cs
+[✅ Base class] StationBase<T>        — AM.Infrastructure/StationBase.cs
+[✅ Base class] BaseMechanism         — AM.Infrastructure/BaseMechanism.cs
 ```
 
 ### ISA-88 State Machine (8 states, 10 triggers)
@@ -102,8 +102,13 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop, Error, Reset,
 | `IAlarmService` | Interfaces/Services/ | Raise, Clear, GetActive, AlarmRaised event |
 | `IRecipeService` | Interfaces/Services/ | Load, Save, GetAll, CurrentRecipe |
 | `IParameterService` | Interfaces/Services/ | Get/Set/Save parameters |
-| `IHardwareManagerService` | Interfaces/Services/ | Register, Resolve<T>, ConnectAll |
+| `IHardwareManagerService` | Interfaces/Services/ | Register, Resolve&lt;T&gt;, ConnectAll |
 | `IStationSyncService` | Interfaces/Services/ | RegisterSlot, Signal, WaitAsync, ResetAll |
+| `HardwareManagerService` | AM.Services/ | ✅ Implemented — pattern matching ConnectAll |
+| `StationSyncService` | AM.Services/ | ✅ Implemented — SemaphoreSlim pipeline sync |
+| `BaseMechanism` | AM.Infrastructure/ | ✅ IsBusy guard (Interlocked), EmergencyStop wrapper, template methods |
+| `StationBase<T>` | AM.Infrastructure/ | ✅ RegisterMechanism, SetState, RunCycle template |
+| `BaseMasterController` | AM.Infrastructure/ | ✅ ISA-88 transition table, FireTrigger, CheckPauseAsync |
 
 ### Enums (AM.Core/Enums)
 | Enum | Values |
@@ -129,23 +134,16 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop, Error, Reset,
 ## ⚠️ Known Issues & TODO
 
 ### BUGS / VI PHẠM CẦN SỬA
-| # | File | Vấn đề | Mức độ |
-|---|------|---------|--------|
-| B1 | `AM.WorkStation.Demo/Steps/Step01_Initialize.cs` | Tên class `Step01_Initialize` vi phạm CA1707 (có underscore). Đổi thành `Step01Initialize` | 🔴 Build error |
-| B2 | `AM.WorkStation.Demo/Steps/Step02_Inspect.cs` | Tương tự — đổi thành `Step02Inspect` | 🔴 Build error |
+*(Không có bug nào đang mở — tất cả đã fix)*
 
 ### TODO — Việc cần làm tiếp
 | # | Hạng mục | Ưu tiên | Ghi chú |
 |---|----------|---------|---------|
-| T1 | Tạo `BaseMechanism` trong AM.Infrastructure | 🔴 Cao | Abstract base, IAsyncDisposable, IsBusy guard, EmergencyStop wrapper |
-| T2 | Tạo `StationBase<T>` trong AM.Infrastructure | 🔴 Cao | Abstract base, ISA-88 state, RunCycle, DryRun |
-| T3 | Tạo `BaseMasterController` trong AM.Infrastructure | 🔴 Cao | Stateless ISA-88, FireTrigger, coordinate stations |
-| T4 | Triển khai `HardwareManagerService` trong AM.Services | 🟡 Trung bình | Implement IHardwareManagerService |
-| T5 | Triển khai `StationSyncService` trong AM.Services | 🟡 Trung bình | SemaphoreSlim-based, implement IStationSyncService |
-| T6 | Sửa `DemoMachineSequence` dùng BaseMechanism/StationBase | 🟡 Trung bình | Sau khi T1-T3 xong |
-| T7 | Tạo unit test projects | 🟡 Trung bình | AM.Services.Tests, AM.Hardware.Tests |
-| T8 | Tạo WPF module đầu tiên (Dashboard) | 🟢 Thấp | AM.Modules.Dashboard |
-| T9 | Thêm drivers thật (nếu có hardware SDK) | 🟢 Thấp | Tùy theo yêu cầu khách hàng |
+| T1 | Refactor `DemoMachineSequence` thành Demo machine dùng BaseMechanism/StationBase/BaseMasterController | 🔴 Cao | Tạo DemoStation, DemoMechanism, DemoMasterController — minh hoạ 3-tier đầy đủ |
+| T2 | Đăng ký `HardwareManagerService` + `StationSyncService` vào Bootstrapper | 🔴 Cao | Thêm DI wiring, viết comment hướng dẫn |
+| T3 | Tạo unit test projects | 🟡 Trung bình | AM.Services.Tests, AM.Infrastructure.Tests |
+| T4 | Tạo WPF module đầu tiên (Dashboard) | 🟢 Thấp | AM.Modules.Dashboard — MachineState indicator, AlarmList |
+| T5 | Thêm drivers thật (nếu có hardware SDK) | 🟢 Thấp | Tùy theo yêu cầu khách hàng |
 
 ---
 

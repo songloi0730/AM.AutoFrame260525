@@ -249,4 +249,12 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 
 | File | Nội dung |
 |------|----------|
-| `.cursorrules` | Toàn bộ co
+| `.cursorrules` | Toàn bộ coding rules (AI coding assistant rules) |
+| `.claude/rules/` | Claude Code rules — áp dụng tự động cho mọi session |
+| `.claude/commands/` | Slash commands `/am-*` |
+| `.claude/skills/` | Skill templates — code patterns tham khảo |
+| `file hướng dẫn code/AGENTS.md` | Agent definitions + ECC routing table |
+| `file hướng dẫn code/PROMPT_TEMPLATES.md` | PT-01 đến PT-14 — copy & fill |
+| `file hướng dẫn code/QUICK_REFERENCE.md` | In ra dán cạnh màn hình |
+| `CLAUDE.md` | File này — project instructions cho Claude |
+| `README.md` | *(chưa có — TODO)* Tổng quan kiến trúc solution |

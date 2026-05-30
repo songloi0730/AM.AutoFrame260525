@@ -5,6 +5,7 @@
 // -------------------------------------------------------
 
 using AM.Core.Enums;
+using AM.Core.Models.EventArgs;
 
 namespace AM.Core.Abstractions.Interfaces.Machine;
 
@@ -29,7 +30,7 @@ public interface IStation : IAsyncDisposable
     /// Event raised mỗi khi State thay đổi.
     /// Dùng để MasterController theo dõi pipeline.
     /// </summary>
-    event EventHandler<MachineState>? StateChanged;
+    event EventHandler<MachineStateChangedEventArgs>? StateChanged;
 
     /// <summary>
     /// Khởi tạo tất cả mechanisms trong station.
