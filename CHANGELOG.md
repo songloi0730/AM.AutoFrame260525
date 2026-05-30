@@ -6,7 +6,7 @@
 
 ## [Session 5] 2026-05-30 — Karpathy Rules + Alarm Dictionary + Context Management
 
-**Commit:** `TBD`
+**Commit:** `be47f2a`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Nguồn tham khảo:** `Claude_Effective_Usage_AutoMachine.md` (Karpathy/ECC/Anthropic best practices)
 

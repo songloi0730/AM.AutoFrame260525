@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-05-29
 **Session:** #5 — Karpathy Rules + Alarm Dictionary + Context Management
-**Commit:** `TBD`
+**Commit:** `be47f2a`
 
 ---
 
