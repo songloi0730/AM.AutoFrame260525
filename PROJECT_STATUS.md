@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-05-31
 **Session:** #6 — 3-Tier Base Classes + HardwareMgr + StationSync + Coding Rules Alignment
-**Commit:** `TBD`
+**Commit:** `832266f`
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 6] 2026-05-31 — 3-Tier Base Classes + Services + Coding Rules Alignment
 
-**Commit:** `TBD`
+**Commit:** `832266f`
 **Người thực hiện:** Claude (Cowork) + Nhan
 
 ### ✅ Thêm mới
