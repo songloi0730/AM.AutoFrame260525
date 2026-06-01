@@ -4,6 +4,48 @@
 
 ---
 
+## [Session 7] 2026-05-31 — Solution Structure Docs + HMI Design Rules
+
+**Commit:** `TBD`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Nguồn tham khảo:** AutoMachine_Solution_Structure.md + HMI_UI_Design_Rules_1.md
+
+### ✅ Thêm mới / Cập nhật
+
+- `CLAUDE.md` — Cập nhật **Cấu trúc solution** đầy đủ:
+  - Thêm `AM.Hardware.Communication` (Serial/TCP/Modbus/SECS-GEM)
+  - Thêm interfaces còn thiếu: `IAxisGroup`, `ILightController`, `ICommunicationDevice`, `IUserService`, `IProductionService`, `ILocalizationService`
+  - Thêm `AM.Modules.*` (10 UI modules: Alarm, Parameter, Production, IO, Motion, Vision, Identity, Logging, Diagnostics, SecsGem)
+  - Thêm `AM.UI.Controls/` và `AM.UI.Resources/` (Themes: Colors.Dark/Light, Typography, Controls, StatusStyles)
+  - Thêm cấu trúc `AM.WorkStation.{MachineName}/` đầy đủ (Steps, SubRoutines, Recipe, Config/AxisMap+IOMap)
+- `.claude/skills/am-wpf-mvvm/SKILL.md` — Bổ sung **ISA-101 HMI Design Rules**:
+  - Semantic color tokens (Status.Normal/Warning/Alarm/Critical/Disabled — bất biến giữa themes)
+  - Background tokens Dark/Light đầy đủ với hex values
+  - Quy tắc màu KHÔNG ĐƯỢC VI PHẠM (đỏ/vàng chỉ cho alarm, equipment normal = xám)
+  - DataTrigger pattern cho device state
+  - Animation rules (chỉ Critical alarm 1 Hz, không vượt 3 Hz SEMI S8)
+  - ListView virtualization template
+  - ThemeService runtime switch Dark/Light
+  - Format số liệu và đơn vị (decimal places, timestamp 24h)
+  - ISA-101 checklist trước khi release màn hình
+- `.claude/skills/am-hmi-design/SKILL.md` — **Skill mới**: HMI design reference đầy đủ:
+  - 4-level screen hierarchy (Overview → Process Area → Faceplate → Engineering)
+  - Layout shell cố định (Top Bar/Side Menu/Content/Status Bar)
+  - Alarm display rules ISA-18.2/EEMUA 191 (mức độ, màu, nhấp nháy, rate)
+  - Equipment state symbols (≥2 cách biểu thị: màu + icon/text)
+  - I/O display rules (DI ○/● khác DO □/■)
+  - Navigation rules (max 3 click, breadcrumb)
+  - Performance targets (response time, update rate per data type)
+  - Release checklist đầy đủ (màu, alarm, navigation, data, ergonomics, i18n)
+
+### 🔧 Quyết định chọn lọc
+- **CLAUDE.md**: chỉ cập nhật cấu trúc solution (bản đồ file), không copy toàn bộ implementation detail
+- **am-wpf-mvvm**: thêm ISA-101 rules vào skill sẵn có (không tạo file trùng lặp)
+- **am-hmi-design**: tạo skill riêng vì HMI design là domain riêng biệt, lazy-load khi cần
+- **Không thêm**: toàn bộ XAML ResourceDictionary files (200+ dòng) → quá dài, developer tự viết theo template
+
+---
+
 ## [Session 6] 2026-05-31 — 3-Tier Base Classes + Services + Coding Rules Alignment
 
 **Commit:** `832266f`

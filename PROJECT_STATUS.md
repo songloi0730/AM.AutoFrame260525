@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-05-31
-**Session:** #6 — 3-Tier Base Classes + HardwareMgr + StationSync + Coding Rules Alignment
-**Commit:** `832266f`
+**Session:** #7 — Solution Structure Docs + HMI Design Rules + am-hmi-design skill
+**Commit:** `TBD`
 
 ---
 
@@ -25,7 +25,7 @@
 | AM.WorkStation.Demo | ✅ Hoàn thành | B1/B2 fixed — file names không còn underscore |
 | AM.Application.Shell | ✅ Hoàn thành | Prism + DryIoc Bootstrapper, color tokens, string resources |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
-| .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills (7) + 4 hooks — thêm am-alarm-dictionary skill |
+| .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills (8) + 4 hooks — am-alarm-dictionary + am-hmi-design |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system + auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows lock file |
 | Unit Tests | ❌ Chưa có | Chưa tạo test project nào |

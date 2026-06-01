@@ -58,20 +58,48 @@ AM.Core/                         — Enums, Models, Constants, Exceptions
   Exceptions/                    — AlarmException
 
 AM.Core.Abstractions/            — Interfaces only, no implementation
-  Interfaces/Hardware/           — IMotionController, ICameraDevice, IIoModule
+  Interfaces/Hardware/           — IMotionController, IAxisGroup, ICameraDevice,
+                                    ILightController, IIoModule, ICommunicationDevice
   Interfaces/Machine/            — IMechanism, IStation, IMasterController
   Interfaces/Services/           — IAlarmService, IRecipeService, IParameterService,
-                                    IHardwareManagerService, IStationSyncService
+                                    IHardwareManagerService, IStationSyncService,
+                                    IUserService, IProductionService, ILocalizationService
   Interfaces/Repositories/       — IAlarmRepository, IProductionRepository
   Interfaces/                    — IStep
 
-AM.Hardware.Motion/              — SimulatedMotionController
-AM.Hardware.Vision/              — SimulatedCameraDevice
-AM.Hardware.IO/                  — SimulatedIoModule
+AM.Hardware.Motion/              — SimulatedMotionController, AxisBase, MultiAxisGroup
+AM.Hardware.Vision/              — SimulatedCameraDevice, SimulatedLightController
+AM.Hardware.IO/                  — SimulatedIoModule, TowerLightService, EStopMonitor
+AM.Hardware.Communication/       — SerialPortWrapper, TcpClientWrapper, ModbusTcpClient,
+                                    SecsGemService (TCP/Serial/Modbus/SECS-GEM)
 
-AM.Services/                     — AlarmService, RecipeService, ParameterService
+AM.Services/                     — AlarmService, RecipeService, ParameterService,
+                                    HardwareManagerService, StationSyncService
 AM.Data/                         — AutoMachineDbContext, Repositories
-AM.Infrastructure/               — (TODO: BaseMechanism, StationBase, BaseMasterController)
+AM.Infrastructure/               — Localization (vi-VN/en-US/zh-CN), Logging, Security,
+                                    Configuration (TODO: BaseMechanism, StationBase, BaseMasterController)
+
+AM.WorkStation.{MachineName}/    — ⭐ PHẦN DUY NHẤT THAY ĐỔI KHI LÀM MÁY MỚI
+  Steps/                         — Step00Initialize, Step01Home, Step02WaitForPart...
+  SubRoutines/                   — ManualJog, CameraCalibration, SafetyCheck
+  Recipe/                        — {MachineName}Recipe.cs, RecipeValidator.cs
+  Config/                        — AxisMap.cs, IOMap.cs, StationConfig.cs
+
+AM.Modules.*/                    — Prism UI Modules (load theo cấu hình, tái sử dụng 100%)
+  AM.Modules.Alarm               — Alarm list, history, export
+  AM.Modules.Parameter           — Recipe, parameter, import/export
+  AM.Modules.Production          — Dashboard UPH, yield, SPC chart
+  AM.Modules.IO                  — Monitor DI/DO/AI/AO real-time
+  AM.Modules.Motion              — Jog, teach point, motion status
+  AM.Modules.Vision              — Live camera, tool config, inspection result
+  AM.Modules.Identity            — Login, user management, permission
+  AM.Modules.Logging             — System log viewer, filter, export
+  AM.Modules.Diagnostics         — CPU/RAM/Disk, connectivity test
+  AM.Modules.SecsGem             — SECS/GEM debug (optional, bật/tắt qua config)
+
+AM.UI.Controls/                  — Custom WPF controls (StatusIndicator, NumericInput...)
+AM.UI.Resources/                 — Themes: Colors.Dark.xaml, Colors.Light.xaml,
+                                    Typography.xaml, Controls.xaml, StatusStyles.xaml
 
 AM.WorkStation.Demo/             — Demo machine: Steps, DemoMachineSequence
 AM.Application.Shell/            — WPF entry point, Bootstrapper (DI)

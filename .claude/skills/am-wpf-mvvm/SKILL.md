@@ -388,3 +388,191 @@ public sealed class StateToColorConverter : IValueConverter
         => throw new NotSupportedException();
 }
 ```
+
+---
+
+## ISA-101 HMI Design Rules — Bắt buộc áp dụng
+
+### Triết lý: 90% xám, 10% màu có ý nghĩa
+
+Màu sắc mang **ý nghĩa ngữ nghĩa**, không trang trí. Nền toàn bộ là tông xám trung tính.
+Màu chỉ xuất hiện khi có trạng thái cần thông báo.
+
+### Semantic Colors — BẤT BIẾN (giống nhau ở cả Dark và Light theme)
+
+```xml
+<!-- Trong Colors.Dark.xaml VÀ Colors.Light.xaml — giá trị HEX GIỐNG NHAU -->
+<Color x:Key="Status.NormalColor">#4CAF50</Color>      <!-- Running / On -->
+<Color x:Key="Status.WarningColor">#FFC107</Color>     <!-- Warning / Advisory -->
+<Color x:Key="Status.AlarmColor">#F44336</Color>       <!-- Alarm / Error -->
+<Color x:Key="Status.CriticalColor">#B71C1C</Color>    <!-- Critical / E-Stop -->
+<Color x:Key="Status.DisabledColor">#9E9E9E</Color>    <!-- Off / Disabled -->
+<Color x:Key="Status.AcknowledgedColor">#FF8F00</Color><!-- Alarm acked, chưa clear -->
+<Color x:Key="Status.ManualColor">#1E88E5</Color>      <!-- Manual mode -->
+<Color x:Key="Status.InterlockColor">#7B1FA2</Color>   <!-- Interlock active -->
+```
+
+### Background Tokens — THAY ĐỔI theo theme
+
+```
+Token                    Dark       Light      Mô tả
+─────────────────────────────────────────────────────────────
+Screen.BackgroundBrush   #1A1A1A   #F0F2F5   Nền toàn màn hình
+Panel.BackgroundBrush    #252525   #FFFFFF   Nền card / panel
+Panel.Background.AltBrush#2D2D2D  #F8F9FA   Zebra rows
+Header.BackgroundBrush   #1F1F1F   #E8ECF0   Top bar, side menu
+Equipment.NormalBrush    #3A3A3A   #D0D5DB   Thiết bị normal (KHÔNG dùng xanh lá)
+Border.DefaultBrush      #3D3D3D   #D1D5DB   Viền panel nhẹ
+Border.StrongBrush       #555555   #9CA3AF   Viền nổi bật
+Text.PrimaryBrush        #E0E0E0   #212121   Text chính
+Text.SecondaryBrush      #9E9E9E   #757575   Label, text phụ
+Text.LiveValueBrush      #FFFFFF   #000000   Giá trị live (đậm nhất)
+Chart.BackgroundBrush    #0D1B2A   #F8FAFC   Nền biểu đồ
+```
+
+### Quy tắc màu KHÔNG ĐƯỢC VI PHẠM
+
+```
+❌ KHÔNG dùng màu đỏ cho bất cứ thứ gì NGOÀI alarm/error
+❌ KHÔNG dùng màu vàng cho trang trí
+❌ KHÔNG hardcode hex màu trong Controls.xaml — dùng {DynamicResource TokenBrush}
+❌ KHÔNG dùng màu xanh lá cho thiết bị ở trạng thái bình thường (dùng xám)
+❌ KHÔNG dùng animation trừ khi có ý nghĩa (chỉ: Critical alarm nhấp nháy 1 Hz)
+✅ Equipment normal: màu XÁM — thiết bị chạy bình thường KHÔNG phải xanh lá
+✅ Alarm nhấp nháy: chỉ Critical = 1 Hz, E-Stop = 2 Hz — không vượt 3 Hz (SEMI S8)
+✅ Mọi màu kết hợp thêm icon hoặc text (hỗ trợ người mù màu ~8% nam giới)
+```
+
+### Layout màn hình chuẩn (ISA-101)
+
+```
+┌─────────────────────────────────────────────────────┐
+│  TOP BAR (48px): Logo | Machine Name | State | User | Time | Lang │
+├──────────┬──────────────────────────────────────────┤
+│  SIDE    │                                          │
+│  MENU    │          CONTENT AREA                    │
+│  (200px) │          (Level 1-4 screens)             │
+│          │                                          │
+├──────────┴──────────────────────────────────────────┤
+│  STATUS BAR (32px): Alarm Summary | Cycle Time | UPH | Recipe    │
+└─────────────────────────────────────────────────────┘
+```
+
+### Phân cấp màn hình (4 Levels)
+
+```
+Level 1 — Overview: tổng quan toàn máy, state, alarm count, UPH
+Level 2 — Process Area: chi tiết một station/khu vực, live values
+Level 3 — Faceplate: chi tiết 1 thiết bị (popup/flyout), jog, set
+Level 4 — Engineering/Diagnostic: yêu cầu quyền Engineer+, không dùng khi sản xuất
+```
+
+### Button Rules (kích thước bắt buộc)
+
+```
+Primary action:  120 × 40 px  — Start, Confirm (accent color)
+Danger action:   120 × 40 px  — Stop, Delete (đỏ #F44336)
+E-Stop:           80 × 80 px  — Đỏ đậm #B71C1C, góc trên phải, LUÔN accessible
+Secondary:       100 × 36 px  — Cancel, Back (xám viền)
+Touch target tối thiểu: 44 × 44 px (touchscreen) / 60 × 60 px (găng tay)
+Khoảng cách giữa nút nguy hiểm: tối thiểu 48 px
+```
+
+### DataTrigger cho trạng thái — cách đúng trong WPF
+
+```xml
+<Style x:Key="DeviceStatusStyle" TargetType="Border">
+  <!-- Nền thiết bị: theo theme (xám) -->
+  <Setter Property="Background" Value="{DynamicResource Equipment.NormalBrush}"/>
+  <Setter Property="BorderThickness" Value="1"/>
+  <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+  <Style.Triggers>
+    <!-- Viền màu khi có trạng thái — StaticResource vì semantic không đổi theo theme -->
+    <DataTrigger Binding="{Binding State}" Value="Running">
+      <Setter Property="BorderBrush" Value="{StaticResource Status.NormalBrush}"/>
+      <Setter Property="BorderThickness" Value="2"/>
+    </DataTrigger>
+    <DataTrigger Binding="{Binding State}" Value="Warning">
+      <Setter Property="BorderBrush" Value="{StaticResource Status.WarningBrush}"/>
+      <Setter Property="BorderThickness" Value="2"/>
+    </DataTrigger>
+    <DataTrigger Binding="{Binding State}" Value="Fault">
+      <Setter Property="BorderBrush" Value="{StaticResource Status.AlarmBrush}"/>
+      <Setter Property="BorderThickness" Value="2"/>
+    </DataTrigger>
+  </Style.Triggers>
+</Style>
+```
+
+### Animation chỉ cho Critical Alarm
+
+```xml
+<!-- ĐÚNG — chỉ animate Critical alarm -->
+<DataTrigger Binding="{Binding IsCriticalAlarm}" Value="True">
+  <DataTrigger.EnterActions>
+    <BeginStoryboard>
+      <Storyboard RepeatBehavior="Forever">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                         From="1" To="0.3" Duration="0:0:0.5" AutoReverse="True"/>
+      </Storyboard>
+    </BeginStoryboard>
+  </DataTrigger.EnterActions>
+</DataTrigger>
+<!-- ❌ SAI — không animate trang trí, không vượt 3 Hz (SEMI S8 epilepsy) -->
+```
+
+### Virtualization cho danh sách dài (Alarm, Log)
+
+```xml
+<ListView VirtualizingPanel.IsVirtualizing="True"
+          VirtualizingPanel.VirtualizationMode="Recycling"
+          ScrollViewer.IsDeferredScrollingEnabled="True">
+```
+
+### Theme Switcher — đổi Dark/Light runtime không restart
+
+```csharp
+public static class ThemeService
+{
+    public static void SwitchTheme(AppTheme theme)
+    {
+        var dicts = Application.Current.Resources.MergedDictionaries;
+        // Xoá theme cũ, load theme mới — WPF tự cập nhật mọi DynamicResource
+        var old = dicts.FirstOrDefault(d => d.Source?.OriginalString.Contains("Colors.") == true);
+        if (old != null) dicts.Remove(old);
+        var path = theme == AppTheme.Dark ? "Themes/Colors.Dark.xaml" : "Themes/Colors.Light.xaml";
+        dicts.Insert(0, new ResourceDictionary { Source = new Uri(path, UriKind.Relative) });
+        CurrentTheme = theme;
+    }
+}
+```
+
+### Số liệu và đơn vị — format chuẩn
+
+```
+Position (mm):   2 chữ số thập phân  → "123.45 mm"
+Velocity (mm/s): 1 chữ số            → "50.0 mm/s"
+Temperature:     1 chữ số            → "25.3 °C"
+Counter:         0 chữ số            → "1234"
+Luôn: 1 space giữa số và đơn vị     → "42.3 °C" không phải "42.3°C"
+Thời gian:       24h format          → "14:32:05" không AM/PM
+Timestamp alarm: với milliseconds    → "14:32:05.123"
+```
+
+### ISA-101 Checklist trước khi release màn hình mới
+
+```
+□ Nền xám (không có màu trang trí không có ý nghĩa)
+□ Màu đỏ/vàng CHỈ cho alarm/warning
+□ Equipment ở trạng thái bình thường = màu XÁM
+□ Screenshot grayscale → vẫn đọc được thông tin
+□ Contrast text/nền ≥ 4.5:1
+□ E-Stop button lớn nhất, đỏ đậm, góc cố định
+□ Khoảng cách nút nguy hiểm ≥ 48 px
+□ Touch target ≥ 44 × 44 px
+□ Mọi giá trị số có đơn vị
+□ Alarm bar visible trên mọi màn hình (Status Bar)
+□ Không hardcode màu hex trong XAML — dùng {DynamicResource}
+□ Đổi theme Dark/Light không mất thông tin
+□ Font ≥ 12 pt, giá trị live to hơn label ≥ 2 pt
+```
