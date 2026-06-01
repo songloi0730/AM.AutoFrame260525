@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-05-31
 **Session:** #7 — Solution Structure Docs + HMI Design Rules + am-hmi-design skill
-**Commit:** `TBD`
+**Commit:** `8fa4568`
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 7] 2026-05-31 — Solution Structure Docs + HMI Design Rules
 
-**Commit:** `TBD`
+**Commit:** `8fa4568`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Nguồn tham khảo:** AutoMachine_Solution_Structure.md + HMI_UI_Design_Rules_1.md
 
