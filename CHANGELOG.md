@@ -6,7 +6,7 @@
 
 ## [Session 8] 2026-06-02 — DI wiring + Demo 3-tier + Unit Tests + Dashboard
 
-**Commit:** *(pending)*
+**Commit:** `9f6898f`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Mục tiêu:** Vá 3 lỗ hổng làm framework "viết xong nhưng chưa dùng được" + thêm UI đầu tiên.
 

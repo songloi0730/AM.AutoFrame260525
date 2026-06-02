@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-02
 **Session:** #8 — DI wiring + Demo 3-tier + Unit Tests + Dashboard module
-**Commit:** *(pending)*
+**Commit:** `9f6898f`
 
 ---
 
