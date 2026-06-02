@@ -12,9 +12,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
   </ItemGroup>
 
-  <!-- WorkStation ONLY references Core.Abstractions — never Hardware implementation -->
+  <!-- WorkStation ONLY references Core.Abstractions + Infrastructure (base classes) — never Hardware implementation -->
   <ItemGroup>
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\AM.Infrastructure\AM.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

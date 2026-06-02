@@ -6,6 +6,7 @@
 
 using System.Globalization;
 using AM.Core.Abstractions.Interfaces.Hardware;
+using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Repositories;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Data;
@@ -15,10 +16,15 @@ using AM.Hardware.Comm.Modbus;
 using AM.Hardware.Comm.OpcUa;
 using AM.Hardware.Comm.Serial;
 using AM.Hardware.Comm.Tcp;
+using AM.Core.Enums;
 using AM.Hardware.IO;
 using AM.Hardware.Motion;
 using AM.Hardware.Vision;
 using AM.Services;
+using AM.WorkStation.Demo;
+using AM.WorkStation.Demo.Controllers;
+using AM.WorkStation.Demo.Mechanisms;
+using AM.WorkStation.Demo.Stations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,6 +95,12 @@ internal static class Bootstrapper
                 sp.GetRequiredService<ILogger<ParameterService>>(),
                 "parameters.json"));
 
+        // ─── Infrastructure Services ──────────────────────────────────────────────
+        // HardwareManagerService: registry cho tất cả hardware devices — resolve theo tên
+        services.AddSingleton<IHardwareManagerService, HardwareManagerService>();
+        // StationSyncService: semaphore-based pipeline sync giữa các stations
+        services.AddSingleton<IStationSyncService, StationSyncService>();
+
         // ─── Hardware — toggle Simulated / Real via appsettings ──────────────────
         if (useSimulation)
         {
@@ -141,6 +153,9 @@ internal static class Bootstrapper
             // đảm bảo đã cài NuGet tương ứng (FluentModbus / System.IO.Ports / OPC Foundation SDK)
             // và cập nhật config strings bên dưới trong appsettings.json.
 
+            // ─── Demo machine 3-tier ──────────────────────────────────────────────
+            RegisterDemoMachine(services);
+
             Log.Information(">>> Simulation mode ENABLED <<<");
         }
         else
@@ -152,6 +167,40 @@ internal static class Bootstrapper
             throw new NotSupportedException(
                 "Real hardware drivers not yet registered. Set UseSimulation=true in appsettings.json");
         }
+    }
+
+    /// <summary>
+    /// Đăng ký Demo machine (DemoPickMechanism → DemoStation → DemoMasterController) vào DI.
+    /// Gọi sau khi RegisterServices và trước khi BuildServiceProvider.
+    /// </summary>
+    internal static void RegisterDemoMachine(IServiceCollection services)
+    {
+        services.AddSingleton<DemoPickMechanism>();
+        services.AddSingleton<DemoInspectMechanism>();
+        services.AddSingleton<DemoStation>();
+        services.AddSingleton<DemoMasterController>();
+        // Register concrete type cũng như interface để Dashboard có thể resolve IMasterController
+        services.AddSingleton<IMasterController>(sp => sp.GetRequiredService<DemoMasterController>());
+    }
+
+    /// <summary>
+    /// Đăng ký hardware devices vào HardwareManagerService sau khi DI container được build.
+    /// Cho phép Mechanism resolve device theo tên thay vì chỉ qua DI type.
+    /// </summary>
+    internal static void RegisterHardwareDevices(IServiceProvider services)
+    {
+        var hwManager = services.GetRequiredService<IHardwareManagerService>();
+
+        hwManager.Register("MainMotion",     HardwareCategory.MotionCard,  services.GetRequiredService<IMotionController>());
+        hwManager.Register("MainCamera",     HardwareCategory.Camera,       services.GetRequiredService<ICameraDevice>());
+        hwManager.Register("MainIO",         HardwareCategory.IOController, services.GetRequiredService<IIoModule>());
+        hwManager.Register("MainModbus",     HardwareCategory.ModbusTcp,    services.GetRequiredService<IModbusClient>());
+        hwManager.Register("MainSerial",     HardwareCategory.SerialPort,   services.GetRequiredService<ISerialDevice>());
+        hwManager.Register("MainTcp",        HardwareCategory.TcpDevice,    services.GetRequiredService<ITcpDevice>());
+        hwManager.Register("MainOpcUA",      HardwareCategory.OpcUaClient,  services.GetRequiredService<IOpcUaClient>());
+        hwManager.Register("MainEthernetIP", HardwareCategory.EthernetIp,   services.GetRequiredService<IEthernetIpClient>());
+
+        Log.Information("HardwareManagerService: registered {Count} devices", 8);
     }
 
     /// <summary>

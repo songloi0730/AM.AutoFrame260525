@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-05-31
-**Session:** #7 — Solution Structure Docs + HMI Design Rules + am-hmi-design skill
-**Commit:** `8fa4568`
+**Ngày:** 2026-06-02
+**Session:** #8 — DI wiring + Demo 3-tier + Unit Tests + Dashboard module
+**Commit:** *(pending)*
 
 ---
 
@@ -22,14 +22,14 @@
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter |
 | AM.Data (EF Core + SQLite) | ✅ Hoàn thành | DbContext, 2 repositories |
 | AM.Infrastructure | ✅ Hoàn thành | DispatcherHelper + BaseMechanism + StationBase<T> + BaseMasterController |
-| AM.WorkStation.Demo | ✅ Hoàn thành | B1/B2 fixed — file names không còn underscore |
-| AM.Application.Shell | ✅ Hoàn thành | Prism + DryIoc Bootstrapper, color tokens, string resources |
+| AM.WorkStation.Demo | ✅ Hoàn thành | 3-tier đầy đủ: DemoPickMechanism/DemoInspectMechanism → DemoStation → DemoMasterController |
+| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper DI đầy đủ (HardwareManager + StationSync + Demo machine + named hw registry) |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | .claude/ (AI config) | ✅ Hoàn thành | rules + commands (9) + skills (8) + 4 hooks — am-alarm-dictionary + am-hmi-design |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system + auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows lock file |
-| Unit Tests | ❌ Chưa có | Chưa tạo test project nào |
-| AM.Modules.* (WPF UI modules) | ❌ Chưa có | Chưa tạo module nào ngoài Shell |
+| Unit Tests | ✅ Hoàn thành | AM.Services.Tests — 38 tests pass (Alarm + Recipe + StationSync) |
+| AM.Modules.* (WPF UI modules) | 🟡 Một phần | AM.Modules.Dashboard (state + alarm list + controls) — các module khác chưa có |
 
 ---
 
@@ -46,8 +46,10 @@ AM.Hardware.IO             — SimulatedIoModule
 AM.Services                — AlarmService, RecipeService, ParameterService
 AM.Data                    — AutoMachineDbContext, AlarmRepository, ProductionRepository
 AM.Infrastructure          — DispatcherHelper, BaseMechanism, StationBase<T>, BaseMasterController
-AM.WorkStation.Demo        — DemoMachineSequence, Step01Initialize, Step02Inspect
-AM.Application.Shell       — WPF entry point, Prism + DryIoc Bootstrapper
+AM.WorkStation.Demo        — DemoMasterController → DemoStation → DemoPick/DemoInspect Mechanism (3-tier)
+AM.Application.Shell       — WPF entry point, Bootstrapper (DI đầy đủ + named hw registry)
+AM.Modules.Dashboard       — WPF module: MachineState indicator + AlarmList + control commands
+AM.Services.Tests          — xUnit + Moq + FluentAssertions, 38 tests
 ```
 
 ### 3-Tier Machine Hierarchy (✅ Đầy đủ)
@@ -139,11 +141,14 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop, Error, Reset,
 ### TODO — Việc cần làm tiếp
 | # | Hạng mục | Ưu tiên | Ghi chú |
 |---|----------|---------|---------|
-| T1 | Refactor `DemoMachineSequence` thành Demo machine dùng BaseMechanism/StationBase/BaseMasterController | 🔴 Cao | Tạo DemoStation, DemoMechanism, DemoMasterController — minh hoạ 3-tier đầy đủ |
-| T2 | Đăng ký `HardwareManagerService` + `StationSyncService` vào Bootstrapper | 🔴 Cao | Thêm DI wiring, viết comment hướng dẫn |
-| T3 | Tạo unit test projects | 🟡 Trung bình | AM.Services.Tests, AM.Infrastructure.Tests |
-| T4 | Tạo WPF module đầu tiên (Dashboard) | 🟢 Thấp | AM.Modules.Dashboard — MachineState indicator, AlarmList |
+| ~~T1~~ | ~~Refactor Demo machine 3-tier~~ | ✅ Done (S8) | DemoPick/DemoInspect → DemoStation → DemoMasterController |
+| ~~T2~~ | ~~Đăng ký HardwareManager + StationSync vào Bootstrapper~~ | ✅ Done (S8) | + named hw registry trong RegisterHardwareDevices |
+| ~~T3~~ | ~~Tạo unit test project~~ | ✅ Done (S8) | AM.Services.Tests — 38 tests pass |
+| ~~T4~~ | ~~Tạo WPF Dashboard module~~ | ✅ Done (S8) | AM.Modules.Dashboard |
 | T5 | Thêm drivers thật (nếu có hardware SDK) | 🟢 Thấp | Tùy theo yêu cầu khách hàng |
+| T6 | AM.Infrastructure.Tests — test BaseMasterController state transitions | 🟡 Trung bình | 13 transitions chưa có test coverage |
+| T7 | Đăng ký Dashboard vào Shell (region/Prism) để hiển thị runtime | 🟡 Trung bình | Module đã build nhưng chưa wire vào MainWindow |
+| T8 | Các WPF module còn lại (Alarm, Parameter, Motion, IO, Vision...) | 🟢 Thấp | Theo danh sách AM.Modules.* trong CLAUDE.md |
 
 ---
 

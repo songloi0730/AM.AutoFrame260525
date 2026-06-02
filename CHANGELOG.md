@@ -4,6 +4,55 @@
 
 ---
 
+## [Session 8] 2026-06-02 — DI wiring + Demo 3-tier + Unit Tests + Dashboard
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Mục tiêu:** Vá 3 lỗ hổng làm framework "viết xong nhưng chưa dùng được" + thêm UI đầu tiên.
+
+### ✅ Task 1 — Fix Bootstrapper DI (Gap 1)
+- `AM.Application.Shell/Bootstrapper.cs`:
+  - Đăng ký `IHardwareManagerService → HardwareManagerService` và `IStationSyncService → StationSyncService`
+    (trước đây code đã viết nhưng KHÔNG có trong DI → mọi `Resolve<T>()` fail at runtime).
+  - Thêm `RegisterDemoMachine()` — đăng ký DemoPick/DemoInspect Mechanism, DemoStation,
+    DemoMasterController, và map `IMasterController → DemoMasterController` (cho Dashboard resolve).
+  - Thêm `RegisterHardwareDevices()` — đăng ký 8 hardware device vào named registry của
+    HardwareManagerService (MainMotion/MainCamera/MainIO/MainModbus/MainSerial/MainTcp/MainOpcUA/MainEthernetIP).
+- `AM.Application.Shell/App.xaml.cs`: gọi `RegisterHardwareDevices(_serviceProvider)` sau khi build container.
+
+### ✅ Task 2 — Demo machine 3-tier (Gap 2)
+Minh hoạ kiến trúc 3 tầng cho developer làm máy mới:
+- `AM.WorkStation.Demo/Mechanisms/DemoPickMechanism.cs` — `[MechanismUI]`, extends BaseMechanism, gọi IMotionController.
+- `AM.WorkStation.Demo/Mechanisms/DemoInspectMechanism.cs` — extends BaseMechanism, gọi ICameraDevice.
+- `AM.WorkStation.Demo/Stations/DemoStation.cs` — `[StationUI]`, extends StationBase<DemoStation>, điều phối 2 mechanism.
+- `AM.WorkStation.Demo/Controllers/DemoMasterController.cs` — extends BaseMasterController, template methods
+  InitializeCoreAsync/RunOneCycleAsync/ResetCoreAsync/ShouldReinitialize.
+- `AM.WorkStation.Demo.csproj`: thêm ProjectReference `AM.Infrastructure`.
+
+### ✅ Task 3 — Unit Tests (Gap 3)
+- `AM.Services.Tests/` (xUnit + Moq + FluentAssertions, net9.0):
+  - `AlarmServiceTests.cs` — raise/ack/clear, level resolution theo code range (safety critical).
+  - `RecipeServiceTests.cs` — load/save/getall.
+  - `StationSyncServiceTests.cs` — RegisterSlot, Signal/WaitAsync, timeout, cancellation, ResetAll, multi-slot.
+  - `GlobalUsings.cs` — global using Xunit.
+- Thêm project vào solution. **38/38 tests pass, 0 warning** (đã fix xUnit1031, CA2007, S6608).
+
+### ✅ Task 4 — WPF Dashboard module
+- `AM.Modules.Dashboard/` (net9.0-windows, UseWPF, CommunityToolkit.Mvvm):
+  - `DashboardViewModel.cs` — ObservableObject; bind MachineState + CycleCount + ActiveAlarms;
+    RelayCommand Initialize/Start/Stop/Pause/Resume/Reset với CanExecute theo state; subscribe
+    StateChanged/CycleCompleted/AlarmRaised/AlarmCleared; UI-thread marshalling qua SynchronizationContext; IDisposable.
+  - `DashboardView.xaml` + `.xaml.cs` — ISA-101 layout: state indicator (Ellipse màu theo state),
+    control buttons (48px, nút Dừng tách 48px màu đỏ), DataGrid alarm list. Dùng DynamicResource color tokens.
+  - `Converters/MachineStateToColorConverter.cs` — MachineState → Status.*Brush.
+- Thêm project vào solution.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **Build succeeded, 0 Warning, 0 Error**.
+- `dotnet test` → **38 passed**.
+
+---
+
 ## [Session 7] 2026-05-31 — Solution Structure Docs + HMI Design Rules
 
 **Commit:** `8fa4568`

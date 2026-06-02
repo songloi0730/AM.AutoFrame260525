@@ -41,14 +41,17 @@ public partial class App
             Bootstrapper.RegisterServices(services, config);
             _serviceProvider = services.BuildServiceProvider();
 
-            // 4. Initialize database — không dùng ConfigureAwait(false) vì cần ở lại UI thread sau await
+            // 4. Đăng ký hardware devices vào HardwareManagerService (named registry)
+            Bootstrapper.RegisterHardwareDevices(_serviceProvider);
+
+            // 5. Initialize database
 #pragma warning disable CA2007 // Shell OnStartup: phải giữ UI thread context để tạo MainWindow sau khi await
             await Bootstrapper.InitializeDatabaseAsync(_serviceProvider);
 #pragma warning restore CA2007
 
             base.OnStartup(e);
 
-            // 5. Launch MainWindow
+            // 6. Launch MainWindow
             var mainWindow = new MainWindow(_serviceProvider);
             mainWindow.Show();
 

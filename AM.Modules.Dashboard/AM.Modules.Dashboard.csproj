@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AM.Modules.Dashboard</RootNamespace>
+    <AssemblyName>AM.Modules.Dashboard</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm"                     Version="8.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  Version="9.0.0" />
+  </ItemGroup>
+
+  <!-- Dashboard chỉ cần Core.Abstractions để bind tới IMasterController, IAlarmService -->
+  <ItemGroup>
+    <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
+    <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
