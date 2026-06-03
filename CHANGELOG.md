@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 10] 2026-06-03 — libs/ Vendor DLL Structure
+
+**Commit:** `0fb161c`
+**Người thực hiện:** Claude (Cowork) + Nhan
+
+### ✅ Thêm mới
+
+- `libs/README.md` — Hướng dẫn chi tiết từng vendor: nơi tải SDK, DLL cần copy, đường dẫn đích, link website
+- `libs/Motion/Gts/{x64,x86}/.placeholder` — GTS 固高 Googoltech GTS-400/800 (`gts.dll`, P/Invoke)
+- `libs/Motion/Advantech/{x64,x86}/.placeholder` — Advantech PCI-1245/1265 (`ADVMOT.dll`, P/Invoke)
+- `libs/Vision/Cognex/x64/.placeholder` — Cognex VisionPro (`Cognex.VisionPro.dll + CogSocketServer.dll`)
+- `libs/Vision/HIK/x64/.placeholder` — HIK Robot MVS (`MvCameraControl.Net.dll + MVSDKmd.dll`)
+- `libs/Vision/Basler/x64/.placeholder` — Basler Pylon (`PylonC.NET.dll` hoặc NuGet `Basler.Pylon`)
+- `libs/IO/Advantech-ADAM`, `Mitsubishi-QSeries`, `Omron-NX` — không cần DLL (Modbus/TCP protocol)
+
+### 🔧 Sửa đổi
+- `.gitignore` — Thêm rule loại trừ `*.dll` trong `libs/` nhưng giữ `.placeholder` và `README.md`
+- `AM.Hardware.Motion.csproj` — Thêm comment hướng dẫn uncomment khi có `gts.dll` / `ADVMOT.dll`
+- `AM.Hardware.Vision.csproj` — Thêm comment hướng dẫn cho Cognex/HIK/Basler DLL reference
+
+### 🔧 Quy tắc sử dụng
+- **DLL không commit lên Git** (bản quyền vendor)
+- Developer clone repo → tự copy DLL từ SDK theo hướng dẫn trong `libs/README.md`
+- Khi có DLL → uncomment phần `<Content>` hoặc `<Reference>` trong `.csproj` tương ứng
+- Build vẫn pass khi **không có DLL** (chỉ Simulated drivers hoạt động)
+
+---
+
 ## [Session 9] 2026-06-03 — Real hardware drivers (Modbus, Inovance, 固高 GTS, Advantech, Mitsubishi, Siemens, Robot)
 
 **Commit:** `5183b0d`

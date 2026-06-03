@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-03
-**Session:** #9 — Real hardware drivers: Modbus thật + Inovance + 固高 GTS + Advantech + Mitsubishi + Siemens + Robot socket
-**Commit:** `5183b0d`
+**Session:** #10 — libs/ vendor DLL structure
+**Commit:** `0fb161c`
 
 ---
 
@@ -34,6 +34,7 @@
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
+| `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
 | AM.Infrastructure.Tests | ❌ Chưa có | BaseMasterController 13 transitions chưa có test |
 | AM.Modules.* (các module còn lại) | ❌ Chưa có | Alarm, Parameter, Motion, IO, Vision, Identity... |
 
@@ -94,7 +95,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 | `Directory.Build.props` | TreatWarningsAsErrors=true, AnalysisMode=All, .NET 9, CA suppressions |
 | `.editorconfig` | Code style |
 | `.cursorrules` | AI coding rules (Cursor/Copilot) |
-| `AM.AutoFrame.sln` | 14 projects |
+| `AM.AutoFrame.sln` | 15 projects |
 
 ### AI Instructions (đọc theo thứ tự)
 | File | Nội dung | Đọc khi nào |
@@ -193,4 +194,4 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 ## ⚠️ Known Issues & TODO
 
 ### BUGS hiện tại
-*(Không có bug nào đang m�
+*(Không có bug nào đang m�
