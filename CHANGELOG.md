@@ -6,7 +6,7 @@
 
 ## [Session 9] 2026-06-03 — Real hardware drivers (Modbus, Inovance, 固高 GTS, Advantech, Mitsubishi, Siemens, Robot)
 
-**Commit:** *(pending)*
+**Commit:** `5183b0d`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Mục tiêu:** Bổ sung driver phần cứng thật, chạy được cho sản phẩm thật, giữ build clean (0 warning).
 
