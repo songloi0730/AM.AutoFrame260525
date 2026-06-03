@@ -12,13 +12,21 @@ using AM.Core.Abstractions.Interfaces.Services;
 using AM.Data;
 using AM.Data.Repositories;
 using AM.Hardware.Comm.EthernetIp;
+using AM.Hardware.Comm.Inovance;
+using AM.Hardware.Comm.Mitsubishi;
 using AM.Hardware.Comm.Modbus;
 using AM.Hardware.Comm.OpcUa;
+using AM.Hardware.Comm.Plc;
+using AM.Hardware.Comm.Robot;
 using AM.Hardware.Comm.Serial;
+using AM.Hardware.Comm.Siemens;
 using AM.Hardware.Comm.Tcp;
 using AM.Core.Enums;
 using AM.Hardware.IO;
+using AM.Hardware.IO.Advantech;
 using AM.Hardware.Motion;
+using AM.Hardware.Motion.Advantech;
+using AM.Hardware.Motion.Gts;
 using AM.Hardware.Vision;
 using AM.Services;
 using AM.WorkStation.Demo;
@@ -149,9 +157,11 @@ internal static class Bootstrapper
                     sp.GetRequiredService<ILogger<SimulatedEthernetIpClient>>(),
                     host: "192.168.1.40", slot: 0));
 
-            // Hướng dẫn chuyển sang real hardware: đổi Simulated* thành real driver class,
-            // đảm bảo đã cài NuGet tương ứng (FluentModbus / System.IO.Ports / OPC Foundation SDK)
-            // và cập nhật config strings bên dưới trong appsettings.json.
+            // PLC + Robot giả lập
+            services.AddSingleton<IPlcDevice>(sp =>
+                new SimulatedPlcDevice(sp.GetRequiredService<ILogger<SimulatedPlcDevice>>()));
+            services.AddSingleton<IRobotDevice>(sp =>
+                new SimulatedRobotDevice(sp.GetRequiredService<ILogger<SimulatedRobotDevice>>()));
 
             // ─── Demo machine 3-tier ──────────────────────────────────────────────
             RegisterDemoMachine(services);
@@ -160,13 +170,107 @@ internal static class Bootstrapper
         }
         else
         {
-            // Real hardware drivers chưa được implement.
-            // Để thêm hardware thật: tạo driver class implement interface,
-            // đăng ký qua services.AddSingleton<IMotionController, YourDriverClass>(),
-            // sau đó xóa dòng throw bên dưới.
-            throw new NotSupportedException(
-                "Real hardware drivers not yet registered. Set UseSimulation=true in appsettings.json");
+            RegisterRealHardware(services, config);
+            RegisterDemoMachine(services);
+            Log.Information(">>> REAL hardware mode ENABLED <<<");
         }
+    }
+
+    /// <summary>
+    /// Đăng ký driver phần cứng thật theo vendor cấu hình trong appsettings (UseSimulation=false).
+    /// Motion: Simulated|Gts|Advantech|InovanceServo · Plc: Inovance|Mitsubishi|Siemens ·
+    /// Io: Simulated|AdvantechAdam · Robot: Simulated|Socket.
+    /// </summary>
+    internal static void RegisterRealHardware(IServiceCollection services, IConfiguration config)
+    {
+        // ─── Motion controller ────────────────────────────────────────────────
+        string motionVendor = config.GetValue<string>("AutoMachine:Motion:Vendor") ?? "Simulated";
+        int axisCount  = config.GetValue("AutoMachine:Motion:AxisCount", 4);
+        double pulsePerMm = config.GetValue("AutoMachine:Motion:PulsePerMm", 1000.0);
+
+        services.AddSingleton<IMotionController>(sp => motionVendor.ToUpperInvariant() switch
+        {
+            "GTS" => new GtsMotionController(
+                sp.GetRequiredService<ILogger<GtsMotionController>>(), axisCount, pulsePerMm,
+                config.GetValue<string>("AutoMachine:Motion:GtsConfigFile")),
+            "ADVANTECH" => new AdvantechMotionController(
+                sp.GetRequiredService<ILogger<AdvantechMotionController>>(), axisCount,
+                config.GetValue<uint>("AutoMachine:Motion:AdvantechDevNumber"), pulsePerMm),
+            "INOVANCESERVO" => new InovanceServoDrive(
+                new ModbusTcpClient(sp.GetRequiredService<ILogger<ModbusTcpClient>>(),
+                    config.GetValue<string>("AutoMachine:Motion:InovanceServoHost") ?? "192.168.1.70",
+                    config.GetValue("AutoMachine:Motion:InovanceServoPort", 502)),
+                sp.GetRequiredService<ILogger<InovanceServoDrive>>(),
+                (byte)config.GetValue("AutoMachine:Motion:InovanceServoSlaveId", 1), pulsePerMm),
+            _ => new SimulatedMotionController(
+                sp.GetRequiredService<ILogger<SimulatedMotionController>>(), axisCount)
+        });
+
+        // ─── I/O module ───────────────────────────────────────────────────────
+        string ioVendor = config.GetValue<string>("AutoMachine:Io:Vendor") ?? "Simulated";
+        int diCount = config.GetValue("AutoMachine:Io:DiCount", 32);
+        int doCount = config.GetValue("AutoMachine:Io:DoCount", 32);
+
+        services.AddSingleton<IIoModule>(sp => ioVendor.ToUpperInvariant() switch
+        {
+            "ADVANTECHADAM" => new AdvantechAdamIoModule(
+                new ModbusTcpClient(sp.GetRequiredService<ILogger<ModbusTcpClient>>(),
+                    config.GetValue<string>("AutoMachine:Io:AdamHost") ?? "192.168.1.55",
+                    config.GetValue("AutoMachine:Io:AdamPort", 502)),
+                sp.GetRequiredService<ILogger<AdvantechAdamIoModule>>(), diCount, doCount,
+                (byte)config.GetValue("AutoMachine:Io:AdamSlaveId", 1)),
+            _ => new SimulatedIoModule(
+                sp.GetRequiredService<ILogger<SimulatedIoModule>>(), diCount, doCount)
+        });
+
+        // ─── PLC ──────────────────────────────────────────────────────────────
+        string plcVendor = config.GetValue<string>("AutoMachine:Plc:Vendor") ?? "Simulated";
+        string plcHost = config.GetValue<string>("AutoMachine:Plc:Host") ?? "192.168.1.50";
+        int plcPort = config.GetValue("AutoMachine:Plc:Port", 502);
+        byte plcSlave = (byte)config.GetValue("AutoMachine:Plc:SlaveId", 1);
+
+        services.AddSingleton<IPlcDevice>(sp => plcVendor.ToUpperInvariant() switch
+        {
+            "INOVANCE" => new InovancePlcDevice(
+                new ModbusTcpClient(sp.GetRequiredService<ILogger<ModbusTcpClient>>(), plcHost, plcPort),
+                sp.GetRequiredService<ILogger<InovancePlcDevice>>(), "InovancePLC", plcSlave),
+            "MITSUBISHI" => new MitsubishiPlcDevice(
+                sp.GetRequiredService<ILogger<MitsubishiPlcDevice>>(), plcHost, plcPort),
+            "SIEMENS" => new SiemensS7PlcDevice(
+                sp.GetRequiredService<ILogger<SiemensS7PlcDevice>>(), plcHost,
+                config.GetValue("AutoMachine:Plc:Rack", 0), config.GetValue("AutoMachine:Plc:Slot", 1)),
+            _ => new SimulatedPlcDevice(sp.GetRequiredService<ILogger<SimulatedPlcDevice>>())
+        });
+
+        // ─── Robot ────────────────────────────────────────────────────────────
+        string robotVendor = config.GetValue<string>("AutoMachine:Robot:Vendor") ?? "Simulated";
+        services.AddSingleton<IRobotDevice>(sp => robotVendor.ToUpperInvariant() switch
+        {
+            "SOCKET" => new SocketRobotDevice(
+                sp.GetRequiredService<ILogger<SocketRobotDevice>>(),
+                config.GetValue<string>("AutoMachine:Robot:Host") ?? "192.168.1.60",
+                config.GetValue("AutoMachine:Robot:Port", 5000)),
+            _ => new SimulatedRobotDevice(sp.GetRequiredService<ILogger<SimulatedRobotDevice>>())
+        });
+
+        // ─── Camera + Comm devices: dùng simulated (chưa có driver thật) ──────
+        services.AddSingleton<ICameraDevice>(sp =>
+            new SimulatedCameraDevice(sp.GetRequiredService<ILogger<SimulatedCameraDevice>>(), "SIM_CAM_01", 0.9));
+        services.AddSingleton<IModbusClient>(sp =>
+            new ModbusTcpClient(sp.GetRequiredService<ILogger<ModbusTcpClient>>(),
+                config.GetValue<string>("AutoMachine:Comm:ModbusHost") ?? "192.168.1.10",
+                config.GetValue("AutoMachine:Comm:ModbusPort", 502)));
+        services.AddSingleton<ISerialDevice>(sp =>
+            new SimulatedSerialDevice(sp.GetRequiredService<ILogger<SimulatedSerialDevice>>(), "SIM_COM1", 9600));
+        services.AddSingleton<ITcpDevice>(sp =>
+            new SimulatedTcpDevice(sp.GetRequiredService<ILogger<SimulatedTcpDevice>>(), "192.168.1.20", 9000));
+        string opcEndpoint = config.GetValue<string>("AutoMachine:Comm:OpcUaEndpoint")
+                             ?? "opc.tcp://127.0.0.1:4840";
+        services.AddSingleton<IOpcUaClient>(sp =>
+            new SimulatedOpcUaClient(sp.GetRequiredService<ILogger<SimulatedOpcUaClient>>(),
+                new Uri(opcEndpoint)));
+        services.AddSingleton<IEthernetIpClient>(sp =>
+            new SimulatedEthernetIpClient(sp.GetRequiredService<ILogger<SimulatedEthernetIpClient>>(), "192.168.1.40", 0));
     }
 
     /// <summary>

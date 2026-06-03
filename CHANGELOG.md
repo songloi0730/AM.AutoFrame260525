@@ -4,6 +4,69 @@
 
 ---
 
+## [Session 9] 2026-06-03 — Real hardware drivers (Modbus, Inovance, 固高 GTS, Advantech, Mitsubishi, Siemens, Robot)
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Mục tiêu:** Bổ sung driver phần cứng thật, chạy được cho sản phẩm thật, giữ build clean (0 warning).
+
+### ✅ Abstractions mới (AM.Core.Abstractions / AM.Core)
+- `IPlcDevice` — đọc/ghi bit/word/dword/float theo địa chỉ vendor (D100, M10, X0...).
+- `IRobotDevice` — move/pose/IO/raw-command cho robot qua socket.
+- `RobotPose` record (Cartesian X/Y/Z/Rx/Ry/Rz) trong AM.Core/Models.
+- `HardwareCategory`: thêm `Plc=14`, `Servo=15`.
+
+### ✅ Modbus TCP thật (AM.Hardware.Comm/Modbus/ModbusTcpClient.cs)
+- Thay skeleton bằng implementation thật: tự dựng khung **MBAP trên raw TcpClient**, zero NuGet.
+- Đủ FC01–FC06/FC15/FC16, big-endian, thread-safe, timeout + AlarmException mapping.
+
+### ✅ Inovance (AM.Hardware.Comm/Inovance)
+- `InovancePlcDevice : IPlcDevice` — PLC H3U/H5U/AM qua Modbus; parse D/M/X/Y + base-offset cấu hình.
+- `InovanceServoDrive : IMotionController` — servo IS620/SV660 qua Modbus, **CiA402 Profile Position**
+  (enable 06→07→0F, new-setpoint bit4, poll target-reached), register map cấu hình được.
+- `SimulatedPlcDevice : IPlcDevice` (AM.Hardware.Comm/Plc) — in-memory.
+
+### ✅ 固高 GTS motion (AM.Hardware.Motion/Gts) — chạy thật trên PC có card
+- `GtsNative` — P/Invoke `gts.dll` (GT_Open/Reset/AxisOn/PrfTrap/SetPos/Update/GetEncPos/GetSts/Stop...).
+- `GtsMotionController : IMotionController` — trapezoid point-to-point, đổi mm↔pulse, poll status bit.
+- Biên dịch không cần DLL (DllImport resolve runtime).
+
+### ✅ Advantech (AM.Hardware.Motion/Advantech + AM.Hardware.IO/Advantech)
+- `AdvantechNative` + `AdvantechMotionController : IMotionController` — P/Invoke Common Motion API (ADVMOT.dll).
+- `AdvantechAdamIoModule : IIoModule` — ADAM-6000 series qua Modbus TCP (DI/DO/AI + WriteAndWaitConfirm).
+
+### ✅ Mitsubishi + Siemens PLC (tự implement protocol, zero dependency)
+- `MitsubishiPlcDevice : IPlcDevice` — **MC Protocol 3E binary** qua socket (D/M/X/Y/W/R/B/L, hex/dec radix).
+- `SiemensS7PlcDevice : IPlcDevice` — **S7comm / ISO-on-TCP (RFC1006)**: COTP CR + Setup Comm + ReadVar/WriteVar,
+  vùng DB/M/I/Q, big-endian, địa chỉ DB10.DBW20 / DB10.DBX0.1 / MW100...
+
+### ✅ Robot (AM.Hardware.Comm/Robot)
+- `SocketRobotDevice : IRobotDevice` — TCP ASCII command/response theo dòng, template lệnh cấu hình.
+- `SimulatedRobotDevice : IRobotDevice` — in-memory.
+
+### ✅ DI wiring + config
+- `Bootstrapper.RegisterRealHardware()` — chọn driver theo `appsettings` (UseSimulation=false):
+  Motion: Simulated|Gts|Advantech|InovanceServo · Plc: Inovance|Mitsubishi|Siemens · Io: Simulated|AdvantechAdam · Robot: Simulated|Socket.
+- Simulation branch: thêm `IPlcDevice`→SimulatedPlcDevice, `IRobotDevice`→SimulatedRobotDevice.
+- `appsettings.json`: thêm block `Motion`/`Plc`/`Robot`/`Io` (host/port/slave/vendor).
+
+### ✅ Tests (AM.Hardware.Tests — project mới, 17 tests)
+- `ModbusTcpClientTests` — round-trip FC03/FC06/FC16 qua **Modbus slave giả loopback** (verify MBAP thật trên wire).
+- `InovancePlcDeviceTests` — ánh xạ địa chỉ + word/dword/float/bit qua SimulatedModbusClient.
+- `SocketRobotDeviceTests` — giao thức line-based qua **robot server giả loopback**.
+- `SimulatedDeviceTests` — SimulatedPlcDevice, SimulatedRobotDevice, AdvantechAdamIoModule.
+
+### ⚠️ Ghi chú phần cứng SDK-native
+- SDK 固高 GTS (`gts.dll`) và Advantech (`ADVMOT.dll`) là DLL độc quyền theo card, **không tải qua NuGet được**.
+  Driver dùng P/Invoke nên build không cần DLL và chạy thật khi PC sản xuất đã cài driver/SDK của card.
+- Các hằng số bit-status (GTS/Advantech) và register map (Inovance servo) cần đối chiếu manual của thiết bị.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **Build succeeded, 0 Warning, 0 Error**.
+- `dotnet test` → **55 passed** (38 services + 17 hardware).
+
+---
+
 ## [Session 8] 2026-06-02 — DI wiring + Demo 3-tier + Unit Tests + Dashboard
 
 **Commit:** `9f6898f`

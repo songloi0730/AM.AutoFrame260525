@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-03
-**Session:** #9 — Kiểm tra và đồng bộ PROJECT_STATUS với thực tế
-**Commit:** `TBD`
+**Session:** #9 — Real hardware drivers: Modbus thật + Inovance + 固高 GTS + Advantech + Mitsubishi + Siemens + Robot socket
+**Commit:** *(pending)*
 
 ---
 
@@ -15,21 +15,22 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **14 projects**, build clean |
-| AM.Core | ✅ Hoàn thành | Enums + 5 Attributes + Models + AlarmCodes + Exceptions + EventArgs |
-| AM.Core.Abstractions | ✅ Hoàn thành | Hardware (8 ifaces) + Machine (3 ifaces) + Services (5 ifaces) + Repos |
-| AM.Hardware.Motion | ✅ Hoàn thành | SimulatedMotionController — chỉ simulated |
+| Solution structure | ✅ Hoàn thành | **15 projects**, build clean (0 warning) |
+| AM.Core | ✅ Hoàn thành | Enums + 5 Attributes + Models (+RobotPose) + AlarmCodes + Exceptions + EventArgs |
+| AM.Core.Abstractions | ✅ Hoàn thành | Hardware (10 ifaces, +IPlcDevice +IRobotDevice) + Machine (3) + Services (5) + Repos |
+| AM.Hardware.Motion | ✅ Hoàn thành | Sim + **GtsMotionController (固高, P/Invoke)** + **AdvantechMotionController (P/Invoke)** |
 | AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice — chỉ simulated |
-| AM.Hardware.IO | ✅ Hoàn thành | SimulatedIoModule — chỉ simulated |
-| AM.Hardware.Comm | ✅ Hoàn thành | Modbus(real+sim), Serial(real+sim), TCP(real+sim), OpcUa(sim), EthernetIP(sim) |
+| AM.Hardware.IO | ✅ Hoàn thành | Sim + **AdvantechAdamIoModule (ADAM-6000 qua Modbus)** |
+| AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync |
-| AM.Services.Tests | ✅ Hoàn thành | 32 tests pass (AlarmService×15, RecipeService×8, StationSync×9) |
+| AM.Services.Tests | ✅ Hoàn thành | 38 tests pass (AlarmService, RecipeService, StationSync) |
+| AM.Hardware.Tests | ✅ Hoàn thành | 17 tests: Modbus MBAP loopback, Inovance/ADAM qua Modbus, Robot socket loopback, simulators |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, DispatcherHelper |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
 | AM.Modules.Dashboard | ⚠️ Tồn tại nhưng chưa wire | Build ok, DashboardViewModel/View đủ, CHƯA đăng ký vào Prism region Shell |
-| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper đầy đủ DI, 8 hardware devices registered |
+| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper DI + RegisterRealHardware (vendor-selectable qua appsettings) |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
@@ -198,4 +199,18 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 | # | Hạng mục | Ưu tiên | Ghi chú |
 |---|----------|---------|---------|
 | T1 | Wire `AM.Modules.Dashboard` vào Shell Prism region | 🔴 Cao | Module build ok nhưng chưa RegisterViewWithRegion trong Bootstrapper → chưa hiển thị runtime |
-| T2 | `AM.Infrastructure.
+| T2 | `AM.Infrastructure.Tests` — test BaseMasterController 13 transitions | 🟡 Trung bình | State machine quan trọng, cần coverage |
+| T3 | Các WPF modules còn lại | 🟢 Thấp | AM.Modules.Alarm, Parameter, Motion, IO, Vision, Identity, Logging, Diagnostics |
+| T4 | Driver thật cho hardware (nếu có SDK) | 🟢 Thấp | Modbus đã có real driver; Serial/TCP real driver có sẵn. OpcUa/EthernetIP chỉ có simulated |
+
+---
+
+## 📋 Hướng dẫn cập nhật file này
+
+Sau mỗi session, Claude cập nhật:
+1. `Cập nhật lần cuối` — ngày + session description
+2. `Trạng thái tổng quan` — đổi ⚠️→✅ hoặc thêm hạng mục mới
+3. `Known Issues & TODO` — thêm/xoá/đánh dấu done
+4. Bất kỳ interface/class quan trọng nào thêm/sửa
+
+Sau đó chạy: `bash scripts/am-commit.sh "session description"`
