@@ -193,24 +193,4 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 ## ⚠️ Known Issues & TODO
 
 ### BUGS hiện tại
-*(Không có bug nào đang mở)*
-
-### TODO — Việc cần làm tiếp
-| # | Hạng mục | Ưu tiên | Ghi chú |
-|---|----------|---------|---------|
-| T1 | Wire `AM.Modules.Dashboard` vào Shell Prism region | 🔴 Cao | Module build ok nhưng chưa RegisterViewWithRegion trong Bootstrapper → chưa hiển thị runtime |
-| T2 | `AM.Infrastructure.Tests` — test BaseMasterController 13 transitions | 🟡 Trung bình | State machine quan trọng, cần coverage |
-| T3 | Các WPF modules còn lại | 🟢 Thấp | AM.Modules.Alarm, Parameter, Motion, IO, Vision, Identity, Logging, Diagnostics |
-| T4 | Driver thật cho hardware (nếu có SDK) | 🟢 Thấp | Modbus đã có real driver; Serial/TCP real driver có sẵn. OpcUa/EthernetIP chỉ có simulated |
-
----
-
-## 📋 Hướng dẫn cập nhật file này
-
-Sau mỗi session, Claude cập nhật:
-1. `Cập nhật lần cuối` — ngày + session description
-2. `Trạng thái tổng quan` — đổi ⚠️→✅ hoặc thêm hạng mục mới
-3. `Known Issues & TODO` — thêm/xoá/đánh dấu done
-4. Bất kỳ interface/class quan trọng nào thêm/sửa
-
-Sau đó chạy: `bash scripts/am-commit.sh "session description"`
+*(Không có bug nào đang m�

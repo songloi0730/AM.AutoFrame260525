@@ -1,0 +1,6 @@
+# Thư mục này chứa: MvCameraControl.Net.dll + MVSDKmd.dll
+# Vendor: HIK Robot MVS
+# SDK: HIK Robot MVS tại hikmvs.cn
+# 
+# Copy DLL vào đây sau khi cài SDK (xem libs/README.md để biết chi tiết).
+# File *.dll đã được .gitignore — chỉ commit file .placeholder này.

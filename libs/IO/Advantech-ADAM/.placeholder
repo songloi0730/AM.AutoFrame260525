@@ -1,0 +1,6 @@
+# Thư mục này chứa: (không cần DLL)
+# Vendor: Advantech ADAM
+# Dùng Modbus TCP — xem AdvantechAdamIoModule.cs
+# 
+# Copy DLL vào đây sau khi cài SDK (xem libs/README.md để biết chi tiết).
+# File *.dll đã được .gitignore — chỉ commit file .placeholder này.

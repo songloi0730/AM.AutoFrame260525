@@ -1,0 +1,6 @@
+# Thư mục này chứa: Cognex.VisionPro.dll + CogSocketServer.dll
+# Vendor: Cognex VisionPro
+# Yêu cầu license VisionPro 9.x+
+# 
+# Copy DLL vào đây sau khi cài SDK (xem libs/README.md để biết chi tiết).
+# File *.dll đã được .gitignore — chỉ commit file .placeholder này.

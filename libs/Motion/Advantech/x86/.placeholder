@@ -1,0 +1,6 @@
+# Thư mục này chứa: ADVMOT.dll (x86)
+# Vendor: Advantech Common Motion
+# Chỉ cần nếu build x86
+# 
+# Copy DLL vào đây sau khi cài SDK (xem libs/README.md để biết chi tiết).
+# File *.dll đã được .gitignore — chỉ commit file .placeholder này.

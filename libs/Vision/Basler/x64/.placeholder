@@ -1,0 +1,6 @@
+# Thư mục này chứa: PylonC.NET.dll
+# Vendor: Basler Pylon
+# Hoặc dùng NuGet: Basler.Pylon
+# 
+# Copy DLL vào đây sau khi cài SDK (xem libs/README.md để biết chi tiết).
+# File *.dll đã được .gitignore — chỉ commit file .placeholder này.

@@ -27,3 +27,15 @@ Release/
 # Windows
 Thumbs.db
 Desktop.ini
+# Vendor DLLs (bản quyền — không commit lên Git)
+# Developer tự copy từ SDK vào thư mục libs/*/x64/ hoặc x86/
+# Xem libs/README.md để biết cách lấy DLL
+libs/**/*.dll
+libs/**/*.so
+libs/**/*.dylib
+libs/**/*.lib
+libs/**/*.exp
+libs/**/*.pdb
+# Nhưng GIỮ LẠI placeholder và README
+!libs/**/.placeholder
+!libs/**/README.md

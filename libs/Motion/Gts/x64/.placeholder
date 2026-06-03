@@ -1,0 +1,6 @@
+# Thư mục này chứa: gts.dll (x64)
+# Vendor: 固高 Googoltech GTS
+# SDK: GTS-800-PG, GTS-400-PG
+# 
+# Copy DLL vào đây sau khi cài SDK (xem libs/README.md để biết chi tiết).
+# File *.dll đã được .gitignore — chỉ commit file .placeholder này.

@@ -1,0 +1,6 @@
+# Thư mục này chứa: (không cần DLL)
+# Vendor: Omron NX
+# Dùng FINS/TCP hoặc OPC UA
+# 
+# Copy DLL vào đây sau khi cài SDK (xem libs/README.md để biết chi tiết).
+# File *.dll đã được .gitignore — chỉ commit file .placeholder này.

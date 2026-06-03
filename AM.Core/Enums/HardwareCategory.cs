@@ -56,9 +56,3 @@ public enum HardwareCategory
     /// <summary>TCP device dùng giao thức tùy chỉnh (cân điện tử, barcode reader via TCP).</summary>
     TcpDevice = 13,
 
-    /// <summary>PLC (Inovance, Mitsubishi, Siemens) qua Modbus/MC/S7 — đọc/ghi D/M register.</summary>
-    Plc = 14,
-
-    /// <summary>Servo drive độc lập (Inovance IS620/SV660 qua Modbus, profile position).</summary>
-    Servo = 15
-}
