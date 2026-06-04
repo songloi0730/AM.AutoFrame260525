@@ -190,4 +190,144 @@ public sealed class ModbusTcpClient : IModbusClient
     }
 
     /// <inheritdoc/>
-    public async Task WriteMultipleRegistersAsync(byte slaveId, usho
+    public async Task WriteMultipleRegistersAsync(byte slaveId, ushort startAddress, ushort[] values,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        ArgumentOutOfRangeException.ThrowIfZero(values.Length);
+
+        int byteCount = values.Length * 2;
+        var pdu = new byte[6 + byteCount];
+        pdu[0] = FcWriteMultipleRegs;
+        BinaryPrimitives.WriteUInt16BigEndian(pdu.AsSpan(1), startAddress);
+        BinaryPrimitives.WriteUInt16BigEndian(pdu.AsSpan(3), (ushort)values.Length);
+        pdu[5] = (byte)byteCount;
+        for (int i = 0; i < values.Length; i++)
+            BinaryPrimitives.WriteUInt16BigEndian(pdu.AsSpan(6 + (i * 2)), values[i]);
+
+        await TransactAsync(slaveId, pdu, ct).ConfigureAwait(false);
+    }
+
+    // ─── IDisposable ─────────────────────────────────────────────────────────
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        DisposeSocket();
+        _lock.Dispose();
+    }
+
+    // ─── Private: typed read helpers ─────────────────────────────────────────
+
+    private async Task<bool[]> ReadBitsAsync(byte fc, byte slaveId, ushort startAddress,
+        ushort count, CancellationToken ct)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(count);
+        var pdu = new byte[5];
+        pdu[0] = fc;
+        BinaryPrimitives.WriteUInt16BigEndian(pdu.AsSpan(1), startAddress);
+        BinaryPrimitives.WriteUInt16BigEndian(pdu.AsSpan(3), count);
+
+        byte[] resp = await TransactAsync(slaveId, pdu, ct).ConfigureAwait(false);
+        // resp: [fc][byteCount][data...]
+        var result = new bool[count];
+        for (int i = 0; i < count; i++)
+            result[i] = (resp[2 + (i / 8)] & (1 << (i % 8))) != 0;
+        return result;
+    }
+
+    private async Task<ushort[]> ReadRegistersAsync(byte fc, byte slaveId, ushort startAddress,
+        ushort count, CancellationToken ct)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(count);
+        var pdu = new byte[5];
+        pdu[0] = fc;
+        BinaryPrimitives.WriteUInt16BigEndian(pdu.AsSpan(1), startAddress);
+        BinaryPrimitives.WriteUInt16BigEndian(pdu.AsSpan(3), count);
+
+        byte[] resp = await TransactAsync(slaveId, pdu, ct).ConfigureAwait(false);
+        // resp: [fc][byteCount][hi,lo...]
+        var result = new ushort[count];
+        for (int i = 0; i < count; i++)
+            result[i] = BinaryPrimitives.ReadUInt16BigEndian(resp.AsSpan(2 + (i * 2)));
+        return result;
+    }
+
+    // ─── Private: MBAP transaction ───────────────────────────────────────────
+
+    private async Task<byte[]> TransactAsync(byte slaveId, byte[] pdu, CancellationToken ct)
+    {
+        EnsureConnected();
+        using var toCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        toCts.CancelAfter(_timeoutMs);
+
+        await _lock.WaitAsync(toCts.Token).ConfigureAwait(false);
+        try
+        {
+            var stream = _stream
+                ?? throw new AlarmException(AlarmCodes.CommConnectionFail, $"ModbusTCP:{Host}", "Stream null");
+
+            ushort tid = unchecked(++_transactionId);
+
+            // MBAP header (7 bytes) + PDU
+            var frame = new byte[7 + pdu.Length];
+            BinaryPrimitives.WriteUInt16BigEndian(frame.AsSpan(0), tid);
+            BinaryPrimitives.WriteUInt16BigEndian(frame.AsSpan(2), ProtocolId);
+            BinaryPrimitives.WriteUInt16BigEndian(frame.AsSpan(4), (ushort)(pdu.Length + 1)); // unitId + pdu
+            frame[6] = slaveId;
+            pdu.CopyTo(frame, 7);
+
+            await stream.WriteAsync(frame, toCts.Token).ConfigureAwait(false);
+
+            // Đọc MBAP header (6 byte: tid, pid, len) rồi đọc tiếp len byte
+            var header = new byte[6];
+            await stream.ReadExactlyAsync(header, toCts.Token).ConfigureAwait(false);
+            ushort respLen = BinaryPrimitives.ReadUInt16BigEndian(header.AsSpan(4));
+            if (respLen is < 2 or > 253)
+                throw new AlarmException(AlarmCodes.CommProtocolError, $"ModbusTCP:{Host}",
+                    $"Invalid MBAP length {respLen}");
+
+            var body = new byte[respLen]; // unitId + pdu
+            await stream.ReadExactlyAsync(body, toCts.Token).ConfigureAwait(false);
+
+            byte fc = body[1];
+            if ((fc & ExceptionFlag) != 0)
+            {
+                byte exCode = body[2];
+                throw new AlarmException(AlarmCodes.CommModbusException, $"ModbusTCP:{Host}",
+                    $"Modbus exception fc=0x{fc & 0x7F:X2} code={exCode}");
+            }
+
+            // Trả về PDU (bỏ unitId ở body[0])
+            return body[1..];
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new AlarmException(AlarmCodes.CommTimeout, $"ModbusTCP:{Host}",
+                $"Transaction timeout after {_timeoutMs}ms");
+        }
+        catch (IOException ex)
+        {
+            throw new AlarmException(AlarmCodes.CommTcpSocketError, $"ModbusTCP:{Host}",
+                ex.Message, innerException: ex);
+        }
+        finally { _lock.Release(); }
+    }
+
+    private void EnsureConnected()
+    {
+        if (!IsConnected)
+            throw new AlarmException(AlarmCodes.CommConnectionFail, $"ModbusTCP:{Host}",
+                "Not connected. Call ConnectAsync first.");
+    }
+
+    private void DisposeSocket()
+    {
+        _stream?.Dispose();
+        _tcp?.Dispose();
+        _stream = null;
+        _tcp = null;
+    }
+}

@@ -17,4 +17,32 @@
   </ItemGroup>
 
   <!--
-  �
+  ═══════════════════════════════════════════════════════════════════════════════
+  VENDOR DLLs — Uncomment sau khi copy DLL vào libs/ (xem libs/README.md)
+  ═══════════════════════════════════════════════════════════════════════════════
+
+  GTS 固高 Googoltech GTS-400/800 (gts.dll):
+  Copy từ SDK vào: libs\Motion\Gts\x64\gts.dll
+
+  <ItemGroup>
+    <Content Include="..\libs\Motion\Gts\x64\gts.dll"
+             Condition="Exists('..\libs\Motion\Gts\x64\gts.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>gts.dll</Link>
+    </Content>
+  </ItemGroup>
+
+  Advantech PCI-1245/1265 (ADVMOT.dll):
+  Copy từ SDK vào: libs\Motion\Advantech\x64\ADVMOT.dll
+
+  <ItemGroup>
+    <Content Include="..\libs\Motion\Advantech\x64\ADVMOT.dll"
+             Condition="Exists('..\libs\Motion\Advantech\x64\ADVMOT.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>ADVMOT.dll</Link>
+    </Content>
+  </ItemGroup>
+  ═══════════════════════════════════════════════════════════════════════════════
+  -->
+
+</Project>

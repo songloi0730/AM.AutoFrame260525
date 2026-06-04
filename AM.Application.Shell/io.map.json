@@ -1,0 +1,22 @@
+{
+  "_comment": "IO List của máy — tag logic ↔ kênh vật lý. Đổi đấu dây chỉ sửa file này, không sửa code.",
+  "Di": {
+    "PartPresent_A": 0,
+    "VacOk_A": 1,
+    "PartPresent_B": 2,
+    "VacOk_B": 3,
+    "TrayPresent": 4,
+    "HomeSensor_X": 5,
+    "HomeSensor_Z": 6
+  },
+  "Do": {
+    "Vac_A": 0,
+    "Vac_B": 1,
+    "Clamp_A": 2,
+    "Clamp_B": 3,
+    "TowerGreen": 4,
+    "TowerYellow": 5,
+    "TowerRed": 6,
+    "Buzzer": 7
+  }
+}

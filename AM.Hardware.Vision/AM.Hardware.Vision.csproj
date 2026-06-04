@@ -17,4 +17,44 @@
   </ItemGroup>
 
   <!--
-  �
+  ═══════════════════════════════════════════════════════════════════════════════
+  VENDOR DLLs — Uncomment sau khi copy DLL vào libs/ (xem libs/README.md)
+  ═══════════════════════════════════════════════════════════════════════════════
+
+  Cognex VisionPro (yêu cầu license):
+  Copy từ C:\Program Files\Cognex\VisionPro\bin\ vào libs\Vision\Cognex\x64\
+
+  <ItemGroup>
+    <Reference Include="Cognex.VisionPro">
+      <HintPath>..\libs\Vision\Cognex\x64\Cognex.VisionPro.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Content Include="..\libs\Vision\Cognex\x64\CogSocketServer.dll"
+             Condition="Exists('..\libs\Vision\Cognex\x64\CogSocketServer.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>CogSocketServer.dll</Link>
+    </Content>
+  </ItemGroup>
+
+  HIK Robot MVS Camera:
+  Copy từ C:\Program Files\MVS\Development\DotNet\ vào libs\Vision\HIK\x64\
+
+  <ItemGroup>
+    <Reference Include="MvCameraControl.Net">
+      <HintPath>..\libs\Vision\HIK\x64\MvCameraControl.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Content Include="..\libs\Vision\HIK\x64\MVSDKmd.dll"
+             Condition="Exists('..\libs\Vision\HIK\x64\MVSDKmd.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>MVSDKmd.dll</Link>
+    </Content>
+  </ItemGroup>
+
+  Basler Pylon (hoặc dùng NuGet: Basler.Pylon):
+  <PackageReference Include="Basler.Pylon" Version="*" />
+
+  ═══════════════════════════════════════════════════════════════════════════════
+  -->
+
+</Project>

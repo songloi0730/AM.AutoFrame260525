@@ -4,6 +4,63 @@
 
 ---
 
+## [Session 11] 2026-06-04 — HAL abstraction (EPIC 0) + Scanner/Vision/Safety/IO-tagmap
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Tham khảo:** Kế hoạch Task — Tách phần cứng (HAL). Làm phần additive/buildable ngay, không cần SDK hãng.
+
+### ✅ EPIC 0 — Abstraction trung lập (nền tảng)
+- DTO trung lập (AM.Core):
+  - `Enums/PixelFormat.cs` (Mono8/Mono16/Rgb24/Bgr24/BayerRg8 — không phụ thuộc System.Drawing).
+  - `Models/FrameData.cs` (Pixels/Width/Height/Format/Timestamp) — ảnh trung lập hãng.
+  - `Models/MotionStatus.cs` (Positions/Homed/Moving/FaultCode, đơn vị mm).
+  - `Models/EventArgs/BarcodeReceivedEventArgs.cs`, `SafetyStateChangedEventArgs.cs` (CA1003).
+- Interface mới (AM.Core.Abstractions/Interfaces/Hardware):
+  - `IVisionProcessor` — LoadJob/RunJob(FrameData)→VisionResult, tách hẳn camera khỏi vision tool.
+  - `IBarcodeScanner` — TriggerAsync + CodeReceived event, trung lập Keyence/Cognex.
+  - `ISafetyInput` — CHỈ ĐỌC E-Stop/Guard/LightCurtain + SafetyStateChanged (an toàn vật lý do mạch lo).
+  - `IAxis` — trục đơn đơn vị mm (MoveAbs/MoveRel/Home/Position/IsMoving/IsHomed).
+  - `IIoTagMap` — phân giải tag IO → kênh.
+- `VisionResult` tách khỏi ICameraDevice → file riêng, **bổ sung X/Y/AngleDeg/Pass** (additive, không phá vỡ smart-camera path hiện có).
+
+### ✅ EPIC 4.3 — SimulatedVisionProcessor (AM.Hardware.Vision)
+- Trả VisionResult giả lập theo passRate; chạy end-to-end không cần VisionPro/dongle.
+
+### ✅ EPIC 2.3 — SimulatedSafetyInput (AM.Hardware.IO)
+- Mặc định all-safe; `ForceState` mô phỏng E-Stop/mở cửa → phát SafetyStateChanged để khoá logic.
+
+### ✅ EPIC 2.2 — IO tag-map (AM.Hardware.IO)
+- `JsonIoTagMap` nạp `io.map.json` (tag→kênh, case-insensitive) + `IoTagExtensions`
+  (ReadDiByTag/WriteDoByTag/WriteAndWaitConfirmByTag). Logic máy gọi IO bằng tag, đổi đấu dây chỉ sửa JSON.
+- `AM.Application.Shell/io.map.json` mẫu (PartPresent_A, Vac_A, TowerGreen...).
+
+### ✅ EPIC 5 — Scanner (project mới AM.Hardware.Scanner, protocol-only theo plan 5.1)
+- `TcpBarcodeScannerBase` (TCP line-based, timeout, AlarmException, no-read detection) +
+  `KeyenceScanner` (LON) + `CognexScanner` (TRIGGER ON, "NO READ") + `SimulatedBarcodeScanner` (queue/serial).
+
+### ✅ EPIC 0.4/6.1 (một phần) — HardwareFactory
+- `AM.Application.Shell/HardwareFactory.cs` — điểm chọn vendor cho peripherals
+  (IVisionProcessor/IBarcodeScanner/ISafetyInput/IIoTagMap) theo `appsettings`, ép Simulated khi UseSimulation.
+- Bootstrapper gọi `HardwareFactory.RegisterPeripherals`. `appsettings.json`: thêm block Vision/Scanner + Io:TagMapFile.
+
+### ✅ Tests (AM.Hardware.Tests +10 → 27 total)
+- `HalAbstractionTests` — SimVision, SimSafety (event), JsonIoTagMap (resolve/load/case-insensitive), IoTagExtensions, SimScanner.
+- `ScannerLoopbackTests` — Keyence/Cognex qua scanner server giả loopback (line protocol + no-read alarm).
+
+### ⚠️ Quyết định scope (minh bạch)
+- **Nhóm B (SDK-nặng) CHƯA làm**: EtherCAT motion (PCIE-1203+Leadshine), Beckhoff ADS, Basler/Hik camera, VisionPro.
+  → Cần SDK hãng; sẽ tạo project riêng + Simulated khi có DLL (libs/ đã chuẩn bị).
+- **Triệt để tách project** cho driver Session 9 (Inovance/Mitsubishi/Siemens/GTS...) là refactor cơ học lớn,
+  **để pha riêng** tránh trộn với feature mới. HardwareFactory hiện quản peripherals; motion/io/plc vẫn ở RegisterRealHardware.
+- Interface cũ (IMotionController/IIoModule/ICameraDevice) **chưa** thêm ErrorOccurred/GetLastError (0.1) — sẽ retrofit kèm watchdog 6.2 để tránh phá vỡ 8 driver hiện có.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error** (16 projects).
+- `dotnet test` → **65 passed** (38 services + 27 hardware).
+
+---
+
 ## [Session 10] 2026-06-03 — libs/ Vendor DLL Structure
 
 **Commit:** `0fb161c`

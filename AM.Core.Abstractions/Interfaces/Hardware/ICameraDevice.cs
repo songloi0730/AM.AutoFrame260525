@@ -8,21 +8,6 @@ using AM.Core.Exceptions;
 
 namespace AM.Core.Abstractions.Interfaces.Hardware;
 
-/// <summary>Kết quả chụp ảnh và chạy vision tool.</summary>
-public sealed class VisionResult
-{
-    public bool IsPassed { get; init; }
-    public double Score { get; init; }
-    public string JobName { get; init; } = string.Empty;
-    public Dictionary<string, object> Measurements { get; init; } = new();
-    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-
-    // CA1819 suppressed: trả về byte[] là chuẩn trong image processing/vision systems
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819",
-        Justification = "Image data as byte[] is the standard pattern in vision/imaging APIs")]
-    public byte[]? Image { get; init; }
-}
-
 /// <summary>
 /// Interface chuẩn cho camera/vision device.
 /// WorkStation chỉ được dùng interface này, KHÔNG reference class cụ thể.

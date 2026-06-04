@@ -174,6 +174,9 @@ internal static class Bootstrapper
             RegisterDemoMachine(services);
             Log.Information(">>> REAL hardware mode ENABLED <<<");
         }
+
+        // Peripherals (vision/scanner/safety/io-tagmap) — chọn vendor qua HardwareFactory
+        HardwareFactory.RegisterPeripherals(services, config, useSimulation);
     }
 
     /// <summary>
@@ -214,4 +217,107 @@ internal static class Bootstrapper
         services.AddSingleton<IIoModule>(sp => ioVendor.ToUpperInvariant() switch
         {
             "ADVANTECHADAM" => new AdvantechAdamIoModule(
-             
+                new ModbusTcpClient(sp.GetRequiredService<ILogger<ModbusTcpClient>>(),
+                    config.GetValue<string>("AutoMachine:Io:AdamHost") ?? "192.168.1.55",
+                    config.GetValue("AutoMachine:Io:AdamPort", 502)),
+                sp.GetRequiredService<ILogger<AdvantechAdamIoModule>>(), diCount, doCount,
+                (byte)config.GetValue("AutoMachine:Io:AdamSlaveId", 1)),
+            _ => new SimulatedIoModule(
+                sp.GetRequiredService<ILogger<SimulatedIoModule>>(), diCount, doCount)
+        });
+
+        // ─── PLC ──────────────────────────────────────────────────────────────
+        string plcVendor = config.GetValue<string>("AutoMachine:Plc:Vendor") ?? "Simulated";
+        string plcHost = config.GetValue<string>("AutoMachine:Plc:Host") ?? "192.168.1.50";
+        int plcPort = config.GetValue("AutoMachine:Plc:Port", 502);
+        byte plcSlave = (byte)config.GetValue("AutoMachine:Plc:SlaveId", 1);
+
+        services.AddSingleton<IPlcDevice>(sp => plcVendor.ToUpperInvariant() switch
+        {
+            "INOVANCE" => new InovancePlcDevice(
+                new ModbusTcpClient(sp.GetRequiredService<ILogger<ModbusTcpClient>>(), plcHost, plcPort),
+                sp.GetRequiredService<ILogger<InovancePlcDevice>>(), "InovancePLC", plcSlave),
+            "MITSUBISHI" => new MitsubishiPlcDevice(
+                sp.GetRequiredService<ILogger<MitsubishiPlcDevice>>(), plcHost, plcPort),
+            "SIEMENS" => new SiemensS7PlcDevice(
+                sp.GetRequiredService<ILogger<SiemensS7PlcDevice>>(), plcHost,
+                config.GetValue("AutoMachine:Plc:Rack", 0), config.GetValue("AutoMachine:Plc:Slot", 1)),
+            _ => new SimulatedPlcDevice(sp.GetRequiredService<ILogger<SimulatedPlcDevice>>())
+        });
+
+        // ─── Robot ────────────────────────────────────────────────────────────
+        string robotVendor = config.GetValue<string>("AutoMachine:Robot:Vendor") ?? "Simulated";
+        services.AddSingleton<IRobotDevice>(sp => robotVendor.ToUpperInvariant() switch
+        {
+            "SOCKET" => new SocketRobotDevice(
+                sp.GetRequiredService<ILogger<SocketRobotDevice>>(),
+                config.GetValue<string>("AutoMachine:Robot:Host") ?? "192.168.1.60",
+                config.GetValue("AutoMachine:Robot:Port", 5000)),
+            _ => new SimulatedRobotDevice(sp.GetRequiredService<ILogger<SimulatedRobotDevice>>())
+        });
+
+        // ─── Camera + Comm devices: dùng simulated (chưa có driver thật) ──────
+        services.AddSingleton<ICameraDevice>(sp =>
+            new SimulatedCameraDevice(sp.GetRequiredService<ILogger<SimulatedCameraDevice>>(), "SIM_CAM_01", 0.9));
+        services.AddSingleton<IModbusClient>(sp =>
+            new ModbusTcpClient(sp.GetRequiredService<ILogger<ModbusTcpClient>>(),
+                config.GetValue<string>("AutoMachine:Comm:ModbusHost") ?? "192.168.1.10",
+                config.GetValue("AutoMachine:Comm:ModbusPort", 502)));
+        services.AddSingleton<ISerialDevice>(sp =>
+            new SimulatedSerialDevice(sp.GetRequiredService<ILogger<SimulatedSerialDevice>>(), "SIM_COM1", 9600));
+        services.AddSingleton<ITcpDevice>(sp =>
+            new SimulatedTcpDevice(sp.GetRequiredService<ILogger<SimulatedTcpDevice>>(), "192.168.1.20", 9000));
+        string opcEndpoint = config.GetValue<string>("AutoMachine:Comm:OpcUaEndpoint")
+                             ?? "opc.tcp://127.0.0.1:4840";
+        services.AddSingleton<IOpcUaClient>(sp =>
+            new SimulatedOpcUaClient(sp.GetRequiredService<ILogger<SimulatedOpcUaClient>>(),
+                new Uri(opcEndpoint)));
+        services.AddSingleton<IEthernetIpClient>(sp =>
+            new SimulatedEthernetIpClient(sp.GetRequiredService<ILogger<SimulatedEthernetIpClient>>(), "192.168.1.40", 0));
+    }
+
+    /// <summary>
+    /// Đăng ký Demo machine (DemoPickMechanism → DemoStation → DemoMasterController) vào DI.
+    /// Gọi sau khi RegisterServices và trước khi BuildServiceProvider.
+    /// </summary>
+    internal static void RegisterDemoMachine(IServiceCollection services)
+    {
+        services.AddSingleton<DemoPickMechanism>();
+        services.AddSingleton<DemoInspectMechanism>();
+        services.AddSingleton<DemoStation>();
+        services.AddSingleton<DemoMasterController>();
+        // Register concrete type cũng như interface để Dashboard có thể resolve IMasterController
+        services.AddSingleton<IMasterController>(sp => sp.GetRequiredService<DemoMasterController>());
+    }
+
+    /// <summary>
+    /// Đăng ký hardware devices vào HardwareManagerService sau khi DI container được build.
+    /// Cho phép Mechanism resolve device theo tên thay vì chỉ qua DI type.
+    /// </summary>
+    internal static void RegisterHardwareDevices(IServiceProvider services)
+    {
+        var hwManager = services.GetRequiredService<IHardwareManagerService>();
+
+        hwManager.Register("MainMotion",     HardwareCategory.MotionCard,  services.GetRequiredService<IMotionController>());
+        hwManager.Register("MainCamera",     HardwareCategory.Camera,       services.GetRequiredService<ICameraDevice>());
+        hwManager.Register("MainIO",         HardwareCategory.IOController, services.GetRequiredService<IIoModule>());
+        hwManager.Register("MainModbus",     HardwareCategory.ModbusTcp,    services.GetRequiredService<IModbusClient>());
+        hwManager.Register("MainSerial",     HardwareCategory.SerialPort,   services.GetRequiredService<ISerialDevice>());
+        hwManager.Register("MainTcp",        HardwareCategory.TcpDevice,    services.GetRequiredService<ITcpDevice>());
+        hwManager.Register("MainOpcUA",      HardwareCategory.OpcUaClient,  services.GetRequiredService<IOpcUaClient>());
+        hwManager.Register("MainEthernetIP", HardwareCategory.EthernetIp,   services.GetRequiredService<IEthernetIpClient>());
+
+        Log.Information("HardwareManagerService: registered {Count} devices", 8);
+    }
+
+    /// <summary>
+    /// Tạo và migrate database khi khởi động.
+    /// </summary>
+    internal static async Task InitializeDatabaseAsync(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AutoMachineDbContext>();
+        await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
+        Log.Information("Database initialized: {DbPath}", db.Database.GetDbConnection().DataSource);
+    }
+}
