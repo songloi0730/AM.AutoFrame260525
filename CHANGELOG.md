@@ -4,6 +4,32 @@
 
 ---
 
+## [Session 13] 2026-06-04 — Phase B: AM.Infrastructure.Tests (13 transitions) + end-to-end sequence
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Vá khoảng trống test lõi đúng như claim #11 (BaseMasterController/BaseMechanism/StationBase chưa có test).
+
+### ✅ B1 — AM.Infrastructure.Tests (project mới, 35 tests)
+- `TestDoubles.cs` — RecordingAlarmService + TestMechanism/TestStation/TestMasterController (expose FireTrigger).
+- `BaseMasterControllerTests` — **đủ 13 transition ISA-88 hợp lệ** (Theory/MemberData) + transition không hợp lệ
+  bị từ chối (Fire=false, state giữ nguyên) + StateChanged (Previous/New/Trigger) + SetOperationMode chỉ trong Idle.
+- `BaseMechanismTests` — IsReady sau Initialize; **IsBusy guard** (Interlocked) từ chối thao tác đồng thời + nhả guard
+  sau exception; EmergencyStop KHÔNG throw dù OnEmergencyStop ném.
+- `StationBaseTests` — RunCycle Running→Idle; AlarmException → RunAlarm + rethrow; EmergencyStop → RunAlarm.
+
+### ✅ B2 — End-to-end Simulated sequence (EndToEndSequenceTests)
+- Run loop chạy nhiều cycle → CycleCount tăng + CycleCompleted fire → Stop về Idle.
+- **Pause halt / Resume continue**: paused thì loop dừng ở checkpoint (cycle không tăng), resume thì tiếp tục.
+- **Safety-trip**: `SimulatedSafetyInput.ForceState(guard mở)` giữa chu trình → cycleBody ném AlarmException →
+  run loop FireTrigger(Error) → **RunAlarm** + alarm 70010 được raise.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error** (17 projects).
+- `dotnet test` → **104 passed** (42 services + 35 infrastructure + 27 hardware).
+
+---
+
 ## [Session 12] 2026-06-04 — Phase A: Wire Dashboard + IHardwareDevice base + doc drift
 
 **Commit:** `2795775`

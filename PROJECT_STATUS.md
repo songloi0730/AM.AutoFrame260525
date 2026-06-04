@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
-**Session:** #12 — Phase A: Wire Dashboard + IHardwareDevice base (generic ConnectAll) + doc drift
-**Commit:** `2795775`
+**Session:** #13 — Phase B: AM.Infrastructure.Tests (13 transitions) + end-to-end sequence test
+**Commit:** *(pending)*
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **16 projects**, build clean (0 warning), 65 tests pass |
+| Solution structure | ✅ Hoàn thành | **17 projects**, build clean (0 warning), **104 tests pass** |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -36,7 +36,7 @@
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
 | `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
-| AM.Infrastructure.Tests | ❌ Chưa có | BaseMasterController 13 transitions chưa có test |
+| AM.Infrastructure.Tests | ✅ Hoàn thành | **35 tests**: 13 ISA-88 transitions + BaseMechanism busy-guard + StationBase + end-to-end (pause/resume/safety-trip) |
 | AM.Modules.* (các module còn lại) | ❌ Chưa có | Alarm, Parameter, Motion, IO, Vision, Identity... |
 
 ---
