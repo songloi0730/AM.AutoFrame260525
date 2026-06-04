@@ -58,8 +58,11 @@ AM.Core/                         — Enums, Models, Constants, Exceptions
   Exceptions/                    — AlarmException
 
 AM.Core.Abstractions/            — Interfaces only, no implementation
-  Interfaces/Hardware/           — IMotionController, IAxisGroup, ICameraDevice,
-                                    ILightController, IIoModule, ICommunicationDevice
+  Interfaces/Hardware/           — IHardwareDevice (base: Connect/Disconnect), IMotionController, IAxis,
+                                    ICameraDevice, IVisionProcessor, IIoModule, IIoTagMap, ISafetyInput,
+                                    IModbusClient, ISerialDevice, ITcpDevice, IOpcUaClient, IEthernetIpClient,
+                                    IPlcDevice, IRobotDevice, IBarcodeScanner
+                                    (TODO chưa có: IAxisGroup, ILightController)
   Interfaces/Machine/            — IMechanism, IStation, IMasterController
   Interfaces/Services/           — IAlarmService, IRecipeService, IParameterService,
                                     IHardwareManagerService, IStationSyncService,
@@ -67,11 +70,16 @@ AM.Core.Abstractions/            — Interfaces only, no implementation
   Interfaces/Repositories/       — IAlarmRepository, IProductionRepository
   Interfaces/                    — IStep
 
-AM.Hardware.Motion/              — SimulatedMotionController, AxisBase, MultiAxisGroup
-AM.Hardware.Vision/              — SimulatedCameraDevice, SimulatedLightController
-AM.Hardware.IO/                  — SimulatedIoModule, TowerLightService, EStopMonitor
-AM.Hardware.Communication/       — SerialPortWrapper, TcpClientWrapper, ModbusTcpClient,
-                                    SecsGemService (TCP/Serial/Modbus/SECS-GEM)
+AM.Hardware.Motion/              — SimulatedMotionController + GtsMotionController (固高) +
+                                    AdvantechMotionController (P/Invoke)
+AM.Hardware.Vision/              — SimulatedCameraDevice, SimulatedVisionProcessor
+AM.Hardware.IO/                  — SimulatedIoModule, AdvantechAdamIoModule, SimulatedSafetyInput,
+                                    JsonIoTagMap + IoTagExtensions
+AM.Hardware.Comm/                — Serial/TCP/Modbus (real+sim), OPC UA/EtherNet-IP (sim),
+                                    Inovance PLC+servo, Mitsubishi MC, Siemens S7, Robot socket
+AM.Hardware.Scanner/             — KeyenceScanner, CognexScanner, SimulatedBarcodeScanner
+                                    (TODO chưa có: EStopMonitor riêng — đã thay bằng ISafetyInput;
+                                     SecsGemService; TowerLightService)
 
 AM.Services/                     — AlarmService, RecipeService, ParameterService,
                                     HardwareManagerService, StationSyncService

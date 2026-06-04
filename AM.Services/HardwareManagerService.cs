@@ -118,22 +118,17 @@ public sealed class HardwareManagerService : IHardwareManagerService
         {
             ct.ThrowIfCancellationRequested();
 
-            // Pattern match tất cả hardware interfaces — mỗi interface đều có ConnectAsync / OpenAsync
-            Task connectTask = entry.Device switch
+            // Generic: mọi hardware đều là IHardwareDevice → không cần switch theo kiểu.
+            // Thêm interface hardware mới (kế thừa IHardwareDevice) tự động được connect ở đây.
+            if (entry.Device is IHardwareDevice device)
             {
-                IMotionController   mc   => mc.ConnectAsync(ct),
-                ICameraDevice       cam  => cam.ConnectAsync(ct),
-                IIoModule           io   => io.ConnectAsync(ct),
-                IModbusClient       mbus => mbus.ConnectAsync(ct),
-                ITcpDevice          tcp  => tcp.ConnectAsync(ct),
-                IOpcUaClient        opc  => opc.ConnectAsync(ct),
-                IEthernetIpClient   eip  => eip.ConnectAsync(ct),
-                ISerialDevice       ser  => ser.OpenAsync(ct),   // Serial dùng OpenAsync, không ConnectAsync
-                _ => Task.CompletedTask                          // Unknown — đăng ký nhưng không auto-connect
-            };
-
-            await connectTask.ConfigureAwait(false);
-            _logger.LogDebug("Connected: {Name} ({Category})", entry.Name, entry.Category);
+                await device.ConnectAsync(ct).ConfigureAwait(false);
+                _logger.LogDebug("Connected: {Name} ({Category})", entry.Name, entry.Category);
+            }
+            else
+            {
+                _logger.LogWarning("Device '{Name}' không implement IHardwareDevice — bỏ qua auto-connect", entry.Name);
+            }
         }
 
         _logger.LogInformation("All hardware devices connected");
@@ -149,23 +144,12 @@ public sealed class HardwareManagerService : IHardwareManagerService
 
         foreach (var entry in snapshot)
         {
-            Task disconnectTask = entry.Device switch
-            {
-                IMotionController   mc   => mc.DisconnectAsync(ct),
-                ICameraDevice       cam  => cam.DisconnectAsync(ct),
-                IIoModule           io   => io.DisconnectAsync(ct),
-                IModbusClient       mbus => mbus.DisconnectAsync(ct),
-                ITcpDevice          tcp  => tcp.DisconnectAsync(ct),
-                IOpcUaClient        opc  => opc.DisconnectAsync(ct),
-                IEthernetIpClient   eip  => eip.DisconnectAsync(ct),
-                ISerialDevice       ser  => ser.CloseAsync(ct),   // Serial dùng CloseAsync
-                _ => Task.CompletedTask
-            };
+            if (entry.Device is not IHardwareDevice device) continue;
 
 #pragma warning disable CA1031 // Disconnect must not propagate — attempt all devices even if some fail
             try
             {
-                await disconnectTask.ConfigureAwait(false);
+                await device.DisconnectAsync(ct).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

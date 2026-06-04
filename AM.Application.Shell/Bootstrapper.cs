@@ -27,6 +27,7 @@ using AM.Hardware.IO.Advantech;
 using AM.Hardware.Motion;
 using AM.Hardware.Motion.Advantech;
 using AM.Hardware.Motion.Gts;
+using AM.Modules.Dashboard;
 using AM.Hardware.Vision;
 using AM.Services;
 using AM.WorkStation.Demo;
@@ -108,6 +109,10 @@ internal static class Bootstrapper
         services.AddSingleton<IHardwareManagerService, HardwareManagerService>();
         // StationSyncService: semaphore-based pipeline sync giữa các stations
         services.AddSingleton<IStationSyncService, StationSyncService>();
+
+        // ─── UI ViewModels ────────────────────────────────────────────────────────
+        // DashboardViewModel resolve trên UI thread (MainWindow.OnWindowLoaded) để capture SynchronizationContext
+        services.AddSingleton<DashboardViewModel>();
 
         // ─── Hardware — toggle Simulated / Real via appsettings ──────────────────
         if (useSimulation)
@@ -306,8 +311,12 @@ internal static class Bootstrapper
         hwManager.Register("MainTcp",        HardwareCategory.TcpDevice,    services.GetRequiredService<ITcpDevice>());
         hwManager.Register("MainOpcUA",      HardwareCategory.OpcUaClient,  services.GetRequiredService<IOpcUaClient>());
         hwManager.Register("MainEthernetIP", HardwareCategory.EthernetIp,   services.GetRequiredService<IEthernetIpClient>());
+        hwManager.Register("MainPLC",        HardwareCategory.Plc,          services.GetRequiredService<IPlcDevice>());
+        hwManager.Register("MainRobot",      HardwareCategory.Robot,        services.GetRequiredService<IRobotDevice>());
+        hwManager.Register("MainScanner",    HardwareCategory.Scanner,      services.GetRequiredService<IBarcodeScanner>());
+        hwManager.Register("MainSafety",     HardwareCategory.SafetyTerminal, services.GetRequiredService<ISafetyInput>());
 
-        Log.Information("HardwareManagerService: registered {Count} devices", 8);
+        Log.Information("HardwareManagerService: registered {Count} devices", 12);
     }
 
     /// <summary>

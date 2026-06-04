@@ -12,7 +12,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// Interface chuẩn cho I/O module.
 /// Dùng để điều khiển xi-lanh, kẹp, đèn, đọc sensor, cảm biến.
 /// </summary>
-public interface IIoModule : IDisposable
+public interface IIoModule : IDisposable, IHardwareDevice
 {
     /// <summary>True nếu đã kết nối.</summary>
     bool IsConnected { get; }
@@ -22,15 +22,6 @@ public interface IIoModule : IDisposable
 
     /// <summary>Số lượng digital output.</summary>
     int DigitalOutputCount { get; }
-
-    /// <summary>
-    /// Kết nối tới I/O module.
-    /// </summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code IO_CONNECTION_FAIL.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Đọc trạng thái Digital Input.

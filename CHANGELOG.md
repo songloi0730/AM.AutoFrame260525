@@ -4,6 +4,43 @@
 
 ---
 
+## [Session 12] 2026-06-04 — Phase A: Wire Dashboard + IHardwareDevice base + doc drift
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Phản biện đánh giá bên thứ 3 (dựa trên snapshot Session 8 cũ) → thực thi 8 điểm đúng, bắt đầu Phase A.
+
+### ✅ A1 — Wire Dashboard vào Shell (claim #1 đúng)
+- `MainWindow.xaml`: thay placeholder bằng `ContentControl x:Name="MainContent"`.
+- `MainWindow.xaml.cs`: `OnWindowLoaded` resolve `DashboardViewModel` từ DI (UI thread → capture SynchronizationContext), set `MainContent.Content = new DashboardView{...}`.
+- Shell csproj + ProjectReference `AM.Modules.Dashboard`; Bootstrapper đăng ký `DashboardViewModel` singleton.
+- **DoD:** app khởi động hiển thị Dashboard (state indicator + alarm list + Start/Stop/Reset).
+
+### ✅ A2 — IHardwareDevice base + bỏ switch trong ConnectAllAsync (claim #4 → fix #2)
+- `IHardwareDevice { ConnectAsync; DisconnectAsync; }` mới — hợp đồng lifecycle chung.
+- **11 interface** kế thừa `IHardwareDevice`, gỡ khai báo Connect/Disconnect trùng lặp (additive — KHÔNG sửa implementation nào): Motion/Camera/IO/Modbus/Tcp/OpcUa/EthernetIp/Plc/Robot/BarcodeScanner/SafetyInput.
+- `ISerialDevice`: bắc cầu bằng default interface method (`ConnectAsync→OpenAsync`, `DisconnectAsync→CloseAsync`) — không đụng SerialPortWrapper/Simulated.
+- `HardwareManagerService.ConnectAllAsync/DisconnectAllAsync` → **vòng lặp generic `is IHardwareDevice`**, xoá switch 8-nhánh. Thêm hardware mới không phải sửa manager.
+- Đăng ký thêm 4 device vào registry (MainPLC/MainRobot/MainScanner/MainSafety) + `HardwareCategory.SafetyTerminal=16`.
+
+### ✅ A3 — Dọn doc drift (claim #8, #10)
+- `CLAUDE.md`: sửa danh sách interface Hardware + project AM.Hardware.* cho khớp code thật; đánh dấu rõ TODO chưa có (IAxisGroup, ILightController, EStopMonitor→thay bằng ISafetyInput).
+
+### ✅ Tests (+4 → AM.Services.Tests 42)
+- `HardwareManagerServiceTests` — ConnectAll/DisconnectAll generic qua IHardwareDevice, bỏ qua object không phải device, Resolve case-insensitive.
+
+### 📌 Phản biện đánh giá bên thứ 3 (tóm tắt)
+- **Sai dữ kiện:** #6 (Parameter lưu JSON chứ không phải EF/SQLite → không có "bất nhất"), #13 (Serilog ĐÃ có file rolling 30 ngày), #15 (CheckPauseAsync + ct ĐÃ propagate trong run loop).
+- **Lỗi thời:** "32 tests" (thực tế 69), #8 (ISafetyInput đã thêm S11).
+- **Opinion/YAGNI:** #3 (Stateless lib), #7 (dual-generic Station), #9 (tách SECS process).
+- **Đúng, đã/đang làm:** #1 (A1), #2+#4 (A2), #10 (A3). Còn lại #5/#12/#14/#16 + UI modules → Phase B–E.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **69 passed** (42 services + 27 hardware).
+
+---
+
 ## [Session 11] 2026-06-04 — HAL abstraction (EPIC 0) + Scanner/Vision/Safety/IO-tagmap
 
 **Commit:** `6888d66`

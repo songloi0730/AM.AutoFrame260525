@@ -20,7 +20,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// WorkStation chỉ dùng interface này. Mọi method ném <see cref="AlarmException"/> khi lỗi
 /// để sequence loop xử lý thống nhất (range 50xxx Communication).
 /// </remarks>
-public interface IPlcDevice : IDisposable
+public interface IPlcDevice : IDisposable, IHardwareDevice
 {
     /// <summary>Tên định danh thiết bị (dùng cho log/alarm station).</summary>
     string Name { get; }
@@ -28,12 +28,6 @@ public interface IPlcDevice : IDisposable
     /// <summary>True nếu đã kết nối.</summary>
     bool IsConnected { get; }
 
-    /// <summary>Kết nối tới PLC.</summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối an toàn.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     // ─── Bit (coil / M / X / Y) ──────────────────────────────────────────────
 

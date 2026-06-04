@@ -60,5 +60,8 @@ public enum HardwareCategory
     Plc = 14,
 
     /// <summary>Servo drive độc lập (Inovance IS620/SV660 qua Modbus, profile position).</summary>
-    Servo = 15
+    Servo = 15,
+
+    /// <summary>Safety terminal (TwinSAFE/safety relay) — chỉ đọc trạng thái E-Stop/Guard/Light Curtain.</summary>
+    SafetyTerminal = 16
 }

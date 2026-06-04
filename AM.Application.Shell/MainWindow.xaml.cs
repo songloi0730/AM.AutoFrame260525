@@ -5,6 +5,7 @@
 // -------------------------------------------------------
 
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Modules.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Windows;
@@ -34,6 +35,12 @@ public partial class MainWindow : Window
     private void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
         Log.Information("MainWindow loaded");
+
+        // Nạp Dashboard làm màn hình chính. Resolve trên UI thread để DashboardViewModel
+        // capture đúng SynchronizationContext (marshalling event hardware → UI).
+        var dashboardVm = _services.GetRequiredService<DashboardViewModel>();
+        MainContent.Content = new DashboardView { DataContext = dashboardVm };
+
         var alarmService = _services.GetRequiredService<IAlarmService>();
 
         alarmService.AlarmRaised += (_, alarmArgs) =>

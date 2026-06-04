@@ -22,7 +22,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// </list>
 /// Implementations: <c>ModbusTcpClient</c> (real, cần NuGet), <c>SimulatedModbusClient</c> (in-memory).
 /// </remarks>
-public interface IModbusClient : IDisposable
+public interface IModbusClient : IDisposable, IHardwareDevice
 {
     /// <summary>Host/IP của Modbus server (PLC, gateway).</summary>
     string Host { get; }
@@ -33,14 +33,6 @@ public interface IModbusClient : IDisposable
     /// <summary>True nếu đã kết nối TCP thành công.</summary>
     bool IsConnected { get; }
 
-    /// <summary>
-    /// Kết nối tới Modbus server.
-    /// </summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code CommConnectionFail.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối an toàn.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     // ─── FC01: Read Coils ─────────────────────────────────────────────────────
 

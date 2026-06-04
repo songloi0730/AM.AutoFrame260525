@@ -21,7 +21,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// </list>
 /// Implementations: <c>SerialDevice</c> (System.IO.Ports), <c>SimulatedSerialDevice</c> (in-memory queue).
 /// </remarks>
-public interface ISerialDevice : IDisposable
+public interface ISerialDevice : IDisposable, IHardwareDevice
 {
     /// <summary>Tên cổng serial (ví dụ: "COM3", "/dev/ttyUSB0").</summary>
     string PortName { get; }
@@ -46,6 +46,17 @@ public interface ISerialDevice : IDisposable
 
     /// <summary>Đóng cổng serial an toàn.</summary>
     Task CloseAsync(CancellationToken ct = default);
+
+    // ─── Bridge IHardwareDevice → Open/Close (serial dùng thuật ngữ riêng) ───
+    /// <inheritdoc/>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033",
+        Justification = "Default interface method bridge; OpenAsync là API công khai tương đương cho lớp con")]
+    Task IHardwareDevice.ConnectAsync(CancellationToken ct) => OpenAsync(ct);
+
+    /// <inheritdoc/>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033",
+        Justification = "Default interface method bridge; CloseAsync là API công khai tương đương cho lớp con")]
+    Task IHardwareDevice.DisconnectAsync(CancellationToken ct) => CloseAsync(ct);
 
     /// <summary>
     /// Ghi raw bytes xuống serial port.

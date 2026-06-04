@@ -12,23 +12,13 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// Interface chuẩn cho motion controller.
 /// WorkStation chỉ được dùng interface này, KHÔNG reference class cụ thể.
 /// </summary>
-public interface IMotionController : IDisposable
+public interface IMotionController : IDisposable, IHardwareDevice
 {
     /// <summary>Số trục của controller.</summary>
     int AxisCount { get; }
 
     /// <summary>True nếu đã kết nối và sẵn sàng.</summary>
     bool IsConnected { get; }
-
-    /// <summary>
-    /// Kết nối tới motion controller.
-    /// </summary>
-    /// <param name="ct">Cancellation token cho emergency stop.</param>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code MOTION_CONNECTION_FAIL.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối an toàn.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Home tất cả trục (tìm về gốc cơ học).

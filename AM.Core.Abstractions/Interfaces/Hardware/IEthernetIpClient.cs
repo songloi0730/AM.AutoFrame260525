@@ -22,7 +22,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// </list>
 /// Default port: 44818 (CIP over TCP). Implementations: <c>EthernetIpClient</c> (libplctag), <c>SimulatedEthernetIpClient</c>.
 /// </remarks>
-public interface IEthernetIpClient : IDisposable
+public interface IEthernetIpClient : IDisposable, IHardwareDevice
 {
     /// <summary>Host/IP của PLC.</summary>
     string Host { get; }
@@ -33,14 +33,6 @@ public interface IEthernetIpClient : IDisposable
     /// <summary>True nếu đã kết nối CIP session.</summary>
     bool IsConnected { get; }
 
-    /// <summary>
-    /// Kết nối tới PLC.
-    /// </summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code CommConnectionFail.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối, đóng CIP session.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Đọc giá trị của một tag theo tên.

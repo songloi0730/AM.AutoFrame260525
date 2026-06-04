@@ -16,7 +16,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// ⚠️ AN TOÀN: Việc cắt nguồn/dừng khẩn do <b>mạch an toàn phần cứng</b> đảm nhiệm (PL theo ISO 13849-1).
 /// Phần mềm C# CHỈ ĐỌC trạng thái để khoá logic chu trình — KHÔNG phải lớp an toàn duy nhất.
 /// </remarks>
-public interface ISafetyInput : IDisposable
+public interface ISafetyInput : IDisposable, IHardwareDevice
 {
     /// <summary>True nếu đã kết nối tới safety terminal.</summary>
     bool IsConnected { get; }
@@ -36,10 +36,4 @@ public interface ISafetyInput : IDisposable
     /// <summary>Sự kiện khi bất kỳ trạng thái an toàn nào thay đổi.</summary>
     event EventHandler<SafetyStateChangedEventArgs>? SafetyStateChanged;
 
-    /// <summary>Kết nối và bắt đầu giám sát trạng thái an toàn.</summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code Safety 70xxx.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 }

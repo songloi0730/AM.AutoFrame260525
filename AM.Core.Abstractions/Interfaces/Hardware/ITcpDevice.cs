@@ -18,7 +18,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// <c>ITcpDevice</c> chỉ dùng khi không có interface phù hợp hơn.
 /// Implementations: <c>GenericTcpDevice</c> (System.Net.Sockets), <c>SimulatedTcpDevice</c> (echo/loopback).
 /// </remarks>
-public interface ITcpDevice : IDisposable
+public interface ITcpDevice : IDisposable, IHardwareDevice
 {
     /// <summary>Host/IP của thiết bị.</summary>
     string Host { get; }
@@ -29,14 +29,6 @@ public interface ITcpDevice : IDisposable
     /// <summary>True nếu TCP socket đang kết nối.</summary>
     bool IsConnected { get; }
 
-    /// <summary>
-    /// Kết nối TCP tới thiết bị.
-    /// </summary>
-    /// <exception cref="AlarmException">Ném khi không kết nối được — code CommConnectionFail.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối, đóng socket an toàn.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Gửi raw bytes qua TCP.

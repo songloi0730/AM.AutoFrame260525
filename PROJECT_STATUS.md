@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
-**Session:** #11 — HAL abstraction (EPIC 0) + Scanner/Vision/Safety/IO-tagmap + HardwareFactory
-**Commit:** `6888d66`
+**Session:** #12 — Phase A: Wire Dashboard + IHardwareDevice base (generic ConnectAll) + doc drift
+**Commit:** *(pending)*
 
 ---
 
@@ -17,20 +17,20 @@
 |----------|-----------|---------|
 | Solution structure | ✅ Hoàn thành | **16 projects**, build clean (0 warning), 65 tests pass |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
-| AM.Core.Abstractions | ✅ Hoàn thành | Hardware (15 ifaces: +IVisionProcessor +IBarcodeScanner +ISafetyInput +IAxis +IIoTagMap) + Machine + Services |
+| AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
 | AM.Hardware.Motion | ✅ Hoàn thành | Sim + **GtsMotionController (固高, P/Invoke)** + **AdvantechMotionController (P/Invoke)** |
 | AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice + **SimulatedVisionProcessor (IVisionProcessor)** |
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule + **SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions** |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync |
-| AM.Services.Tests | ✅ Hoàn thành | 38 tests pass (AlarmService, RecipeService, StationSync) |
+| AM.Services.Tests | ✅ Hoàn thành | 42 tests (Alarm, Recipe, StationSync, **HardwareManager generic ConnectAll**) |
 | AM.Hardware.Tests | ✅ Hoàn thành | **27 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, DispatcherHelper |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
-| AM.Modules.Dashboard | ⚠️ Tồn tại nhưng chưa wire | Build ok, DashboardViewModel/View đủ, CHƯA đăng ký vào Prism region Shell |
+| AM.Modules.Dashboard | ✅ Hoàn thành | **Đã wire vào Shell** (MainWindow ContentControl, resolve từ DI) |
 | AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + RegisterRealHardware + **HardwareFactory** (vision/scanner/safety/io-tagmap) + io.map.json |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |

@@ -13,7 +13,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// Interface trừu tượng cho máy đọc mã vạch/QR/DataMatrix — trung lập giữa Keyence/Cognex.
 /// Driver cụ thể chỉ khác ở chuỗi lệnh trigger và cách parse phản hồi.
 /// </summary>
-public interface IBarcodeScanner : IDisposable
+public interface IBarcodeScanner : IDisposable, IHardwareDevice
 {
     /// <summary>Tên định danh scanner.</summary>
     string Name { get; }
@@ -24,12 +24,6 @@ public interface IBarcodeScanner : IDisposable
     /// <summary>Sự kiện khi nhận được mã (trigger ngoài hoặc continuous mode).</summary>
     event EventHandler<BarcodeReceivedEventArgs>? CodeReceived;
 
-    /// <summary>Kết nối tới scanner.</summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code Comm 50xxx.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Phát lệnh trigger và chờ nhận mã.

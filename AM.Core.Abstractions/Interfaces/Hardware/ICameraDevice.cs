@@ -12,22 +12,13 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// Interface chuẩn cho camera/vision device.
 /// WorkStation chỉ được dùng interface này, KHÔNG reference class cụ thể.
 /// </summary>
-public interface ICameraDevice : IDisposable
+public interface ICameraDevice : IDisposable, IHardwareDevice
 {
     /// <summary>Tên camera/thiết bị.</summary>
     string DeviceName { get; }
 
     /// <summary>True nếu đã kết nối.</summary>
     bool IsConnected { get; }
-
-    /// <summary>
-    /// Kết nối tới camera.
-    /// </summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code VISION_CONNECTION_FAIL.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Chụp ảnh và chạy vision job.

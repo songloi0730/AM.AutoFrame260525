@@ -21,7 +21,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// </list>
 /// Implementations: <c>OpcUaClient</c> (OPC Foundation SDK), <c>SimulatedOpcUaClient</c> (in-memory).
 /// </remarks>
-public interface IOpcUaClient : IDisposable
+public interface IOpcUaClient : IDisposable, IHardwareDevice
 {
     /// <summary>OPC UA endpoint URI, ví dụ: <c>new Uri("opc.tcp://192.168.1.100:4840")</c>.</summary>
     Uri EndpointUri { get; }
@@ -29,14 +29,6 @@ public interface IOpcUaClient : IDisposable
     /// <summary>True nếu đã kết nối OPC UA session thành công.</summary>
     bool IsConnected { get; }
 
-    /// <summary>
-    /// Tạo OPC UA session tới server.
-    /// </summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại — code CommConnectionFail.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Đóng OPC UA session an toàn.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Đọc giá trị hiện tại của một OPC UA node.

@@ -15,7 +15,7 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// command/response dạng dòng (line-based). Driver cụ thể map các method này sang
 /// cú pháp lệnh của hãng.
 /// </summary>
-public interface IRobotDevice : IDisposable
+public interface IRobotDevice : IDisposable, IHardwareDevice
 {
     /// <summary>Tên định danh robot (dùng cho log/alarm station).</summary>
     string Name { get; }
@@ -23,12 +23,6 @@ public interface IRobotDevice : IDisposable
     /// <summary>True nếu đã kết nối.</summary>
     bool IsConnected { get; }
 
-    /// <summary>Kết nối tới robot controller.</summary>
-    /// <exception cref="AlarmException">Ném khi kết nối thất bại.</exception>
-    Task ConnectAsync(CancellationToken ct = default);
-
-    /// <summary>Ngắt kết nối an toàn.</summary>
-    Task DisconnectAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Gửi một lệnh thô và nhận response (cho lệnh hãng chưa được trừu tượng hoá).
