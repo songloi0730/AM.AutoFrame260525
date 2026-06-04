@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #13 — Phase B: AM.Infrastructure.Tests (13 transitions) + end-to-end sequence test
-**Commit:** *(pending)*
+**Commit:** `6e37960`
 
 ---
 

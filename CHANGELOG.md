@@ -6,7 +6,7 @@
 
 ## [Session 13] 2026-06-04 — Phase B: AM.Infrastructure.Tests (13 transitions) + end-to-end sequence
 
-**Commit:** *(pending)*
+**Commit:** `6e37960`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Vá khoảng trống test lõi đúng như claim #11 (BaseMasterController/BaseMechanism/StationBase chưa có test).
 
