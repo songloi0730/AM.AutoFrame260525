@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #12 — Phase A: Wire Dashboard + IHardwareDevice base (generic ConnectAll) + doc drift
-**Commit:** *(pending)*
+**Commit:** `2795775`
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 12] 2026-06-04 — Phase A: Wire Dashboard + IHardwareDevice base + doc drift
 
-**Commit:** *(pending)*
+**Commit:** `2795775`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Phản biện đánh giá bên thứ 3 (dựa trên snapshot Session 8 cũ) → thực thi 8 điểm đúng, bắt đầu Phase A.
 
