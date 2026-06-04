@@ -6,7 +6,7 @@
 
 ## [Session 11] 2026-06-04 — HAL abstraction (EPIC 0) + Scanner/Vision/Safety/IO-tagmap
 
-**Commit:** *(pending)*
+**Commit:** `6888d66`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Tham khảo:** Kế hoạch Task — Tách phần cứng (HAL). Làm phần additive/buildable ngay, không cần SDK hãng.
 

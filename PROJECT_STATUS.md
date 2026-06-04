@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #11 — HAL abstraction (EPIC 0) + Scanner/Vision/Safety/IO-tagmap + HardwareFactory
-**Commit:** *(pending)*
+**Commit:** `6888d66`
 
 ---
 
