@@ -20,9 +20,6 @@ public interface IRobotDevice : IDisposable, IHardwareDevice
     /// <summary>Tên định danh robot (dùng cho log/alarm station).</summary>
     string Name { get; }
 
-    /// <summary>True nếu đã kết nối.</summary>
-    bool IsConnected { get; }
-
 
     /// <summary>
     /// Gửi một lệnh thô và nhận response (cho lệnh hãng chưa được trừu tượng hoá).

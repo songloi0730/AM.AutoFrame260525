@@ -4,6 +4,49 @@
 
 ---
 
+## [Session 14] 2026-06-04 — Phase C: Hardware Watchdog + IsConnected base + auto-reconnect
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Claim #2 (watchdog 6.2) — mất kết nối giữa chừng không làm sập máy. Gắn trực tiếp với IHardwareDevice (Phase A).
+
+### ✅ IsConnected vào IHardwareDevice base
+- Thêm `bool IsConnected { get; }` vào `IHardwareDevice`; **gỡ khỏi 11 interface con** (additive, 0 driver bị sửa —
+  implementation đã có sẵn IsConnected nay thoả base). `ISerialDevice` bridge `IsConnected => IsOpen` (default member).
+- → cho phép health-monitoring **generic** thay vì switch theo kiểu.
+
+### ✅ Registry hỗ trợ monitor
+- `IHardwareManagerService.GetMonitoredDevices()` → `IReadOnlyList<MonitoredDevice>` (Name/Category/IHardwareDevice).
+- `MonitoredDevice` record mới (AM.Core.Abstractions).
+
+### ✅ HardwareWatchdogService (AM.Services)
+- `IHardwareWatchdogService` + impl: poll `IsConnected` mỗi chu kỳ; khi connected→disconnected:
+  - raise alarm `CommConnectionFail`,
+  - phát `DeviceDisconnected` event (MasterController subscribe → EmergencyStop),
+  - auto-reconnect bằng **RetryHelper** (back-off luỹ tiến) — best-effort, không làm sập watchdog.
+- `HardwareDisconnectedEventArgs` (AM.Core). `PollOnceAsync` public → unit test deterministic.
+- Thêm ProjectReference AM.Services → AM.CommonTools (dùng RetryHelper sẵn có).
+
+### ✅ Wiring
+- Bootstrapper: đăng ký `IHardwareWatchdogService` singleton.
+- App.xaml.cs: subscribe `DeviceDisconnected → masterController.EmergencyStop` + `watchdog.Start()`;
+  cleanup qua provider disposal (IDisposable).
+
+### ✅ Tests (+5 → AM.Services.Tests 47)
+- `HardwareWatchdogServiceTests` — không alarm khi vẫn connected; drop → alarm + reconnect; fire event;
+  reconnect thất bại không throw + giữ disconnected; Start/Stop toggles IsRunning.
+
+### ⚠️ Quyết định scope (minh bạch)
+- **KHÔNG** thêm `ErrorOccurred`/`GetLastError` (claim 0.1) vào base — event trên interface buộc ~20 driver
+  phải implement (events không có default impl thực dụng). Watchdog dùng **IsConnected polling** là đủ phát hiện lỗi.
+  Retrofit error-surface để dành làm khi thực sự cần (mỗi driver muốn báo lỗi chi tiết).
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **109 passed** (47 services + 35 infrastructure + 27 hardware).
+
+---
+
 ## [Session 13] 2026-06-04 — Phase B: AM.Infrastructure.Tests (13 transitions) + end-to-end sequence
 
 **Commit:** `6e37960`

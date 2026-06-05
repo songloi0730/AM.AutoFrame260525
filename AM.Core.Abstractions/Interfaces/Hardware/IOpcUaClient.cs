@@ -26,9 +26,6 @@ public interface IOpcUaClient : IDisposable, IHardwareDevice
     /// <summary>OPC UA endpoint URI, ví dụ: <c>new Uri("opc.tcp://192.168.1.100:4840")</c>.</summary>
     Uri EndpointUri { get; }
 
-    /// <summary>True nếu đã kết nối OPC UA session thành công.</summary>
-    bool IsConnected { get; }
-
 
     /// <summary>
     /// Đọc giá trị hiện tại của một OPC UA node.

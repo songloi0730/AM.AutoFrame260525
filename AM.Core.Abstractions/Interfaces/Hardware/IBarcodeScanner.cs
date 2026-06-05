@@ -18,9 +18,6 @@ public interface IBarcodeScanner : IDisposable, IHardwareDevice
     /// <summary>Tên định danh scanner.</summary>
     string Name { get; }
 
-    /// <summary>True nếu đã kết nối.</summary>
-    bool IsConnected { get; }
-
     /// <summary>Sự kiện khi nhận được mã (trigger ngoài hoặc continuous mode).</summary>
     event EventHandler<BarcodeReceivedEventArgs>? CodeReceived;
 

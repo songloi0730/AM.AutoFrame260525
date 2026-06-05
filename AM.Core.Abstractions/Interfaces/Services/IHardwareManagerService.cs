@@ -4,9 +4,16 @@
 // Purpose: Service quản lý lifecycle và registry của tất cả hardware devices
 // -------------------------------------------------------
 
+using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Enums;
 
 namespace AM.Core.Abstractions.Interfaces.Services;
+
+/// <summary>Thông tin một device cho health-monitoring (watchdog).</summary>
+/// <param name="Name">Tên định danh đã đăng ký.</param>
+/// <param name="Category">Phân loại phần cứng.</param>
+/// <param name="Device">Tham chiếu device (lifecycle generic qua IHardwareDevice).</param>
+public sealed record MonitoredDevice(string Name, HardwareCategory Category, IHardwareDevice Device);
 
 /// <summary>
 /// Service quản lý toàn bộ hardware devices: đăng ký, connect, disconnect, query status.
@@ -65,4 +72,9 @@ public interface IHardwareManagerService
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     Task DisconnectAllAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Lấy tất cả devices implement <see cref="IHardwareDevice"/> để health-monitor (watchdog).
+    /// </summary>
+    IReadOnlyList<MonitoredDevice> GetMonitoredDevices();
 }

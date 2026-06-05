@@ -26,9 +26,6 @@ public interface ITcpDevice : IDisposable, IHardwareDevice
     /// <summary>Port TCP của thiết bị.</summary>
     int Port { get; }
 
-    /// <summary>True nếu TCP socket đang kết nối.</summary>
-    bool IsConnected { get; }
-
 
     /// <summary>
     /// Gửi raw bytes qua TCP.

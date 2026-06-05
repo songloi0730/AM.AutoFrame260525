@@ -16,10 +16,11 @@ public sealed class HardwareManagerServiceTests
 {
     private sealed class FakeDevice : IHardwareDevice
     {
+        public bool IsConnected { get; set; }
         public int ConnectCount { get; private set; }
         public int DisconnectCount { get; private set; }
-        public Task ConnectAsync(CancellationToken ct = default) { ConnectCount++; return Task.CompletedTask; }
-        public Task DisconnectAsync(CancellationToken ct = default) { DisconnectCount++; return Task.CompletedTask; }
+        public Task ConnectAsync(CancellationToken ct = default) { ConnectCount++; IsConnected = true; return Task.CompletedTask; }
+        public Task DisconnectAsync(CancellationToken ct = default) { DisconnectCount++; IsConnected = false; return Task.CompletedTask; }
     }
 
     [Fact]

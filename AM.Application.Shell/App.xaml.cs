@@ -4,6 +4,8 @@
 // Purpose: Entry point WPF — khởi tạo DI, logging, database, launch MainWindow
 // -------------------------------------------------------
 
+using AM.Core.Abstractions.Interfaces.Machine;
+using AM.Core.Abstractions.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -43,6 +45,16 @@ public partial class App
 
             // 4. Đăng ký hardware devices vào HardwareManagerService (named registry)
             Bootstrapper.RegisterHardwareDevices(_serviceProvider);
+
+            // 4b. Watchdog: mất kết nối phần cứng → EmergencyStop + alarm + auto-reconnect
+            var watchdog = _serviceProvider.GetRequiredService<IHardwareWatchdogService>();
+            var masterController = _serviceProvider.GetRequiredService<IMasterController>();
+            watchdog.DeviceDisconnected += (_, args) =>
+            {
+                Log.Warning("Watchdog: {Device} mất kết nối → EmergencyStop", args.DeviceName);
+                masterController.EmergencyStop();
+            };
+            watchdog.Start();
 
             // 5. Initialize database
 #pragma warning disable CA2007 // Shell OnStartup: phải giữ UI thread context để tạo MainWindow sau khi await

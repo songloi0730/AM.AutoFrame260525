@@ -18,9 +18,6 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// </remarks>
 public interface ISafetyInput : IDisposable, IHardwareDevice
 {
-    /// <summary>True nếu đã kết nối tới safety terminal.</summary>
-    bool IsConnected { get; }
-
     /// <summary>True nếu mạch E-Stop OK (không nhấn).</summary>
     bool IsEStopOk { get; }
 

@@ -30,9 +30,6 @@ public interface IModbusClient : IDisposable, IHardwareDevice
     /// <summary>Port TCP. Default Modbus: 502.</summary>
     int Port { get; }
 
-    /// <summary>True nếu đã kết nối TCP thành công.</summary>
-    bool IsConnected { get; }
-
 
     // ─── FC01: Read Coils ─────────────────────────────────────────────────────
 

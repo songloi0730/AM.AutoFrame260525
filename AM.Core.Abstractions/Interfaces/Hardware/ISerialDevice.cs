@@ -50,6 +50,11 @@ public interface ISerialDevice : IDisposable, IHardwareDevice
     // ─── Bridge IHardwareDevice → Open/Close (serial dùng thuật ngữ riêng) ───
     /// <inheritdoc/>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033",
+        Justification = "Default interface property bridge; IsOpen là API công khai tương đương cho lớp con")]
+    bool IHardwareDevice.IsConnected => IsOpen;
+
+    /// <inheritdoc/>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033",
         Justification = "Default interface method bridge; OpenAsync là API công khai tương đương cho lớp con")]
     Task IHardwareDevice.ConnectAsync(CancellationToken ct) => OpenAsync(ct);
 

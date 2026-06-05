@@ -161,6 +161,18 @@ public sealed class HardwareManagerService : IHardwareManagerService
         _logger.LogInformation("All hardware devices disconnected");
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyList<MonitoredDevice> GetMonitoredDevices()
+    {
+        lock (_lock)
+        {
+            return _devices
+                .Where(d => d.Device is IHardwareDevice)
+                .Select(d => new MonitoredDevice(d.Name, d.Category, (IHardwareDevice)d.Device))
+                .ToList();
+        }
+    }
+
     // ─── Private helpers ──────────────────────────────────────────────────────
 
     private string GetRegisteredNames()

@@ -17,9 +17,6 @@ public interface ICameraDevice : IDisposable, IHardwareDevice
     /// <summary>Tên camera/thiết bị.</summary>
     string DeviceName { get; }
 
-    /// <summary>True nếu đã kết nối.</summary>
-    bool IsConnected { get; }
-
     /// <summary>
     /// Chụp ảnh và chạy vision job.
     /// </summary>

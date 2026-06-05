@@ -109,6 +109,8 @@ internal static class Bootstrapper
         services.AddSingleton<IHardwareManagerService, HardwareManagerService>();
         // StationSyncService: semaphore-based pipeline sync giữa các stations
         services.AddSingleton<IStationSyncService, StationSyncService>();
+        // HardwareWatchdogService: giám sát IsConnected, raise alarm + auto-reconnect khi rớt
+        services.AddSingleton<IHardwareWatchdogService, HardwareWatchdogService>();
 
         // ─── UI ViewModels ────────────────────────────────────────────────────────
         // DashboardViewModel resolve trên UI thread (MainWindow.OnWindowLoaded) để capture SynchronizationContext

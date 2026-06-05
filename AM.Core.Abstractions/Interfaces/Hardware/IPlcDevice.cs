@@ -25,9 +25,6 @@ public interface IPlcDevice : IDisposable, IHardwareDevice
     /// <summary>Tên định danh thiết bị (dùng cho log/alarm station).</summary>
     string Name { get; }
 
-    /// <summary>True nếu đã kết nối.</summary>
-    bool IsConnected { get; }
-
 
     // ─── Bit (coil / M / X / Y) ──────────────────────────────────────────────
 

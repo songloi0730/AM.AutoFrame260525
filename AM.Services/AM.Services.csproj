@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\AM.CommonTools\AM.CommonTools.csproj" />
   </ItemGroup>
 
 </Project>

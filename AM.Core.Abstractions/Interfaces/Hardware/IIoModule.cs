@@ -14,9 +14,6 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// </summary>
 public interface IIoModule : IDisposable, IHardwareDevice
 {
-    /// <summary>True nếu đã kết nối.</summary>
-    bool IsConnected { get; }
-
     /// <summary>Số lượng digital input.</summary>
     int DigitalInputCount { get; }
 

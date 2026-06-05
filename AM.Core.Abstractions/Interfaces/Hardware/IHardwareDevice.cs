@@ -13,6 +13,9 @@ namespace AM.Core.Abstractions.Interfaces.Hardware;
 /// </summary>
 public interface IHardwareDevice
 {
+    /// <summary>True nếu thiết bị đang kết nối/sẵn sàng. Dùng cho health-monitoring generic (watchdog).</summary>
+    bool IsConnected { get; }
+
     /// <summary>Kết nối tới thiết bị.</summary>
     /// <param name="ct">Cancellation token.</param>
     Task ConnectAsync(CancellationToken ct = default);

@@ -17,9 +17,6 @@ public interface IMotionController : IDisposable, IHardwareDevice
     /// <summary>Số trục của controller.</summary>
     int AxisCount { get; }
 
-    /// <summary>True nếu đã kết nối và sẵn sàng.</summary>
-    bool IsConnected { get; }
-
     /// <summary>
     /// Home tất cả trục (tìm về gốc cơ học).
     /// </summary>

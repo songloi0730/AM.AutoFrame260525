@@ -30,9 +30,6 @@ public interface IEthernetIpClient : IDisposable, IHardwareDevice
     /// <summary>Slot của CPU trong chassis (thường = 0).</summary>
     int Slot { get; }
 
-    /// <summary>True nếu đã kết nối CIP session.</summary>
-    bool IsConnected { get; }
-
 
     /// <summary>
     /// Đọc giá trị của một tag theo tên.
