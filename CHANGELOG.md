@@ -6,7 +6,7 @@
 
 ## [Session 14] 2026-06-04 — Phase C: Hardware Watchdog + IsConnected base + auto-reconnect
 
-**Commit:** *(pending)*
+**Commit:** `f48f874`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Claim #2 (watchdog 6.2) — mất kết nối giữa chừng không làm sập máy. Gắn trực tiếp với IHardwareDevice (Phase A).
 

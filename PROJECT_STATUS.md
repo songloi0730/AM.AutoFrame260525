@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #14 — Phase C: Hardware Watchdog + IsConnected base + auto-reconnect
-**Commit:** *(pending)*
+**Commit:** `f48f874`
 
 ---
 
