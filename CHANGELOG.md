@@ -6,7 +6,7 @@
 
 ## [Session 16] 2026-06-04 — Fix IDE1006 cho private static readonly fields
 
-**Commit:** *(pending)*
+**Commit:** `3e8db3a`
 **Người thực hiện:** Claude (Cowork) + Nhan
 
 ### 🔧 Sửa
