@@ -6,7 +6,7 @@
 
 ## [Session 15] 2026-06-04 — Phase D: CPM + IOptions validation + ProductionService + DeviceNames
 
-**Commit:** *(pending)*
+**Commit:** `506d45f`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Khép các điểm "đúng nhưng nhẹ" còn lại của đánh giá: #12, #16, #14, #5.
 
