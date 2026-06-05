@@ -4,6 +4,22 @@
 
 ---
 
+## [Session 16] 2026-06-04 — Fix IDE1006 cho private static readonly fields
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+
+### 🔧 Sửa
+- `.editorconfig`: rule `private_fields_should_be_camel_case` áp cho MỌI private field (kể cả `static readonly`)
+  → IDE1006 "Missing prefix '_'" báo sai trên `Transitions`, `JsonOptions`, `DefaultSimEndpoint`...
+  (mâu thuẫn với CS07: static readonly dùng PascalCase).
+- Thêm rule `static_readonly_fields_should_be_pascal_case` **đặt trước** rule underscore — Roslyn lấy rule khớp
+  đầu tiên theo thứ tự file → `private static readonly` dùng PascalCase, instance field vẫn bắt buộc `_camelCase`.
+- Xác minh bằng `EnforceCodeStyleInBuild=true`: 0 IDE1006 trên toàn solution (4 field: BaseMasterController,
+  ParameterService, JsonIoTagMap, SimulatedOpcUaClient).
+
+---
+
 ## [Session 15] 2026-06-04 — Phase D: CPM + IOptions validation + ProductionService + DeviceNames
 
 **Commit:** `506d45f`
