@@ -5,10 +5,12 @@
 // -------------------------------------------------------
 
 using System.Globalization;
+using AM.Application.Shell.Configuration;
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Repositories;
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Core.Constants;
 using AM.Data;
 using AM.Data.Repositories;
 using AM.Hardware.Comm.EthernetIp;
@@ -84,6 +86,13 @@ internal static class Bootstrapper
         });
 
         // ─── Configuration ────────────────────────────────────────────────────────
+        // Strongly-typed options + validate fail-fast (App ép resolve .Value lúc startup)
+        services.AddOptions<AutoMachineOptions>()
+            .Bind(config.GetSection(AutoMachineOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.DatabasePath), "AutoMachine:DatabasePath không được rỗng")
+            .Validate(o => o.LogRetentionDays is >= 1 and <= 3650, "AutoMachine:LogRetentionDays phải trong 1..3650")
+            .Validate(o => o.DataRetentionDays is >= 1 and <= 36500, "AutoMachine:DataRetentionDays phải trong 1..36500");
+
         bool useSimulation = config.GetValue<bool>("AutoMachine:UseSimulation", defaultValue: true);
 
         // ─── Database — EF Core SQLite ────────────────────────────────────────────
@@ -94,6 +103,8 @@ internal static class Bootstrapper
         // ─── Repositories ─────────────────────────────────────────────────────────
         services.AddScoped<IAlarmRepository, AlarmRepository>();
         services.AddScoped<IProductionRepository, ProductionRepository>();
+        // ProductionService Scoped để khớp lifetime của IProductionRepository (EF Core)
+        services.AddScoped<IProductionService, ProductionService>();
 
         // ─── Business Logic Services ──────────────────────────────────────────────
         services.AddSingleton<IAlarmService, AlarmService>();
@@ -305,18 +316,18 @@ internal static class Bootstrapper
     {
         var hwManager = services.GetRequiredService<IHardwareManagerService>();
 
-        hwManager.Register("MainMotion",     HardwareCategory.MotionCard,  services.GetRequiredService<IMotionController>());
-        hwManager.Register("MainCamera",     HardwareCategory.Camera,       services.GetRequiredService<ICameraDevice>());
-        hwManager.Register("MainIO",         HardwareCategory.IOController, services.GetRequiredService<IIoModule>());
-        hwManager.Register("MainModbus",     HardwareCategory.ModbusTcp,    services.GetRequiredService<IModbusClient>());
-        hwManager.Register("MainSerial",     HardwareCategory.SerialPort,   services.GetRequiredService<ISerialDevice>());
-        hwManager.Register("MainTcp",        HardwareCategory.TcpDevice,    services.GetRequiredService<ITcpDevice>());
-        hwManager.Register("MainOpcUA",      HardwareCategory.OpcUaClient,  services.GetRequiredService<IOpcUaClient>());
-        hwManager.Register("MainEthernetIP", HardwareCategory.EthernetIp,   services.GetRequiredService<IEthernetIpClient>());
-        hwManager.Register("MainPLC",        HardwareCategory.Plc,          services.GetRequiredService<IPlcDevice>());
-        hwManager.Register("MainRobot",      HardwareCategory.Robot,        services.GetRequiredService<IRobotDevice>());
-        hwManager.Register("MainScanner",    HardwareCategory.Scanner,      services.GetRequiredService<IBarcodeScanner>());
-        hwManager.Register("MainSafety",     HardwareCategory.SafetyTerminal, services.GetRequiredService<ISafetyInput>());
+        hwManager.Register(DeviceNames.MainMotion,     HardwareCategory.MotionCard,  services.GetRequiredService<IMotionController>());
+        hwManager.Register(DeviceNames.MainCamera,     HardwareCategory.Camera,       services.GetRequiredService<ICameraDevice>());
+        hwManager.Register(DeviceNames.MainIo,         HardwareCategory.IOController, services.GetRequiredService<IIoModule>());
+        hwManager.Register(DeviceNames.MainModbus,     HardwareCategory.ModbusTcp,    services.GetRequiredService<IModbusClient>());
+        hwManager.Register(DeviceNames.MainSerial,     HardwareCategory.SerialPort,   services.GetRequiredService<ISerialDevice>());
+        hwManager.Register(DeviceNames.MainTcp,        HardwareCategory.TcpDevice,    services.GetRequiredService<ITcpDevice>());
+        hwManager.Register(DeviceNames.MainOpcUa,      HardwareCategory.OpcUaClient,  services.GetRequiredService<IOpcUaClient>());
+        hwManager.Register(DeviceNames.MainEthernetIp, HardwareCategory.EthernetIp,   services.GetRequiredService<IEthernetIpClient>());
+        hwManager.Register(DeviceNames.MainPlc,        HardwareCategory.Plc,          services.GetRequiredService<IPlcDevice>());
+        hwManager.Register(DeviceNames.MainRobot,      HardwareCategory.Robot,        services.GetRequiredService<IRobotDevice>());
+        hwManager.Register(DeviceNames.MainScanner,    HardwareCategory.Scanner,      services.GetRequiredService<IBarcodeScanner>());
+        hwManager.Register(DeviceNames.MainSafety,     HardwareCategory.SafetyTerminal, services.GetRequiredService<ISafetyInput>());
 
         Log.Information("HardwareManagerService: registered {Count} devices", 12);
     }

@@ -4,10 +4,12 @@
 // Purpose: Entry point WPF — khởi tạo DI, logging, database, launch MainWindow
 // -------------------------------------------------------
 
+using AM.Application.Shell.Configuration;
 using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Serilog;
 using System.Windows;
 
@@ -42,6 +44,9 @@ public partial class App
             var services = new ServiceCollection();
             Bootstrapper.RegisterServices(services, config);
             _serviceProvider = services.BuildServiceProvider();
+
+            // Fail-fast: ép validate AutoMachineOptions ngay (ném OptionsValidationException nếu config sai)
+            _ = _serviceProvider.GetRequiredService<IOptions<AutoMachineOptions>>().Value;
 
             // 4. Đăng ký hardware devices vào HardwareManagerService (named registry)
             Bootstrapper.RegisterHardwareDevices(_serviceProvider);

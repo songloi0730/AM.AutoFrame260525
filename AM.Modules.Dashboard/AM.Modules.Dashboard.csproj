@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm"                     Version="8.3.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"  Version="9.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <!-- Dashboard chỉ cần Core.Abstractions để bind tới IMasterController, IAlarmService -->

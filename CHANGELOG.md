@@ -4,6 +4,44 @@
 
 ---
 
+## [Session 15] 2026-06-04 — Phase D: CPM + IOptions validation + ProductionService + DeviceNames
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Khép các điểm "đúng nhưng nhẹ" còn lại của đánh giá: #12, #16, #14, #5.
+
+### ✅ D4 — DeviceNames constants (claim #5)
+- `AM.Core/Constants/DeviceNames.cs` — 12 hằng số tên device (MainMotion/MainCamera/...).
+- Bootstrapper.RegisterHardwareDevices dùng `DeviceNames.X` thay magic string → IntelliSense + an toàn refactor.
+
+### ✅ D3 — ProductionService (claim #14)
+- `IProductionService` + `ProductionService` (AM.Services) trên `IProductionRepository` có sẵn:
+  - `RecordAsync` ghi record mỗi cycle; `GetStatisticsAsync` tính **UPH / yield / avg cycle time**.
+- `ProductionStatistics` record (AM.Core). Đăng ký DI Scoped (khớp lifetime EF repo).
+- `ProductionServiceTests` (+3): record persist, yield/UPH/avgCycle đúng, empty khi không có data.
+
+### ✅ D2 — IOptions + validate fail-fast (claim #16)
+- `AutoMachineOptions` (Shell/Configuration) cho section "AutoMachine".
+- Bootstrapper: `AddOptions<AutoMachineOptions>().Bind(...).Validate(...)` (DatabasePath không rỗng,
+  LogRetentionDays 1..3650, DataRetentionDays 1..36500).
+- App.xaml.cs: **ép resolve `.Value` lúc startup** → config sai ném OptionsValidationException ngay (fail-fast),
+  hiển thị dialog lỗi thay vì chạy với giá trị sai.
+- Thêm package `Microsoft.Extensions.Options.ConfigurationExtensions`.
+
+### ✅ D1 — Central Package Management (claim #12)
+- `Directory.Packages.props` (root) `ManagePackageVersionsCentrally=true` — gom version NuGet một chỗ.
+- Strip `Version=` khỏi **14 .csproj** + `Directory.Build.props` (analyzers).
+- Pin các version thả nổi (CPM cấm floating): NetAnalyzers 9.0.0, SonarAnalyzer 9.32.0.97167.
+- Vendor SDK comm (NModbus4/FluentModbus/libplctag/OPCFoundation/Basler.Pylon) đang comment trong csproj →
+  ghi chú thêm PackageVersion cụ thể khi kích hoạt.
+- → chống version drift giữa 17 projects; một nguồn version duy nhất.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **112 passed** (50 services + 35 infrastructure + 27 hardware).
+
+---
+
 ## [Session 14] 2026-06-04 — Phase C: Hardware Watchdog + IsConnected base + auto-reconnect
 
 **Commit:** `f48f874`

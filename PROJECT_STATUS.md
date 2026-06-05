@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
-**Session:** #14 — Phase C: Hardware Watchdog + IsConnected base + auto-reconnect
-**Commit:** `f48f874`
+**Session:** #15 — Phase D: CPM + IOptions validation + ProductionService + DeviceNames
+**Commit:** *(pending)*
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **17 projects**, build clean (0 warning), **109 tests pass** |
+| Solution structure | ✅ Hoàn thành | **17 projects** (CPM: Directory.Packages.props), 0 warning, **112 tests pass** |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -23,7 +23,7 @@
 | AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice + **SimulatedVisionProcessor (IVisionProcessor)** |
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule + **SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions** |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
-| AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, **HardwareWatchdog** (auto-reconnect) |
+| AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, HardwareWatchdog, **Production** (UPH/yield) |
 | AM.Services.Tests | ✅ Hoàn thành | 42 tests (Alarm, Recipe, StationSync, **HardwareManager generic ConnectAll**) |
 | AM.Hardware.Tests | ✅ Hoàn thành | **27 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
