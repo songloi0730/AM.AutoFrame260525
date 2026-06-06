@@ -29,6 +29,7 @@ using AM.Hardware.IO.Advantech;
 using AM.Hardware.Motion;
 using AM.Hardware.Motion.Advantech;
 using AM.Hardware.Motion.Gts;
+using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
 using AM.Hardware.Vision;
 using AM.Services;
@@ -126,6 +127,7 @@ internal static class Bootstrapper
         // ─── UI ViewModels ────────────────────────────────────────────────────────
         // DashboardViewModel resolve trên UI thread (MainWindow.OnWindowLoaded) để capture SynchronizationContext
         services.AddSingleton<DashboardViewModel>();
+        services.AddSingleton<AlarmListViewModel>();
 
         // ─── Hardware — toggle Simulated / Real via appsettings ──────────────────
         if (useSimulation)

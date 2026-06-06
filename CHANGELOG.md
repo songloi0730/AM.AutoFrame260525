@@ -4,6 +4,38 @@
 
 ---
 
+## [Session 17] 2026-06-04 — Phase E: README + CI/CD + AM.Modules.Alarm + Shell navigation
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Phase E (roadmap) — onboarding + UI vận hành. Làm lát cắt giá trị cao: README, CI, module UI thứ 2.
+
+### ✅ E1 — README.md
+- Tổng quan, nguyên tắc HAL, kiến trúc 3 tầng, bảng 17 project, quick-start (build/test/run),
+  bảng đổi hãng phần cứng qua appsettings, watchdog/alarm ranges, quy ước phát triển (CPM, commit script).
+
+### ✅ E2 — CI/CD (GitHub Actions)
+- `.github/workflows/ci.yml` — on push/PR/dispatch tới main: `windows-latest` (bắt buộc vì WPF net9.0-windows),
+  setup .NET 9 → restore → build Release (TreatWarningsAsErrors) → test.
+
+### ✅ E3 — AM.Modules.Alarm (UI vận hành thứ 2) + điều hướng Shell
+- Project mới `AM.Modules.Alarm` (net9.0-windows, CPM):
+  - `AlarmListViewModel` — ObservableCollection ActiveAlarms, đồng bộ realtime với AlarmService (AlarmRaised/Cleared),
+    command Acknowledge/Clear/ClearAll, UI-thread marshalling qua SynchronizationContext, IDisposable.
+  - `AlarmListView.xaml` (+code-behind) — DataGrid ISA-101: ellipse màu theo Level, Code/Station/Message/Time/Ack,
+    nút Ack/Clear mỗi dòng + Clear All; `AlarmLevelToColorConverter` (Low/Medium/High/Critical → Status brush).
+- Shell: thêm **side-nav** (Dashboard / Alarms) chuyển `MainContent`; đăng ký `AlarmListViewModel` DI.
+
+### ⚠️ Ghi chú
+- ViewModel của module WPF (net9.0-windows) chưa unit-test riêng (giống Dashboard) — logic AlarmService đã được
+  test đầy đủ ở AM.Services.Tests; VM chủ yếu là binding/marshalling.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error** (18 projects).
+- `dotnet test` → **112 passed** (50 services + 35 infrastructure + 27 hardware).
+
+---
+
 ## [Session 16] 2026-06-04 — Fix IDE1006 cho private static readonly fields
 
 **Commit:** `3e8db3a`

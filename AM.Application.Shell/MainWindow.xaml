@@ -22,10 +22,29 @@
                        VerticalAlignment="Center" Margin="12,0"/>
         </Border>
 
-        <!-- Main content area — host cho module chính (Dashboard nạp từ DI khi Loaded) -->
-        <Border Grid.Row="1" Background="{DynamicResource Screen.BackgroundBrush}" Margin="4">
-            <ContentControl x:Name="MainContent"/>
-        </Border>
+        <!-- Main area: side-nav + content (module nạp từ DI khi Loaded) -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Width="150"
+                        Background="{DynamicResource Panel.BackgroundBrush}">
+                <Button x:Name="NavDashboard" Content="📊  Dashboard" Click="NavDashboard_Click"
+                        Height="44" FontSize="13" HorizontalContentAlignment="Left" Padding="14,0"
+                        Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                <Button x:Name="NavAlarms" Content="⚠  Alarms" Click="NavAlarms_Click"
+                        Height="44" FontSize="13" HorizontalContentAlignment="Left" Padding="14,0"
+                        Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource Text.PrimaryBrush}"/>
+            </StackPanel>
+
+            <Border Grid.Column="1" Background="{DynamicResource Screen.BackgroundBrush}" Margin="4">
+                <ContentControl x:Name="MainContent"/>
+            </Border>
+        </Grid>
 
         <!-- Status bar -->
         <Border Grid.Row="2" Background="{DynamicResource Status.ManualBrush}">

@@ -49,6 +49,7 @@
     <ProjectReference Include="..\AM.Hardware.Comm\AM.Hardware.Comm.csproj" />
     <ProjectReference Include="..\AM.Hardware.Scanner\AM.Hardware.Scanner.csproj" />
     <ProjectReference Include="..\AM.Modules.Dashboard\AM.Modules.Dashboard.csproj" />
+    <ProjectReference Include="..\AM.Modules.Alarm\AM.Modules.Alarm.csproj" />
     <ProjectReference Include="..\AM.WorkStation.Demo\AM.WorkStation.Demo.csproj" />
   </ItemGroup>
 

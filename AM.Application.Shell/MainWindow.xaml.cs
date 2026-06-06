@@ -5,10 +5,12 @@
 // -------------------------------------------------------
 
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace AM.Application.Shell;
@@ -23,6 +25,8 @@ namespace AM.Application.Shell;
 public partial class MainWindow : Window
 {
     private readonly IServiceProvider _services;
+    private DashboardView? _dashboardView;
+    private AlarmListView? _alarmView;
 
     public MainWindow(IServiceProvider services)
     {
@@ -36,10 +40,11 @@ public partial class MainWindow : Window
     {
         Log.Information("MainWindow loaded");
 
-        // Nạp Dashboard làm màn hình chính. Resolve trên UI thread để DashboardViewModel
-        // capture đúng SynchronizationContext (marshalling event hardware → UI).
-        var dashboardVm = _services.GetRequiredService<DashboardViewModel>();
-        MainContent.Content = new DashboardView { DataContext = dashboardVm };
+        // Tạo các module view với DataContext resolve trên UI thread (capture SynchronizationContext
+        // để marshalling event hardware → UI). Dashboard là màn hình mặc định.
+        _dashboardView = new DashboardView { DataContext = _services.GetRequiredService<DashboardViewModel>() };
+        _alarmView = new AlarmListView { DataContext = _services.GetRequiredService<AlarmListViewModel>() };
+        MainContent.Content = _dashboardView;
 
         var alarmService = _services.GetRequiredService<IAlarmService>();
 
@@ -62,5 +67,15 @@ public partial class MainWindow : Window
                 StatusText.Foreground = (Brush)System.Windows.Application.Current.Resources["Status.NormalBrush"];
             });
         };
+    }
+
+    private void NavDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        if (_dashboardView is not null) MainContent.Content = _dashboardView;
+    }
+
+    private void NavAlarms_Click(object sender, RoutedEventArgs e)
+    {
+        if (_alarmView is not null) MainContent.Content = _alarmView;
     }
 }
