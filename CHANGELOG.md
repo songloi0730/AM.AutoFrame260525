@@ -6,7 +6,7 @@
 
 ## [Session 22] 2026-06-05 — G0 Nav auto-discovery + AM.Modules.IoMonitor
 
-**Commit:** *(pending)*
+**Commit:** `4246aaf`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Theo sơ đồ kiến trúc — lấp tầng Modules. Làm nền điều hướng trước để thêm module không phình Shell.
 

@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #22 — G0 Nav auto-discovery ([ModuleNavigation]) + AM.Modules.IoMonitor
-**Commit:** *(pending)*
+**Commit:** `4246aaf`
 
 ---
 
