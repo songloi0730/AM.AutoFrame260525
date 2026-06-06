@@ -6,7 +6,7 @@
 
 ## [Session 18] 2026-06-04 — Fix: gỡ SQLite DB khỏi Git tracking (.gitignore)
 
-**Commit:** *(pending)*
+**Commit:** `b53ecf7`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Review bên thứ 3 — điểm đúng & nghiêm trọng: file DB sống bị commit.
 
