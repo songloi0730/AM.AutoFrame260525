@@ -6,7 +6,7 @@
 
 ## [Session 20] 2026-06-04 — Phase F5/F7: WordRegisterPlcBase (dedup PLC) + đổi folder docs/
 
-**Commit:** *(pending)*
+**Commit:** `d0012ae`
 **Người thực hiện:** Claude (Cowork) + Nhan
 
 ### ✅ F5 — WordRegisterPlcBase (gom code chung PLC, có chọn lọc)

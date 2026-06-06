@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #20 — Phase F: DB gitignore + tách Bootstrapper + vendor enum + arch test + PLC base + docs/
-**Commit:** *(pending)*
+**Commit:** `d0012ae`
 
 ---
 
