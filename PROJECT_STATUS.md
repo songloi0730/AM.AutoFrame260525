@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
-**Session:** #17 — Phase E: README + CI/CD + AM.Modules.Alarm + Shell navigation
-**Commit:** `98382af`
+**Session:** #20 — Phase F: DB gitignore + tách Bootstrapper + vendor enum + arch test + PLC base + docs/
+**Commit:** *(pending)*
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **18 projects** (CPM: Directory.Packages.props), 0 warning, **112 tests pass** · README + CI/CD |
+| Solution structure | ✅ Hoàn thành | **19 projects** (CPM), 0 warning, **117 tests pass** · README + CI/CD + arch-test |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -108,9 +108,9 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 | `CHANGELOG.md` | Lịch sử session, quyết định kiến trúc | Khi cần hiểu lý do |
 | `.claude/rules/common/coding-standards.md` | R01–R17 | Auto-load Claude Code |
 | `.claude/rules/csharp/csharp-patterns.md` | CS01–CS15 | Auto-load Claude Code |
-| `file hướng dẫn code/AGENTS.md` | 9 agents + ECC routing table | Khi cần routing |
-| `file hướng dẫn code/QUICK_REFERENCE.md` | Quick ref (in ra dán màn hình) | Tra cứu nhanh |
-| `file hướng dẫn code/PROMPT_TEMPLATES.md` | PT-00 đến PT-14 | Khi tạo component mới |
+| `docs/AGENTS.md` | 9 agents + ECC routing table | Khi cần routing |
+| `docs/QUICK_REFERENCE.md` | Quick ref (in ra dán màn hình) | Tra cứu nhanh |
+| `docs/PROMPT_TEMPLATES.md` | PT-00 đến PT-14 | Khi tạo component mới |
 
 ### Hardware Interfaces thực tế (AM.Core.Abstractions/Interfaces/Hardware/)
 | Interface | Mô tả |

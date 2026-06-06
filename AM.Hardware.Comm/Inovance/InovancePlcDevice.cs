@@ -4,11 +4,11 @@
 // Purpose: Driver PLC Inovance (H3U/H5U/AM series) qua Modbus TCP — đọc/ghi D/M/X/Y.
 // -------------------------------------------------------
 
-using System.Buffers.Binary;
 using System.Globalization;
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Constants;
 using AM.Core.Exceptions;
+using AM.Hardware.Comm.Plc;
 using Microsoft.Extensions.Logging;
 
 namespace AM.Hardware.Comm.Inovance;
@@ -18,12 +18,10 @@ namespace AM.Hardware.Comm.Inovance;
 /// Hỗ trợ địa chỉ phần tử mềm dạng <c>D100</c> (word), <c>M10</c>/<c>Y0</c> (coil), <c>X0</c> (discrete input).
 /// </summary>
 /// <remarks>
-/// Phần số của địa chỉ được dùng làm địa chỉ Modbus (0-based) cộng base-offset cấu hình.
-/// Mỗi model Inovance có bảng ánh xạ Modbus riêng — chỉnh <see cref="DBase"/>/<see cref="MBase"/>/
-/// <see cref="XBase"/>/<see cref="YBase"/> cho khớp tài liệu PLC. Mặc định = 0 (ánh xạ trực tiếp).
-/// DWord/Float dùng 2 register liên tiếp, word thấp trước (little-endian word order — chuẩn Inovance).
+/// Kế thừa <see cref="WordRegisterPlcBase"/> (DWord/Float compose word-thấp-trước dùng chung với Mitsubishi).
+/// Phần số của địa chỉ = địa chỉ Modbus (0-based) + base-offset cấu hình (<see cref="DBase"/>...).
 /// </remarks>
-public sealed class InovancePlcDevice : IPlcDevice
+public sealed class InovancePlcDevice : WordRegisterPlcBase
 {
     private readonly IModbusClient _modbus;
     private readonly ILogger<InovancePlcDevice> _logger;
@@ -48,10 +46,10 @@ public sealed class InovancePlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public string Name { get; }
+    public override string Name { get; }
 
     /// <inheritdoc/>
-    public bool IsConnected => _modbus.IsConnected;
+    public override bool IsConnected => _modbus.IsConnected;
 
     /// <summary>Base-offset Modbus cho vùng D register (word). Mặc định 0.</summary>
     public ushort DBase { get; init; }
@@ -66,14 +64,14 @@ public sealed class InovancePlcDevice : IPlcDevice
     public ushort YBase { get; init; }
 
     /// <inheritdoc/>
-    public async Task ConnectAsync(CancellationToken ct = default)
+    public override async Task ConnectAsync(CancellationToken ct = default)
     {
         await _modbus.ConnectAsync(ct).ConfigureAwait(false);
         _logger.LogInformation("[Inovance] PLC {Name} connected (slave={Slave})", Name, _slaveId);
     }
 
     /// <inheritdoc/>
-    public async Task DisconnectAsync(CancellationToken ct = default)
+    public override async Task DisconnectAsync(CancellationToken ct = default)
     {
         await _modbus.DisconnectAsync(ct).ConfigureAwait(false);
         _logger.LogInformation("[Inovance] PLC {Name} disconnected", Name);
@@ -82,7 +80,7 @@ public sealed class InovancePlcDevice : IPlcDevice
     // ─── Bit ─────────────────────────────────────────────────────────────────
 
     /// <inheritdoc/>
-    public async Task<bool> ReadBitAsync(string address, CancellationToken ct = default)
+    public override async Task<bool> ReadBitAsync(string address, CancellationToken ct = default)
     {
         var (kind, addr) = Parse(address);
         bool[] result = kind == ElementKind.DiscreteInput
@@ -92,7 +90,7 @@ public sealed class InovancePlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public async Task WriteBitAsync(string address, bool value, CancellationToken ct = default)
+    public override async Task WriteBitAsync(string address, bool value, CancellationToken ct = default)
     {
         var (kind, addr) = Parse(address);
         if (kind is ElementKind.DiscreteInput or ElementKind.Word)
@@ -101,58 +99,17 @@ public sealed class InovancePlcDevice : IPlcDevice
         await _modbus.WriteSingleCoilAsync(_slaveId, addr, value, ct).ConfigureAwait(false);
     }
 
-    // ─── Word ────────────────────────────────────────────────────────────────
+    // ─── Word ─ (override WriteWord dùng FC06 đơn — wire khác base FC16) ───────
 
     /// <inheritdoc/>
-    public async Task<short> ReadWordAsync(string address, CancellationToken ct = default)
-    {
-        ushort addr = ParseWord(address);
-        ushort[] r = await _modbus.ReadHoldingRegistersAsync(_slaveId, addr, 1, ct).ConfigureAwait(false);
-        return unchecked((short)r[0]);
-    }
-
-    /// <inheritdoc/>
-    public async Task WriteWordAsync(string address, short value, CancellationToken ct = default)
+    public override async Task WriteWordAsync(string address, short value, CancellationToken ct = default)
     {
         ushort addr = ParseWord(address);
         await _modbus.WriteSingleRegisterAsync(_slaveId, addr, unchecked((ushort)value), ct).ConfigureAwait(false);
     }
 
-    // ─── DWord (2 register, low word first) ──────────────────────────────────
-
     /// <inheritdoc/>
-    public async Task<int> ReadDWordAsync(string address, CancellationToken ct = default)
-    {
-        ushort addr = ParseWord(address);
-        ushort[] r = await _modbus.ReadHoldingRegistersAsync(_slaveId, addr, 2, ct).ConfigureAwait(false);
-        return r[0] | (r[1] << 16);
-    }
-
-    /// <inheritdoc/>
-    public async Task WriteDWordAsync(string address, int value, CancellationToken ct = default)
-    {
-        ushort addr = ParseWord(address);
-        var regs = new ushort[] { (ushort)(value & 0xFFFF), (ushort)((value >> 16) & 0xFFFF) };
-        await _modbus.WriteMultipleRegistersAsync(_slaveId, addr, regs, ct).ConfigureAwait(false);
-    }
-
-    // ─── Float (IEEE-754, 2 register, low word first) ────────────────────────
-
-    /// <inheritdoc/>
-    public async Task<float> ReadFloatAsync(string address, CancellationToken ct = default)
-    {
-        int raw = await ReadDWordAsync(address, ct).ConfigureAwait(false);
-        return BitConverter.Int32BitsToSingle(raw);
-    }
-
-    /// <inheritdoc/>
-    public async Task WriteFloatAsync(string address, float value, CancellationToken ct = default)
-        => await WriteDWordAsync(address, BitConverter.SingleToInt32Bits(value), ct).ConfigureAwait(false);
-
-    // ─── Bulk word ───────────────────────────────────────────────────────────
-
-    /// <inheritdoc/>
-    public async Task<short[]> ReadWordsAsync(string address, ushort count, CancellationToken ct = default)
+    public override async Task<short[]> ReadWordsAsync(string address, ushort count, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfZero(count);
         ushort addr = ParseWord(address);
@@ -163,7 +120,7 @@ public sealed class InovancePlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public async Task WriteWordsAsync(string address, short[] values, CancellationToken ct = default)
+    public override async Task WriteWordsAsync(string address, short[] values, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(values);
         ArgumentOutOfRangeException.ThrowIfZero(values.Length);
@@ -174,11 +131,11 @@ public sealed class InovancePlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
         if (_disposed) return;
         _disposed = true;
-        _modbus.Dispose();
+        if (disposing) _modbus.Dispose();
     }
 
     // ─── Address parsing ─────────────────────────────────────────────────────

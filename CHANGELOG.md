@@ -4,9 +4,32 @@
 
 ---
 
-## [Session 19] 2026-06-04 — Phase F2/F3/F4/F6: tách Bootstrapper + vendor enum + arch test + log path
+## [Session 20] 2026-06-04 — Phase F5/F7: WordRegisterPlcBase (dedup PLC) + đổi folder docs/
 
 **Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+
+### ✅ F5 — WordRegisterPlcBase (gom code chung PLC, có chọn lọc)
+- `AM.Hardware.Comm/Plc/WordRegisterPlcBase.cs` — abstract base cho PLC **word-register, little-endian word order**:
+  cung cấp sẵn `ReadWord/ReadDWord/WriteDWord/ReadFloat/WriteFloat` compose từ `ReadWordsAsync/WriteWordsAsync`.
+- `InovancePlcDevice` + `MitsubishiPlcDevice` kế thừa base → bỏ ~5 typed-method trùng lặp mỗi driver.
+  `WriteWordAsync` để **virtual**: Inovance override dùng FC06 (single), Mitsubishi dùng default FC16 (batch) → giữ đúng wire.
+- **Có chọn lọc:** Siemens S7 (byte-oriented, big-endian) KHÔNG dùng base — protocol khác hẳn. Tránh over-abstraction.
+- Dispose theo pattern `Dispose(bool)` (CA1063). InovancePlcDeviceTests vẫn pass → behavior-preserving.
+
+### ✅ F7 — Đổi tên folder tài liệu
+- `file hướng dẫn code/` (tên có dấu + khoảng trắng, gây phiền CI/cross-platform) → **`docs/`** (git mv).
+- Cập nhật reference trong CLAUDE.md + PROJECT_STATUS.md (giữ nguyên CHANGELOG lịch sử).
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **117 passed** (50 services + 35 infra + 27 hardware + 5 architecture).
+
+---
+
+## [Session 19] 2026-06-04 — Phase F2/F3/F4/F6: tách Bootstrapper + vendor enum + arch test + log path
+
+**Commit:** `3aaa5f6`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Thực hiện các điểm ĐÚNG còn lại của review bên thứ 3.
 

@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Constants;
 using AM.Core.Exceptions;
+using AM.Hardware.Comm.Plc;
 using Microsoft.Extensions.Logging;
 
 namespace AM.Hardware.Comm.Mitsubishi;
@@ -22,7 +23,7 @@ namespace AM.Hardware.Comm.Mitsubishi;
 /// X/Y/W/B đánh số hệ HEX (chuẩn Mitsubishi); D/M/R/L hệ thập phân.
 /// Cần bật "MC Protocol" + "Binary code" trên cổng Ethernet của PLC.
 /// </remarks>
-public sealed class MitsubishiPlcDevice : IPlcDevice
+public sealed class MitsubishiPlcDevice : WordRegisterPlcBase
 {
     private const ushort CmdBatchRead  = 0x0401;
     private const ushort CmdBatchWrite = 0x1401;
@@ -60,13 +61,13 @@ public sealed class MitsubishiPlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public string Name { get; }
+    public override string Name { get; }
 
     /// <inheritdoc/>
-    public bool IsConnected => _tcp?.Connected ?? false;
+    public override bool IsConnected => _tcp?.Connected ?? false;
 
     /// <inheritdoc/>
-    public async Task ConnectAsync(CancellationToken ct = default)
+    public override async Task ConnectAsync(CancellationToken ct = default)
     {
         using var toCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         toCts.CancelAfter(_timeoutMs);
@@ -93,7 +94,7 @@ public sealed class MitsubishiPlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public async Task DisconnectAsync(CancellationToken ct = default)
+    public override async Task DisconnectAsync(CancellationToken ct = default)
     {
         await _lock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -107,7 +108,7 @@ public sealed class MitsubishiPlcDevice : IPlcDevice
     // ─── Bit ─────────────────────────────────────────────────────────────────
 
     /// <inheritdoc/>
-    public async Task<bool> ReadBitAsync(string address, CancellationToken ct = default)
+    public override async Task<bool> ReadBitAsync(string address, CancellationToken ct = default)
     {
         var dev = Parse(address);
         byte[] resp = await TransactAsync(BuildReadRequest(dev, 1, SubBit), ct).ConfigureAwait(false);
@@ -116,44 +117,17 @@ public sealed class MitsubishiPlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public async Task WriteBitAsync(string address, bool value, CancellationToken ct = default)
+    public override async Task WriteBitAsync(string address, bool value, CancellationToken ct = default)
     {
         var dev = Parse(address);
         var data = new byte[] { (byte)(value ? 0x10 : 0x00) };
         await TransactAsync(BuildWriteRequest(dev, 1, SubBit, data), ct).ConfigureAwait(false);
     }
 
-    // ─── Word / DWord / Float ────────────────────────────────────────────────
+    // ─── Word bulk (Word/DWord/Float compose kế thừa WordRegisterPlcBase) ──────
 
     /// <inheritdoc/>
-    public async Task<short> ReadWordAsync(string address, CancellationToken ct = default)
-        => (await ReadWordsAsync(address, 1, ct).ConfigureAwait(false))[0];
-
-    /// <inheritdoc/>
-    public Task WriteWordAsync(string address, short value, CancellationToken ct = default)
-        => WriteWordsAsync(address, new[] { value }, ct);
-
-    /// <inheritdoc/>
-    public async Task<int> ReadDWordAsync(string address, CancellationToken ct = default)
-    {
-        short[] w = await ReadWordsAsync(address, 2, ct).ConfigureAwait(false);
-        return (ushort)w[0] | (w[1] << 16);
-    }
-
-    /// <inheritdoc/>
-    public Task WriteDWordAsync(string address, int value, CancellationToken ct = default)
-        => WriteWordsAsync(address, new[] { (short)(value & 0xFFFF), (short)((value >> 16) & 0xFFFF) }, ct);
-
-    /// <inheritdoc/>
-    public async Task<float> ReadFloatAsync(string address, CancellationToken ct = default)
-        => BitConverter.Int32BitsToSingle(await ReadDWordAsync(address, ct).ConfigureAwait(false));
-
-    /// <inheritdoc/>
-    public Task WriteFloatAsync(string address, float value, CancellationToken ct = default)
-        => WriteDWordAsync(address, BitConverter.SingleToInt32Bits(value), ct);
-
-    /// <inheritdoc/>
-    public async Task<short[]> ReadWordsAsync(string address, ushort count, CancellationToken ct = default)
+    public override async Task<short[]> ReadWordsAsync(string address, ushort count, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfZero(count);
         var dev = Parse(address);
@@ -165,7 +139,7 @@ public sealed class MitsubishiPlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public async Task WriteWordsAsync(string address, short[] values, CancellationToken ct = default)
+    public override async Task WriteWordsAsync(string address, short[] values, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(values);
         ArgumentOutOfRangeException.ThrowIfZero(values.Length);
@@ -177,12 +151,15 @@ public sealed class MitsubishiPlcDevice : IPlcDevice
     }
 
     /// <inheritdoc/>
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
         if (_disposed) return;
         _disposed = true;
-        DisposeSocket();
-        _lock.Dispose();
+        if (disposing)
+        {
+            DisposeSocket();
+            _lock.Dispose();
+        }
     }
 
     // ─── Frame builders ──────────────────────────────────────────────────────
