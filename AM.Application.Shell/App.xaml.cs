@@ -51,6 +51,11 @@ public partial class App
             // 4. Đăng ký hardware devices vào HardwareManagerService (named registry)
             Bootstrapper.RegisterHardwareDevices(_serviceProvider);
 
+            // 4a. Kết nối toàn bộ hardware (sim/real) — IO Monitor/Dashboard có dữ liệu live, watchdog có baseline
+#pragma warning disable CA2007
+            await _serviceProvider.GetRequiredService<IHardwareManagerService>().ConnectAllAsync();
+#pragma warning restore CA2007
+
             // 4b. Watchdog: mất kết nối phần cứng → EmergencyStop + alarm + auto-reconnect
             var watchdog = _serviceProvider.GetRequiredService<IHardwareWatchdogService>();
             var masterController = _serviceProvider.GetRequiredService<IMasterController>();

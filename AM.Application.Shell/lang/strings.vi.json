@@ -2,6 +2,7 @@
   "Shell.Title": "AutoMachine Framework",
   "Nav.Dashboard": "Bảng điều khiển",
   "Nav.Alarms": "Cảnh báo",
+  "Nav.IoMonitor": "Giám sát I/O",
   "Common.Language": "Ngôn ngữ",
   "Status.Ready": "Sẵn sàng"
 }

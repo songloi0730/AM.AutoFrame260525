@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 22] 2026-06-05 — G0 Nav auto-discovery + AM.Modules.IoMonitor
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Theo sơ đồ kiến trúc — lấp tầng Modules. Làm nền điều hướng trước để thêm module không phình Shell.
+
+### ✅ G0 — Sidebar tự sinh từ [ModuleNavigation]
+- `[ModuleNavigation(displayKey, icon, order)]` gắn lên DashboardView/AlarmListView/IoMonitorView.
+- `NavigationBuilder` (Shell): quét assembly `AM.Modules.*` đã nạp, tìm View có attribute → danh sách entry sắp theo Order.
+- `MainWindow` sinh nút nav động: Content bind i18n proxy (đổi ngôn ngữ cập nhật ngay); click → resolve View +
+  ViewModel theo convention ("XxxView"→"XxxViewModel") từ DI, cache view. **Thêm module = gắn attribute, KHÔNG sửa Shell.**
+
+### ✅ IO Monitor (AM.Modules.IoMonitor)
+- `IoMonitorViewModel` — poll DI realtime (`ReadAllDiAsync`, PeriodicTimer 300ms, marshalling SynchronizationContext),
+  toggle DO (`WriteDiAsync`); `IoChannelVm` (Index/Label/Value). IDisposable dừng poll.
+- `IoMonitorView.xaml` — DI grid (ellipse màu ON/OFF) + DO grid (nút toggle màu theo trạng thái); `BoolToIoBrushConverter`.
+- App: `ConnectAllAsync` lúc khởi động → IO Monitor/Dashboard có dữ liệu live + DO toggle hoạt động + watchdog có baseline.
+- Bổ sung file dịch `strings.en.json` (đang thiếu) + key `Nav.IoMonitor` cho vi/en/zh.
+
+### ✅ Tests
+- `AM.Architecture.Tests` +1: IoMonitor module không phụ thuộc hardware concrete (6 arch tests).
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error** (20 projects).
+- `dotnet test` → **124 passed** (50 services + 41 infra + 27 hardware + 6 architecture).
+
+---
+
 ## [Session 21] 2026-06-05 — i18n foundation: đổi ngôn ngữ runtime (vi/en/zh) + log retention config
 
 **Commit:** `a4fd2bd`

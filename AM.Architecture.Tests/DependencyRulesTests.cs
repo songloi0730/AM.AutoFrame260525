@@ -52,6 +52,10 @@ public sealed class DependencyRulesTests
         => AssertNoConcreteHardwareDependency(typeof(AlarmListViewModel).Assembly);
 
     [Fact]
+    public void IoMonitorModule_DoesNotDependOnConcreteHardware()
+        => AssertNoConcreteHardwareDependency(typeof(AM.Modules.IoMonitor.IoMonitorViewModel).Assembly);
+
+    [Fact]
     public void Abstractions_DoNotDependOnConcreteHardware()
         => AssertNoConcreteHardwareDependency(typeof(IMotionController).Assembly);
 

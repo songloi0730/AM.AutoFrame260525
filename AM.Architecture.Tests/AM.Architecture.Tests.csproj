@@ -34,6 +34,7 @@
     <ProjectReference Include="..\AM.Infrastructure\AM.Infrastructure.csproj" />
     <ProjectReference Include="..\AM.Modules.Dashboard\AM.Modules.Dashboard.csproj" />
     <ProjectReference Include="..\AM.Modules.Alarm\AM.Modules.Alarm.csproj" />
+    <ProjectReference Include="..\AM.Modules.IoMonitor\AM.Modules.IoMonitor.csproj" />
   </ItemGroup>
 
 </Project>

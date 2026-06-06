@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Modules.Alarm", "AM.Modu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Architecture.Tests", "AM.Architecture.Tests\AM.Architecture.Tests.csproj", "{2C0D369F-FE86-4B83-BF35-BD49C5D11860}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Modules.IoMonitor", "AM.Modules.IoMonitor\AM.Modules.IoMonitor.csproj", "{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -279,6 +281,18 @@ Global
 		{2C0D369F-FE86-4B83-BF35-BD49C5D11860}.Release|x64.Build.0 = Release|Any CPU
 		{2C0D369F-FE86-4B83-BF35-BD49C5D11860}.Release|x86.ActiveCfg = Release|Any CPU
 		{2C0D369F-FE86-4B83-BF35-BD49C5D11860}.Release|x86.Build.0 = Release|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Debug|x64.Build.0 = Debug|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Debug|x86.Build.0 = Debug|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|x64.ActiveCfg = Release|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|x64.Build.0 = Release|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|x86.ActiveCfg = Release|Any CPU
+		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

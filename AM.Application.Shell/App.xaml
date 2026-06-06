@@ -6,38 +6,331 @@
     <!-- StartupUri removed — MainWindow is created in App.xaml.cs OnStartup with DI -->
     <Application.Resources>
 
-        <!-- ═══════════════════════════════════════════════════════════════
-             COLOR TOKENS — theo QUICK_REFERENCE.md color table
-             Dùng {DynamicResource TokenName} trong XAML, KHÔNG hardcode hex
-             ═══════════════════════════════════════════════════════════════ -->
+        <!--
+        ═══════════════════════════════════════════════════════════════════════
+         THEME: DARK (default)
+         ISA-101 HMI Design Standard + SEMI S95 Equipment hierarchy
+         Dùng {DynamicResource TokenName} — KHÔNG hardcode hex trong View/Control
+         ThemeService có thể swap toàn bộ bằng cách replace ResourceDictionary này
+        ═══════════════════════════════════════════════════════════════════════
 
-        <!-- Backgrounds -->
-        <SolidColorBrush x:Key="Screen.BackgroundBrush"      Color="#FF1E1E1E"/>
-        <SolidColorBrush x:Key="Panel.BackgroundBrush"       Color="#FF252526"/>
-        <SolidColorBrush x:Key="Panel.BackgroundAltBrush"    Color="#FF2D2D30"/>
-        <SolidColorBrush x:Key="Header.BackgroundBrush"      Color="#FF252526"/>
-        <SolidColorBrush x:Key="Border.DefaultBrush"         Color="#FF3F3F46"/>
-        <SolidColorBrush x:Key="Border.StrongBrush"          Color="#FF007ACC"/>
+         MÀUSẮC SEMANTIC (CỨNG — không đổi theo theme, ISA-101 Table 3):
+           Running/Normal  = #4CAF50  (xanh lá)
+           Warning         = #FFC107  (vàng)
+           Alarm/Error     = #F44336  (đỏ)
+           Critical        = #B71C1C  (đỏ đậm)
+           Disabled        = #9E9E9E  (xám)
+           Manual/Override = #1E88E5  (xanh dương)
+           Interlock       = #7B1FA2  (tím)
+           Transitioning   = #FF6D00  (cam)
+        ═══════════════════════════════════════════════════════════════════════
+        -->
 
-        <!-- Text -->
-        <SolidColorBrush x:Key="Text.PrimaryBrush"           Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Text.SecondaryBrush"         Color="#FF9D9D9D"/>
-        <SolidColorBrush x:Key="Text.HeadingBrush"           Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Text.LiveValueBrush"         Color="#FF00D4FF"/>
-        <SolidColorBrush x:Key="Text.DisabledBrush"          Color="#FF656565"/>
+        <!-- ── Backgrounds (DynamicResource — đổi theo theme) ───────────────────── -->
+        <SolidColorBrush x:Key="Screen.BackgroundBrush"        Color="#FF1E1E1E"/>
+        <SolidColorBrush x:Key="Panel.BackgroundBrush"         Color="#FF252526"/>
+        <SolidColorBrush x:Key="Panel.BackgroundAltBrush"      Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="Panel.BackgroundHoverBrush"    Color="#FF333337"/>
+        <SolidColorBrush x:Key="Header.BackgroundBrush"        Color="#FF1A1A1A"/>
+        <SolidColorBrush x:Key="NavBar.BackgroundBrush"        Color="#FF1E1E1E"/>
+        <SolidColorBrush x:Key="NavBar.ActiveBrush"            Color="#FF094771"/>
+        <SolidColorBrush x:Key="TopBar.BackgroundBrush"        Color="#FF1A1A1A"/>
+        <SolidColorBrush x:Key="StatusBar.BackgroundBrush"     Color="#FF007ACC"/>
+        <SolidColorBrush x:Key="Card.BackgroundBrush"          Color="#FF252526"/>
+        <SolidColorBrush x:Key="Card.BorderBrush"              Color="#FF3F3F46"/>
+        <SolidColorBrush x:Key="Input.BackgroundBrush"         Color="#FF3C3C3C"/>
+        <SolidColorBrush x:Key="Input.BorderBrush"             Color="#FF5A5A5A"/>
+        <SolidColorBrush x:Key="Input.FocusBrush"              Color="#FF007ACC"/>
+        <SolidColorBrush x:Key="Border.DefaultBrush"           Color="#FF3F3F46"/>
+        <SolidColorBrush x:Key="Border.StrongBrush"            Color="#FF007ACC"/>
+        <SolidColorBrush x:Key="Separator.BackgroundBrush"     Color="#FF3F3F46"/>
 
-        <!-- Status — màu cố định theo ISA-101 HMI standard -->
-        <SolidColorBrush x:Key="Status.NormalBrush"          Color="#FF4CAF50"/>
-        <SolidColorBrush x:Key="Status.WarningBrush"         Color="#FFFFC107"/>
-        <SolidColorBrush x:Key="Status.AlarmBrush"           Color="#FFF44336"/>
-        <SolidColorBrush x:Key="Status.CriticalBrush"        Color="#FFB71C1C"/>
-        <SolidColorBrush x:Key="Status.DisabledBrush"        Color="#FF9E9E9E"/>
-        <SolidColorBrush x:Key="Status.ManualBrush"          Color="#FF1E88E5"/>
-        <SolidColorBrush x:Key="Status.InterlockBrush"       Color="#FF7B1FA2"/>
+        <!-- ── Text (DynamicResource) ────────────────────────────────────────────── -->
+        <SolidColorBrush x:Key="Text.PrimaryBrush"             Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Text.SecondaryBrush"           Color="#FF9D9D9D"/>
+        <SolidColorBrush x:Key="Text.HeadingBrush"             Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Text.LiveValueBrush"           Color="#FF00D4FF"/>
+        <SolidColorBrush x:Key="Text.DisabledBrush"            Color="#FF656565"/>
+        <SolidColorBrush x:Key="Text.PlaceholderBrush"         Color="#FF6B6B6B"/>
+        <SolidColorBrush x:Key="Text.LinkBrush"                Color="#FF4FC3F7"/>
+        <SolidColorBrush x:Key="Text.ErrorBrush"               Color="#FFEF9A9A"/>
+        <SolidColorBrush x:Key="Text.SuccessBrush"             Color="#FFA5D6A7"/>
 
-        <!-- String resources — thay thế cho {lang:Text Key='...'} khi chưa có I18n -->
-        <sys:String x:Key="Shell.Title">AutoMachine Framework v1.0</sys:String>
-        <sys:String x:Key="Shell.WelcomeMessage">Chọn module từ menu để bắt đầu</sys:String>
+        <!-- ── Status / Semantic (StaticResource — cứng, KHÔNG đổi theo theme) ──── -->
+        <SolidColorBrush x:Key="Status.NormalBrush"            Color="#FF4CAF50"/>
+        <SolidColorBrush x:Key="Status.WarningBrush"           Color="#FFFFC107"/>
+        <SolidColorBrush x:Key="Status.AlarmBrush"             Color="#FFF44336"/>
+        <SolidColorBrush x:Key="Status.CriticalBrush"          Color="#FFB71C1C"/>
+        <SolidColorBrush x:Key="Status.DisabledBrush"          Color="#FF9E9E9E"/>
+        <SolidColorBrush x:Key="Status.ManualBrush"            Color="#FF1E88E5"/>
+        <SolidColorBrush x:Key="Status.InterlockBrush"         Color="#FF7B1FA2"/>
+        <SolidColorBrush x:Key="Status.TransitioningBrush"     Color="#FFFF6D00"/>
+        <SolidColorBrush x:Key="Status.ReadyBrush"             Color="#FF26A69A"/>
+        <SolidColorBrush x:Key="Status.InfoBrush"              Color="#FF42A5F5"/>
+
+        <!-- Foreground trên nền semantic -->
+        <SolidColorBrush x:Key="Status.ForegroundBrush"        Color="#FFFFFFFF"/>
+
+        <!-- ── Buttons — ISA-101: min 44×44px; nút nguy hiểm cách 48px+ ─────────── -->
+        <SolidColorBrush x:Key="Button.DefaultBrush"           Color="#FF3C3C3C"/>
+        <SolidColorBrush x:Key="Button.DefaultHoverBrush"      Color="#FF4A4A4A"/>
+        <SolidColorBrush x:Key="Button.PrimaryBrush"           Color="#FF007ACC"/>
+        <SolidColorBrush x:Key="Button.PrimaryHoverBrush"      Color="#FF1884CE"/>
+        <SolidColorBrush x:Key="Button.DangerBrush"            Color="#FFF44336"/>
+        <SolidColorBrush x:Key="Button.DangerHoverBrush"       Color="#FFE53935"/>
+        <SolidColorBrush x:Key="Button.SuccessBrush"           Color="#FF4CAF50"/>
+        <SolidColorBrush x:Key="Button.SuccessHoverBrush"      Color="#FF43A047"/>
+        <SolidColorBrush x:Key="Button.WarningBrush"           Color="#FFFFC107"/>
+        <SolidColorBrush x:Key="Button.WarningHoverBrush"      Color="#FFFFB300"/>
+        <SolidColorBrush x:Key="Button.NeutralBrush"           Color="#FF5A5A5A"/>
+        <SolidColorBrush x:Key="Button.ForegroundBrush"        Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Button.DisabledBrush"          Color="#FF3A3A3A"/>
+        <SolidColorBrush x:Key="Button.DisabledFgBrush"        Color="#FF656565"/>
+
+        <!-- ── E-Stop — SEMI S8: 80×80px min, đỏ nổi bật ───────────────────────── -->
+        <SolidColorBrush x:Key="EStop.BackgroundBrush"         Color="#FFD32F2F"/>
+        <SolidColorBrush x:Key="EStop.BorderBrush"             Color="#FFB71C1C"/>
+        <SolidColorBrush x:Key="EStop.ForegroundBrush"         Color="#FFFFFFFF"/>
+
+        <!-- ── IO Indicator ──────────────────────────────────────────────────────── -->
+        <SolidColorBrush x:Key="IO.DiOnBrush"                  Color="#FF4CAF50"/>
+        <SolidColorBrush x:Key="IO.DiOffBrush"                 Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="IO.DoOnBrush"                  Color="#FF1E88E5"/>
+        <SolidColorBrush x:Key="IO.DoOffBrush"                 Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="IO.AiOnBrush"                  Color="#FFFFB300"/>
+        <SolidColorBrush x:Key="IO.ErrorBrush"                 Color="#FFF44336"/>
+
+        <!-- ── Motion ────────────────────────────────────────────────────────────── -->
+        <SolidColorBrush x:Key="Axis.IdleBrush"                Color="#FF252526"/>
+        <SolidColorBrush x:Key="Axis.MovingBrush"              Color="#FF0D47A1"/>
+        <SolidColorBrush x:Key="Axis.AlarmBrush"               Color="#FFB71C1C"/>
+        <SolidColorBrush x:Key="Axis.HomedBrush"               Color="#FF1B5E20"/>
+        <SolidColorBrush x:Key="JogButton.BackgroundBrush"     Color="#FF1565C0"/>
+        <SolidColorBrush x:Key="JogButton.HoverBrush"          Color="#FF1976D2"/>
+
+        <!-- ── Vision ────────────────────────────────────────────────────────────── -->
+        <SolidColorBrush x:Key="Vision.PassBrush"              Color="#FF4CAF50"/>
+        <SolidColorBrush x:Key="Vision.FailBrush"              Color="#FFF44336"/>
+        <SolidColorBrush x:Key="Vision.PendingBrush"           Color="#FFFFC107"/>
+        <SolidColorBrush x:Key="Vision.OverlayPassBrush"       Color="#8044FF44"/>
+        <SolidColorBrush x:Key="Vision.OverlayFailBrush"       Color="#80FF4444"/>
+
+        <!-- ── TabControl ─────────────────────────────────────────────────────────── -->
+        <SolidColorBrush x:Key="Tab.BackgroundBrush"           Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="Tab.ActiveBrush"               Color="#FF1E1E1E"/>
+        <SolidColorBrush x:Key="Tab.BorderBrush"               Color="#FF007ACC"/>
+        <SolidColorBrush x:Key="Tab.ForegroundBrush"           Color="#FF9D9D9D"/>
+        <SolidColorBrush x:Key="Tab.ActiveForegroundBrush"     Color="#FFFFFFFF"/>
+
+        <!-- ── DataGrid ────────────────────────────────────────────────────────────── -->
+        <SolidColorBrush x:Key="Grid.HeaderBrush"              Color="#FF252526"/>
+        <SolidColorBrush x:Key="Grid.RowBrush"                 Color="#FF252526"/>
+        <SolidColorBrush x:Key="Grid.AltRowBrush"              Color="#FF2D2D30"/>
+        <SolidColorBrush x:Key="Grid.SelectedBrush"            Color="#FF094771"/>
+        <SolidColorBrush x:Key="Grid.BorderBrush"              Color="#FF3F3F46"/>
+
+        <!-- ── Typography (FontSize constants) ─────────────────────────────────────── -->
+        <sys:Double x:Key="Font.H1">24</sys:Double>
+        <sys:Double x:Key="Font.H2">18</sys:Double>
+        <sys:Double x:Key="Font.H3">16</sys:Double>
+        <sys:Double x:Key="Font.Body">13</sys:Double>
+        <sys:Double x:Key="Font.Small">11</sys:Double>
+        <sys:Double x:Key="Font.Micro">10</sys:Double>
+        <sys:Double x:Key="Font.LiveValue">15</sys:Double>
+        <sys:Double x:Key="Font.KpiValue">28</sys:Double>
+
+        <!-- ── Dimensions (ISA-101 + SEMI S8) ────────────────────────────────────── -->
+        <sys:Double x:Key="Dim.TopBarHeight">48</sys:Double>
+        <sys:Double x:Key="Dim.NavWidth">200</sys:Double>
+        <sys:Double x:Key="Dim.NavCollapsedWidth">60</sys:Double>
+        <sys:Double x:Key="Dim.StatusBarHeight">32</sys:Double>
+        <sys:Double x:Key="Dim.NavButtonHeight">44</sys:Double>
+        <sys:Double x:Key="Dim.ControlButtonHeight">48</sys:Double>
+        <sys:Double x:Key="Dim.EStopSize">80</sys:Double>
+        <sys:Double x:Key="Dim.CardRadius">6</sys:Double>
+        <sys:Double x:Key="Dim.InputHeight">36</sys:Double>
+        <sys:Double x:Key="Dim.SeparatorThickness">1</sys:Double>
+
+        <!-- ── Button base Style (ISA-101: min 44px height, 8px radius) ─────────── -->
+        <Style x:Key="ButtonBase" TargetType="Button">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="{DynamicResource Button.DefaultBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Button.ForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.70"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{StaticResource Button.DisabledBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Button.DisabledFgBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Control Button (48px — ISA-101 machine control) -->
+        <Style x:Key="ControlButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- Primary Button -->
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
+            <Setter Property="Background" Value="{DynamicResource Button.PrimaryBrush}"/>
+        </Style>
+
+        <!-- Danger Button (Stop/Delete) -->
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
+            <Setter Property="Background" Value="{DynamicResource Button.DangerBrush}"/>
+        </Style>
+
+        <!-- E-Stop Button (SEMI S8: 80×80px minimum) -->
+        <Style x:Key="EStopButton" TargetType="Button">
+            <Setter Property="Width" Value="{StaticResource Dim.EStopSize}"/>
+            <Setter Property="Height" Value="{StaticResource Dim.EStopSize}"/>
+            <Setter Property="Background" Value="{StaticResource EStop.BackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource EStop.ForegroundBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush" Value="{StaticResource EStop.BorderBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="40">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.70"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Nav Button (sidebar) -->
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Height" Value="{StaticResource Dim.NavButtonHeight}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="14,0,0,0"/>
+            <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderThickness="3,0,0,0" BorderBrush="Transparent"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Card Border style -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Card.BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Card.BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <!-- Section Header TextBlock -->
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{StaticResource Font.H3}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.HeadingBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- KPI Value TextBlock (large number readout) -->
+        <Style x:Key="KpiValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{StaticResource Font.KpiValue}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.LiveValueBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- KPI Label -->
+        <Style x:Key="KpiLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{StaticResource Font.Small}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- DataGrid column header style -->
+        <Style x:Key="GridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource Grid.HeaderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+        </Style>
+
+        <!-- TextBox style -->
+        <Style x:Key="InputBox" TargetType="TextBox">
+            <Setter Property="Height" Value="{StaticResource Dim.InputHeight}"/>
+            <Setter Property="Background" Value="{DynamicResource Input.BackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Input.BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource Text.PrimaryBrush}"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource Border.StrongBrush}"/>
+        </Style>
+
+        <!-- ComboBox style -->
+        <Style x:Key="InputCombo" TargetType="ComboBox">
+            <Setter Property="Height" Value="{StaticResource Dim.InputHeight}"/>
+            <Setter Property="Background" Value="{DynamicResource Input.BackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Input.BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,0"/>
+        </Style>
+
+        <!-- ── String resources ─────────────────────────────────────────────────── -->
+        <sys:String x:Key="Shell.Title">AutoMachine Framework</sys:String>
         <sys:String x:Key="Shell.StatusReady">✓ System Ready</sys:String>
         <sys:String x:Key="Shell.StatusAlarmPrefix">⚠ ALARM: </sys:String>
 

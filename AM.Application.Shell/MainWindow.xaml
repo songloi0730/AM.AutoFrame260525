@@ -34,14 +34,7 @@
                 <ComboBox x:Name="LanguageCombo" Margin="8,8,8,12"
                           SelectionChanged="LanguageCombo_SelectionChanged"
                           ToolTip="{Binding [Common.Language]}"/>
-                <Button x:Name="NavDashboard" Content="{Binding [Nav.Dashboard]}" Click="NavDashboard_Click"
-                        Height="44" FontSize="13" HorizontalContentAlignment="Left" Padding="14,0"
-                        Background="Transparent" BorderThickness="0"
-                        Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                <Button x:Name="NavAlarms" Content="{Binding [Nav.Alarms]}" Click="NavAlarms_Click"
-                        Height="44" FontSize="13" HorizontalContentAlignment="Left" Padding="14,0"
-                        Background="Transparent" BorderThickness="0"
-                        Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                <!-- Nút module được sinh động trong code-behind từ [ModuleNavigation] -->
             </StackPanel>
 
             <Border Grid.Column="1" Background="{DynamicResource Screen.BackgroundBrush}" Margin="4">

@@ -2,6 +2,7 @@
   "Shell.Title": "AutoMachine Framework",
   "Nav.Dashboard": "Dashboard",
   "Nav.Alarms": "Alarms",
+  "Nav.IoMonitor": "I/O Monitor",
   "Common.Language": "Language",
   "Status.Ready": "Ready"
 }
