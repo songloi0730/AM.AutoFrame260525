@@ -6,7 +6,7 @@
 
 ## [Session 17] 2026-06-04 — Phase E: README + CI/CD + AM.Modules.Alarm + Shell navigation
 
-**Commit:** *(pending)*
+**Commit:** `98382af`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Phase E (roadmap) — onboarding + UI vận hành. Làm lát cắt giá trị cao: README, CI, module UI thứ 2.
 
