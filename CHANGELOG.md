@@ -4,6 +4,54 @@
 
 ---
 
+## [Session 23] 2026-06-06 — ISA-101 UI Modules hoàn chỉnh (7 màn hình mới)
+
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Xây dựng toàn bộ tầng UI theo chuẩn ISA-101 / SEMI S95 / SEMI S8. Mục tiêu: shell + 10 modules tái sử dụng cho mọi máy.
+
+### ✅ AM.Application.Shell — ISA-101 Shell redesign
+- `MainWindow.xaml` — 3-row ISA-101 layout: **TopBar 48px** (state chip + user + clock Consolas) + **SideNav 200px/60px collapsible** (auto-build từ [ModuleNavigation]) + **StatusBar 32px** (alarm badges + UPH + cycle time + recipe).
+- `MainWindow.xaml.cs` — DispatcherTimer clock 1s; StateColors dictionary; NavCollapseBtn toggle 200↔60px; BuildNavigation() tự scan assembly.
+- `App.xaml` — Đầy đủ theme tokens: backgrounds/borders/text + semantic ISA-101 colors (StaticResource, không đổi theo theme) + button styles (ControlButton 48px, EStopButton 80×80, JogBtn 64×64) + Card/SectionHeader/KpiValue/GridHeader/InputBox.
+- `AM.Application.Shell.csproj` — Thêm **7 ProjectReference** mới (Parameter/Motion/Vision/Production/Identity/Logging/Diagnostics).
+- `ServiceCollectionExtensions.cs` — `AddUiViewModels()` đăng ký 7 ViewModel mới.
+- `lang/strings.*.json` (vi/en/zh) — Thêm Nav.Parameter/Motion/Vision/Production/Identity/Logging/Diagnostics + State.* (8 states × 3 ngôn ngữ).
+
+### ✅ AM.Modules.Parameter (mới)
+- `ParameterView.xaml` — 3 tab: Recipe (GroupBox per [ParamView] group + DataTemplate ParamRow: Label/TextBox/Unit/Range) / All Parameters (DataGrid) / History (DataGrid). Header: recipe ComboBox + Load/Save/Export/Import.
+- `ParameterViewModel.cs` — Reflect [ParamView] attributes → auto-render groups; apply edits via reflection; recipe load/save/export commands.
+
+### ✅ AM.Modules.Motion (mới)
+- `MotionView.xaml` — Axis cards (WrapPanel 180px, DataTrigger: moving→blue/alarm→red/homed→green) + Jog panel (step ComboBox + 64×64 jog buttons SEMI S8) + Teach table (DataGrid) + Override sliders (velocity%/accel%). Danger gap 48px trước "STOP ALL".
+- `MotionViewModel.cs` — Poll timer 100ms live position; R16 Engineer check trước jog/force; JogPosAsync/JogNegAsync/HomeAsync/HomeAllAsync/StopAllAsync; TeachPositionCommand.
+
+### ✅ AM.Modules.Vision (mới)
+- `VisionView.xaml` — Image 60% + PASS(green)/FAIL(red) overlay + placeholder. Tool results DataGrid + Stats KPI + Config panel (threshold slider, Engineer+).
+- `VisionViewModel.cs` — GrabCommand; subscribe CycleCompleted event → update yield stats; YieldPercent computed; IDisposable.
+
+### ✅ AM.Modules.Production (mới)
+- `ProductionView.xaml` — 5 KPI cards (UPH/TodayCount/Yield/CycleTime/Uptime) + Hourly bar chart (ItemsControl, bars VerticalAlignment Bottom) + Batch info + Records DataGrid.
+- `ProductionViewModel.cs` — OnCycleCompleted → TodayCount++, AvgCycleTime, CurrentUph; HourlyBars ObservableCollection; shift start tracking; Export/Reset commands.
+
+### ✅ AM.Modules.Identity (mới)
+- `IdentityView.xaml` — 3 tab: Login (360px card, Username/Password/Login) / Users (Admin warning + DataGrid + Add/Edit/Delete) / Permissions (9×4 matrix DataGrid ✔/✘).
+- `IdentityViewModel.cs` — LoginCommand (BCrypt verify); permission matrix 9 rows; IUserService integration; Admin-only commands guard.
+
+### ✅ AM.Modules.Logging (mới)
+- `LogView.xaml` — Filter bar (Level/Source/Keyword/DatePicker) + DataGrid (row style DataTrigger: CRIT=dark-red/ERRO=red/WARN=yellow) + VirtualizingStackPanel + footer count + Export/Clear.
+- `LogViewModel.cs` — Parse Serilog rolling file `logs/automachine-*.log`; ApplyFilter() TakeLast(2000) cho UI perf; 6 level chips.
+
+### ✅ AM.Modules.Diagnostics (mới)
+- `DiagnosticsView.xaml` — Left: CPU/RAM/Disk ProgressBar cards (DataTrigger warning/critical color) + process info grid. Right: hardware DataGrid (green/red LED + Ping + per-row Reconnect button).
+- `DiagnosticsViewModel.cs` — DriveInfo cho disk; Process.WorkingSet64 cho memory; DispatcherTimer 5s auto-refresh; ReconnectAllCommand + per-device ReconnectCommand; IDisposable.
+
+### 🔍 Kết quả
+- Tổng **10 AM.Modules** hoàn chỉnh (Dashboard/Alarm/IoMonitor/Parameter/Motion/Vision/Production/Identity/Logging/Diagnostics).
+- Shell tự build sidebar từ [ModuleNavigation] — **thêm module mới = không sửa Shell**.
+- ISA-101 compliant: semantic colors (StaticResource), touch targets ≥44px, E-Stop 80×80px, danger gap 48px.
+
+---
+
 ## [Session 22] 2026-06-05 — G0 Nav auto-discovery + AM.Modules.IoMonitor
 
 **Commit:** `4246aaf`

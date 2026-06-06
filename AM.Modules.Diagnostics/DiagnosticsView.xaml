@@ -1,0 +1,274 @@
+<!--
+    DiagnosticsView.xaml — AM.Modules.Diagnostics
+    ISA-101 Level-4 Screen: System Diagnostics
+    Layout:
+      [Left ] System health: CPU, RAM, Disk gauges + process info
+      [Right] Hardware connectivity: per-device ping status + Reconnect All
+-->
+<UserControl x:Class="AM.Modules.Diagnostics.DiagnosticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Background="{DynamicResource Screen.BackgroundBrush}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>   <!-- Header: title + refresh -->
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>      <!-- Body -->
+        </Grid.RowDefinitions>
+
+        <!-- ═══ Header ═════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="System Diagnostics"
+                       FontSize="20" FontWeight="Bold"
+                       Foreground="{DynamicResource Text.HeadingBrush}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="⟳ Refresh"
+                        Command="{Binding RefreshCommand}"
+                        Style="{StaticResource ButtonBase}"
+                        Width="90" Height="36" Margin="0,0,8,0"
+                        Background="{DynamicResource Button.PrimaryBrush}"/>
+                <Button Content="🔌 Reconnect All"
+                        Command="{Binding ReconnectAllCommand}"
+                        Style="{StaticResource ButtonBase}"
+                        Width="120" Height="36"
+                        Background="{DynamicResource Status.ManualBrush}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ═══ Body ════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>    <!-- Left: System health -->
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>    <!-- Right: Hardware status -->
+            </Grid.ColumnDefinitions>
+
+            <!-- ─── Left: System Health ──────────────────────────────────── -->
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Tài nguyên hệ thống" Style="{StaticResource SectionHeader}"/>
+
+                <!-- CPU Card -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="CPU" FontWeight="SemiBold" FontSize="14"
+                                       Foreground="{DynamicResource Text.HeadingBrush}"/>
+                            <ProgressBar Value="{Binding CpuPercent}" Maximum="100"
+                                         Height="12" Margin="0,6,0,4"
+                                         Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                <ProgressBar.Style>
+                                    <Style TargetType="ProgressBar">
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource Status.NormalBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCpuHigh}" Value="True">
+                                                <Setter Property="Foreground"
+                                                        Value="{StaticResource Status.WarningBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsCpuCritical}" Value="True">
+                                                <Setter Property="Foreground"
+                                                        Value="{StaticResource Status.AlarmBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ProgressBar.Style>
+                            </ProgressBar>
+                            <TextBlock Text="{Binding ProcessorName}"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"
+                                       FontSize="11" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding CpuPercent, StringFormat='{}{0:F0}%'}"
+                                   Style="{StaticResource KpiValue}" FontSize="22"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- RAM Card -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="RAM" FontWeight="SemiBold" FontSize="14"
+                                       Foreground="{DynamicResource Text.HeadingBrush}"/>
+                            <ProgressBar Value="{Binding RamPercent}" Maximum="100"
+                                         Height="12" Margin="0,6,0,4"
+                                         Background="{DynamicResource Panel.BackgroundAltBrush}"
+                                         Foreground="{DynamicResource Status.InfoBrush}"/>
+                            <TextBlock Foreground="{DynamicResource Text.SecondaryBrush}" FontSize="11">
+                                <Run Text="{Binding UsedRamGb, StringFormat=F1}"/>
+                                <Run Text=" GB / "/>
+                                <Run Text="{Binding TotalRamGb, StringFormat=F0}"/>
+                                <Run Text=" GB"/>
+                            </TextBlock>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding RamPercent, StringFormat='{}{0:F0}%'}"
+                                   Style="{StaticResource KpiValue}" FontSize="22"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Disk Card -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Disk (C:)" FontWeight="SemiBold" FontSize="14"
+                                       Foreground="{DynamicResource Text.HeadingBrush}"/>
+                            <ProgressBar Value="{Binding DiskPercent}" Maximum="100"
+                                         Height="12" Margin="0,6,0,4"
+                                         Background="{DynamicResource Panel.BackgroundAltBrush}"
+                                         Foreground="{DynamicResource Status.TransitioningBrush}"/>
+                            <TextBlock Foreground="{DynamicResource Text.SecondaryBrush}" FontSize="11">
+                                <Run Text="{Binding FreeDiskGb, StringFormat=F0}"/>
+                                <Run Text=" GB còn trống / "/>
+                                <Run Text="{Binding TotalDiskGb, StringFormat=F0}"/>
+                                <Run Text=" GB"/>
+                            </TextBlock>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding DiskPercent, StringFormat='{}{0:F0}%'}"
+                                   Style="{StaticResource KpiValue}" FontSize="22"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Process info -->
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                   Text="Uptime hệ thống:"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"
+                                   FontSize="12" Margin="0,0,12,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding SystemUptime}"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"
+                                   FontSize="12" FontFamily="Consolas"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                   Text="Process memory:"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"
+                                   FontSize="12" Margin="0,0,12,4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding ProcessMemoryMb, StringFormat='{}{0:F0} MB'}"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"
+                                   FontSize="12" FontFamily="Consolas"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                   Text=".NET version:"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"
+                                   FontSize="12" Margin="0,0,12,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding DotNetVersion}"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"
+                                   FontSize="12" FontFamily="Consolas"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- ─── Right: Hardware Device Status ────────────────────────── -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Trạng thái kết nối phần cứng"
+                           Style="{StaticResource SectionHeader}"/>
+
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding DeviceStatuses}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" GridLinesVisibility="Horizontal"
+                          Background="{DynamicResource Panel.BackgroundBrush}"
+                          Foreground="{DynamicResource Text.PrimaryBrush}"
+                          BorderBrush="{DynamicResource Border.DefaultBrush}"
+                          RowBackground="{DynamicResource Grid.RowBrush}"
+                          AlternatingRowBackground="{DynamicResource Grid.AltRowBrush}"
+                          ColumnHeaderStyle="{StaticResource GridHeaderStyle}">
+
+                    <DataGrid.Columns>
+                        <!-- Connected LED -->
+                        <DataGridTemplateColumn Header="OK" Width="48">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Ellipse Width="14" Height="14" HorizontalAlignment="Center">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill"
+                                                        Value="{StaticResource Status.AlarmBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                        <Setter Property="Fill"
+                                                                Value="{StaticResource Status.NormalBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Thiết bị" Binding="{Binding DeviceName}"
+                                            Width="130"/>
+                        <DataGridTextColumn Header="Loại" Binding="{Binding Category}"
+                                            Width="110"/>
+                        <DataGridTextColumn Header="Địa chỉ" Binding="{Binding Address}"
+                                            Width="130"/>
+                        <DataGridTextColumn Header="Trạng thái" Binding="{Binding StatusText}"
+                                            Width="*"/>
+                        <DataGridTextColumn Header="Ping (ms)" Binding="{Binding PingMs}"
+                                            Width="80"/>
+
+                        <!-- Reconnect button -->
+                        <DataGridTemplateColumn Header="" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="Reconnect"
+                                            Command="{Binding DataContext.ReconnectCommand,
+                                                      RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            IsEnabled="{Binding CanReconnect}"
+                                            Height="28" Padding="6,0"
+                                            Background="{DynamicResource Status.ManualBrush}"
+                                            Foreground="{DynamicResource Text.PrimaryBrush}"
+                                            BorderThickness="0" FontSize="11"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

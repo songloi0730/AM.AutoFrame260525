@@ -52,6 +52,13 @@
     <ProjectReference Include="..\AM.Modules.Dashboard\AM.Modules.Dashboard.csproj" />
     <ProjectReference Include="..\AM.Modules.Alarm\AM.Modules.Alarm.csproj" />
     <ProjectReference Include="..\AM.Modules.IoMonitor\AM.Modules.IoMonitor.csproj" />
+    <ProjectReference Include="..\AM.Modules.Parameter\AM.Modules.Parameter.csproj" />
+    <ProjectReference Include="..\AM.Modules.Motion\AM.Modules.Motion.csproj" />
+    <ProjectReference Include="..\AM.Modules.Vision\AM.Modules.Vision.csproj" />
+    <ProjectReference Include="..\AM.Modules.Production\AM.Modules.Production.csproj" />
+    <ProjectReference Include="..\AM.Modules.Identity\AM.Modules.Identity.csproj" />
+    <ProjectReference Include="..\AM.Modules.Logging\AM.Modules.Logging.csproj" />
+    <ProjectReference Include="..\AM.Modules.Diagnostics\AM.Modules.Diagnostics.csproj" />
     <ProjectReference Include="..\AM.WorkStation.Demo\AM.WorkStation.Demo.csproj" />
   </ItemGroup>
 

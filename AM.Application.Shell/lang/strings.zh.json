@@ -3,6 +3,21 @@
   "Nav.Dashboard": "仪表板",
   "Nav.Alarms": "报警",
   "Nav.IoMonitor": "I/O 监视",
+  "Nav.Parameter": "参数 / 配方",
+  "Nav.Motion": "运动控制",
+  "Nav.Vision": "视觉系统",
+  "Nav.Production": "生产 / KPI",
+  "Nav.Identity": "用户管理",
+  "Nav.Logging": "系统日志",
+  "Nav.Diagnostics": "系统诊断",
   "Common.Language": "语言",
-  "Status.Ready": "就绪"
+  "Status.Ready": "就绪",
+  "State.Uninitialized": "未初始化",
+  "State.Initializing": "正在初始化...",
+  "State.Idle": "待机",
+  "State.Running": "运行中",
+  "State.Paused": "已暂停",
+  "State.InitAlarm": "初始化报警",
+  "State.RunAlarm": "运行报警",
+  "State.Resetting": "正在复位..."
 }

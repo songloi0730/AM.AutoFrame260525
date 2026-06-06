@@ -3,6 +3,21 @@
   "Nav.Dashboard": "Bảng điều khiển",
   "Nav.Alarms": "Cảnh báo",
   "Nav.IoMonitor": "Giám sát I/O",
+  "Nav.Parameter": "Thông số / Recipe",
+  "Nav.Motion": "Điều khiển chuyển động",
+  "Nav.Vision": "Hệ thống thị giác",
+  "Nav.Production": "Sản xuất / KPI",
+  "Nav.Identity": "Người dùng",
+  "Nav.Logging": "Nhật ký hệ thống",
+  "Nav.Diagnostics": "Chẩn đoán hệ thống",
   "Common.Language": "Ngôn ngữ",
-  "Status.Ready": "Sẵn sàng"
+  "Status.Ready": "Sẵn sàng",
+  "State.Uninitialized": "Chưa khởi tạo",
+  "State.Initializing": "Đang khởi tạo...",
+  "State.Idle": "Sẵn sàng",
+  "State.Running": "Đang chạy",
+  "State.Paused": "Tạm dừng",
+  "State.InitAlarm": "LỖI KHỞI TẠO",
+  "State.RunAlarm": "LỖI VẬN HÀNH",
+  "State.Resetting": "Đang reset..."
 }
