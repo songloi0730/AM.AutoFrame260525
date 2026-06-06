@@ -28,18 +28,18 @@ public partial class App
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        // 1. Cấu hình Serilog trước hết
-        Bootstrapper.ConfigureLogging();
+        // 1. Load configuration trước (để logging đọc được LogRetentionDays)
+        var config = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+            .Build();
+
+        // 2. Cấu hình Serilog (retention theo config)
+        Bootstrapper.ConfigureLogging(config);
         Log.Information("AutoMachine Shell starting...");
 
         try
         {
-            // 2. Load configuration từ appsettings.json
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .Build();
-
             // 3. Đăng ký DI
             var services = new ServiceCollection();
             Bootstrapper.RegisterServices(services, config);

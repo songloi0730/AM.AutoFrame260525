@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <None Update="io.map.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="lang\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

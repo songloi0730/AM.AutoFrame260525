@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
-**Session:** #20 — Phase F: DB gitignore + tách Bootstrapper + vendor enum + arch test + PLC base + docs/
-**Commit:** `d0012ae`
+**Session:** #21 — i18n foundation (đổi ngôn ngữ runtime vi/en/zh) + log retention config
+**Commit:** *(pending)*
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **19 projects** (CPM), 0 warning, **117 tests pass** · README + CI/CD + arch-test |
+| Solution structure | ✅ Hoàn thành | **19 projects** (CPM), 0 warning, **123 tests pass** · README + CI/CD + arch-test |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -27,7 +27,7 @@
 | AM.Services.Tests | ✅ Hoàn thành | 50 tests (Alarm, Recipe, StationSync, HardwareManager, **Watchdog**, **Production**) |
 | AM.Hardware.Tests | ✅ Hoàn thành | **27 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
-| AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, DispatcherHelper |
+| AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
 | AM.Modules.Dashboard | ✅ Hoàn thành | **Đã wire vào Shell** (side-nav, resolve từ DI) |

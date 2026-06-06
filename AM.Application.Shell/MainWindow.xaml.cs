@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     private readonly IServiceProvider _services;
     private DashboardView? _dashboardView;
     private AlarmListView? _alarmView;
+    private ILocalizationService? _localization;
 
     public MainWindow(IServiceProvider services)
     {
@@ -45,6 +46,12 @@ public partial class MainWindow : Window
         _dashboardView = new DashboardView { DataContext = _services.GetRequiredService<DashboardViewModel>() };
         _alarmView = new AlarmListView { DataContext = _services.GetRequiredService<AlarmListViewModel>() };
         MainContent.Content = _dashboardView;
+
+        // i18n: nav bind tới proxy (cập nhật live), ComboBox đổi ngôn ngữ runtime
+        NavPanel.DataContext = _services.GetRequiredService<LocalizedStrings>();
+        _localization = _services.GetRequiredService<ILocalizationService>();
+        LanguageCombo.ItemsSource = _localization.AvailableCultures;
+        LanguageCombo.SelectedItem = _localization.CurrentCulture;
 
         var alarmService = _services.GetRequiredService<IAlarmService>();
 
@@ -77,5 +84,11 @@ public partial class MainWindow : Window
     private void NavAlarms_Click(object sender, RoutedEventArgs e)
     {
         if (_alarmView is not null) MainContent.Content = _alarmView;
+    }
+
+    private void LanguageCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_localization is not null && LanguageCombo.SelectedItem is string culture)
+            _localization.SetCulture(culture);
     }
 }

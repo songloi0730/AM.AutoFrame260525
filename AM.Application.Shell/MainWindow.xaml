@@ -29,13 +29,16 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Width="150"
+            <StackPanel x:Name="NavPanel" Grid.Column="0" Width="150"
                         Background="{DynamicResource Panel.BackgroundBrush}">
-                <Button x:Name="NavDashboard" Content="📊  Dashboard" Click="NavDashboard_Click"
+                <ComboBox x:Name="LanguageCombo" Margin="8,8,8,12"
+                          SelectionChanged="LanguageCombo_SelectionChanged"
+                          ToolTip="{Binding [Common.Language]}"/>
+                <Button x:Name="NavDashboard" Content="{Binding [Nav.Dashboard]}" Click="NavDashboard_Click"
                         Height="44" FontSize="13" HorizontalContentAlignment="Left" Padding="14,0"
                         Background="Transparent" BorderThickness="0"
                         Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                <Button x:Name="NavAlarms" Content="⚠  Alarms" Click="NavAlarms_Click"
+                <Button x:Name="NavAlarms" Content="{Binding [Nav.Alarms]}" Click="NavAlarms_Click"
                         Height="44" FontSize="13" HorizontalContentAlignment="Left" Padding="14,0"
                         Background="Transparent" BorderThickness="0"
                         Foreground="{DynamicResource Text.PrimaryBrush}"/>

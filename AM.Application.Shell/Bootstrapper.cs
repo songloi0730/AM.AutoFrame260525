@@ -26,8 +26,11 @@ namespace AM.Application.Shell;
 internal static class Bootstrapper
 {
     /// <summary>Cấu hình Serilog. Gọi TRƯỚC khi build ServiceProvider.</summary>
-    internal static void ConfigureLogging()
+    /// <param name="config">Config để đọc LogRetentionDays (số ngày log giữ lại, cũ hơn tự xoá).</param>
+    internal static void ConfigureLogging(IConfiguration config)
     {
+        ArgumentNullException.ThrowIfNull(config);
+        int retentionDays = config.GetValue("AutoMachine:LogRetentionDays", 30);
         // Path.Combine + BaseDirectory: an toàn cross-platform, log nằm cạnh executable.
         string logPath = Path.Combine(AppContext.BaseDirectory, "logs", "automachine-.log");
 #pragma warning disable CA1305 // Serilog sinks: locale sensitivity acceptable cho logging infra
@@ -39,7 +42,7 @@ internal static class Bootstrapper
             .WriteTo.File(
                 path: logPath,
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 30,
+                retainedFileCountLimit: retentionDays, // log cũ hơn N ngày tự xoá
                 outputTemplate:
                     "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}",
                 formatProvider: CultureInfo.InvariantCulture)

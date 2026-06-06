@@ -4,6 +4,42 @@
 
 ---
 
+## [Session 21] 2026-06-05 — i18n foundation: đổi ngôn ngữ runtime (vi/en/zh) + log retention config
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Theo sơ đồ kiến trúc mục tiêu — lấp tầng Infrastructure i18n. Hạ tầng cross-cutting làm TRƯỚC
+khi thêm module mới (IO Monitor/Motion/Identity) để tránh retrofit.
+
+### ✅ i18n — đổi ngôn ngữ runtime, không restart
+- `ILocalizationService` (AM.Core.Abstractions): `this[key]`, `Format(key,args)`, `CurrentCulture`,
+  `AvailableCultures`, `SetCulture`, event `LanguageChanged`. `LanguageChangedEventArgs` (AM.Core).
+- `JsonLocalizationService` (AM.Infrastructure/Localization): nạp `strings.{culture}.json` (flat key→value)
+  từ thư mục; đổi culture runtime phát event; fallback về key nếu thiếu dịch; thread-safe.
+- File dịch `lang/strings.{vi,en,zh}.json` (copy ra output).
+- `LocalizedStrings` (Shell): proxy WPF — binding `{Binding [Key]}` tự refresh khi đổi ngôn ngữ
+  (raise PropertyChanged indexer qua Dispatcher) → **hot-reload, không restart**.
+- Shell: ComboBox chọn ngôn ngữ trong side-nav; nav text bind qua proxy → đổi là cập nhật ngay.
+
+### ✅ Log retention theo config
+- `ConfigureLogging(config)`: `retainedFileCountLimit = AutoMachine:LogRetentionDays` (mặc định 30) —
+  log cũ hơn N ngày tự xoá. App build config TRƯỚC khi cấu hình logging.
+
+### ✅ Tests (+6 → AM.Infrastructure.Tests 41)
+- `JsonLocalizationServiceTests` — nạp culture, đổi culture + event, không raise khi cùng culture,
+  culture lạ bị bỏ qua, fallback key, Format có args.
+
+### ⚠️ Ghi chú
+- Log file giữ nguyên ngôn ngữ trong code (chuẩn cho kỹ sư) — không localize log; user reqs cho phép phương án này.
+- String hiện tại của Dashboard/Alarm/App.xaml chưa migrate hết sang proxy — module mới sẽ dùng proxy từ đầu;
+  migrate XAML cũ làm dần (incremental).
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **123 passed** (50 services + 41 infra + 27 hardware + 5 architecture).
+
+---
+
 ## [Session 20] 2026-06-04 — Phase F5/F7: WordRegisterPlcBase (dedup PLC) + đổi folder docs/
 
 **Commit:** `d0012ae`

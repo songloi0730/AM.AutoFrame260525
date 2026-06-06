@@ -4,6 +4,7 @@
 // Purpose: Tách DI registration theo nhóm (data/core/ui/hardware) — tránh God-Composition-Root.
 // -------------------------------------------------------
 
+using System.IO;
 using AM.Application.Shell.Configuration;
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Machine;
@@ -28,6 +29,7 @@ using AM.Hardware.Motion;
 using AM.Hardware.Motion.Advantech;
 using AM.Hardware.Motion.Gts;
 using AM.Hardware.Vision;
+using AM.Infrastructure.Localization;
 using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
 using AM.Services;
@@ -80,6 +82,12 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IHardwareManagerService, HardwareManagerService>();
         services.AddSingleton<IStationSyncService, StationSyncService>();
         services.AddSingleton<IHardwareWatchdogService, HardwareWatchdogService>();
+
+        // i18n: nạp strings.*.json từ thư mục lang/ cạnh executable; đổi ngôn ngữ runtime
+        services.AddSingleton<ILocalizationService>(sp => new JsonLocalizationService(
+            sp.GetRequiredService<ILogger<JsonLocalizationService>>(),
+            Path.Combine(AppContext.BaseDirectory, "lang"), defaultCulture: "vi"));
+        services.AddSingleton(sp => new LocalizedStrings(sp.GetRequiredService<ILocalizationService>())); // proxy WPF binding live
         return services;
     }
 
