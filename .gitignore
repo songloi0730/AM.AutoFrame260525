@@ -16,6 +16,13 @@ packages/
 # Logs
 *.log
 
+# SQLite database (tạo runtime bằng EnsureCreatedAsync — KHÔNG commit DB sống)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
 # Temp
 Temp/
 Debug/

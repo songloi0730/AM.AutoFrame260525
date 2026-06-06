@@ -4,6 +4,20 @@
 
 ---
 
+## [Session 18] 2026-06-04 — Fix: gỡ SQLite DB khỏi Git tracking (.gitignore)
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Review bên thứ 3 — điểm đúng & nghiêm trọng: file DB sống bị commit.
+
+### 🔧 Sửa (Phase F1)
+- `.gitignore`: thêm `*.db`, `*.db-shm`, `*.db-wal`, `*.sqlite`, `*.sqlite3`.
+- `git rm --cached automachine.db{,-shm,-wal}` — gỡ khỏi tracking (file vẫn còn trên đĩa để chạy).
+- DB tự tạo runtime qua `InitializeDatabaseAsync` → `EnsureCreatedAsync` nên không cần commit DB.
+- Tránh: phình repo, merge conflict binary, ghi đè data sống (Recipe/Log) khi pull.
+
+---
+
 ## [Session 17] 2026-06-04 — Phase E: README + CI/CD + AM.Modules.Alarm + Shell navigation
 
 **Commit:** `98382af`
