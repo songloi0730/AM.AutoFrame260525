@@ -4,6 +4,36 @@
 
 ---
 
+## [Session 19] 2026-06-04 — Phase F2/F3/F4/F6: tách Bootstrapper + vendor enum + arch test + log path
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Thực hiện các điểm ĐÚNG còn lại của review bên thứ 3.
+
+### ✅ F2 — Tách Bootstrapper (God-Composition-Root → extension groups)
+- `ServiceCollectionExtensions.cs`: `AddAutoMachineOptions / AddDataAccess / AddCoreServices / AddUiViewModels /
+  AddDemoMachine / AddHardware`. Bootstrapper còn ~90 dòng, chỉ điều phối.
+- Thêm hardware/station mới → sửa đúng nhóm, không phình một file lớn.
+
+### ✅ F3 — Vendor enum thay magic string
+- `AM.Core/Enums/HardwareVendors.cs`: `MotionVendor/PlcVendor/IoVendor/ScannerVendor/VisionVendor/RobotVendor`.
+- `ParseVendor<TEnum>` (Enum.TryParse ignoreCase) trong ServiceCollectionExtensions + HardwareFactory →
+  hết so sánh chuỗi "KEYENCE"/"GTS", type-safe + IntelliSense.
+
+### ✅ F4 — Architecture test (enforce Dependency Inversion)
+- Project mới `AM.Architecture.Tests` (NetArchTest): **5 test** chặn `AM.Services`, `AM.Modules.Dashboard`,
+  `AM.Modules.Alarm`, `AM.Core.Abstractions`, `AM.Infrastructure` phụ thuộc `AM.Hardware.*` concrete.
+- Chặn "lách luật" gọi SDK hãng trực tiếp từ UI/logic — chỉ qua AM.Core.Abstractions.
+
+### ✅ F6 — Log path cross-platform
+- `ConfigureLogging`: `Path.Combine(AppContext.BaseDirectory, "logs", "automachine-.log")` thay literal `@"logs\..."`.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error** (19 projects).
+- `dotnet test` → **117 passed** (50 services + 35 infra + 27 hardware + 5 architecture).
+
+---
+
 ## [Session 18] 2026-06-04 — Fix: gỡ SQLite DB khỏi Git tracking (.gitignore)
 
 **Commit:** `b53ecf7`

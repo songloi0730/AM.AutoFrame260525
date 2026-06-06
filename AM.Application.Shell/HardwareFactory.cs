@@ -7,6 +7,7 @@
 
 using System.IO;
 using AM.Core.Abstractions.Interfaces.Hardware;
+using AM.Core.Enums;
 using AM.Hardware.IO;
 using AM.Hardware.Scanner;
 using AM.Hardware.Vision;
@@ -39,14 +40,12 @@ internal static class HardwareFactory
 
     private static void RegisterVision(IServiceCollection services, IConfiguration config, bool useSimulation)
     {
-        string vendor = useSimulation
-            ? "SIMULATED"
-            : (config.GetValue<string>("AutoMachine:Vision:Vendor") ?? "Simulated").ToUpperInvariant();
+        var vendor = useSimulation ? VisionVendor.Simulated : ParseVendor<VisionVendor>(config, "AutoMachine:Vision:Vendor");
         double passRate = config.GetValue("AutoMachine:Vision:PassRate", 0.95);
 
         services.AddSingleton<IVisionProcessor>(sp => vendor switch
         {
-            // "VISIONPRO" => new VisionProProcessor(...) — bật khi có Cognex.VisionPro SDK (libs/Vision/Cognex)
+            // VisionVendor.VisionPro => new VisionProProcessor(...) — bật khi có Cognex.VisionPro SDK (libs/Vision/Cognex)
             _ => new SimulatedVisionProcessor(
                 sp.GetRequiredService<ILogger<SimulatedVisionProcessor>>(), "SIM_VISION", passRate)
         });
@@ -54,19 +53,20 @@ internal static class HardwareFactory
 
     private static void RegisterScanner(IServiceCollection services, IConfiguration config, bool useSimulation)
     {
-        string vendor = useSimulation
-            ? "SIMULATED"
-            : (config.GetValue<string>("AutoMachine:Scanner:Vendor") ?? "Simulated").ToUpperInvariant();
+        var vendor = useSimulation ? ScannerVendor.Simulated : ParseVendor<ScannerVendor>(config, "AutoMachine:Scanner:Vendor");
         string host = config.GetValue<string>("AutoMachine:Scanner:Host") ?? "192.168.1.80";
         int port = config.GetValue("AutoMachine:Scanner:Port", 9004);
 
         services.AddSingleton<IBarcodeScanner>(sp => vendor switch
         {
-            "KEYENCE" => new KeyenceScanner(sp.GetRequiredService<ILogger<KeyenceScanner>>(), host, port),
-            "COGNEX" => new CognexScanner(sp.GetRequiredService<ILogger<CognexScanner>>(), host, port),
+            ScannerVendor.Keyence => new KeyenceScanner(sp.GetRequiredService<ILogger<KeyenceScanner>>(), host, port),
+            ScannerVendor.Cognex => new CognexScanner(sp.GetRequiredService<ILogger<CognexScanner>>(), host, port),
             _ => new SimulatedBarcodeScanner(sp.GetRequiredService<ILogger<SimulatedBarcodeScanner>>())
         });
     }
+
+    private static TEnum ParseVendor<TEnum>(IConfiguration config, string key) where TEnum : struct, Enum
+        => Enum.TryParse<TEnum>(config.GetValue<string>(key), ignoreCase: true, out var v) ? v : default;
 
     private static void RegisterSafety(IServiceCollection services)
     {

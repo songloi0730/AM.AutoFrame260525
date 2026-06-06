@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- net9.0-windows để reference được các module WPF (Dashboard/Alarm) -->
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisMode>None</AnalysisMode>
+    <NoWarn>$(NoWarn);CA2007;CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NetArchTest.Rules" />
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\AM.Services\AM.Services.csproj" />
+    <ProjectReference Include="..\AM.Infrastructure\AM.Infrastructure.csproj" />
+    <ProjectReference Include="..\AM.Modules.Dashboard\AM.Modules.Dashboard.csproj" />
+    <ProjectReference Include="..\AM.Modules.Alarm\AM.Modules.Alarm.csproj" />
+  </ItemGroup>
+
+</Project>
