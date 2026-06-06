@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #21 — i18n foundation (đổi ngôn ngữ runtime vi/en/zh) + log retention config
-**Commit:** *(pending)*
+**Commit:** `a4fd2bd`
 
 ---
 

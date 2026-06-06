@@ -6,7 +6,7 @@
 
 ## [Session 21] 2026-06-05 — i18n foundation: đổi ngôn ngữ runtime (vi/en/zh) + log retention config
 
-**Commit:** *(pending)*
+**Commit:** `a4fd2bd`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Theo sơ đồ kiến trúc mục tiêu — lấp tầng Infrastructure i18n. Hạ tầng cross-cutting làm TRƯỚC
 khi thêm module mới (IO Monitor/Motion/Identity) để tránh retrofit.
