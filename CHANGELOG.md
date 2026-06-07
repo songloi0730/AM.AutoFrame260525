@@ -4,6 +4,33 @@
 
 ---
 
+## [Session 23] 2026-06-07 — Revert 7-screen commit (vỡ build) + thêm HMI master template
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+
+### 🔙 Revert
+- Revert commit `9c667ec` ("7 màn hình ISA-101") — code viết theo **API không tồn tại** làm vỡ build toàn solution:
+  `IUserService` (chưa có), `IRecipeService.CurrentRecipe/AllRecipes/LoadAsync/SaveAsync` (thực tế là
+  `ActiveRecipe/GetRecipeNamesAsync/LoadRecipeAsync/SaveRecipeAsync`), `CycleCompletedEventArgs.CycleDurationMs`
+  (không có), Motion XAML set Border.Style 2 lần, + vi phạm analyzer.
+- Đưa solution về trạng thái xanh (= Session 22): Dashboard + Alarm + IoMonitor + i18n + nav auto-discovery.
+
+### ✅ Thêm
+- `docs/HMI_UI_Architecture_Template.md` — master reference HMI (ISA-101/SEMI E95/PackML) để dùng khi sinh màn hình.
+
+### 📌 Đánh giá template (tóm tắt) — sẽ làm lại các màn hình ĐÚNG API
+- Đã có: i18n runtime (§7), Persistent Frame/ISA-101 (§3), nav config-driven ([ModuleNavigation], §2/§3.1), color/status (§5).
+- Nên bổ sung (làm lại đúng API): `IUserService`/Identity (§4/§8), AxisControlView + Point Table (§6.2),
+  ManualControlView (§6.1), ErrorDetailView (§6.5), lưu lựa chọn ngôn ngữ (§7.4).
+- Không áp: Prism regions (§8 — đã dùng MS DI + auto-discovery), Group Menu 4-module cứng (§2).
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **124 passed** (50 services + 41 infra + 27 hardware + 6 architecture).
+
+---
+
 ## [Session 22] 2026-06-05 — G0 Nav auto-discovery + AM.Modules.IoMonitor
 
 **Commit:** `4246aaf`
