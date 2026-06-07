@@ -3,21 +3,6 @@
   "Nav.Dashboard": "Dashboard",
   "Nav.Alarms": "Alarms",
   "Nav.IoMonitor": "I/O Monitor",
-  "Nav.Parameter": "Parameters / Recipe",
-  "Nav.Motion": "Motion Control",
-  "Nav.Vision": "Vision System",
-  "Nav.Production": "Production / KPI",
-  "Nav.Identity": "Users",
-  "Nav.Logging": "System Logs",
-  "Nav.Diagnostics": "Diagnostics",
   "Common.Language": "Language",
-  "Status.Ready": "Ready",
-  "State.Uninitialized": "Uninitialized",
-  "State.Initializing": "Initializing...",
-  "State.Idle": "Idle",
-  "State.Running": "Running",
-  "State.Paused": "Paused",
-  "State.InitAlarm": "INIT ALARM",
-  "State.RunAlarm": "RUN ALARM",
-  "State.Resetting": "Resetting..."
+  "Status.Ready": "Ready"
 }

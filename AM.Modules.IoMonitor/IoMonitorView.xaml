@@ -1,16 +1,3 @@
-<!--
-    IoMonitorView.xaml — AM.Modules.IoMonitor
-    ISA-101 Level-2 Screen: I/O Monitor (DI / DO / AI / AO)
-    ════════════════════════════════════════════════════════════════════════
-    Layout:
-      [Header] Title + Refresh toggle + Force Enable (Engineer+ only)
-      [Tabs  ] DI | DO | AI | AO
-        DI tab: WrapPanel of channel cards (address / tag name / LED indicator)
-        DO tab: WrapPanel of toggle buttons (force write — Engineer+ only)
-        AI tab: Sortable list (channel / name / value / unit / range / bar)
-        AO tab: Editable list (channel / name / setpoint / unit / apply button)
-    ════════════════════════════════════════════════════════════════════════
--->
 <UserControl x:Class="AM.Modules.IoMonitor.IoMonitorView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -21,311 +8,80 @@
              Background="{DynamicResource Screen.BackgroundBrush}">
 
     <UserControl.Resources>
-        <conv:BoolToIoBrushConverter x:Key="DiBrush"/>
-        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:BoolToIoBrushConverter x:Key="IoBrush"/>
     </UserControl.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>   <!-- Header -->
-            <RowDefinition Height="12"/>     <!-- Spacer -->
-            <RowDefinition Height="*"/>      <!-- Tabs -->
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ═══ Header ═════════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="0">
+        <TextBlock Grid.Row="0" Text="I/O Monitor" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
+                   Foreground="{DynamicResource Text.HeadingBrush}"/>
+
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBlock Text="I/O Monitor" FontSize="20" FontWeight="Bold"
-                           Foreground="{DynamicResource Text.HeadingBrush}"/>
-                <TextBlock Foreground="{DynamicResource Text.SecondaryBrush}" FontSize="12">
-                    <Run Text="DI: "/><Run Text="{Binding DiCount, Mode=OneWay}"/>
-                    <Run Text="  DO: "/><Run Text="{Binding DoCount, Mode=OneWay}"/>
-                    <Run Text="  AI: "/><Run Text="{Binding AiCount, Mode=OneWay}"/>
-                    <Run Text="  AO: "/><Run Text="{Binding AoCount, Mode=OneWay}"/>
-                </TextBlock>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <!-- Live refresh toggle -->
-                <ToggleButton x:Name="LiveToggle"
-                              IsChecked="{Binding IsLiveRefresh}"
-                              Content="⟳ Live"
-                              Width="80" Height="36" Margin="0,0,8,0"
-                              Background="{DynamicResource Button.PrimaryBrush}"
-                              Foreground="{DynamicResource Text.PrimaryBrush}"
-                              BorderThickness="0"/>
-
-                <!-- Force mode toggle (Engineer+ only — checked in ViewModel) -->
-                <ToggleButton IsChecked="{Binding IsForceEnabled}"
-                              Command="{Binding ToggleForceCommand}"
-                              Content="⚡ Force Enable"
-                              Width="110" Height="36"
-                              Background="{DynamicResource Status.WarningBrush}"
-                              Foreground="{DynamicResource Text.PrimaryBrush}"
-                              BorderThickness="0"/>
-            </StackPanel>
-        </Grid>
-
-        <!-- ═══ Tab Control ══════════════════════════════════════════════════ -->
-        <TabControl Grid.Row="2"
-                    Background="{DynamicResource Panel.BackgroundBrush}"
-                    BorderBrush="{DynamicResource Border.DefaultBrush}">
-
-            <!-- ─── Tab DI — Digital Inputs ───────────────────────────────── -->
-            <TabItem Header="🟢 DI — Digital Inputs">
-                <Grid Margin="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Filter -->
-                    <Grid Grid.Row="0" Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0"
-                                 Text="{Binding DiFilter, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource InputBox}"
-                                 ToolTip="Tìm theo tên/địa chỉ"/>
-                        <TextBlock Grid.Column="1"
-                                   Foreground="{DynamicResource Text.SecondaryBrush}"
-                                   FontSize="11" VerticalAlignment="Center" Margin="8,0">
-                            <Run Text="Hiển thị: "/><Run Text="{Binding FilteredDiCount, Mode=OneWay}"/>
-                            <Run Text=" / "/><Run Text="{Binding DiCount, Mode=OneWay}"/>
-                        </TextBlock>
-                    </Grid>
-
-                    <!-- DI channel cards (WrapPanel) -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <!-- Digital Inputs (read-only) -->
+            <Border Grid.Column="0" Margin="0,0,8,0" CornerRadius="6" Padding="12"
+                    Background="{DynamicResource Panel.BackgroundBrush}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Digital Inputs" FontWeight="SemiBold" Margin="0,0,0,8"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding DigitalInputs}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Width="90" Height="64" Margin="4" CornerRadius="4"
-                                            Background="{DynamicResource Panel.BackgroundAltBrush}"
-                                            BorderThickness="1"
-                                            ToolTip="{Binding Description}">
-                                        <Border.BorderBrush>
-                                            <Binding Path="Value" Converter="{StaticResource DiBrush}"/>
-                                        </Border.BorderBrush>
-                                        <StackPanel HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center">
-                                            <!-- LED indicator -->
-                                            <Ellipse Width="16" Height="16"
-                                                     HorizontalAlignment="Center"
-                                                     Fill="{Binding Value, Converter={StaticResource DiBrush}}"/>
-                                            <!-- Tag name -->
-                                            <TextBlock Text="{Binding Label}"
-                                                       FontSize="10"
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource Text.PrimaryBrush}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       Margin="4,2,4,0"/>
-                                            <!-- Address -->
-                                            <TextBlock Text="{Binding Address}"
-                                                       FontSize="9"
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource Text.SecondaryBrush}"
-                                                       FontFamily="Consolas"/>
+                                    <Border Width="68" Height="48" Margin="4" CornerRadius="4"
+                                            Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Ellipse Width="14" Height="14" HorizontalAlignment="Center"
+                                                     Fill="{Binding Value, Converter={StaticResource IoBrush}}"/>
+                                            <TextBlock Text="{Binding Label}" FontSize="11" HorizontalAlignment="Center"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                </Grid>
-            </TabItem>
+                </DockPanel>
+            </Border>
 
-            <!-- ─── Tab DO — Digital Outputs ──────────────────────────────── -->
-            <TabItem Header="🔵 DO — Digital Outputs">
-                <Grid Margin="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Force mode warning banner -->
-                    <Border Grid.Row="0" Margin="0,0,0,8" Padding="8,6" CornerRadius="4"
-                            Background="{DynamicResource Status.WarningBrush}"
-                            Visibility="{Binding IsForceEnabled, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="⚡ FORCE MODE ACTIVE — Nhấn nút để toggle DO trực tiếp. Chỉ dùng khi debug!"
-                                   Foreground="#212121" FontWeight="SemiBold" FontSize="12"/>
-                    </Border>
-
-                    <!-- DO channel cards (clickable when force enabled) -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <!-- Digital Outputs (toggle) -->
+            <Border Grid.Column="1" Margin="8,0,0,0" CornerRadius="6" Padding="12"
+                    Background="{DynamicResource Panel.BackgroundBrush}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Digital Outputs (click để toggle)" FontWeight="SemiBold"
+                               Margin="0,0,0,8" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding DigitalOutputs}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Width="90" Height="64" Margin="4"
+                                    <Button Width="68" Height="48" Margin="4"
                                             Command="{Binding DataContext.ToggleOutputCommand,
                                                       RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
-                                            IsEnabled="{Binding DataContext.IsForceEnabled,
-                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            BorderThickness="1"
-                                            Cursor="Hand"
-                                            ToolTip="{Binding Description}">
-                                        <Button.Background>
-                                            <Binding Path="Value">
-                                                <Binding.Converter>
-                                                    <conv:BoolToIoBrushConverter IsDoMode="True"/>
-                                                </Binding.Converter>
-                                            </Binding>
-                                        </Button.Background>
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <Ellipse Width="16" Height="16"
-                                                     HorizontalAlignment="Center"
-                                                     Fill="{DynamicResource Status.ForegroundBrush}"
-                                                     Opacity="0.6"/>
-                                            <TextBlock Text="{Binding Label}"
-                                                       FontSize="10" HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource Text.PrimaryBrush}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       Margin="4,2,4,0"/>
-                                            <TextBlock Text="{Binding Address}"
-                                                       FontSize="9" HorizontalAlignment="Center"
-                                                       Foreground="{DynamicResource Text.PrimaryBrush}"
-                                                       FontFamily="Consolas" Opacity="0.7"/>
-                                        </StackPanel>
-                                    </Button>
+                                            BorderThickness="0"
+                                            Background="{Binding Value, Converter={StaticResource IoBrush}}"
+                                            Foreground="{DynamicResource Text.PrimaryBrush}"
+                                            Content="{Binding Label}"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-            <!-- ─── Tab AI — Analog Inputs ────────────────────────────────── -->
-            <TabItem Header="📈 AI — Analog Inputs">
-                <DataGrid ItemsSource="{Binding AnalogInputs}"
-                          AutoGenerateColumns="False" IsReadOnly="True"
-                          CanUserAddRows="False"
-                          GridLinesVisibility="Horizontal"
-                          Background="{DynamicResource Panel.BackgroundBrush}"
-                          Foreground="{DynamicResource Text.PrimaryBrush}"
-                          BorderBrush="{DynamicResource Border.DefaultBrush}"
-                          RowBackground="{DynamicResource Grid.RowBrush}"
-                          AlternatingRowBackground="{DynamicResource Grid.AltRowBrush}"
-                          ColumnHeaderStyle="{StaticResource GridHeaderStyle}"
-                          Margin="8">
-
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="CH" Binding="{Binding Address}"
-                                            Width="60" FontFamily="Consolas"/>
-                        <DataGridTextColumn Header="Tên" Binding="{Binding Label}"
-                                            Width="150"/>
-                        <DataGridTemplateColumn Header="Giá trị" Width="200">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="4,2">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="80"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Value, StringFormat=F3}"
-                                                   Foreground="{DynamicResource Text.LiveValueBrush}"
-                                                   FontFamily="Consolas"
-                                                   VerticalAlignment="Center"/>
-                                        <!-- Progress bar (% of range) -->
-                                        <ProgressBar Grid.Column="1"
-                                                     Value="{Binding ValuePercent}"
-                                                     Maximum="100" Height="8"
-                                                     Margin="4,0,0,0"
-                                                     Background="{DynamicResource Panel.BackgroundAltBrush}"
-                                                     Foreground="{DynamicResource IO.AiOnBrush}"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Đơn vị" Binding="{Binding Unit}"
-                                            Width="70"/>
-                        <DataGridTextColumn Header="Min" Binding="{Binding MinRange, StringFormat=F2}"
-                                            Width="80"/>
-                        <DataGridTextColumn Header="Max" Binding="{Binding MaxRange, StringFormat=F2}"
-                                            Width="80"/>
-                        <DataGridTextColumn Header="Mô tả" Binding="{Binding Description}"
-                                            Width="*"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
-
-            <!-- ─── Tab AO — Analog Outputs ───────────────────────────────── -->
-            <TabItem Header="🎛 AO — Analog Outputs">
-                <Grid Margin="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Grid.Row="0" Margin="0,0,0,8" Padding="8,6" CornerRadius="4"
-                            Background="{DynamicResource Status.WarningBrush}"
-                            Visibility="{Binding IsForceEnabled, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="⚡ FORCE MODE ACTIVE — Có thể ghi trực tiếp AO setpoint"
-                                   Foreground="#212121" FontWeight="SemiBold" FontSize="12"/>
-                    </Border>
-
-                    <DataGrid Grid.Row="1"
-                              ItemsSource="{Binding AnalogOutputs}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              GridLinesVisibility="Horizontal"
-                              Background="{DynamicResource Panel.BackgroundBrush}"
-                              Foreground="{DynamicResource Text.PrimaryBrush}"
-                              BorderBrush="{DynamicResource Border.DefaultBrush}"
-                              RowBackground="{DynamicResource Grid.RowBrush}"
-                              AlternatingRowBackground="{DynamicResource Grid.AltRowBrush}"
-                              ColumnHeaderStyle="{StaticResource GridHeaderStyle}">
-
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="CH" Binding="{Binding Address}"
-                                                Width="60" FontFamily="Consolas" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Tên" Binding="{Binding Label}"
-                                                Width="150" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Hiện tại"
-                                                Binding="{Binding ActualValue, StringFormat=F3}"
-                                                Width="100" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="Setpoint"
-                                                Binding="{Binding Setpoint, StringFormat=F3}"
-                                                Width="100"/>
-                            <DataGridTextColumn Header="Đơn vị" Binding="{Binding Unit}"
-                                                Width="70" IsReadOnly="True"/>
-                            <DataGridTemplateColumn Header="" Width="80">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Content="Apply"
-                                                Command="{Binding DataContext.ApplyAoCommand,
-                                                          RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}"
-                                                IsEnabled="{Binding DataContext.IsForceEnabled,
-                                                            RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                Height="28" Padding="8,0"
-                                                Background="{DynamicResource Button.PrimaryBrush}"
-                                                Foreground="{DynamicResource Text.PrimaryBrush}"
-                                                BorderThickness="0"
-                                                FontSize="11"/>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Mô tả" Binding="{Binding Description}"
-                                                Width="*" IsReadOnly="True"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </TabItem>
-        </TabControl>
+                </DockPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

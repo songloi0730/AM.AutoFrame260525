@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-06
-**Session:** #23 — ISA-101 UI Modules hoàn chỉnh (Parameter/Motion/Vision/Production/Identity/Logging/Diagnostics)
-**Commit:** _(xem CHANGELOG)_
+**Ngày:** 2026-06-04
+**Session:** #22 — G0 Nav auto-discovery ([ModuleNavigation]) + AM.Modules.IoMonitor
+**Commit:** `4246aaf`
 
 ---
 
@@ -32,22 +32,14 @@
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
 | AM.Modules.Dashboard | ✅ Hoàn thành | **Đã wire vào Shell** (side-nav, resolve từ DI) |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
-| AM.Modules.IoMonitor | ✅ Hoàn thành | DI/DO/AI/AO realtime (poll) + force write; 4 tabs |
-| AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — Recipe editor + [ParamView] auto-render + history DataGrid |
-| AM.Modules.Motion | ✅ Hoàn thành | **Mới** — Axis cards + 64px Jog panel + Teach table + Override sliders |
-| AM.Modules.Vision | ✅ Hoàn thành | **Mới** — Live image + PASS/FAIL overlay + Tool results + Stats KPI |
-| AM.Modules.Production | ✅ Hoàn thành | **Mới** — UPH/Yield KPI + Hourly bar chart + Batch records |
-| AM.Modules.Identity | ✅ Hoàn thành | **Mới** — Login card + User CRUD + Permission matrix (9×4) |
-| AM.Modules.Logging | ✅ Hoàn thành | **Mới** — Serilog file reader + filter (level/source/keyword/date) + export |
-| AM.Modules.Diagnostics | ✅ Hoàn thành | **Mới** — CPU/RAM/Disk gauges + hardware connectivity table + Reconnect |
-| AM.Application.Shell | ✅ Hoàn thành | ISA-101 Shell: TopBar 48px + SideNav 200px + StatusBar 32px; **+7 module refs** |
-| lang/*.json | ✅ Hoàn thành | vi/en/zh — **+Nav.Parameter/Motion/Vision/Production/Identity/Logging/Diagnostics + State.*** |
+| AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
+| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + RegisterRealHardware + **HardwareFactory** (vision/scanner/safety/io-tagmap) + io.map.json |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
 | `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
-| AM.Infrastructure.Tests | ✅ Hoàn thành | **35 tests**: 13 ISA-88 transitions + BaseMechanism busy-guard + StationBase + end-to-end |
-| AM.UI.Controls | ❌ Chưa có | StatusIndicator, StateChip, NumericInput, AlarmBadge, DeviceCard (custom controls) |
+| AM.Infrastructure.Tests | ✅ Hoàn thành | **35 tests**: 13 ISA-88 transitions + BaseMechanism busy-guard + StationBase + end-to-end (pause/resume/safety-trip) |
+| AM.Modules.* (còn lại) | ❌ Chưa có | Motion, Parameter, Vision, Identity, Logging, Diagnostics |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---

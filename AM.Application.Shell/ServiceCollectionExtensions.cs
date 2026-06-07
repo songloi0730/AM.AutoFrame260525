@@ -32,14 +32,7 @@ using AM.Hardware.Vision;
 using AM.Infrastructure.Localization;
 using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
-using AM.Modules.Diagnostics;
-using AM.Modules.Identity;
 using AM.Modules.IoMonitor;
-using AM.Modules.Logging;
-using AM.Modules.Motion;
-using AM.Modules.Parameter;
-using AM.Modules.Production;
-using AM.Modules.Vision;
 using AM.Services;
 using AM.WorkStation.Demo.Controllers;
 using AM.WorkStation.Demo.Mechanisms;
@@ -102,19 +95,9 @@ internal static class ServiceCollectionExtensions
     /// <summary>UI ViewModels (resolve trên UI thread để capture SynchronizationContext).</summary>
     public static IServiceCollection AddUiViewModels(this IServiceCollection services)
     {
-        // Existing modules
         services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<AlarmListViewModel>();
         services.AddSingleton<IoMonitorViewModel>();
-
-        // New ISA-101 modules
-        services.AddSingleton<ParameterViewModel>();
-        services.AddSingleton<MotionViewModel>();
-        services.AddSingleton<VisionViewModel>();
-        services.AddSingleton<ProductionViewModel>();
-        services.AddSingleton<IdentityViewModel>();
-        services.AddSingleton<LogViewModel>();
-        services.AddSingleton<DiagnosticsViewModel>();
         return services;
     }
 

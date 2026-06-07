@@ -1,289 +1,53 @@
-<!--
-    MainWindow.xaml — AM.Application.Shell
-    ISA-101 HMI Layout Level-1 Shell
-    ════════════════════════════════════════════════════════════════════════
-    Layout (ISA-101 §6.2 + SEMI S95 Equipment Hierarchy):
-      [TopBar  48px ] Logo | MachineName | StateChip | User | Clock | Lang
-      [SideNav 200px] Icon+Label nav buttons | Alarm badge | collapse toggle
-      [Content  *   ] Module UserControl — swap theo navigation
-      [StatusBar 32px] CritCount | WarnCount | CycleTime | UPH | Recipe
-    ════════════════════════════════════════════════════════════════════════
--->
-<Window x:Class="AM.Application.Shell.MainWindow"
+﻿<Window x:Class="AM.Application.Shell.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="{StaticResource Shell.Title}"
-        Height="768" Width="1366"
-        MinHeight="600" MinWidth="1024"
-        WindowStartupLocation="CenterScreen"
+        Title="AutoMachine Framework" Height="600" Width="1024"
         Background="{DynamicResource Screen.BackgroundBrush}">
-
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <!-- R0: TopBar 48px — ISA-101: persistent header, machine identity -->
-            <RowDefinition Height="{StaticResource Dim.TopBarHeight}"/>
-            <!-- R1: Body (SideNav + Content) -->
-            <RowDefinition Height="*"/>
-            <!-- R2: StatusBar 32px — ISA-101: persistent footer, system status -->
-            <RowDefinition Height="{StaticResource Dim.StatusBarHeight}"/>
+            <RowDefinition Height="40"/>   <!-- Header / Title bar -->
+            <RowDefinition Height="*"/>    <!-- Main content / Prism region -->
+            <RowDefinition Height="28"/>   <!-- Status bar -->
         </Grid.RowDefinitions>
 
-        <!-- ═══════════════════════════════════════════════════════════════════════
-             TOP BAR (Row 0) — ISA-101 §6.2.1: Identity + State + User + Time
-             Màu nền tối, nổi bật với state chip màu semantic
-        ═══════════════════════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource TopBar.BackgroundBrush}"
-                BorderThickness="0,0,0,1"
-                BorderBrush="{DynamicResource Border.DefaultBrush}">
-            <Grid Margin="8,0">
-                <Grid.ColumnDefinitions>
-                    <!-- Logo + Machine Name -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- State chip (ISA-101: machine state always visible) -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- Stretch spacer -->
-                    <ColumnDefinition Width="*"/>
-                    <!-- Operation mode badge -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- User Level chip -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- Language selector -->
-                    <ColumnDefinition Width="Auto"/>
-                    <!-- Clock -->
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Logo + Machine Name -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal"
-                            VerticalAlignment="Center" Margin="0,0,16,0">
-                    <!-- Logo placeholder (thay bằng Image khi có file) -->
-                    <Border Width="32" Height="32" CornerRadius="4" Margin="0,0,8,0"
-                            Background="{DynamicResource Border.StrongBrush}">
-                        <TextBlock Text="AM" Foreground="White" FontWeight="Bold" FontSize="12"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="MachineNameText"
-                                   Text="AutoMachine Framework"
-                                   FontSize="13" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource Text.HeadingBrush}"/>
-                        <TextBlock x:Name="MachineTypeText"
-                                   Text="Demo Machine"
-                                   FontSize="10"
-                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- State Chip — ISA-101: machine state always displayed at L1 -->
-                <Border Grid.Column="1" CornerRadius="4" Padding="12,4"
-                        Margin="0,0,12,0" VerticalAlignment="Center"
-                        x:Name="StateChipBorder" Background="{DynamicResource Status.DisabledBrush}">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse x:Name="StateIndicator" Width="10" Height="10"
-                                 Margin="0,0,6,0"
-                                 Fill="{DynamicResource Status.ForegroundBrush}"/>
-                        <TextBlock x:Name="StateChipText"
-                                   Text="Chưa khởi tạo"
-                                   FontWeight="SemiBold" FontSize="12"
-                                   Foreground="{DynamicResource Status.ForegroundBrush}"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Spacer (holds Alarm count badge if desired) -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Active alarm summary (critical only in TopBar — ISA-101 §6.2.4) -->
-                    <Border x:Name="CriticalBadge" CornerRadius="3" Padding="8,2" Margin="0,0,8,0"
-                            Background="{StaticResource Status.CriticalBrush}"
-                            Visibility="Collapsed">
-                        <TextBlock x:Name="CriticalCountText" Text="0 CRITICAL"
-                                   Foreground="White" FontSize="11" FontWeight="Bold"/>
-                    </Border>
-                </StackPanel>
-
-                <!-- Operation Mode badge -->
-                <Border Grid.Column="3" CornerRadius="3" Padding="8,2" Margin="0,0,8,0"
-                        VerticalAlignment="Center" x:Name="OpModeBadge"
-                        Background="{DynamicResource Status.ManualBrush}">
-                    <TextBlock x:Name="OpModeText" Text="SIM"
-                               Foreground="White" FontSize="11" FontWeight="Bold"/>
-                </Border>
-
-                <!-- User Level Chip -->
-                <Border Grid.Column="4" CornerRadius="3" Padding="8,2" Margin="0,0,8,0"
-                        VerticalAlignment="Center"
-                        Background="{DynamicResource Panel.BackgroundAltBrush}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="👤 " FontSize="12" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="UserLevelText" Text="Operator"
-                                   Foreground="{DynamicResource Text.SecondaryBrush}"
-                                   FontSize="12" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Language selector -->
-                <ComboBox Grid.Column="5" x:Name="LanguageCombo"
-                          Width="70" Margin="0,0,8,0"
-                          VerticalAlignment="Center"
-                          SelectionChanged="LanguageCombo_SelectionChanged"
-                          Background="{DynamicResource Input.BackgroundBrush}"
-                          Foreground="{DynamicResource Text.PrimaryBrush}"
-                          BorderBrush="{DynamicResource Border.DefaultBrush}"
-                          FontSize="12"/>
-
-                <!-- Clock (ISA-101: time always displayed at L1) -->
-                <Border Grid.Column="6" VerticalAlignment="Center">
-                    <TextBlock x:Name="ClockText"
-                               Text="00:00:00"
-                               FontSize="13" FontWeight="SemiBold"
-                               Foreground="{DynamicResource Text.LiveValueBrush}"
-                               FontFamily="Consolas"/>
-                </Border>
-            </Grid>
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{DynamicResource Panel.BackgroundBrush}">
+            <TextBlock Text="{StaticResource Shell.Title}"
+                       Foreground="{DynamicResource Text.HeadingBrush}"
+                       FontWeight="Bold" FontSize="14"
+                       VerticalAlignment="Center" Margin="12,0"/>
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════════════════════
-             BODY (Row 1) — SideNav + Content Region
-        ═══════════════════════════════════════════════════════════════════════════ -->
+        <!-- Main area: side-nav + content (module nạp từ DI khi Loaded) -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <!-- C0: SideNav (200px → 60px khi collapse) -->
-                <ColumnDefinition x:Name="NavColumn" Width="200"/>
-                <!-- C1: Separator -->
-                <ColumnDefinition Width="1"/>
-                <!-- C2: Content -->
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- ─── Side Navigation ──────────────────────────────────────────────── -->
-            <Grid Grid.Column="0" Background="{DynamicResource NavBar.BackgroundBrush}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>          <!-- Nav buttons list -->
-                    <RowDefinition Height="Auto"/>       <!-- Separator -->
-                    <RowDefinition Height="Auto"/>       <!-- Collapse button -->
-                </Grid.RowDefinitions>
+            <StackPanel x:Name="NavPanel" Grid.Column="0" Width="150"
+                        Background="{DynamicResource Panel.BackgroundBrush}">
+                <ComboBox x:Name="LanguageCombo" Margin="8,8,8,12"
+                          SelectionChanged="LanguageCombo_SelectionChanged"
+                          ToolTip="{Binding [Common.Language]}"/>
+                <!-- Nút module được sinh động trong code-behind từ [ModuleNavigation] -->
+            </StackPanel>
 
-                <!-- Nav button list — tự sinh từ [ModuleNavigation] trong code-behind -->
-                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel x:Name="NavPanel"/>
-                </ScrollViewer>
-
-                <!-- Bottom separator -->
-                <Rectangle Grid.Row="1" Height="1"
-                           Fill="{DynamicResource Separator.BackgroundBrush}" Margin="8,0"/>
-
-                <!-- Collapse toggle button -->
-                <Button Grid.Row="2" x:Name="NavCollapseBtn"
-                        Content="◀ Thu nhỏ"
-                        Height="36" Background="Transparent"
-                        Foreground="{DynamicResource Text.SecondaryBrush}"
-                        BorderThickness="0" FontSize="11"
-                        HorizontalContentAlignment="Left"
-                        Padding="14,0" Margin="0,4,0,4"
-                        Click="NavCollapseBtn_Click"
-                        Cursor="Hand"/>
-            </Grid>
-
-            <!-- Vertical separator line -->
-            <Rectangle Grid.Column="1"
-                       Fill="{DynamicResource Separator.BackgroundBrush}"/>
-
-            <!-- ─── Content Region ────────────────────────────────────────────────── -->
-            <ContentControl Grid.Column="2" x:Name="MainContent"
-                            Background="{DynamicResource Screen.BackgroundBrush}"/>
+            <Border Grid.Column="1" Background="{DynamicResource Screen.BackgroundBrush}" Margin="4">
+                <ContentControl x:Name="MainContent"/>
+            </Border>
         </Grid>
 
-        <!-- ═══════════════════════════════════════════════════════════════════════
-             STATUS BAR (Row 2) — ISA-101 §6.2.3: Persistent system status footer
-             Hiển thị: Alarm count | Cycle Time | UPH | Recipe name | Timestamp
-        ═══════════════════════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="2"
-                Background="{DynamicResource StatusBar.BackgroundBrush}"
-                BorderThickness="0,1,0,0"
-                BorderBrush="{DynamicResource Border.DefaultBrush}">
-            <Grid Margin="8,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>   <!-- Alarm summary -->
-                    <ColumnDefinition Width="Auto"/>   <!-- Separator -->
-                    <ColumnDefinition Width="Auto"/>   <!-- Cycle time -->
-                    <ColumnDefinition Width="Auto"/>   <!-- Separator -->
-                    <ColumnDefinition Width="Auto"/>   <!-- UPH -->
-                    <ColumnDefinition Width="Auto"/>   <!-- Separator -->
-                    <ColumnDefinition Width="Auto"/>   <!-- Recipe name -->
-                    <ColumnDefinition Width="*"/>      <!-- Spacer -->
-                    <ColumnDefinition Width="Auto"/>   <!-- Status text -->
-                </Grid.ColumnDefinitions>
-
-                <!-- Alarm count chips -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Critical alarms -->
-                    <Border x:Name="SbCritBadge" CornerRadius="2" Padding="6,1" Margin="0,0,4,0"
-                            Background="{StaticResource Status.CriticalBrush}">
-                        <TextBlock x:Name="SbCritText" Text="0 C"
-                                   Foreground="White" FontSize="11" FontWeight="Bold"
-                                   FontFamily="Consolas"/>
-                    </Border>
-                    <!-- Warning alarms -->
-                    <Border x:Name="SbWarnBadge" CornerRadius="2" Padding="6,1"
-                            Background="{StaticResource Status.WarningBrush}">
-                        <TextBlock x:Name="SbWarnText" Text="0 W"
-                                   Foreground="#212121" FontSize="11" FontWeight="Bold"
-                                   FontFamily="Consolas"/>
-                    </Border>
-                </StackPanel>
-
-                <Rectangle Grid.Column="1" Width="1" Margin="8,4"
-                           Fill="{DynamicResource Separator.BackgroundBrush}"/>
-
-                <!-- Cycle Time -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="CT: " FontSize="11"
-                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                    <TextBlock x:Name="SbCycleTimeText" Text="--.-s"
-                               FontSize="11" FontWeight="SemiBold"
-                               Foreground="{DynamicResource Text.LiveValueBrush}"
-                               FontFamily="Consolas"/>
-                </StackPanel>
-
-                <Rectangle Grid.Column="3" Width="1" Margin="8,4"
-                           Fill="{DynamicResource Separator.BackgroundBrush}"/>
-
-                <!-- UPH -->
-                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="UPH: " FontSize="11"
-                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                    <TextBlock x:Name="SbUphText" Text="--"
-                               FontSize="11" FontWeight="SemiBold"
-                               Foreground="{DynamicResource Text.PrimaryBrush}"
-                               FontFamily="Consolas"/>
-                </StackPanel>
-
-                <Rectangle Grid.Column="5" Width="1" Margin="8,4"
-                           Fill="{DynamicResource Separator.BackgroundBrush}"/>
-
-                <!-- Recipe name -->
-                <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Recipe: " FontSize="11"
-                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                    <TextBlock x:Name="SbRecipeText" Text="Default"
-                               FontSize="11" FontWeight="SemiBold"
-                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                </StackPanel>
-
-                <!-- Right-side status message -->
-                <TextBlock Grid.Column="8" x:Name="StatusText"
-                           Text="{StaticResource Shell.StatusReady}"
-                           FontSize="11" VerticalAlignment="Center"
-                           Foreground="{DynamicResource Status.ForegroundBrush}"/>
-            </Grid>
+        <!-- Status bar -->
+        <Border Grid.Row="2" Background="{DynamicResource Status.ManualBrush}">
+            <TextBlock x:Name="StatusText"
+                       Text="{StaticResource Shell.StatusReady}"
+                       Foreground="{DynamicResource Text.PrimaryBrush}" FontSize="11"
+                       VerticalAlignment="Center" Margin="8,0"/>
         </Border>
     </Grid>
 </Window>
