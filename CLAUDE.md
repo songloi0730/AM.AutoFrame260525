@@ -298,5 +298,6 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/QUICK_REFERENCE.md` | In ra dán cạnh màn hình |
 | `docs/HMI_UI_Architecture_Template.md` | **UI** — khung layout ISA-101/SEMI E95 cho IPC 1920×1080 |
 | `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
+| `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") |
 | `CLAUDE.md` | File này — project instructions cho Claude |
 | `README.md` | *(chưa có — TODO)* Tổng quan kiến trúc solution |

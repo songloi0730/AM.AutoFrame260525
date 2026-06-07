@@ -23,7 +23,8 @@ description: >
 
 > ⚠️ Vì là màn LỚN: **đừng giãn nội dung hết 1920px** — dòng dữ liệu quá dài khó đọc.
 > Giới hạn bề rộng khối dữ liệu **~1200–1400px**, chia **lưới nhiều cột**, chừa lề hai bên.
-> Tài liệu master: `docs/HMI_UI_Architecture_Template.md` + `docs/HMI_Components_Catalog.md`.
+> Tài liệu master: `docs/HMI_UI_Architecture_Template.md` + `docs/HMI_Components_Catalog.md` +
+> `docs/HMI_Advanced_Standards.md` (SEMI E95/EEMUA/định lượng + quyết định adoption).
 
 ---
 
@@ -230,6 +231,38 @@ Throttle cập nhật UI cho bảng IO lớn để không nghẽn.
 
 ---
 
+## Bổ sung nâng cao (SEMI E95 / EEMUA 201 / định lượng)
+
+> Chi tiết + **quyết định cái gì áp / không áp**: `docs/HMI_Advanced_Standards.md`.
+
+**⚠️ Đọc tài liệu HMI có phê phán — luôn hỏi "viết cho cỡ màn nào?"** Phần lớn best-practice ("nút thật to",
+"1 chức năng/màn", "ẩn bớt thông tin", "<30% mật độ") viết cho **panel 7–12"**. Trên **IPC 21–24" mouse+touch** thì ngược lại:
+nhiều cột, hiện nhiều thông tin có tổ chức, nút theo chuẩn chạm (≥44/≥60) nhưng không cần to như panel. KHÔNG bê nguyên.
+
+**Định lượng nên áp:**
+- Tương phản chữ/nền **≥ 4.5:1**; alarm critical + thông tin an toàn **≥ 7:1**.
+- **Demand vs Status:** luôn phân biệt giá trị *thực tế* với *đặt/setpoint* (lẫn 2 thứ này nguy hiểm).
+
+**EEMUA 201 (đáng theo cho máy đơn):**
+- Ưu tiên thiết kế cho **tình huống bất thường + start/stop**, không chỉ lúc bình thường.
+- **Overview thường trực** + **alarm truy cập liên tục**; **không "blank-screen"** (đừng chạy ngầm chỉ báo khi lỗi).
+- **Task-oriented display:** gom đủ tham số 1 tác vụ vào 1 màn (wizard calib, setup recipe).
+- Animation/flashing **tiết kiệm**; mimic tối thiểu chi tiết.
+
+**SEMI E95 — chọn lọc (KHÔNG cần bố cục 4-panel trừ khi bán cho fab bán dẫn):**
+- **Salience** (viền tín hiệu): không viền = bình thường; đỏ=alarm · vàng=caution · xanh dương=đang xử lý/đang xem · xanh lá=cần chú ý.
+- **Nhãn nút Title-Case** ("Home All"), KHÔNG TOÀN HOA.
+- **Dialog:** nút OK/Cancel/Yes-No/Close/Apply đúng ngữ nghĩa; **disable trước** nút sẽ gây lỗi; bàn phím ảo nếu thiếu phím vật lý.
+- **Alarm/nav luôn truy cập được kể cả khi mở dialog** — dialog KHÔNG che alarm bar/nav.
+
+**Process (Siemens):** liệt kê **use case theo vai trò** + pain point đời máy trước → quyết định cái gì lên Dashboard & thứ tự nav;
+sketch trước; **ngăn lỗi** (disable nút sẽ gây lỗi, xác nhận thao tác hậu quả lớn) thay vì chỉ báo lỗi; component tái dùng.
+
+> Triển khai production trên IPC: cân nhắc **kiosk** (`WindowState=Maximized` + chặn minimize/close) để không "mất" cửa sổ —
+> nhưng để dev/laptop ở chế độ resize được (đã sửa ở S32).
+
+---
+
 ## Release Checklist — HMI cho IPC 21–24"
 
 ```
@@ -245,6 +278,13 @@ Màu (High-Performance HMI):
 □ Đỏ/vàng chỉ cho alarm/warning; equipment normal = xám (không xanh lá)
 □ Trạng thái phân biệt bằng màu + hình dạng + chữ (mù màu OK)
 □ Không hardcode hex — DynamicResource; semantic = StaticResource
+□ Tương phản chữ/nền ≥ 4.5:1 (≥ 7:1 cho alarm/an toàn); không đỏ thuần #FF0000
+
+Định lượng & nguyên tắc hệ thống (EEMUA/SEMI E95 chọn lọc):
+□ Phân biệt rõ Demand (setpoint) vs Status (thực tế)
+□ Overview thường trực + alarm truy cập liên tục; không "blank-screen"
+□ Dialog không che alarm bar/nav; nút dialog đúng quy ước; nhãn nút Title-Case (không TOÀN HOA)
+□ KHÔNG bê khuyến nghị panel 7–12" vào IPC 24" (hỏi "viết cho cỡ màn nào?")
 
 Connection status:
 □ Có dãy chip kết nối (PLC/RFID/Camera/MES/HIVE/SECS-GEM/DB...) + click xem chi tiết

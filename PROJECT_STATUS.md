@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #40 — Production UI: dashboard UPH/yield/cycle-time (số liệu ProductionRecorder)
-**Commit:** `eeeb1b0`  ·  (S39: Engineering/Debug UI — khép nền mục 1–7)
+**Session:** #41 — Phê phán + chắt lọc chuẩn HMI nâng cao (SEMI E95/EEMUA/Siemens) → docs/skill
+**Commit:** `(điền sau push)`  ·  (S40: Production UI UPH/yield)
 
 ---
 

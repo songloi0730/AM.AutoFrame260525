@@ -24,6 +24,29 @@
 
 ---
 
+## [Session 41] 2026-06-07 — Phê phán + chắt lọc chuẩn HMI nâng cao (SEMI E95/EEMUA/ISA-18.2/Siemens)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User cung cấp tài liệu HMI mở rộng; yêu cầu **phản biện phần không phù hợp** cho IPC 21–24" mouse+touch
+(máy đơn lẻ) + cập nhật phần phù hợp vào docs/skill.
+
+### ✅ Cập nhật (chỉ tài liệu/guidance — không đụng code)
+- **`docs/HMI_Advanced_Standards.md`** (mới): bảng **quyết định adoption** (cái gì áp/không):
+  - ❌ Bố cục 4-panel SEMI E95 (giữ ISA-101) · 🔶 không-minimize/close = option kiosk lúc deploy · 🔶 4 nền xám theo cấp ·
+    ⚠️ mật độ <30% & ngưỡng alarm ISA-18.2 = nguyên tắc không phải số cứng · ⚠️ đỏ thuần #FF0000 → dùng token dịu.
+  - ✅ Chắt lọc: định lượng (tương phản ≥4.5/7:1, demand vs status), EEMUA 201 (abnormal-first, overview thường trực,
+    no-blank-screen, task-oriented), SEMI E95 chọn lọc (salience, dialog conventions, nhãn Title-Case, alarm-luôn-truy-cập),
+    Siemens process (use-case theo vai trò, ngăn lỗi, component tái dùng).
+- **`.claude/skills/am-hmi-design/SKILL.md`**: thêm mục "Bổ sung nâng cao" + caveat **"hỏi viết cho cỡ màn nào?"** +
+  checklist (tương phản, demand/status, dialog không che alarm/nav, nhãn nút). Trỏ doc mới.
+- **`CLAUDE.md`**: thêm `HMI_Advanced_Standards.md` vào bảng tài liệu.
+
+> Kết luận phản biện: **giữ layout ISA-101 đã dựng** (không đập đi theo SEMI E95 4-panel trừ khi bán cho fab bán dẫn);
+> không áp máy móc khuyến nghị viết cho panel nhỏ vào IPC 24".
+
+---
+
 ## [Session 40] 2026-06-07 — Production UI: dashboard UPH/yield/cycle-time (số liệu ProductionRecorder)
 
 **Commit:** `eeeb1b0`
