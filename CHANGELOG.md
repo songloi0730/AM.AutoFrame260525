@@ -6,7 +6,7 @@
 
 ## [Session 28] 2026-06-07 — UI module Parameter/Recipe (attribute-driven form) — mục B.3
 
-**Commit:** `(điền sau push)`
+**Commit:** `f428427`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Mục B.3 — Recipe editor bám ĐÚNG `IRecipeService` (`ActiveRecipe`/`GetRecipeNamesAsync`/`LoadRecipeAsync`/`SaveRecipeAsync`/`ValidateAsync`). Dùng `[ParamView]` để UI tự render (lần đầu attribute này có tác dụng).
 

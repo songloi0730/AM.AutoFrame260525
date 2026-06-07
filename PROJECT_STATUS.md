@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #28 — UI module Parameter/Recipe (attribute-driven [ParamView]) — mục B.3
-**Commit:** `(điền sau push)`  ·  (S27: UI Motion jog/home/move + Point Table)
+**Commit:** `f428427`  ·  (S27: UI Motion jog/home/move + Point Table)
 
 ---
 
