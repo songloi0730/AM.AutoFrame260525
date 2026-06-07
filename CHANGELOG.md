@@ -6,7 +6,7 @@
 
 ## [Session 30] 2026-06-07 — Cập nhật guidance UI: target IPC 21–24" 1920×1080 (ISA-101/SEMI E95)
 
-**Commit:** `(điền sau push)`
+**Commit:** `3cedd47`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User cung cấp 2 tài liệu tham khảo; chỉ ra UI hiện thiết kế như HMI panel nhỏ (~10"), trong khi mục tiêu là
 **máy tính công nghiệp 21–24" / 1920×1080, chuột + cảm ứng**. Cập nhật các file guidance để Claude thiết kế đúng hơn.
