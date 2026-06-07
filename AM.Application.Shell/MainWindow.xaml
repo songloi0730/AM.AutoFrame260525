@@ -7,9 +7,9 @@
         xmlns:conv="clr-namespace:AM.Application.Shell.Converters"
         mc:Ignorable="d"
         Title="AutoMachine Framework"
-        Height="1040" Width="1680"
+        Height="900" Width="1440" MinHeight="640" MinWidth="1024"
         WindowState="Normal" WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize" SizeToContent="Manual"
+        ResizeMode="CanResize" SizeToContent="Manual"
         Background="{DynamicResource Screen.BackgroundBrush}">
 
     <Window.Resources>

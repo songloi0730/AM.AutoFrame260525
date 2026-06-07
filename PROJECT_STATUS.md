@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #31 — Re-tune Shell layout IPC ISA-101 (header lệnh toàn cục + state chip + alarm/status bar chips)
-**Commit:** `9d80aff`  ·  (S30: guidance UI target IPC 21–24")
+**Session:** #32 — Fix cửa sổ tràn màn hình laptop khi scale 125% (clamp theo WorkArea)
+**Commit:** `(điền sau push)`  ·  (S31: re-tune Shell layout IPC ISA-101)
 
 ---
 

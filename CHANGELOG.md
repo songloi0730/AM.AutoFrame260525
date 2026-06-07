@@ -4,6 +4,28 @@
 
 ---
 
+## [Session 32] 2026-06-07 — Fix: cửa sổ tràn màn hình laptop khi scale 125% (DIP vs pixel)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User báo cửa sổ tràn ra ngoài màn laptop, không kéo/resize được.
+
+### 🐞 Nguyên nhân
+- WPF `Width`/`Height` tính theo **DIP** (1/96"), không phải pixel vật lý. Màn 1920×1080 đặt **Scale 125%** → 1 DIP = 1.25px.
+- Cửa sổ đặt cố định **1680×1040 DIP** = **2100×1300 px vật lý** → lớn hơn màn hình. `ResizeMode=CanMinimize` (khung cố định)
+  khiến không resize được để sửa.
+
+### ✅ Khắc phục (MainWindow)
+- `ResizeMode` → **CanResize** (kéo được); kích thước mặc định giảm còn 1440×900 DIP + MinHeight/MinWidth.
+- Thêm `ClampToWorkArea()` trong constructor: giới hạn Width/Height và đặt MaxWidth/MaxHeight theo
+  **`SystemParameters.WorkArea`** (DIP, đã tính DPI/scale của Windows) → luôn vừa màn ở mọi mức scale (100/125/150%).
+
+### 🔍 Kết quả
+- Biên dịch OK (lỗi build trước đó chỉ do app đang chạy khóa file .exe — đóng app rồi build lại sạch).
+- Chạy lại: cửa sổ vừa màn, căn giữa, kéo resize được.
+
+---
+
 ## [Session 31] 2026-06-07 — Re-tune Shell layout theo chuẩn IPC ISA-101 (header lệnh toàn cục + alarm/status bar)
 
 **Commit:** `9d80aff`

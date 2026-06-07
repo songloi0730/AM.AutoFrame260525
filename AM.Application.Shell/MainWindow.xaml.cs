@@ -45,7 +45,21 @@ public partial class MainWindow : Window
         ArgumentNullException.ThrowIfNull(services);
         _services = services;
         InitializeComponent();
+        ClampToWorkArea();
         Loaded += OnWindowLoaded;
+    }
+
+    /// <summary>
+    /// Giới hạn kích thước cửa sổ trong vùng làm việc (DIP, đã tính theo DPI/scale của Windows)
+    /// để không tràn màn hình laptop khi scale &gt; 100% (vd 125% → 1 DIP = 1.25px).
+    /// </summary>
+    private void ClampToWorkArea()
+    {
+        var area = SystemParameters.WorkArea; // đơn vị DIP
+        MaxWidth = area.Width;
+        MaxHeight = area.Height;
+        if (Width > area.Width) Width = area.Width;
+        if (Height > area.Height) Height = area.Height;
     }
 
     private void OnWindowLoaded(object sender, RoutedEventArgs e)
