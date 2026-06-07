@@ -6,7 +6,7 @@
 
 ## [Session 24] 2026-06-07 — Nền backend: IUserService (login/RBAC) + lưu lựa chọn ngôn ngữ
 
-**Commit:** *(pending)*
+**Commit:** `6094df5`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Hoàn thiện phần nền (service layer) TRƯỚC khi làm UI — tránh lặp lại tình trạng UI viết theo API chưa có.
 

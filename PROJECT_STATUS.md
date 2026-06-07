@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
 **Session:** #24 — Nền backend: IUserService (login/RBAC) + lưu lựa chọn ngôn ngữ
-**Commit:** *(pending)*  ·  (S23: revert commit 7-màn-hình vỡ build, +docs/HMI template)
+**Commit:** `6094df5`  ·  (S23: revert commit 7-màn-hình vỡ build, +docs/HMI template)
 
 ---
 
