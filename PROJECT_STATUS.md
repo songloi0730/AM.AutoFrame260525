@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #37 — Wire Production: CycleCompleted → ProductionRecorder tự ghi record (UPH/yield/SN)
-**Commit:** `(điền sau push)`  ·  (S36: Recipe extensibility RecipeBase)
+**Commit:** `651c25f`  ·  (S36: Recipe extensibility RecipeBase)
 
 ---
 

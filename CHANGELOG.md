@@ -26,7 +26,7 @@
 
 ## [Session 37] 2026-06-07 — Wire Production: CycleCompleted → tự ghi ProductionRecord (UPH/yield/SN)
 
-**Commit:** `(điền sau push)`
+**Commit:** `651c25f`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Mục 5 gap — `IProductionService.RecordAsync` có sẵn nhưng KHÔNG ai gọi → chưa có số liệu UPH/yield thật.
 
