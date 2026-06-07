@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #38 — SubRoutines base (Home/SafetyCheck chạy tay) + SubRoutineRunner gate quyền/state
-**Commit:** `(điền sau push)`  ·  (S37: wire Production ProductionRecorder)
+**Commit:** `265eb1f`  ·  (S37: wire Production ProductionRecorder)
 
 ---
 

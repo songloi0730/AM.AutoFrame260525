@@ -26,7 +26,7 @@
 
 ## [Session 38] 2026-06-07 — SubRoutines base (Home/Calibration/SafetyCheck chạy tay, gate quyền/state)
 
-**Commit:** `(điền sau push)`
+**Commit:** `265eb1f`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Mục 6 gap — thao tác setup/bảo trì chạy tay ngoài auto-cycle cần khung tái dùng + gate an toàn.
 
