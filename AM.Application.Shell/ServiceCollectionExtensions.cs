@@ -40,10 +40,12 @@ using AM.Modules.Motion;
 using AM.Modules.Parameter;
 using AM.Services;
 using AM.Core.Models;
+using AM.Core.Abstractions.Interfaces;
 using AM.WorkStation.Demo.Controllers;
 using AM.WorkStation.Demo.Mechanisms;
 using AM.WorkStation.Demo.Recipe;
 using AM.WorkStation.Demo.Stations;
+using AM.WorkStation.Demo.SubRoutines;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -157,6 +159,11 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<DemoStation>();
         services.AddSingleton<DemoMasterController>();
         services.AddSingleton<IMasterController>(sp => sp.GetRequiredService<DemoMasterController>());
+
+        // SubRoutines (setup/bảo trì chạy tay) + runner gate quyền/state
+        services.AddSingleton<ISubRoutine, HomeAllSubRoutine>();
+        services.AddSingleton<ISubRoutine, SafetyCheckSubRoutine>();
+        services.AddSingleton<ISubRoutineRunner, SubRoutineRunner>();
         return services;
     }
 

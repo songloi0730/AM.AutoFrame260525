@@ -24,6 +24,29 @@
 
 ---
 
+## [Session 38] 2026-06-07 — SubRoutines base (Home/Calibration/SafetyCheck chạy tay, gate quyền/state)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Mục 6 gap — thao tác setup/bảo trì chạy tay ngoài auto-cycle cần khung tái dùng + gate an toàn.
+
+### ✅ Khung SubRoutine
+- `ISubRoutine` (Abstractions): Name/Description/`RequiredLevel`/IsBusy/`ExecuteAsync`.
+- **`SubRoutineBase`** (Infrastructure): busy-guard (không chạy đồng thời) + log; subclass chỉ viết `ExecuteCoreAsync`.
+- `ISubRoutineRunner` + **`SubRoutineRunner`** (AM.Services): UI gọi runner, runner **gate**:
+  quyền (`IUserService.HasPermission`) → `UnauthorizedAccessException`; trạng thái máy (KHÔNG chạy khi Running/Paused)
+  → `InvalidOperationException`; bọc `AlarmException` → raise alarm + ném lại.
+- Demo: `HomeAllSubRoutine` (Engineer, `DemoStation.HomeAsync`) + `SafetyCheckSubRoutine` (Operator, kiểm tra `ISafetyInput`).
+- DI: đăng ký từng subroutine `ISubRoutine` + `ISubRoutineRunner` trong `AddDemoMachine` (máy khác thêm subroutine của mình).
+- Test: `SubRoutineRunnerTests` (chạy khi đủ quyền+Idle · chặn thiếu quyền · chặn khi Running · tên lạ · raise alarm).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error**. `dotnet test` → **165 passed** (Services 70→75).
+
+> Còn lại trước khi dựng máy: mục 7 (Debug/Engineering UI tiêu thụ `[MechanismUI]`/`[StationUI]` + chạy SubRoutine).
+
+---
+
 ## [Session 37] 2026-06-07 — Wire Production: CycleCompleted → tự ghi ProductionRecord (UPH/yield/SN)
 
 **Commit:** `651c25f`

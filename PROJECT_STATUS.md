@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #37 — Wire Production: CycleCompleted → ProductionRecorder tự ghi record (UPH/yield/SN)
-**Commit:** `651c25f`  ·  (S36: Recipe extensibility RecipeBase)
+**Session:** #38 — SubRoutines base (Home/SafetyCheck chạy tay) + SubRoutineRunner gate quyền/state
+**Commit:** `(điền sau push)`  ·  (S37: wire Production ProductionRecorder)
 
 ---
 
