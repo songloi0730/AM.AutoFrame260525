@@ -69,6 +69,9 @@ public partial class App
             // 4b'. Đèn tháp tự lái theo trạng thái máy + alarm + an toàn (ISA-101 andon)
             _serviceProvider.GetRequiredService<ITowerLightService>().Start();
 
+            // 4b''. Tự ghi ProductionRecord mỗi cycle hoàn thành (UPH/yield/traceability)
+            _serviceProvider.GetRequiredService<IProductionRecorder>().Start();
+
             // 4c. Khôi phục ngôn ngữ đã lưu (i18n §7.4) + lưu lại khi đổi
             RestoreAndPersistLanguage(_serviceProvider);
 

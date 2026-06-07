@@ -104,6 +104,7 @@ internal static class ServiceCollectionExtensions
             Path.Combine(AppContext.BaseDirectory, "machine.json")));
         services.AddSingleton<IHardwareWatchdogService, HardwareWatchdogService>();
         services.AddSingleton<ITowerLightService, TowerLightService>(); // đèn tháp tự lái theo state/alarm/safety
+        services.AddSingleton<IProductionRecorder, ProductionRecorder>(); // CycleCompleted → tự ghi ProductionRecord
         // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
         services.AddSingleton<IUserService, UserService>(sp =>
             new UserService(sp.GetRequiredService<ILogger<UserService>>(), "users.json"));

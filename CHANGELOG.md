@@ -24,6 +24,32 @@
 
 ---
 
+## [Session 37] 2026-06-07 — Wire Production: CycleCompleted → tự ghi ProductionRecord (UPH/yield/SN)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Mục 5 gap — `IProductionService.RecordAsync` có sẵn nhưng KHÔNG ai gọi → chưa có số liệu UPH/yield thật.
+
+### ✅ ProductionRecorder
+- `IProductionRecorder` (Abstractions) + **`ProductionRecorder`** (AM.Services): lắng nghe `IMasterController.CycleCompleted`
+  → sinh **serial number** (ngày + số tăng dần) + ghi `ProductionRecord` (IsPassed=true, `CycleTimeMs` từ
+  `CycleDurationMs`, recipe đang chạy) qua `IProductionService.RecordAsync`.
+- **Captive dependency**: recorder là Singleton nhưng `IProductionService` là Scoped (EF DbContext) → tạo **scope mỗi lần ghi**
+  bằng `IServiceScopeFactory` (đúng chuẩn DI). Lỗi ghi không làm sập sequence (try/catch + log).
+- Model fault-stop: mỗi cycle hoàn thành = 1 PASS (NG ném AlarmException → không có CycleCompleted). Máy chạy
+  reject-and-continue có thể ghi NG trực tiếp qua `IProductionService.RecordAsync`.
+- DI: đăng ký singleton + `Start()` ở App (sau watchdog/towerlight).
+- Test: `ProductionRecorderTests` (ghi PASS record đúng cycle-time/recipe/SN · SN duy nhất mỗi cycle · Dispose hủy đăng ký)
+  bằng Moq (mock `IServiceScopeFactory`).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error**. `dotnet test` → **160 passed** (Services 67→70).
+- Chạy máy: mỗi cycle hoàn thành tự ghi 1 record → Dashboard/Production có UPH/yield/cycle-time thật.
+
+> Còn lại trước khi dựng máy: mục 6 (SubRoutines base), 7 (Debug/Engineering UI). Production UI module (mục B) hiển thị stats.
+
+---
+
 ## [Session 36] 2026-06-07 — Recipe extensibility: RecipeBase + recipe theo máy (bỏ cứng P&P)
 
 **Commit:** `f2626c2`
