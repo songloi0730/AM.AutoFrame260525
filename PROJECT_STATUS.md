@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #25 — Nền backend: cycle-time đo thực + alarm catalog đa ngữ
-**Commit:** `(điền sau push)`  ·  (S24: IUserService login/RBAC + lưu lựa chọn ngôn ngữ)
+**Commit:** `d9a6f8e`  ·  (S24: IUserService login/RBAC + lưu lựa chọn ngôn ngữ)
 
 ---
 
