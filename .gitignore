@@ -46,3 +46,8 @@ libs/**/*.pdb
 # Nhưng GIỮ LẠI placeholder và README
 !libs/**/.placeholder
 !libs/**/README.md
+
+# Runtime data stores sinh tự động (không commit — app seed/tạo lúc chạy)
+/parameters.json
+/users.json
+/points.json

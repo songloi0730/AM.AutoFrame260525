@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #27 — UI module Motion (jog/home/move + Point Table) — mục B.2
-**Commit:** `(điền sau push)`  ·  (S26: UI Identity login/logout/RBAC)
+**Commit:** `8d07549`  ·  (S26: UI Identity login/logout/RBAC)
 
 ---
 

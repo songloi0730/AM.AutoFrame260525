@@ -6,7 +6,7 @@
 
 ## [Session 27] 2026-06-07 — UI module Motion (jog/home/move + Point Table) — mục B.2
 
-**Commit:** `(điền sau push)`
+**Commit:** `8d07549` (+ cleanup: gỡ tracking parameters.json/users.json runtime, thêm gitignore)
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Mục B.2 — Motion module bám ĐÚNG `IMotionController`/`IAxis`. Point Table tách toạ độ khỏi code (file JSON).
 
