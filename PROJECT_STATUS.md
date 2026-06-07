@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #39 — Engineering/Debug UI ([StationUI]/[MechanismUI] + SubRoutine) — KHÉP NỀN WorkStation (mục 1–7 xong)
-**Commit:** `(điền sau push)`  ·  (S38: SubRoutines base + runner)
+**Commit:** `f02b39d`  ·  (S38: SubRoutines base + runner)
 
 ---
 

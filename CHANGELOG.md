@@ -26,7 +26,7 @@
 
 ## [Session 39] 2026-06-07 — Engineering/Debug UI (tiêu thụ [StationUI]/[MechanismUI] + chạy SubRoutine) — KHÉP NỀN
 
-**Commit:** `(điền sau push)`
+**Commit:** `f02b39d`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Mục 7 (cuối) — màn kỹ sư bring-up máy: `[StationUI]`/`[MechanismUI]` đã gắn nhưng chưa ai đọc.
 
