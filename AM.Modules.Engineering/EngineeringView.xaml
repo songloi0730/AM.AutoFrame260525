@@ -1,0 +1,152 @@
+<UserControl x:Class="AM.Modules.Engineering.EngineeringView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             mc:Ignorable="d"
+             Background="{DynamicResource Screen.BackgroundBrush}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding [Nav.Engineering], Source={x:Static loc:Loc.Strings}}"
+                   FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
+                   Foreground="{DynamicResource Text.HeadingBrush}"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ── Stations + Mechanisms (auto-discovery [StationUI]/[MechanismUI]) ── -->
+            <Border Grid.Column="0" Margin="0,0,8,0" CornerRadius="6" Padding="12"
+                    Background="{DynamicResource Panel.BackgroundBrush}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding [Eng.Stations], Source={x:Static loc:Loc.Strings}}"
+                               FontWeight="SemiBold" Margin="0,0,0,8"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Stations}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,12">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="14"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <Border CornerRadius="4" Padding="6,1" Margin="10,0,0,0"
+                                                    Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                                <TextBlock Text="{Binding State}" FontSize="11"
+                                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <!-- Mechanisms -->
+                                        <ItemsControl ItemsSource="{Binding Mechanisms}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Margin="0,0,0,4" Padding="10,6" CornerRadius="4"
+                                                            Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding DisplayName}" Width="180"
+                                                                       VerticalAlignment="Center" FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                                            <TextBlock Text="{Binding Category}" Width="100" FontSize="11"
+                                                                       VerticalAlignment="Center"
+                                                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                                            <!-- Ready -->
+                                                            <Ellipse Width="11" Height="11" Margin="4,0" VerticalAlignment="Center">
+                                                                <Ellipse.Style>
+                                                                    <Style TargetType="Ellipse">
+                                                                        <Setter Property="Fill" Value="{DynamicResource Status.DisabledBrush}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsReady}" Value="True">
+                                                                                <Setter Property="Fill" Value="{DynamicResource Status.NormalBrush}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Ellipse.Style>
+                                                            </Ellipse>
+                                                            <TextBlock Text="Ready" Width="46" FontSize="11" VerticalAlignment="Center"
+                                                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                                            <!-- Busy -->
+                                                            <Ellipse Width="11" Height="11" Margin="4,0" VerticalAlignment="Center">
+                                                                <Ellipse.Style>
+                                                                    <Style TargetType="Ellipse">
+                                                                        <Setter Property="Fill" Value="{DynamicResource Status.DisabledBrush}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                                                                <Setter Property="Fill" Value="{DynamicResource Status.ManualBrush}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Ellipse.Style>
+                                                            </Ellipse>
+                                                            <TextBlock Text="Busy" Width="40" FontSize="11" VerticalAlignment="Center"
+                                                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+
+                                                            <Button Content="E-Stop" Width="64" Height="26" Margin="8,0,0,0"
+                                                                    Command="{Binding DataContext.EmergencyStopMechanismCommand,
+                                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="{DynamicResource Status.AlarmBrush}"
+                                                                    Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- ── SubRoutines (chạy tay, gate quyền/state) ────────────────────── -->
+            <Border Grid.Column="1" Margin="8,0,0,0" CornerRadius="6" Padding="12"
+                    Background="{DynamicResource Panel.BackgroundBrush}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding [Eng.SubRoutines], Source={x:Static loc:Loc.Strings}}"
+                               FontWeight="SemiBold" Margin="0,0,0,8"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding SubRoutines}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,6" Padding="10" CornerRadius="4"
+                                            Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                        <StackPanel>
+                                            <Button Content="{Binding Name}" Height="34"
+                                                    ToolTip="{Binding Description}"
+                                                    Command="{Binding DataContext.RunSubRoutineCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding Name}"
+                                                    Background="{DynamicResource Button.PrimaryBrush}"
+                                                    Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                                            <StackPanel Orientation="Horizontal" Margin="2,4,0,0">
+                                                <TextBlock Text="{Binding Description}" FontSize="11"
+                                                           Foreground="{DynamicResource Text.SecondaryBrush}"
+                                                           TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding RequiredLevel, StringFormat=Quyền: {0}}" FontSize="10"
+                                                       Margin="2,2,0,0" Foreground="{DynamicResource Text.DisabledBrush}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource Text.LiveValueBrush}"/>
+    </Grid>
+</UserControl>

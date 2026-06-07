@@ -40,6 +40,7 @@ public partial class MainWindow : Window
         ["motion"]    = "E713", // Settings gear (motion)
         ["recipe"]    = "E8A5", // Document (recipe)
         ["user"]      = "E77B", // Contact (account)
+        ["engineering"] = "E90F", // Repair (engineering/debug)
     };
     private const string DefaultHex = "E700"; // GlobalNavigationButton (fallback)
 

@@ -24,6 +24,32 @@
 
 ---
 
+## [Session 39] 2026-06-07 — Engineering/Debug UI (tiêu thụ [StationUI]/[MechanismUI] + chạy SubRoutine) — KHÉP NỀN
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Mục 7 (cuối) — màn kỹ sư bring-up máy: `[StationUI]`/`[MechanismUI]` đã gắn nhưng chưa ai đọc.
+
+### ✅ AM.Modules.Engineering (project mới — thứ 25)
+- `EngineeringViewModel`: **auto-discovery** Station/Mechanism từ `IMasterController.Stations`, đọc metadata
+  `[StationUI]`/`[MechanismUI]` qua **reflection** (DisplayName/Group). Poll **Ready/Busy** live (500ms).
+- `StationVm`/`MechanismVm`/`SubRoutineVm`. **Chạy SubRoutine** qua `ISubRoutineRunner` (gate quyền/state, bắt
+  Unauthorized/InvalidOperation/Alarm → StatusMessage). **E-Stop từng cụm** (`IMechanism.EmergencyStop`).
+- `EngineeringView.xaml`: cột trái Station→Mechanism (đèn Ready/Busy + E-Stop), cột phải nút SubRoutine (tên+mô tả+quyền).
+- `[ModuleNavigation("Nav.Engineering", order: 80)]` + i18n (Kỹ thuật/Engineering/工程) + glyph Segoe MDL2.
+- Wire Shell: ProjectReference + `AddUiViewModels` + .sln + nav glyph.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Warning, 0 Error** (25 projects). `dotnet test` → **165 passed**.
+
+### 🏁 KHÉP NỀN WorkStation (mục 1–7 trong gap analysis ĐÃ XONG)
+1. StepSequence · 2. AxisMap/MachineConfig (+concrete IAxis) · 3. Recipe extensibility · 4. Safety interlock+andon ·
+5. wire Production · 6. SubRoutines · 7. Engineering UI.
+> **Đã đủ nền để dựng `AM.WorkStation.{Máy}` thật.** Còn lại là phần TÙY MÁY (driver hãng, recipe/steps/mechanisms theo máy)
+> và các UI module hiển thị (Production/Vision/Logging/Diagnostics).
+
+---
+
 ## [Session 38] 2026-06-07 — SubRoutines base (Home/Calibration/SafetyCheck chạy tay, gate quyền/state)
 
 **Commit:** `265eb1f`
