@@ -4,6 +4,26 @@
 
 ---
 
+## [Session 33] 2026-06-07 — Mở maximized + chữ to chuẩn công nghiệp + icon Segoe MDL2
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User: muốn mở full màn ngay; maximize bị viền đen phải/dưới; chữ hơi bé; icon emoji chưa hợp công nghiệp.
+
+### ✅ Khắc phục
+1. **Mở maximized ngay:** `WindowState=Maximized` (vẫn có title bar, ResizeMode=CanResize).
+2. **Hết viền đen khi maximize:** bỏ `MaxWidth/MaxHeight` (trước set = WorkArea làm window không lấp đầy được).
+   `ClampToWorkArea` giờ chỉ giới hạn kích thước **restore** (khi rời maximize) để không tràn ở scale >100%.
+3. **Chữ to hơn (ISA-101: data 16–20pt, label 12–14pt):** Window `FontSize=15` base; bump Font tokens trong App.xaml
+   (Body 13→15, Small 11→13, H2 18→22, H3 16→18, LiveValue 15→18, KpiValue 28→32, H1 24→28). Nav label 15, nút nav cao 48.
+4. **Icon chuẩn:** thay emoji bằng **Segoe MDL2 Assets** (icon hệ thống Windows). Lưu **mã hex** (ASCII) → convert glyph
+   runtime (`(char)0xE80F`) để source không chứa ký tự PUA. Map: Home/Ringer/Connect/Settings/Document/Contact + hamburger.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Warning, 0 Error** (24 projects). `dotnet test` → **143 passed**.
+
+---
+
 ## [Session 32] 2026-06-07 — Fix: cửa sổ tràn màn hình laptop khi scale 125% (DIP vs pixel)
 
 **Commit:** `6f6a17e`

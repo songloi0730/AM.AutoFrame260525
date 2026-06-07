@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #32 — Fix cửa sổ tràn màn hình laptop khi scale 125% (clamp theo WorkArea)
-**Commit:** `6f6a17e`  ·  (S31: re-tune Shell layout IPC ISA-101)
+**Session:** #33 — Mở maximized + chữ to chuẩn công nghiệp + icon Segoe MDL2
+**Commit:** `(điền sau push)`  ·  (S32: fix cửa sổ tràn màn scale 125%)
 
 ---
 

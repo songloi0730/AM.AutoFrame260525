@@ -130,14 +130,15 @@
         <SolidColorBrush x:Key="Grid.BorderBrush"              Color="#FF3F3F46"/>
 
         <!-- ── Typography (FontSize constants) ─────────────────────────────────────── -->
-        <sys:Double x:Key="Font.H1">24</sys:Double>
-        <sys:Double x:Key="Font.H2">18</sys:Double>
-        <sys:Double x:Key="Font.H3">16</sys:Double>
-        <sys:Double x:Key="Font.Body">13</sys:Double>
-        <sys:Double x:Key="Font.Small">11</sys:Double>
-        <sys:Double x:Key="Font.Micro">10</sys:Double>
-        <sys:Double x:Key="Font.LiveValue">15</sys:Double>
-        <sys:Double x:Key="Font.KpiValue">28</sys:Double>
+        <!-- Cỡ chữ chuẩn IPC 21–24" (ISA-101: data 16–20pt, label 12–14pt) -->
+        <sys:Double x:Key="Font.H1">28</sys:Double>
+        <sys:Double x:Key="Font.H2">22</sys:Double>
+        <sys:Double x:Key="Font.H3">18</sys:Double>
+        <sys:Double x:Key="Font.Body">15</sys:Double>
+        <sys:Double x:Key="Font.Small">13</sys:Double>
+        <sys:Double x:Key="Font.Micro">12</sys:Double>
+        <sys:Double x:Key="Font.LiveValue">18</sys:Double>
+        <sys:Double x:Key="Font.KpiValue">32</sys:Double>
 
         <!-- ── Dimensions (ISA-101 + SEMI S8) ────────────────────────────────────── -->
         <sys:Double x:Key="Dim.TopBarHeight">48</sys:Double>

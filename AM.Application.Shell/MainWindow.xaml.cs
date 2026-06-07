@@ -5,6 +5,7 @@
 //          alarm bar + connection chips bind tới ShellViewModel.
 // -------------------------------------------------------
 
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,11 +29,22 @@ public partial class MainWindow : Window
     private const double NavExpandedWidth = 240;
     private const double NavCollapsedWidth = 64;
 
-    private static readonly Dictionary<string, string> IconGlyphs = new(StringComparer.OrdinalIgnoreCase)
+    // Icon = mã hex của Segoe MDL2 Assets (icon hệ thống Windows, chuẩn công nghiệp).
+    // Lưu hex (ASCII) → convert sang glyph lúc runtime để source không chứa ký tự PUA.
+    private static readonly FontFamily IconFont = new("Segoe MDL2 Assets");
+    private static readonly Dictionary<string, string> IconHex = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["dashboard"] = "🏠", ["bell"] = "🔔", ["io"] = "🔌",
-        ["motion"] = "⚙", ["recipe"] = "📋", ["user"] = "👤",
+        ["dashboard"] = "E80F", // Home
+        ["bell"]      = "E7ED", // Ringer (alarm)
+        ["io"]        = "E703", // Connect (I/O)
+        ["motion"]    = "E713", // Settings gear (motion)
+        ["recipe"]    = "E8A5", // Document (recipe)
+        ["user"]      = "E77B", // Contact (account)
     };
+    private const string DefaultHex = "E700"; // GlobalNavigationButton (fallback)
+
+    private static string Glyph(string hex)
+        => ((char)int.Parse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture)).ToString();
 
     private readonly IServiceProvider _services;
     private readonly Dictionary<Type, UserControl> _viewCache = [];
@@ -50,14 +62,13 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Giới hạn kích thước cửa sổ trong vùng làm việc (DIP, đã tính theo DPI/scale của Windows)
-    /// để không tràn màn hình laptop khi scale &gt; 100% (vd 125% → 1 DIP = 1.25px).
+    /// Giới hạn kích thước khôi phục (restore) của cửa sổ trong vùng làm việc (DIP, đã tính DPI/scale)
+    /// để khi rời maximize không tràn màn laptop khi scale &gt; 100%. KHÔNG set MaxWidth/MaxHeight
+    /// để maximize vẫn lấp đầy màn (không để lại viền).
     /// </summary>
     private void ClampToWorkArea()
     {
         var area = SystemParameters.WorkArea; // đơn vị DIP
-        MaxWidth = area.Width;
-        MaxHeight = area.Height;
         if (Width > area.Width) Width = area.Width;
         if (Height > area.Height) Height = area.Height;
     }
@@ -89,13 +100,15 @@ public partial class MainWindow : Window
         {
             var glyph = new TextBlock
             {
-                Text = IconGlyphs.TryGetValue(entry.Icon, out var g) ? g : "▪",
-                Width = 28, FontSize = 15, TextAlignment = TextAlignment.Center,
+                Text = Glyph(IconHex.TryGetValue(entry.Icon, out var hex) ? hex : DefaultHex),
+                FontFamily = IconFont,
+                Width = 30, FontSize = 18, TextAlignment = TextAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
             var label = new TextBlock
             {
-                Margin = new Thickness(8, 0, 0, 0),
+                Margin = new Thickness(10, 0, 0, 0),
+                FontSize = 15,
                 VerticalAlignment = VerticalAlignment.Center
             };
             // Content bind tới proxy i18n (NavPanel.DataContext) → đổi ngôn ngữ cập nhật ngay
@@ -108,9 +121,9 @@ public partial class MainWindow : Window
 
             var button = new Button
             {
-                Height = 44,
+                Height = 48,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
-                Padding = new Thickness(14, 0, 0, 0),
+                Padding = new Thickness(16, 0, 0, 0),
                 Background = Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Foreground = (Brush)FindResource("Text.PrimaryBrush"),

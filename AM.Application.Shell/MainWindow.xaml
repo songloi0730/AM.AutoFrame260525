@@ -8,8 +8,9 @@
         mc:Ignorable="d"
         Title="AutoMachine Framework"
         Height="900" Width="1440" MinHeight="640" MinWidth="1024"
-        WindowState="Normal" WindowStartupLocation="CenterScreen"
+        WindowState="Maximized" WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize" SizeToContent="Manual"
+        FontSize="15"
         Background="{DynamicResource Screen.BackgroundBrush}">
 
     <Window.Resources>
@@ -105,8 +106,9 @@
                     Background="{DynamicResource NavBar.BackgroundBrush}"
                     BorderThickness="0,0,1,0" BorderBrush="{DynamicResource Border.DefaultBrush}">
                 <StackPanel x:Name="NavPanel">
-                    <Button x:Name="NavToggle" Content="☰" Height="40" FontSize="16" Margin="8,8,8,12"
-                            HorizontalContentAlignment="Left" Padding="14,0,0,0"
+                    <Button x:Name="NavToggle" Content="&#xE700;" FontFamily="Segoe MDL2 Assets"
+                            Height="44" FontSize="18" Margin="8,8,8,12"
+                            HorizontalContentAlignment="Left" Padding="18,0,0,0"
                             Background="Transparent" BorderThickness="0"
                             Foreground="{DynamicResource Text.SecondaryBrush}"
                             Click="NavToggle_Click"/>
