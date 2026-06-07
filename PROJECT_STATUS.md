@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #32 — Fix cửa sổ tràn màn hình laptop khi scale 125% (clamp theo WorkArea)
-**Commit:** `(điền sau push)`  ·  (S31: re-tune Shell layout IPC ISA-101)
+**Commit:** `6f6a17e`  ·  (S31: re-tune Shell layout IPC ISA-101)
 
 ---
 

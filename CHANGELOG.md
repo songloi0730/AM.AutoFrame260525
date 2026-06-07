@@ -6,7 +6,7 @@
 
 ## [Session 32] 2026-06-07 — Fix: cửa sổ tràn màn hình laptop khi scale 125% (DIP vs pixel)
 
-**Commit:** `(điền sau push)`
+**Commit:** `6f6a17e`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User báo cửa sổ tràn ra ngoài màn laptop, không kéo/resize được.
 
