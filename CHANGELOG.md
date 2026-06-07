@@ -6,7 +6,7 @@
 
 ## [Session 31] 2026-06-07 — Re-tune Shell layout theo chuẩn IPC ISA-101 (header lệnh toàn cục + alarm/status bar)
 
-**Commit:** `(điền sau push)`
+**Commit:** `9d80aff`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Áp guidance S30 vào Shell đang chạy — bố cục 4 vùng cho IPC 1920×1080.
 

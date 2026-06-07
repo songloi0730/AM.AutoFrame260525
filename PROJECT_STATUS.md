@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #31 — Re-tune Shell layout IPC ISA-101 (header lệnh toàn cục + state chip + alarm/status bar chips)
-**Commit:** `(điền sau push)`  ·  (S30: guidance UI target IPC 21–24")
+**Commit:** `9d80aff`  ·  (S30: guidance UI target IPC 21–24")
 
 ---
 
