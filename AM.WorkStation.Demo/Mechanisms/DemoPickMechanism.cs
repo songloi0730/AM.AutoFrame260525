@@ -11,6 +11,7 @@ using AM.Core.Enums;
 using AM.Core.Exceptions;
 using AM.Core.Models;
 using AM.Infrastructure;
+using AM.WorkStation.Demo.Recipe;
 using Microsoft.Extensions.Logging;
 
 namespace AM.WorkStation.Demo.Mechanisms;
@@ -76,7 +77,7 @@ public sealed class DemoPickMechanism : BaseMechanism
     /// Gắp part từ vị trí (x, y, z) trong Recipe.
     /// Atomic: di chuyển đến → bật vacuum → nâng lên.
     /// </summary>
-    public Task PickAsync(Recipe recipe, CancellationToken ct = default)
+    public Task PickAsync(PickPlaceRecipe recipe, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(recipe);
         return ExecuteWithBusyGuardAsync(t => DoPickAsync(recipe, t), ct);
@@ -86,7 +87,7 @@ public sealed class DemoPickMechanism : BaseMechanism
     /// Đặt part tại vị trí (x, y, z) trong Recipe.
     /// Atomic: di chuyển đến → tắt vacuum → nâng lên.
     /// </summary>
-    public Task PlaceAsync(Recipe recipe, CancellationToken ct = default)
+    public Task PlaceAsync(PickPlaceRecipe recipe, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(recipe);
         return ExecuteWithBusyGuardAsync(t => DoPlaceAsync(recipe, t), ct);
@@ -94,7 +95,7 @@ public sealed class DemoPickMechanism : BaseMechanism
 
     // ─── Private helpers ──────────────────────────────────────────────────────────
 
-    private async Task DoPickAsync(Recipe recipe, CancellationToken ct)
+    private async Task DoPickAsync(PickPlaceRecipe recipe, CancellationToken ct)
     {
         Logger.LogDebug("[{Mech}] PickAsync → ({X:F1}, {Y:F1}, {Z:F1})",
             Name, recipe.PickPositionX, recipe.PickPositionY, recipe.PickPositionZ);
@@ -110,7 +111,7 @@ public sealed class DemoPickMechanism : BaseMechanism
         Logger.LogDebug("[{Mech}] Pick completed", Name);
     }
 
-    private async Task DoPlaceAsync(Recipe recipe, CancellationToken ct)
+    private async Task DoPlaceAsync(PickPlaceRecipe recipe, CancellationToken ct)
     {
         Logger.LogDebug("[{Mech}] PlaceAsync → ({X:F1}, {Y:F1}, {Z:F1})",
             Name, recipe.PlacePositionX, recipe.PlacePositionY, recipe.PlacePositionZ);

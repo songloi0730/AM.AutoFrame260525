@@ -1,9 +1,10 @@
 // -------------------------------------------------------
 // File:    RecipeServiceTests.cs
 // Project: AM.Services.Tests
-// Purpose: Unit tests cho RecipeService — load, save, validate
+// Purpose: Unit tests cho RecipeService — load/save/validate ĐA HÌNH (RecipeBase + [ParamView]).
 // -------------------------------------------------------
 
+using AM.Core.Attributes;
 using AM.Core.Models;
 using AM.Services;
 using FluentAssertions;
@@ -13,36 +14,29 @@ namespace AM.Services.Tests;
 
 public sealed class RecipeServiceTests
 {
-    private static RecipeService CreateSut() =>
-        new(NullLogger<RecipeService>.Instance);
+    // Recipe test riêng — chứng minh service không cứng theo loại máy (validate qua [ParamView]).
+    private sealed class TestRecipe : RecipeBase
+    {
+        [ParamView("Vận tốc", unit: "mm/s", min: 1, max: 1000)]
+        public double MoveVelocity { get; set; } = 100;
+        [ParamView("Timeout bước", unit: "ms", min: 1000, max: 120000)]
+        public int StepTimeoutMs { get; set; } = 10_000;
+        [ParamView("Ngưỡng đạt", min: 0, max: 1)]
+        public double VisionPassScore { get; set; } = 0.8;
+    }
 
-    // ─── GetRecipeNamesAsync ──────────────────────────────────────────────────────
+    private static RecipeService CreateSut() => new(NullLogger<RecipeService>.Instance,
+        new RecipeBase[] { new TestRecipe { Id = 1, Name = "Default", ProductCode = "DEMO-001" } });
 
     [Fact]
     public async Task GetRecipeNamesAsync_Should_ReturnSeedRecipes()
-    {
-        // Arrange
-        var sut = CreateSut();
-
-        // Act
-        var names = await sut.GetRecipeNamesAsync();
-
-        // Assert — service seeds một "Default" recipe
-        names.Should().Contain("Default");
-    }
-
-    // ─── LoadRecipeAsync ──────────────────────────────────────────────────────────
+        => (await CreateSut().GetRecipeNamesAsync()).Should().Contain("Default");
 
     [Fact]
     public async Task LoadRecipeAsync_Should_SetActiveRecipe()
     {
-        // Arrange
         var sut = CreateSut();
-
-        // Act
         await sut.LoadRecipeAsync("Default");
-
-        // Assert
         sut.ActiveRecipe.Should().NotBeNull();
         sut.ActiveRecipe!.Name.Should().Be("Default");
     }
@@ -50,15 +44,10 @@ public sealed class RecipeServiceTests
     [Fact]
     public async Task LoadRecipeAsync_Should_FireRecipeChangedEvent()
     {
-        // Arrange
         var sut = CreateSut();
         AM.Core.Models.EventArgs.RecipeEventArgs? received = null;
         sut.RecipeChanged += (_, e) => received = e;
-
-        // Act
         await sut.LoadRecipeAsync("Default");
-
-        // Assert
         received.Should().NotBeNull();
         received!.Recipe.Name.Should().Be("Default");
     }
@@ -66,130 +55,70 @@ public sealed class RecipeServiceTests
     [Fact]
     public async Task LoadRecipeAsync_Should_Throw_WhenRecipeNotFound()
     {
-        // Arrange
         var sut = CreateSut();
-
-        // Act
         var act = () => sut.LoadRecipeAsync("NonExistent");
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*NonExistent*");
+        await act.Should().ThrowAsync<ArgumentException>().WithMessage("*NonExistent*");
     }
-
-    // ─── SaveRecipeAsync ──────────────────────────────────────────────────────────
 
     [Fact]
     public async Task SaveRecipeAsync_Should_PersistRecipe()
     {
-        // Arrange
         var sut = CreateSut();
-        var newRecipe = new Recipe
+        var newRecipe = new TestRecipe
         {
-            Name            = "TestRecipe",
-            ProductCode     = "PROD-001",
-            MoveVelocity    = 100.0,
-            StepTimeoutMs   = 5_000,
-            VisionPassScore = 0.85
+            Name = "TestRecipe", ProductCode = "PROD-001",
+            MoveVelocity = 100.0, StepTimeoutMs = 5_000, VisionPassScore = 0.85
         };
-
-        // Act
         await sut.SaveRecipeAsync(newRecipe, "engineer1");
         await sut.LoadRecipeAsync("TestRecipe");
-
-        // Assert
-        sut.ActiveRecipe.Should().NotBeNull();
         sut.ActiveRecipe!.ProductCode.Should().Be("PROD-001");
     }
 
     [Fact]
     public async Task SaveRecipeAsync_Should_Throw_WhenValidationFails()
     {
-        // Arrange
         var sut = CreateSut();
-        var invalidRecipe = new Recipe
-        {
-            Name          = "",   // missing name
-            ProductCode   = "X",
-            MoveVelocity  = 100.0,
-            StepTimeoutMs = 5_000
-        };
-
-        // Act
-        var act = () => sut.SaveRecipeAsync(invalidRecipe, "engineer1");
-
-        // Assert
+        var invalid = new TestRecipe { Name = "", ProductCode = "X", MoveVelocity = 100, StepTimeoutMs = 5_000 };
+        var act = () => sut.SaveRecipeAsync(invalid, "engineer1");
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
-    // ─── ValidateAsync ────────────────────────────────────────────────────────────
-
     [Theory]
-    [InlineData("",      "PROD-001",  100.0, 5_000, 0.85, true)]  // empty name → invalid
-    [InlineData("Valid", "",          100.0, 5_000, 0.85, true)]  // empty product code → invalid
-    [InlineData("Valid", "PROD-001", -1.0,  5_000, 0.85, true)]  // negative velocity → invalid
-    [InlineData("Valid", "PROD-001",  100.0, 500,   0.85, true)]  // timeout < 1000ms → invalid
-    [InlineData("Valid", "PROD-001",  100.0, 5_000, 1.5,  true)]  // passScore > 1.0 → invalid
-    [InlineData("Valid", "PROD-001",  100.0, 5_000, 0.85, false)] // all valid → no errors
+    [InlineData("",      "PROD-001", 100.0, 5_000, 0.85, true)]  // empty name
+    [InlineData("Valid", "",         100.0, 5_000, 0.85, true)]  // empty product code
+    [InlineData("Valid", "PROD-001", -1.0,  5_000, 0.85, true)]  // velocity < min
+    [InlineData("Valid", "PROD-001", 100.0, 500,   0.85, true)]  // timeout < min
+    [InlineData("Valid", "PROD-001", 100.0, 5_000, 1.5,  true)]  // passScore > max
+    [InlineData("Valid", "PROD-001", 100.0, 5_000, 0.85, false)] // all valid
     public async Task ValidateAsync_Should_ReturnErrors_ForInvalidFields(
-        string name, string productCode, double velocity,
-        int timeoutMs, double passScore, bool hasErrors)
+        string name, string productCode, double velocity, int timeoutMs, double passScore, bool hasErrors)
     {
-        // Arrange
         var sut = CreateSut();
-        var recipe = new Recipe
+        var recipe = new TestRecipe
         {
-            Name            = name,
-            ProductCode     = productCode,
-            MoveVelocity    = velocity,
-            StepTimeoutMs   = timeoutMs,
-            VisionPassScore = passScore
+            Name = name, ProductCode = productCode,
+            MoveVelocity = velocity, StepTimeoutMs = timeoutMs, VisionPassScore = passScore
         };
-
-        // Act
         var errors = await sut.ValidateAsync(recipe);
-
-        // Assert
-        if (hasErrors)
-            errors.Should().NotBeEmpty();
-        else
-            errors.Should().BeEmpty();
+        if (hasErrors) errors.Should().NotBeEmpty();
+        else errors.Should().BeEmpty();
     }
-
-    // ─── DeleteRecipeAsync ────────────────────────────────────────────────────────
 
     [Fact]
     public async Task DeleteRecipeAsync_Should_RemoveRecipe()
     {
-        // Arrange
         var sut = CreateSut();
-        var recipe = new Recipe
-        {
-            Name = "ToDelete", ProductCode = "X",
-            MoveVelocity = 100.0, StepTimeoutMs = 5_000
-        };
-        await sut.SaveRecipeAsync(recipe, "eng");
-
-        // Act
+        await sut.SaveRecipeAsync(new TestRecipe { Name = "ToDelete", ProductCode = "X" }, "eng");
         await sut.DeleteRecipeAsync("ToDelete", "eng");
-        var names = await sut.GetRecipeNamesAsync();
-
-        // Assert
-        names.Should().NotContain("ToDelete");
+        (await sut.GetRecipeNamesAsync()).Should().NotContain("ToDelete");
     }
 
     [Fact]
     public async Task DeleteRecipeAsync_Should_Throw_WhenDeletingActiveRecipe()
     {
-        // Arrange
         var sut = CreateSut();
         await sut.LoadRecipeAsync("Default");
-
-        // Act
         var act = () => sut.DeleteRecipeAsync("Default", "eng");
-
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*active*");
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*active*");
     }
 }

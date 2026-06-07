@@ -24,6 +24,32 @@
 
 ---
 
+## [Session 36] 2026-06-07 — Recipe extensibility: RecipeBase + recipe theo máy (bỏ cứng P&P)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Mục 3 gap — `Recipe` đang cứng field Pick&Place; máy khác không khớp. Tách base + recipe theo máy.
+
+### ✅ Refactor Recipe đa hình
+- **`RecipeBase`** (Core, abstract): chỉ metadata chung (Id/Name/ProductCode/Version/CreatedAt/ModifiedAt/ModifiedBy/IsActive).
+- Xoá `Recipe.cs` (cứng P&P) → **`PickPlaceRecipe : RecipeBase`** chuyển về **AM.WorkStation.Demo/Recipe/** (recipe THEO MÁY,
+  giữ [ParamView] P&P). Máy khác tạo lớp recipe riêng.
+- `IRecipeService`/`RecipeEventArgs`/`ParameterViewModel` làm việc qua **`RecipeBase`** (đa hình).
+- **`RecipeService` không còn cứng**: bỏ seed P&P hardcode → ctor nhận `IEnumerable<RecipeBase>? seedRecipes` (máy cung cấp);
+  **`ValidateAsync` attribute-driven** (reflect `[ParamView]` Min/Max + Name/ProductCode bắt buộc) → đúng cho MỌI loại recipe.
+- **`ParameterViewModel`**: reflect `[ParamView]` theo **runtime type** của recipe + **Clone đa hình** (JSON round-trip) →
+  form tự render đúng tham số của từng máy, không sửa code.
+- DI: `IRecipeService` chuyển sang `AddDemoMachine` kèm **seed `PickPlaceRecipe` mặc định** (máy khác seed recipe riêng).
+- Demo: `DemoPickMechanism`/`Step02Inspect` nhận `PickPlaceRecipe`; `DemoStation` cast `ActiveRecipe as PickPlaceRecipe`.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error**. `dotnet test` → **157 passed** (`RecipeServiceTests` viết lại dùng `TestRecipe : RecipeBase`
+  + validate attribute-driven).
+
+> Còn lại trước khi dựng máy: mục 5 (wire Production), 6 (SubRoutines), 7 (Debug/Engineering UI).
+
+---
+
 ## [Session 35] 2026-06-07 — Safety interlock + ILightController (đèn tháp andon)
 
 **Commit:** `fa28883`

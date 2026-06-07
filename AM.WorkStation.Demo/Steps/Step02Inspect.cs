@@ -10,6 +10,7 @@ using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Constants;
 using AM.Core.Exceptions;
 using AM.Core.Models;
+using AM.WorkStation.Demo.Recipe;
 using Microsoft.Extensions.Logging;
 
 namespace AM.WorkStation.Demo.Steps;
@@ -31,7 +32,7 @@ public sealed class Step02Inspect : IStep
     private readonly ICameraDevice _camera;
     private readonly IAlarmService _alarmService;
     private readonly ILogger<Step02Inspect> _logger;
-    private readonly Recipe _recipe;
+    private readonly PickPlaceRecipe _recipe;
 
     // ─── Constructor ─────────────────────────────────────────────────────────────
     public Step02Inspect(
@@ -39,7 +40,7 @@ public sealed class Step02Inspect : IStep
         ICameraDevice camera,
         IAlarmService alarmService,
         ILogger<Step02Inspect> logger,
-        Recipe recipe)
+        PickPlaceRecipe recipe)
     {
         ArgumentNullException.ThrowIfNull(motion);
         ArgumentNullException.ThrowIfNull(camera);

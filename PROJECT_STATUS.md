@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #35 — Safety interlock (gating Start) + ILightController + TowerLightService (andon)
-**Commit:** `fa28883`  ·  (S34: StepSequence + AxisMap/MachineConfig + concrete IAxis)
+**Session:** #36 — Recipe extensibility: RecipeBase + recipe theo máy (bỏ cứng P&P), validate attribute-driven
+**Commit:** `(điền sau push)`  ·  (S35: safety interlock + ILightController + andon)
 
 ---
 

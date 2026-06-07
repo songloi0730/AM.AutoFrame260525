@@ -4,7 +4,10 @@
 // Purpose: Load, save, validate, cache recipe — publish event khi switch
 // -------------------------------------------------------
 
+using System.Globalization;
+using System.Reflection;
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Core.Attributes;
 using AM.Core.Models;
 using AM.Core.Models.EventArgs;
 using Microsoft.Extensions.Logging;
@@ -21,21 +24,30 @@ public sealed class RecipeService : IRecipeService
     private readonly ILogger<RecipeService> _logger;
 
     /// <summary>In-memory store — trong production thay bằng IRecipeRepository + EF Core.</summary>
-    private readonly Dictionary<string, Recipe> _store = new(StringComparer.OrdinalIgnoreCase);
-    private Recipe? _activeRecipe;
+    private readonly Dictionary<string, RecipeBase> _store = new(StringComparer.OrdinalIgnoreCase);
+    private RecipeBase? _activeRecipe;
 
     // ─── Constructor ─────────────────────────────────────────────────────────────
-    public RecipeService(ILogger<RecipeService> logger)
+
+    /// <summary>
+    /// Tạo service. <paramref name="seedRecipes"/> do MÁY cung cấp (recipe mặc định theo loại máy) —
+    /// service KHÔNG hardcode loại recipe nào.
+    /// </summary>
+    public RecipeService(ILogger<RecipeService> logger, IEnumerable<RecipeBase>? seedRecipes = null)
     {
         ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
-        SeedDefaultRecipes();
+        if (seedRecipes is not null)
+            foreach (var r in seedRecipes)
+                if (!string.IsNullOrWhiteSpace(r.Name))
+                    _store[r.Name] = r;
+        _logger.LogDebug("RecipeService seeded {Count} recipes", _store.Count);
     }
 
     // ─── Public properties ───────────────────────────────────────────────────────
 
     /// <inheritdoc/>
-    public Recipe? ActiveRecipe => _activeRecipe;
+    public RecipeBase? ActiveRecipe => _activeRecipe;
 
     /// <inheritdoc/>
     public event EventHandler<RecipeEventArgs>? RecipeChanged;
@@ -68,7 +80,7 @@ public sealed class RecipeService : IRecipeService
     }
 
     /// <inheritdoc/>
-    public async Task SaveRecipeAsync(Recipe recipe, string operatorId,
+    public async Task SaveRecipeAsync(RecipeBase recipe, string operatorId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(recipe);
@@ -105,7 +117,11 @@ public sealed class RecipeService : IRecipeService
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<string>> ValidateAsync(Recipe recipe,
+    /// <remarks>
+    /// Validate ĐA HÌNH theo attribute: bắt buộc Name/ProductCode, và mọi property gắn
+    /// <see cref="ParamViewAttribute"/> phải nằm trong khoảng [Min..Max]. Hoạt động cho MỌI loại recipe.
+    /// </remarks>
+    public Task<IReadOnlyList<string>> ValidateAsync(RecipeBase recipe,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(recipe);
@@ -115,32 +131,18 @@ public sealed class RecipeService : IRecipeService
             errors.Add("Recipe name is required");
         if (string.IsNullOrWhiteSpace(recipe.ProductCode))
             errors.Add("Product code is required");
-        if (recipe.MoveVelocity <= 0)
-            errors.Add("MoveVelocity must be > 0");
-        if (recipe.StepTimeoutMs < 1000)
-            errors.Add("StepTimeoutMs must be >= 1000ms");
-        if (recipe.VisionPassScore is < 0 or > 1)
-            errors.Add("VisionPassScore must be between 0 and 1");
+
+        foreach (var prop in recipe.GetType().GetProperties())
+        {
+            var attr = prop.GetCustomAttribute<ParamViewAttribute>();
+            if (attr is null) continue;
+            object? raw = prop.GetValue(recipe);
+            if (raw is null) continue;
+            double value = Convert.ToDouble(raw, CultureInfo.InvariantCulture);
+            if (value < attr.Min || value > attr.Max)
+                errors.Add($"{attr.Label} ({value}) ngoài khoảng [{attr.Min}..{attr.Max}] {attr.Unit}".Trim());
+        }
 
         return Task.FromResult((IReadOnlyList<string>)errors);
-    }
-
-    // ─── Private helpers ─────────────────────────────────────────────────────────
-
-    private void SeedDefaultRecipes()
-    {
-        var defaultRecipe = new Recipe
-        {
-            Id             = 1,
-            Name           = "Default",
-            ProductCode    = "DEMO-001",
-            Version        = "1.0",
-            MoveVelocity   = 100.0,
-            VisionJobName  = "InspectJob_01",
-            VisionPassScore = 0.80,
-            StepTimeoutMs  = 10_000
-        };
-        _store["Default"] = defaultRecipe;
-        _logger.LogDebug("Seeded {Count} default recipes", _store.Count);
     }
 }

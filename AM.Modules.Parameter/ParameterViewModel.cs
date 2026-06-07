@@ -6,6 +6,7 @@
 
 using System.Collections.ObjectModel;
 using System.Reflection;
+using System.Text.Json;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Attributes;
 using AM.Core.Enums;
@@ -23,9 +24,10 @@ namespace AM.Modules.Parameter;
 /// </summary>
 public sealed partial class ParameterViewModel : ObservableObject
 {
-    // Cache thuộc tính có [ParamView] của Recipe, đã sắp theo Group → Order.
-    private static readonly (PropertyInfo Prop, ParamViewAttribute Attr)[] ParamProps =
-        [.. typeof(Recipe).GetProperties()
+    // Lấy thuộc tính có [ParamView] của ĐÚNG loại recipe (runtime), sắp theo Group → Order.
+    // Không cache static vì recipe đa hình theo máy.
+    private static (PropertyInfo Prop, ParamViewAttribute Attr)[] GetParamProps(Type recipeType) =>
+        [.. recipeType.GetProperties()
             .Select(p => (Prop: p, Attr: p.GetCustomAttribute<ParamViewAttribute>()!))
             .Where(x => x.Attr is not null)
             .OrderBy(x => x.Attr.Group, StringComparer.Ordinal)
@@ -34,7 +36,7 @@ public sealed partial class ParameterViewModel : ObservableObject
     private readonly IRecipeService _recipe;
     private readonly IUserService _user;
     private readonly ILogger<ParameterViewModel> _logger;
-    private Recipe? _editing;
+    private RecipeBase? _editing;
 
     /// <summary>Tên các recipe có sẵn.</summary>
     public ObservableCollection<string> RecipeNames { get; } = [];
@@ -170,12 +172,12 @@ public sealed partial class ParameterViewModel : ObservableObject
         }
     }
 
-    private void BuildEditor(Recipe source)
+    private void BuildEditor(RecipeBase source)
     {
         _editing = Clone(source);
         EditingRecipeName = _editing.Name;
         Parameters.Clear();
-        foreach (var (prop, attr) in ParamProps)
+        foreach (var (prop, attr) in GetParamProps(_editing.GetType()))
             Parameters.Add(new ParamRowVm(_editing, prop, attr));
         ValidationErrors.Clear();
     }
@@ -186,30 +188,11 @@ public sealed partial class ParameterViewModel : ObservableObject
         foreach (var e in errors) ValidationErrors.Add(e);
     }
 
-    // Clone để sửa không ảnh hưởng instance trong cache của RecipeService (Reload huỷ được).
-    private static Recipe Clone(Recipe s) => new()
+    // Clone ĐA HÌNH (JSON round-trip theo runtime type) để sửa không đụng instance trong cache
+    // RecipeService (Reload huỷ được). Hoạt động cho MỌI loại recipe, không cần copy từng field.
+    private static RecipeBase Clone(RecipeBase s)
     {
-        Id = s.Id,
-        Name = s.Name,
-        ProductCode = s.ProductCode,
-        Version = s.Version,
-        CreatedAt = s.CreatedAt,
-        ModifiedAt = s.ModifiedAt,
-        ModifiedBy = s.ModifiedBy,
-        IsActive = s.IsActive,
-        PickPositionX = s.PickPositionX,
-        PickPositionY = s.PickPositionY,
-        PickPositionZ = s.PickPositionZ,
-        PlacePositionX = s.PlacePositionX,
-        PlacePositionY = s.PlacePositionY,
-        PlacePositionZ = s.PlacePositionZ,
-        MoveVelocity = s.MoveVelocity,
-        MoveAcceleration = s.MoveAcceleration,
-        VisionJobName = s.VisionJobName,
-        VisionPassScore = s.VisionPassScore,
-        VisionTimeoutMs = s.VisionTimeoutMs,
-        StepTimeoutMs = s.StepTimeoutMs,
-        ClampDelayMs = s.ClampDelayMs,
-        VacuumDelayMs = s.VacuumDelayMs,
-    };
+        string json = JsonSerializer.Serialize(s, s.GetType());
+        return (RecipeBase)JsonSerializer.Deserialize(json, s.GetType())!;
+    }
 }

@@ -1,29 +1,21 @@
 // -------------------------------------------------------
-// File:    Recipe.cs
-// Project: AM.Core
-// Purpose: Domain model cho recipe (công thức chạy máy)
+// File:    PickPlaceRecipe.cs
+// Project: AM.WorkStation.Demo
+// Purpose: Recipe riêng của máy Demo (Pick&Place) — tham số kỹ thuật + [ParamView].
 // -------------------------------------------------------
 
 using AM.Core.Attributes;
+using AM.Core.Models;
 
-namespace AM.Core.Models;
+namespace AM.WorkStation.Demo.Recipe;
 
 /// <summary>
-/// Recipe chứa toàn bộ tham số kỹ thuật cho một loại sản phẩm.
-/// Mọi magic number trong sequence phải lấy từ Recipe.
-/// Các tham số kỹ thuật gắn <see cref="ParamViewAttribute"/> để UI tự render input field.
+/// Recipe cho máy Pick&amp;Place: vị trí pick/place, vận tốc, vision, timing.
+/// Kế thừa <see cref="RecipeBase"/> (metadata); tham số kỹ thuật gắn <c>[ParamView]</c> để UI tự render.
+/// Đây là ví dụ "recipe theo máy" — máy khác tạo lớp recipe riêng của mình.
 /// </summary>
-public sealed class Recipe
+public sealed class PickPlaceRecipe : RecipeBase
 {
-    public int Id { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public string ProductCode { get; init; } = string.Empty;
-    public string Version { get; init; } = "1.0";
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-    public DateTime ModifiedAt { get; set; } = DateTime.UtcNow;
-    public string ModifiedBy { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-
     // ─── Motion parameters ────────────────────────────────────────────────────
     [ParamView("Pick X", unit: "mm", min: -1000, max: 1000, group: "Motion - Pick", order: 1)]
     public double PickPositionX { get; set; }
@@ -38,9 +30,9 @@ public sealed class Recipe
     [ParamView("Place Z", unit: "mm", min: -1000, max: 1000, group: "Motion - Place", order: 3)]
     public double PlacePositionZ { get; set; }
     [ParamView("Vận tốc", unit: "mm/s", min: 1, max: 1000, group: "Motion", order: 1)]
-    public double MoveVelocity { get; set; } = 100.0;    // mm/s
+    public double MoveVelocity { get; set; } = 100.0;
     [ParamView("Gia tốc", unit: "mm/s²", min: 1, max: 10000, group: "Motion", order: 2)]
-    public double MoveAcceleration { get; set; } = 500.0; // mm/s²
+    public double MoveAcceleration { get; set; } = 500.0;
 
     // ─── Vision parameters ───────────────────────────────────────────────────
     public string VisionJobName { get; set; } = string.Empty;

@@ -39,8 +39,10 @@ using AM.Modules.IoMonitor;
 using AM.Modules.Motion;
 using AM.Modules.Parameter;
 using AM.Services;
+using AM.Core.Models;
 using AM.WorkStation.Demo.Controllers;
 using AM.WorkStation.Demo.Mechanisms;
+using AM.WorkStation.Demo.Recipe;
 using AM.WorkStation.Demo.Stations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -82,7 +84,7 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
         services.AddSingleton<IAlarmService, AlarmService>();
-        services.AddSingleton<IRecipeService, RecipeService>();
+        // IRecipeService đăng ký ở AddDemoMachine (kèm seed recipe theo máy) — service không cứng loại recipe.
         services.AddSingleton<IParameterService, ParameterService>(sp =>
             new ParameterService(sp.GetRequiredService<ILogger<ParameterService>>(), "parameters.json"));
         services.AddSingleton<IHardwareManagerService, HardwareManagerService>();
@@ -136,6 +138,19 @@ internal static class ServiceCollectionExtensions
     /// <summary>Demo machine 3-tier.</summary>
     public static IServiceCollection AddDemoMachine(this IServiceCollection services)
     {
+        // Recipe service + seed recipe MẶC ĐỊNH của máy Demo (PickPlaceRecipe) — máy khác seed recipe riêng.
+        services.AddSingleton<IRecipeService>(sp => new RecipeService(
+            sp.GetRequiredService<ILogger<RecipeService>>(),
+            new RecipeBase[]
+            {
+                new PickPlaceRecipe
+                {
+                    Id = 1, Name = "Default", ProductCode = "DEMO-001",
+                    MoveVelocity = 100, VisionJobName = "InspectJob_01",
+                    VisionPassScore = 0.8, StepTimeoutMs = 10_000
+                }
+            }));
+
         services.AddSingleton<DemoPickMechanism>();
         services.AddSingleton<DemoInspectMechanism>();
         services.AddSingleton<DemoStation>();

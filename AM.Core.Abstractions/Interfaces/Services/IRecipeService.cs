@@ -14,8 +14,8 @@ namespace AM.Core.Abstractions.Interfaces.Services;
 /// </summary>
 public interface IRecipeService
 {
-    /// <summary>Recipe đang được load (null nếu chưa load).</summary>
-    Recipe? ActiveRecipe { get; }
+    /// <summary>Recipe đang được load (null nếu chưa load). Đa hình theo loại máy.</summary>
+    RecipeBase? ActiveRecipe { get; }
 
     /// <summary>Sự kiện khi recipe được switch sang recipe mới.</summary>
     event EventHandler<RecipeEventArgs>? RecipeChanged;
@@ -39,11 +39,11 @@ public interface IRecipeService
     /// </summary>
     /// <param name="recipe">Recipe cần lưu.</param>
     /// <param name="operatorId">ID người lưu (cho audit log).</param>
-    Task SaveRecipeAsync(Recipe recipe, string operatorId, CancellationToken ct = default);
+    Task SaveRecipeAsync(RecipeBase recipe, string operatorId, CancellationToken ct = default);
 
     /// <summary>Xoá recipe theo tên.</summary>
     Task DeleteRecipeAsync(string recipeName, string operatorId, CancellationToken ct = default);
 
     /// <summary>Validate recipe — trả về danh sách lỗi (empty = valid).</summary>
-    Task<IReadOnlyList<string>> ValidateAsync(Recipe recipe, CancellationToken ct = default);
+    Task<IReadOnlyList<string>> ValidateAsync(RecipeBase recipe, CancellationToken ct = default);
 }

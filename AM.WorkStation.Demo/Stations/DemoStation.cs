@@ -10,6 +10,7 @@ using AM.Core.Constants;
 using AM.Core.Exceptions;
 using AM.Infrastructure;
 using AM.WorkStation.Demo.Mechanisms;
+using AM.WorkStation.Demo.Recipe;
 using Microsoft.Extensions.Logging;
 
 namespace AM.WorkStation.Demo.Stations;
@@ -64,9 +65,9 @@ public sealed class DemoStation : StationBase<DemoStation>
     protected override async Task RunCycleCoreAsync(CancellationToken ct)
     {
         // Lấy recipe hiện tại — nếu chưa load thì không thể chạy
-        var recipe = _recipeService.ActiveRecipe
+        var recipe = _recipeService.ActiveRecipe as PickPlaceRecipe
             ?? throw new AlarmException(AlarmCodes.ProdRecipeInvalid, Name,
-                "Không có recipe nào được load. Vui lòng load recipe trước khi Start.");
+                "Chưa load recipe Pick&Place hợp lệ. Vui lòng load recipe trước khi Start.");
 
         Logger.LogDebug("[{Station}] Cycle: Recipe={Recipe}", Name, recipe.Name);
 

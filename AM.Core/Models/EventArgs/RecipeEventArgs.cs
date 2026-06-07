@@ -11,10 +11,10 @@ namespace AM.Core.Models.EventArgs;
 /// </summary>
 public sealed class RecipeEventArgs : System.EventArgs
 {
-    /// <summary>Recipe vừa được load/switch.</summary>
-    public Recipe Recipe { get; }
+    /// <summary>Recipe vừa được load/switch (đa hình theo loại máy).</summary>
+    public RecipeBase Recipe { get; }
 
-    public RecipeEventArgs(Recipe recipe)
+    public RecipeEventArgs(RecipeBase recipe)
     {
         Recipe = recipe ?? throw new ArgumentNullException(nameof(recipe));
     }
