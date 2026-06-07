@@ -3,6 +3,7 @@
   "Nav.Dashboard": "仪表板",
   "Nav.Alarms": "报警",
   "Nav.IoMonitor": "I/O 监视",
+  "Nav.Identity": "账户",
   "Common.Language": "语言",
   "Status.Ready": "就绪"
 }

@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #25 — Nền backend: cycle-time đo thực + alarm catalog đa ngữ
-**Commit:** `d9a6f8e`  ·  (S24: IUserService login/RBAC + lưu lựa chọn ngôn ngữ)
+**Session:** #26 — UI module Identity (login/logout/RBAC) — bắt đầu mục B
+**Commit:** `(điền sau push)`  ·  (S25: cycle-time đo thực + alarm catalog đa ngữ)
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **20 projects** (CPM), 0 warning, **137 tests pass** · README + CI/CD + arch-test + i18n + RBAC + alarm catalog |
+| Solution structure | ✅ Hoàn thành | **21 projects** (CPM), 0 warning, **137 tests pass** · README + CI/CD + arch-test + i18n + RBAC + alarm catalog |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -34,13 +34,14 @@
 | AM.Modules.Dashboard | ✅ Hoàn thành | **Đã wire vào Shell** (side-nav, resolve từ DI) |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
+| AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + RegisterRealHardware + **HardwareFactory** (vision/scanner/safety/io-tagmap) + io.map.json |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
 | `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
 | AM.Infrastructure.Tests | ✅ Hoàn thành | **46 tests**: ISA-88 transitions + busy-guard + StationBase + end-to-end + i18n + **alarm catalog (5)** |
-| AM.Modules.* (còn lại) | ❌ Chưa có | Motion, Parameter, Vision, Identity, Logging, Diagnostics |
+| AM.Modules.* (còn lại) | ❌ Chưa có | Motion, Parameter, Vision, Logging, Diagnostics |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---

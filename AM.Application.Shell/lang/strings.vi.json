@@ -3,6 +3,7 @@
   "Nav.Dashboard": "Bảng điều khiển",
   "Nav.Alarms": "Cảnh báo",
   "Nav.IoMonitor": "Giám sát I/O",
+  "Nav.Identity": "Tài khoản",
   "Common.Language": "Ngôn ngữ",
   "Status.Ready": "Sẵn sàng"
 }

@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Architecture.Tests", "AM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Modules.IoMonitor", "AM.Modules.IoMonitor\AM.Modules.IoMonitor.csproj", "{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Modules.Identity", "AM.Modules.Identity\AM.Modules.Identity.csproj", "{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -293,6 +295,18 @@ Global
 		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|x64.Build.0 = Release|Any CPU
 		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|x86.ActiveCfg = Release|Any CPU
 		{0BBE0C85-BD9D-46C8-8AC7-C40EA217ECD1}.Release|x86.Build.0 = Release|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Debug|x64.Build.0 = Debug|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Debug|x86.Build.0 = Debug|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Release|x64.ActiveCfg = Release|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Release|x64.Build.0 = Release|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Release|x86.ActiveCfg = Release|Any CPU
+		{BC4C77C5-3B35-4A66-8DD3-DF2AEA70793D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -32,6 +32,7 @@ using AM.Hardware.Vision;
 using AM.Infrastructure.Localization;
 using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
+using AM.Modules.Identity;
 using AM.Modules.IoMonitor;
 using AM.Services;
 using AM.WorkStation.Demo.Controllers;
@@ -107,6 +108,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<AlarmListViewModel>();
         services.AddSingleton<IoMonitorViewModel>();
+        services.AddSingleton<IdentityViewModel>();
         return services;
     }
 

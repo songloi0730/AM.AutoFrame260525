@@ -4,6 +4,35 @@
 
 ---
 
+## [Session 26] 2026-06-07 — UI module Identity (login/logout/RBAC) — mục B.1
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Bắt đầu mục B (UI modules) — làm lại ĐÚNG API. Module đầu: Identity dùng `IUserService` (đã có từ S24).
+
+### ✅ AM.Modules.Identity (project mới — project thứ 21)
+- `IdentityViewModel` (CommunityToolkit.Mvvm): `Username`, `IsLoggedIn`, `CurrentUser`, `CurrentLevel`, `StatusMessage`, `IsBusy`.
+  `LoginCommand(password)` + `LogoutCommand` (CanExecute gate), lắng nghe `IUserService.UserChanged` →
+  cập nhật trạng thái qua SynchronizationContext (R-UI: không import System.Windows trong VM). IDisposable hủy đăng ký.
+- **Bảo mật:** mật khẩu KHÔNG lưu thành property — `PasswordBox.Password` đọc ở code-behind, truyền vào LoginCommand.
+- `IdentityView.xaml` — form login + panel phiên (toggle bằng `BoolToVisibilityConverter` hỗ trợ `Invert`),
+  Enter để đăng nhập, gợi ý user mặc định. Dùng DynamicResource theme (ISA-101).
+- `[ModuleNavigation("Nav.Identity", icon: "user", order: 90)]` → sidebar tự sinh (auto-discovery), đặt cuối menu.
+
+### ✅ Wiring
+- Shell: thêm ProjectReference + `AddUiViewModels` đăng ký `IdentityViewModel` + thêm project vào .sln.
+- i18n: thêm key `Nav.Identity` (vi: "Tài khoản", en: "Account", zh: "账户").
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error** (21 projects).
+- WPF không chạy được trong môi trường này → cần `dotnet run --project AM.Application.Shell` để kiểm tra trực quan
+  (login operator/operator123 → thấy cấp quyền + nút Đăng xuất; đổi ngôn ngữ → menu "Tài khoản/Account/账户").
+
+> Chưa làm: gate các thao tác theo `HasPermission` ở từng module; wire `IAlarmCatalogService` vào Alarm UI.
+> Tiếp theo (mục B.2): Motion module — AxisControlView + Point Table.
+
+---
+
 ## [Session 25] 2026-06-07 — Nền backend: cycle-time đo thực + alarm catalog đa ngữ
 
 **Commit:** `d9a6f8e`
