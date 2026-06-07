@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:AM.Modules.Identity.Converters"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -17,7 +18,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Tài khoản" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
+        <TextBlock Grid.Row="0" Text="{Binding [Nav.Identity], Source={x:Static loc:Loc.Strings}}" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
                    Foreground="{DynamicResource Text.HeadingBrush}"/>
 
         <Border Grid.Row="1" Width="360" VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -28,46 +29,46 @@
             <StackPanel Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis},
                                      ConverterParameter=Invert}"
                         x:Name="LoginPanel">
-                <TextBlock Text="Đăng nhập" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,16"
+                <TextBlock Text="{Binding [Id.Login], Source={x:Static loc:Loc.Strings}}" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,16"
                            Foreground="{DynamicResource Text.PrimaryBrush}"/>
 
-                <TextBlock Text="Tên đăng nhập" Margin="0,0,0,4"
+                <TextBlock Text="{Binding [Id.Username], Source={x:Static loc:Loc.Strings}}" Margin="0,0,0,4"
                            Foreground="{DynamicResource Text.SecondaryBrush}"/>
                 <TextBox Height="32" Margin="0,0,0,12" VerticalContentAlignment="Center" Padding="6,0"
                          Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <TextBlock Text="Mật khẩu" Margin="0,0,0,4"
+                <TextBlock Text="{Binding [Id.Password], Source={x:Static loc:Loc.Strings}}" Margin="0,0,0,4"
                            Foreground="{DynamicResource Text.SecondaryBrush}"/>
                 <PasswordBox x:Name="PasswordField" Height="32" Margin="0,0,0,16"
                              VerticalContentAlignment="Center" Padding="6,0"
                              KeyDown="OnPasswordKeyDown"/>
 
-                <Button Content="Đăng nhập" Height="36" Click="OnLoginClick"
+                <Button Content="{Binding [Id.Login], Source={x:Static loc:Loc.Strings}}" Height="36" Click="OnLoginClick"
                         Background="{DynamicResource Button.PrimaryBrush}"
-                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
 
                 <TextBlock Text="{Binding StatusMessage}" Margin="0,12,0,0" TextWrapping="Wrap"
                            Foreground="{DynamicResource Status.AlarmBrush}"/>
 
                 <TextBlock Margin="0,16,0,0" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource Text.SecondaryBrush}"
-                           Text="Mặc định: operator/operator123 · engineer/engineer123 · admin/admin123 (đổi trước khi sản xuất)"/>
+                           Text="{Binding [Id.Hint], Source={x:Static loc:Loc.Strings}}"/>
             </StackPanel>
 
             <!-- ── Thông tin phiên (khi ĐÃ đăng nhập) ───────────────────────── -->
             <StackPanel Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}">
-                <TextBlock Text="Đã đăng nhập" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,16"
+                <TextBlock Text="{Binding [Id.LoggedIn], Source={x:Static loc:Loc.Strings}}" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,16"
                            Foreground="{DynamicResource Text.PrimaryBrush}"/>
 
-                <TextBlock Text="Người dùng" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <TextBlock Text="{Binding [Id.User], Source={x:Static loc:Loc.Strings}}" Foreground="{DynamicResource Text.SecondaryBrush}"/>
                 <TextBlock Text="{Binding CurrentUser}" FontSize="16" Margin="0,2,0,12"
                            Foreground="{DynamicResource Text.PrimaryBrush}"/>
 
-                <TextBlock Text="Cấp quyền" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <TextBlock Text="{Binding [Id.Level], Source={x:Static loc:Loc.Strings}}" Foreground="{DynamicResource Text.SecondaryBrush}"/>
                 <TextBlock Text="{Binding CurrentLevel}" FontSize="16" Margin="0,2,0,20"
                            Foreground="{DynamicResource Text.PrimaryBrush}"/>
 
-                <Button Content="Đăng xuất" Height="36" Command="{Binding LogoutCommand}"
+                <Button Content="{Binding [Id.Logout], Source={x:Static loc:Loc.Strings}}" Height="36" Command="{Binding LogoutCommand}"
                         Background="{DynamicResource Panel.BackgroundAltBrush}"
                         Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
             </StackPanel>

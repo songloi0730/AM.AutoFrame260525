@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\AM.UI.Localization\AM.UI.Localization.csproj" />
   </ItemGroup>
 
 </Project>

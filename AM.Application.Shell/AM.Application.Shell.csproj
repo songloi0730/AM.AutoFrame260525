@@ -41,6 +41,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\AM.UI.Localization\AM.UI.Localization.csproj" />
     <ProjectReference Include="..\AM.Infrastructure\AM.Infrastructure.csproj" />
     <ProjectReference Include="..\AM.Data\AM.Data.csproj" />
     <ProjectReference Include="..\AM.Services\AM.Services.csproj" />

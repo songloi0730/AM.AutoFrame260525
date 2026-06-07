@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -23,24 +24,24 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Recipe / Tham số" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
+        <TextBlock Grid.Row="0" Text="{Binding [Param.Title], Source={x:Static loc:Loc.Strings}}" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
                    Foreground="{DynamicResource Text.HeadingBrush}"/>
 
         <!-- Thanh chọn recipe + lệnh -->
         <DockPanel Grid.Row="1" Margin="0,0,0,12">
-            <TextBlock Text="Recipe" VerticalAlignment="Center" Margin="0,0,8,0"
+            <TextBlock Text="{Binding [Param.Recipe], Source={x:Static loc:Loc.Strings}}" VerticalAlignment="Center" Margin="0,0,8,0"
                        Foreground="{DynamicResource Text.SecondaryBrush}"/>
             <ComboBox Width="200" Height="30" VerticalContentAlignment="Center"
                       ItemsSource="{Binding RecipeNames}"
                       SelectedItem="{Binding SelectedRecipeName, Mode=TwoWay}"/>
-            <Button Content="Nạp" Width="70" Height="30" Margin="8,0,0,0" Command="{Binding LoadCommand}"/>
-            <Button Content="Khôi phục" Width="90" Height="30" Margin="8,0,0,0" Command="{Binding ReloadCommand}"/>
+            <Button Content="{Binding [Param.Load], Source={x:Static loc:Loc.Strings}}" Width="70" Height="30" Margin="8,0,0,0" Command="{Binding LoadCommand}"/>
+            <Button Content="{Binding [Param.Reload], Source={x:Static loc:Loc.Strings}}" Width="90" Height="30" Margin="8,0,0,0" Command="{Binding ReloadCommand}"/>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Kiểm tra" Width="90" Height="30" Command="{Binding ValidateCommand}"/>
-                <Button Content="Lưu" Width="90" Height="30" Margin="8,0,0,0" Command="{Binding SaveCommand}"
+                <Button Content="{Binding [Param.Validate], Source={x:Static loc:Loc.Strings}}" Width="90" Height="30" Command="{Binding ValidateCommand}"/>
+                <Button Content="{Binding [Param.Save], Source={x:Static loc:Loc.Strings}}" Width="90" Height="30" Margin="8,0,0,0" Command="{Binding SaveCommand}"
                         Background="{DynamicResource Button.PrimaryBrush}"
-                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
             </StackPanel>
         </DockPanel>
 

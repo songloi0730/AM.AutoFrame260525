@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #28 — UI module Parameter/Recipe (attribute-driven [ParamView]) — mục B.3
-**Commit:** `f428427`  ·  (S27: UI Motion jog/home/move + Point Table)
+**Session:** #29 — Light theme + cửa sổ cố định + i18n toàn module (AM.UI.Localization)
+**Commit:** `(điền sau push)`  ·  (S28: Parameter/Recipe attribute-driven)
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **23 projects** (CPM), 0 warning, **143 tests pass** · README + CI/CD + arch-test + i18n + RBAC + alarm catalog + point table + recipe editor |
+| Solution structure | ✅ Hoàn thành | **24 projects** (CPM), 0 warning, **143 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |

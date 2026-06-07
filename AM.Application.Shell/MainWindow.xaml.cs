@@ -42,6 +42,8 @@ public partial class MainWindow : Window
         // i18n: nav bind tới proxy (cập nhật live), ComboBox đổi ngôn ngữ runtime
         NavPanel.DataContext = _services.GetRequiredService<LocalizedStrings>();
         _localization = _services.GetRequiredService<ILocalizationService>();
+        // Gắn proxy i18n dùng chung để mọi module bind {x:Static loc:Loc.Strings}
+        AM.UI.Localization.Loc.Strings.Attach(_localization);
         LanguageCombo.ItemsSource = _localization.AvailableCultures;
         LanguageCombo.SelectedItem = _localization.CurrentCulture;
 

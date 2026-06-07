@@ -4,6 +4,38 @@
 
 ---
 
+## [Session 29] 2026-06-07 — Light theme + cửa sổ kích thước cố định + i18n toàn module
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Phản hồi sau khi chạy thử: (1) nhiều chuỗi không đổi theo ngôn ngữ, (2) đổi sang light theme, (3) khởi động kích thước cố định.
+
+### ✅ 1. i18n toàn module (sửa "đổi ngôn ngữ không đổi theo")
+- **Vấn đề:** proxy i18n `LocalizedStrings` là `internal` trong Shell → module không bind được; chuỗi trong View hardcode.
+- **Giải pháp:** project mới **`AM.UI.Localization`** với proxy dùng chung `Loc.Strings` (INotifyPropertyChanged, indexer);
+  Shell gọi `Loc.Strings.Attach(localization)` lúc khởi động. Mọi module bind
+  `{Binding [Key], Source={x:Static loc:Loc.Strings}}` → đổi ngôn ngữ cập nhật live.
+- Localize **6 module View** (Dashboard/Alarm/IoMonitor/Motion/Parameter/Identity): tiêu đề, nút, header cột DataGrid, nhãn.
+- **DashboardViewModel:** nhãn machine-state lấy từ catalog key `State.{enum}`, refresh khi đổi ngôn ngữ (subscribe `Loc.Strings`).
+- Bổ sung ~55 key vào `strings.{vi,en,zh}.json` (Col.*, State.*, Dash.*, Alarm.*, Io.*, Motion.*, Param.*, Id.*).
+
+### ✅ 2. Light theme (mặc định)
+- `App.xaml`: đổi palette nền/panel/text/input/border/header sang tông sáng (giữ nguyên màu semantic status ISA-101).
+- Sửa foreground các nút màu (Initialize/Start/Stop/Save/...) sang `Status.ForegroundBrush` (trắng) để đọc rõ trên nền màu.
+
+### ✅ 3. Cửa sổ kích thước cố định
+- `MainWindow.xaml`: `WindowState=Normal`, `WindowStartupLocation=CenterScreen`, `ResizeMode=CanMinimize`,
+  `SizeToContent=Manual`, 1180×720 → khởi động khung cố định, căn giữa, không full màn hình.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Warning, 0 Error** (24 projects). `dotnet test` → **143 passed**.
+- Kiểm tra trực quan: `dotnet run --project AM.Application.Shell` → light theme, cửa sổ cố định, đổi ngôn ngữ vi/en/zh
+  cập nhật toàn bộ tiêu đề/nút/cột.
+
+> Lưu ý: status-message runtime trong VM (Motion/Parameter/Identity) vẫn tiếng Việt — có thể i18n sau nếu cần.
+
+---
+
 ## [Session 28] 2026-06-07 — UI module Parameter/Recipe (attribute-driven form) — mục B.3
 
 **Commit:** `f428427`

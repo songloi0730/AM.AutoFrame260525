@@ -10,6 +10,7 @@ using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Enums;
 using AM.Core.Models;
 using AM.Core.Models.EventArgs;
+using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     // ─── Observable properties (CommunityToolkit source generators) ──────────────
 
     [ObservableProperty] private MachineState _machineState = MachineState.Uninitialized;
-    [ObservableProperty] private string _stateDisplayName   = "Chưa khởi tạo";
+    [ObservableProperty] private string _stateDisplayName   = string.Empty;
     [ObservableProperty] private int _cycleCount;
     [ObservableProperty] private bool _isBusy;
 
@@ -69,6 +70,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _masterController.CycleCompleted += OnCycleCompleted;
         _alarmService.AlarmRaised       += OnAlarmRaised;
         _alarmService.AlarmCleared      += OnAlarmCleared;
+        Loc.Strings.PropertyChanged     += OnLanguageChanged; // refresh nhãn state khi đổi ngôn ngữ
 
         // Load active alarms hiện tại
         foreach (var alarm in _alarmService.ActiveAlarms)
@@ -197,18 +199,11 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             _uiContext.Post(_ => action(), null);
     }
 
-    private static string GetStateDisplayName(MachineState state) => state switch
-    {
-        MachineState.Uninitialized => "Chưa khởi tạo",
-        MachineState.Initializing  => "Đang khởi tạo...",
-        MachineState.Idle          => "Sẵn sàng",
-        MachineState.Running       => "Đang chạy",
-        MachineState.Paused        => "Tạm dừng",
-        MachineState.InitAlarm     => "LỖI KHỞI TẠO",
-        MachineState.RunAlarm      => "LỖI VẬN HÀNH",
-        MachineState.Resetting     => "Đang reset...",
-        _ => state.ToString()
-    };
+    // Nhãn state lấy từ catalog i18n theo key "State.{enum}" → đổi ngôn ngữ tự cập nhật.
+    private static string GetStateDisplayName(MachineState state) => Loc.Strings[$"State.{state}"];
+
+    private void OnLanguageChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        => RunOnUIThread(() => StateDisplayName = GetStateDisplayName(MachineState));
 
     // ─── IDisposable ──────────────────────────────────────────────────────────────
 
@@ -220,5 +215,6 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _masterController.CycleCompleted -= OnCycleCompleted;
         _alarmService.AlarmRaised        -= OnAlarmRaised;
         _alarmService.AlarmCleared       -= OnAlarmCleared;
+        Loc.Strings.PropertyChanged      -= OnLanguageChanged;
     }
 }

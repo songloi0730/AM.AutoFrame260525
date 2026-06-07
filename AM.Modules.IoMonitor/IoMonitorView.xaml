@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:AM.Modules.IoMonitor.Converters"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -17,7 +18,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="I/O Monitor" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
+        <TextBlock Grid.Row="0" Text="{Binding [Nav.IoMonitor], Source={x:Static loc:Loc.Strings}}"
+                   FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
                    Foreground="{DynamicResource Text.HeadingBrush}"/>
 
         <Grid Grid.Row="1">
@@ -30,7 +32,8 @@
             <Border Grid.Column="0" Margin="0,0,8,0" CornerRadius="6" Padding="12"
                     Background="{DynamicResource Panel.BackgroundBrush}">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Digital Inputs" FontWeight="SemiBold" Margin="0,0,0,8"
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding [Io.DigitalInputs], Source={x:Static loc:Loc.Strings}}"
+                               FontWeight="SemiBold" Margin="0,0,0,8"
                                Foreground="{DynamicResource Text.SecondaryBrush}"/>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding DigitalInputs}">
@@ -59,7 +62,8 @@
             <Border Grid.Column="1" Margin="8,0,0,0" CornerRadius="6" Padding="12"
                     Background="{DynamicResource Panel.BackgroundBrush}">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Digital Outputs (click để toggle)" FontWeight="SemiBold"
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding [Io.DigitalOutputs], Source={x:Static loc:Loc.Strings}}"
+                               FontWeight="SemiBold"
                                Margin="0,0,0,8" Foreground="{DynamicResource Text.SecondaryBrush}"/>
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding DigitalOutputs}">

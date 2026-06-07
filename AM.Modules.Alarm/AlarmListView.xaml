@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:AM.Modules.Alarm.Converters"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -24,20 +25,20 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="⚠ Alarm đang active"
+                <TextBlock Text="{Binding [Dash.ActiveAlarms], Source={x:Static loc:Loc.Strings}}"
                            FontSize="18" FontWeight="Bold"
                            Foreground="{DynamicResource Text.HeadingBrush}"/>
                 <Border CornerRadius="10" Padding="8,2" Margin="12,0,0,0"
                         Background="{DynamicResource Status.AlarmBrush}">
                     <TextBlock Text="{Binding ActiveCount, Mode=OneWay}"
-                               Foreground="{DynamicResource Text.PrimaryBrush}" FontWeight="Bold"/>
+                               Foreground="{DynamicResource Status.ForegroundBrush}" FontWeight="Bold"/>
                 </Border>
             </StackPanel>
-            <Button Grid.Column="1" Content="🗑 Clear All"
+            <Button Grid.Column="1" Content="{Binding [Alarm.ClearAll], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding ClearAllCommand}"
                     Height="36" Padding="14,0" FontWeight="SemiBold"
                     Background="{DynamicResource Status.InterlockBrush}"
-                    Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                    Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
         </Grid>
 
         <!-- Alarm DataGrid -->
@@ -66,7 +67,7 @@
 
             <DataGrid.Columns>
                 <!-- Level indicator -->
-                <DataGridTemplateColumn Header="Mức" Width="60">
+                <DataGridTemplateColumn Header="{Binding [Col.Level], Source={x:Static loc:Loc.Strings}}" Width="60">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Ellipse Width="14" Height="14" HorizontalAlignment="Center"
@@ -76,29 +77,29 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Code" Binding="{Binding AlarmCode}" Width="80"/>
-                <DataGridTextColumn Header="Station" Binding="{Binding Station}" Width="130"/>
-                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
-                <DataGridTextColumn Header="Thời gian" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}" Width="90"/>
-                <DataGridCheckBoxColumn Header="Ack" Binding="{Binding IsAcknowledged}" Width="50"/>
+                <DataGridTextColumn Header="{Binding [Col.Code], Source={x:Static loc:Loc.Strings}}" Binding="{Binding AlarmCode}" Width="80"/>
+                <DataGridTextColumn Header="{Binding [Col.Station], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Station}" Width="130"/>
+                <DataGridTextColumn Header="{Binding [Col.Message], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Message}" Width="*"/>
+                <DataGridTextColumn Header="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}" Width="90"/>
+                <DataGridCheckBoxColumn Header="{Binding [Col.Ack], Source={x:Static loc:Loc.Strings}}" Binding="{Binding IsAcknowledged}" Width="50"/>
 
                 <!-- Action buttons -->
                 <DataGridTemplateColumn Header="" Width="170">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="4,2">
-                                <Button Content="Ack" Width="64" Margin="0,0,4,0"
+                                <Button Content="{Binding [Alarm.Ack], Source={x:Static loc:Loc.Strings}}" Width="64" Margin="0,0,4,0"
                                         Command="{Binding DataContext.AcknowledgeCommand,
                                                   RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Background="{DynamicResource Status.ManualBrush}"
-                                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
-                                <Button Content="Clear" Width="64"
+                                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                                <Button Content="{Binding [Alarm.Clear], Source={x:Static loc:Loc.Strings}}" Width="64"
                                         Command="{Binding DataContext.ClearCommand,
                                                   RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Background="{DynamicResource Status.NormalBrush}"
-                                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

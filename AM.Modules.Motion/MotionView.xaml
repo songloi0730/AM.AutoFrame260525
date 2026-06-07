@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:AM.Modules.Motion.Converters"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -21,21 +22,21 @@
 
         <!-- Header + thanh điều khiển chung -->
         <DockPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="Motion" FontSize="18" FontWeight="Bold"
+            <TextBlock Text="{Binding [Nav.Motion], Source={x:Static loc:Loc.Strings}}" FontSize="18" FontWeight="Bold"
                        Foreground="{DynamicResource Text.HeadingBrush}" VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <TextBlock Text="Vận tốc (mm/s)" VerticalAlignment="Center" Margin="0,0,6,0"
+                <TextBlock Text="{Binding [Motion.Velocity], Source={x:Static loc:Loc.Strings}}" VerticalAlignment="Center" Margin="0,0,6,0"
                            Foreground="{DynamicResource Text.SecondaryBrush}"/>
                 <TextBox Width="64" Height="28" VerticalContentAlignment="Center"
                          Text="{Binding Velocity, UpdateSourceTrigger=PropertyChanged}"/>
-                <Button Content="Home All" Width="90" Height="28" Margin="12,0,0,0"
+                <Button Content="{Binding [Motion.HomeAll], Source={x:Static loc:Loc.Strings}}" Width="90" Height="28" Margin="12,0,0,0"
                         Command="{Binding HomeAllCommand}"
                         Background="{DynamicResource Button.PrimaryBrush}"
-                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
-                <Button Content="Stop All" Width="90" Height="28" Margin="8,0,0,0"
+                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                <Button Content="{Binding [Motion.StopAll], Source={x:Static loc:Loc.Strings}}" Width="90" Height="28" Margin="8,0,0,0"
                         Command="{Binding StopAllCommand}"
                         Background="{DynamicResource Button.DangerBrush}"
-                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
             </StackPanel>
         </DockPanel>
 
@@ -69,7 +70,7 @@
                                         </Style>
                                     </Ellipse.Style>
                                 </Ellipse>
-                                <TextBlock Text="Homed" Width="48" VerticalAlignment="Center" FontSize="11"
+                                <TextBlock Text="{Binding [Motion.Homed], Source={x:Static loc:Loc.Strings}}" Width="56" VerticalAlignment="Center" FontSize="11"
                                            Foreground="{DynamicResource Text.SecondaryBrush}"/>
 
                                 <!-- Moving indicator -->
@@ -85,10 +86,10 @@
                                         </Style>
                                     </Ellipse.Style>
                                 </Ellipse>
-                                <TextBlock Text="Moving" Width="52" VerticalAlignment="Center" FontSize="11"
+                                <TextBlock Text="{Binding [Motion.Moving], Source={x:Static loc:Loc.Strings}}" Width="56" VerticalAlignment="Center" FontSize="11"
                                            Foreground="{DynamicResource Text.SecondaryBrush}"/>
 
-                                <Button Content="Home" Width="60" Height="28" Margin="8,0,0,0"
+                                <Button Content="{Binding [Motion.Home], Source={x:Static loc:Loc.Strings}}" Width="60" Height="28" Margin="8,0,0,0"
                                         Command="{Binding DataContext.HomeAxisCommand,
                                                   RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"/>
@@ -108,17 +109,17 @@
                                 <!-- Move abs -->
                                 <TextBox Width="72" Height="28" Margin="12,0,4,0" VerticalContentAlignment="Center"
                                          Text="{Binding MoveTarget, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Content="Move" Width="60" Height="28"
+                                <Button Content="{Binding [Motion.Move], Source={x:Static loc:Loc.Strings}}" Width="60" Height="28"
                                         Command="{Binding DataContext.MoveAbsCommand,
                                                   RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"/>
 
-                                <Button Content="Stop" Width="56" Height="28" Margin="8,0,0,0"
+                                <Button Content="{Binding [Motion.Stop], Source={x:Static loc:Loc.Strings}}" Width="56" Height="28" Margin="8,0,0,0"
                                         Command="{Binding DataContext.StopAxisCommand,
                                                   RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"
                                         Background="{DynamicResource Button.DangerBrush}"
-                                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
@@ -131,16 +132,16 @@
                 Background="{DynamicResource Panel.BackgroundBrush}">
             <DockPanel>
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <TextBlock Text="Point Table" FontWeight="SemiBold" VerticalAlignment="Center"
+                    <TextBlock Text="{Binding [Motion.PointTable], Source={x:Static loc:Loc.Strings}}" FontWeight="SemiBold" VerticalAlignment="Center"
                                Foreground="{DynamicResource Text.PrimaryBrush}"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBox Width="140" Height="28" VerticalContentAlignment="Center"
                                  Text="{Binding NewPointName, UpdateSourceTrigger=PropertyChanged}"/>
-                        <Button Content="Teach" Width="70" Height="28" Margin="8,0,0,0"
+                        <Button Content="{Binding [Motion.Teach], Source={x:Static loc:Loc.Strings}}" Width="70" Height="28" Margin="8,0,0,0"
                                 Command="{Binding TeachCommand}"
                                 Background="{DynamicResource Button.PrimaryBrush}"
-                                Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
-                        <Button Content="Lưu" Width="70" Height="28" Margin="8,0,0,0"
+                                Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                        <Button Content="{Binding [Motion.Save], Source={x:Static loc:Loc.Strings}}" Width="70" Height="28" Margin="8,0,0,0"
                                 Command="{Binding SavePointsCommand}"/>
                     </StackPanel>
                 </DockPanel>
@@ -157,13 +158,13 @@
                                         <TextBlock Text="{Binding Positions, Converter={StaticResource PosText}}"
                                                    Width="240" VerticalAlignment="Center"
                                                    Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                        <Button Content="Go" Width="56" Height="26" Margin="8,0,0,0"
+                                        <Button Content="{Binding [Motion.Go], Source={x:Static loc:Loc.Strings}}" Width="56" Height="26" Margin="8,0,0,0"
                                                 Command="{Binding DataContext.GoToPointCommand,
                                                           RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding}"
                                                 Background="{DynamicResource Button.PrimaryBrush}"
-                                                Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
-                                        <Button Content="Xoá" Width="56" Height="26" Margin="8,0,0,0"
+                                                Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                                        <Button Content="{Binding [Motion.Delete], Source={x:Static loc:Loc.Strings}}" Width="56" Height="26" Margin="8,0,0,0"
                                                 Command="{Binding DataContext.DeletePointCommand,
                                                           RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding}"/>

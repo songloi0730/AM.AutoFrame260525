@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:AM.Modules.Dashboard.Converters"
              xmlns:enums="clr-namespace:AM.Core.Enums;assembly=AM.Core"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -43,15 +44,18 @@
                                FontSize="20" FontWeight="Bold"
                                Foreground="{DynamicResource Text.HeadingBrush}"/>
                     <TextBlock Foreground="{DynamicResource Text.SecondaryBrush}" FontSize="12">
-                        <Run Text="Cycle: "/>
+                        <Run Text="{Binding [Dash.Cycle], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                        <Run Text=": "/>
                         <Run Text="{Binding CycleCount, Mode=OneWay}"/>
-                        <Run Text="  |  Alarms: "/>
+                        <Run Text="  |  "/>
+                        <Run Text="{Binding [Dash.Alarms], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                        <Run Text=": "/>
                         <Run Text="{Binding ActiveAlarms.Count, Mode=OneWay}"/>
                     </TextBlock>
                 </StackPanel>
 
                 <!-- Busy Indicator -->
-                <TextBlock Grid.Column="2" Text="⏳ Đang xử lý..."
+                <TextBlock Grid.Column="2" Text="{Binding [Dash.Busy], Source={x:Static loc:Loc.Strings}}"
                            Foreground="{DynamicResource Status.WarningBrush}" FontSize="13"
                            VerticalAlignment="Center"
                            Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
@@ -60,53 +64,53 @@
 
         <!-- ═══ Row 1: Control Buttons (ISA-101: 48px min, màu rõ ràng) ════════ -->
         <UniformGrid Grid.Row="1" Rows="1" Margin="0,0,0,4">
-            <Button Content="🔌 Khởi tạo"
+            <Button Content="{Binding [Dash.Btn.Init], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding InitializeCommand}"
                     Height="48" FontSize="14" FontWeight="SemiBold" Margin="0,0,4,0"
                     Background="{DynamicResource Status.ManualBrush}"
-                    Foreground="{DynamicResource Text.PrimaryBrush}"
+                    Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
-            <Button Content="▶ Chạy"
+            <Button Content="{Binding [Dash.Btn.Start], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding StartCommand}"
                     Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0"
                     Background="{DynamicResource Status.NormalBrush}"
-                    Foreground="{DynamicResource Text.PrimaryBrush}"
+                    Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
-            <Button Content="⏸ Tạm dừng"
+            <Button Content="{Binding [Dash.Btn.Pause], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding PauseCommand}"
                     Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0"
                     Background="{DynamicResource Status.WarningBrush}"
-                    Foreground="{DynamicResource Text.PrimaryBrush}"
+                    Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
-            <Button Content="▶▶ Tiếp tục"
+            <Button Content="{Binding [Dash.Btn.Resume], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding ResumeCommand}"
                     Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0"
                     Background="{DynamicResource Status.NormalBrush}"
-                    Foreground="{DynamicResource Text.PrimaryBrush}"
+                    Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
             <!-- Nút nguy hiểm — màu đỏ, cách 48px+ với nút thường (ISA-101 R-UI) -->
-            <Button Content="⏹ Dừng"
+            <Button Content="{Binding [Dash.Btn.Stop], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding StopCommand}"
                     Height="48" FontSize="14" FontWeight="SemiBold" Margin="48,0,4,0"
                     Background="{DynamicResource Status.AlarmBrush}"
-                    Foreground="{DynamicResource Text.PrimaryBrush}"
+                    Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
-            <Button Content="🔄 Reset"
+            <Button Content="{Binding [Dash.Btn.Reset], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding ResetCommand}"
                     Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,0"
                     Background="{DynamicResource Status.InterlockBrush}"
-                    Foreground="{DynamicResource Text.PrimaryBrush}"
+                    Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
         </UniformGrid>
 
         <!-- ═══ Row 3: Alarm Section Header ══════════════════════════════════════ -->
         <TextBlock Grid.Row="3"
-                   Text="⚠ Alarm đang active"
+                   Text="{Binding [Dash.ActiveAlarms], Source={x:Static loc:Loc.Strings}}"
                    FontSize="14" FontWeight="Bold"
                    Foreground="{DynamicResource Text.SecondaryBrush}"
                    Margin="0,0,0,8"/>
@@ -137,17 +141,17 @@
             </DataGrid.ColumnHeaderStyle>
 
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Code" Binding="{Binding AlarmCode}"
+                <DataGridTextColumn Header="{Binding [Col.Code], Source={x:Static loc:Loc.Strings}}" Binding="{Binding AlarmCode}"
                                     Width="80" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="Level" Binding="{Binding Level}"
+                <DataGridTextColumn Header="{Binding [Col.Level], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Level}"
                                     Width="90" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="Station" Binding="{Binding Station}"
+                <DataGridTextColumn Header="{Binding [Col.Station], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Station}"
                                     Width="120" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="Message" Binding="{Binding Message}"
+                <DataGridTextColumn Header="{Binding [Col.Message], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Message}"
                                     Width="*" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="Thời gian" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}"
+                <DataGridTextColumn Header="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}"
                                     Width="80" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridCheckBoxColumn Header="Ack" Binding="{Binding IsAcknowledged}"
+                <DataGridCheckBoxColumn Header="{Binding [Col.Ack], Source={x:Static loc:Loc.Strings}}" Binding="{Binding IsAcknowledged}"
                                         Width="50"/>
             </DataGrid.Columns>
         </DataGrid>

@@ -4,7 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="AutoMachine Framework" Height="600" Width="1024"
+        Title="AutoMachine Framework"
+        Height="720" Width="1180"
+        WindowState="Normal" WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize" SizeToContent="Manual"
         Background="{DynamicResource Screen.BackgroundBrush}">
 
     <Grid>
@@ -46,7 +49,7 @@
         <Border Grid.Row="2" Background="{DynamicResource Status.ManualBrush}">
             <TextBlock x:Name="StatusText"
                        Text="{StaticResource Shell.StatusReady}"
-                       Foreground="{DynamicResource Text.PrimaryBrush}" FontSize="11"
+                       Foreground="{DynamicResource Status.ForegroundBrush}" FontSize="11"
                        VerticalAlignment="Center" Margin="8,0"/>
         </Border>
     </Grid>
