@@ -26,7 +26,7 @@
 
 ## [Session 34] 2026-06-07 — Nền WorkStation: chuẩn hoá StepSequence + AxisMap/MachineConfig (concrete IAxis)
 
-**Commit:** `(điền sau push)`
+**Commit:** `d6ad153`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Làm 2 nền tảng bắt buộc trước khi dựng máy thật (mục 1 + 2 trong phân tích gap).
 

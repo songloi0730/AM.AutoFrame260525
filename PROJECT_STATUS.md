@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #34 — Nền WorkStation: StepSequence + AxisMap/MachineConfig (concrete IAxis đầu tiên)
-**Commit:** `(điền sau push)`  ·  (S33: mở maximized + chữ to + icon Segoe MDL2)
+**Commit:** `d6ad153`  ·  (S33: mở maximized + chữ to + icon Segoe MDL2)
 
 ---
 
