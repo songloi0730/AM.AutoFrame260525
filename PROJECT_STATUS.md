@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #33 — Mở maximized + chữ to chuẩn công nghiệp + icon Segoe MDL2
-**Commit:** `(điền sau push)`  ·  (S32: fix cửa sổ tràn màn scale 125%)
+**Commit:** `84bce47`  ·  (S32: fix cửa sổ tràn màn scale 125%)
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 33] 2026-06-07 — Mở maximized + chữ to chuẩn công nghiệp + icon Segoe MDL2
 
-**Commit:** `(điền sau push)`
+**Commit:** `84bce47`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User: muốn mở full màn ngay; maximize bị viền đen phải/dưới; chữ hơi bé; icon emoji chưa hợp công nghiệp.
 
