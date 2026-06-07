@@ -35,7 +35,15 @@ internal static class HardwareFactory
         RegisterVision(services, config, useSimulation);
         RegisterScanner(services, config, useSimulation);
         RegisterSafety(services);
+        RegisterLight(services);
         RegisterIoTagMap(services, config);
+    }
+
+    private static void RegisterLight(IServiceCollection services)
+    {
+        // Đèn tháp: real (IO module/PLC) = nhóm SDK; hiện dùng Simulated.
+        services.AddSingleton<ILightController>(sp =>
+            new SimulatedLightController(sp.GetRequiredService<ILogger<SimulatedLightController>>()));
     }
 
     private static void RegisterVision(IServiceCollection services, IConfiguration config, bool useSimulation)

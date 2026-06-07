@@ -88,8 +88,9 @@ internal static class Bootstrapper
         hwManager.Register(DeviceNames.MainRobot,      HardwareCategory.Robot,          services.GetRequiredService<IRobotDevice>());
         hwManager.Register(DeviceNames.MainScanner,    HardwareCategory.Scanner,        services.GetRequiredService<IBarcodeScanner>());
         hwManager.Register(DeviceNames.MainSafety,     HardwareCategory.SafetyTerminal, services.GetRequiredService<ISafetyInput>());
+        hwManager.Register(DeviceNames.MainLight,      HardwareCategory.LightController, services.GetRequiredService<ILightController>());
 
-        Log.Information("HardwareManagerService: registered {Count} devices", 12);
+        Log.Information("HardwareManagerService: registered {Count} devices", 13);
     }
 
     /// <summary>Tạo database khi khởi động (EnsureCreated — DB không commit vào Git).</summary>

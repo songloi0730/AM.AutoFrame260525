@@ -98,8 +98,9 @@ internal sealed class TestMasterController : BaseMasterController
     private readonly bool _reinitAfterReset;
 
     public TestMasterController(IAlarmService alarm,
-        Func<CancellationToken, Task>? cycleBody = null, bool reinitAfterReset = false)
-        : base(alarm, NullLogger<TestMasterController>.Instance)
+        Func<CancellationToken, Task>? cycleBody = null, bool reinitAfterReset = false,
+        AM.Core.Abstractions.Interfaces.Hardware.ISafetyInput? safety = null)
+        : base(alarm, NullLogger<TestMasterController>.Instance, safety)
     {
         _cycleBody = cycleBody;
         _reinitAfterReset = reinitAfterReset;

@@ -66,6 +66,9 @@ public partial class App
             };
             watchdog.Start();
 
+            // 4b'. Đèn tháp tự lái theo trạng thái máy + alarm + an toàn (ISA-101 andon)
+            _serviceProvider.GetRequiredService<ITowerLightService>().Start();
+
             // 4c. Khôi phục ngôn ngữ đã lưu (i18n §7.4) + lưu lại khi đổi
             RestoreAndPersistLanguage(_serviceProvider);
 

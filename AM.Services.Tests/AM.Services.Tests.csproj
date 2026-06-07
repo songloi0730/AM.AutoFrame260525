@@ -32,6 +32,7 @@
     <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
     <ProjectReference Include="..\AM.Services\AM.Services.csproj" />
+    <ProjectReference Include="..\AM.Hardware.IO\AM.Hardware.IO.csproj" />
   </ItemGroup>
 
 </Project>

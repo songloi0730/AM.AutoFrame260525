@@ -47,4 +47,7 @@ public static class DeviceNames
 
     /// <summary>Safety terminal chính.</summary>
     public const string MainSafety = "MainSafety";
+
+    /// <summary>Đèn tháp (andon) chính.</summary>
+    public const string MainLight = "MainLight";
 }

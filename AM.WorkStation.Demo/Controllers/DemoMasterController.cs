@@ -4,6 +4,7 @@
 // Purpose: Demo machine master controller — minh hoạ BaseMasterController + ISA-88
 // -------------------------------------------------------
 
+using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Exceptions;
 using AM.Infrastructure;
@@ -28,8 +29,9 @@ public sealed class DemoMasterController : BaseMasterController
         DemoStation demoStation,
         IStationSyncService syncService,
         IAlarmService alarmService,
-        ILogger<DemoMasterController> logger)
-        : base(alarmService, logger)
+        ILogger<DemoMasterController> logger,
+        ISafetyInput safety)
+        : base(alarmService, logger, safety)
     {
         ArgumentNullException.ThrowIfNull(demoStation);
         ArgumentNullException.ThrowIfNull(syncService);

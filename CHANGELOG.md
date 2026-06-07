@@ -24,6 +24,33 @@
 
 ---
 
+## [Session 35] 2026-06-07 — Safety interlock + ILightController (đèn tháp andon)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Mục 4 trong gap analysis — an toàn là bắt buộc trước khi dựng máy thật.
+
+### ✅ Interlock an toàn (gating Start)
+- `BaseMasterController` nhận thêm `ISafetyInput?` (tuỳ chọn): **`StartAsync` chặn Start** khi `!IsAllSafe`
+  (E-Stop/Guard/Light Curtain) → raise `SafetyInterlockBreach`, máy ở nguyên Idle. `DemoMasterController` truyền ISafetyInput.
+- Test: `SafetyGateTests` (chặn khi unsafe + raise alarm · cho phép khi safe).
+
+### ✅ Đèn tháp (andon) — ILightController + TowerLightService
+- `TowerLightState` (Core): record R/Y/G + Buzzer + preset (Off/Run/Attention/Fault/FaultBuzzer).
+- `ILightController` (Abstractions) + **`SimulatedLightController`** (Hardware.IO).
+- `ITowerLightService` + **`TowerLightService`** (AM.Services): tự đặt đèn theo **ưu tiên an toàn → alarm → state**
+  (mất an toàn = đỏ+còi; alarm = đỏ; Running/Idle = xanh; Paused/Init/Reset = vàng). Subscribe state/alarm/safety.
+- DI: `ILightController` (HardwareFactory) + đăng ký `MainLight` vào HardwareManager + `ITowerLightService` start ở App.
+- Test: `TowerLightServiceTests` (Idle→xanh · mất an toàn→đỏ+còi · alarm→đỏ) bằng Moq + SimulatedLight/Safety.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error**. `dotnet test` → **157 passed** (Infra 55→57, Services 64→67).
+- Connection chip "MainLight" xuất hiện thêm ở status bar.
+
+> Còn lại mục 3 (Recipe extensibility), 5 (wire Production), 6 (SubRoutines), 7 (Debug UI).
+
+---
+
 ## [Session 34] 2026-06-07 — Nền WorkStation: chuẩn hoá StepSequence + AxisMap/MachineConfig (concrete IAxis)
 
 **Commit:** `d6ad153`

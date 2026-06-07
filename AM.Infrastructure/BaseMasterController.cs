@@ -4,6 +4,7 @@
 // Purpose: Abstract base cho MasterController — ISA-88 state machine + 3-tier orchestration
 // -------------------------------------------------------
 
+using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Constants;
@@ -56,6 +57,9 @@ public abstract class BaseMasterController : IMasterController
     /// <summary>Logger — dùng ILogger (không generic) vì base class không biết concrete type.</summary>
     protected ILogger Logger { get; }
 
+    /// <summary>Đầu vào an toàn (tuỳ chọn) — nếu có, chặn Start khi interlock chưa OK.</summary>
+    protected ISafetyInput? Safety { get; }
+
     // ─── Private fields ──────────────────────────────────────────────────────
     private readonly List<IStation> _stations = [];
     private readonly Lock _stateLock = new();
@@ -72,12 +76,13 @@ public abstract class BaseMasterController : IMasterController
     /// Base constructor. Subclass gọi base() rồi gọi <see cref="RegisterStation"/>
     /// trong constructor để đăng ký tất cả stations.
     /// </summary>
-    protected BaseMasterController(IAlarmService alarmService, ILogger logger)
+    protected BaseMasterController(IAlarmService alarmService, ILogger logger, ISafetyInput? safety = null)
     {
         ArgumentNullException.ThrowIfNull(alarmService);
         ArgumentNullException.ThrowIfNull(logger);
         AlarmService = alarmService;
         Logger       = logger;
+        Safety       = safety;
     }
 
     // ─── IMasterController properties ────────────────────────────────────────
@@ -128,6 +133,15 @@ public abstract class BaseMasterController : IMasterController
     /// <inheritdoc/>
     public async Task StartAsync(CancellationToken ct = default)
     {
+        // Interlock an toàn: KHÔNG cho Start khi E-Stop/Guard/Light Curtain chưa OK (R01 safety-first)
+        if (Safety is not null && !Safety.IsAllSafe)
+        {
+            Logger.LogWarning("[MasterController] Start bị chặn — interlock an toàn chưa OK");
+            await AlarmService.RaiseAsync(AlarmCodes.SafetyInterlockBreach, "SAFETY",
+                "Không thể Start: interlock an toàn chưa đạt (E-Stop/Guard/Light Curtain)", ct).ConfigureAwait(false);
+            return;
+        }
+
         if (!FireTrigger(MachineTrigger.Start)) return;
 
         Logger.LogInformation("[MasterController] Starting run loop...");
