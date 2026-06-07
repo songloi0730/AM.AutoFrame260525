@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #39 — Engineering/Debug UI ([StationUI]/[MechanismUI] + SubRoutine) — KHÉP NỀN WorkStation (mục 1–7 xong)
-**Commit:** `f02b39d`  ·  (S38: SubRoutines base + runner)
+**Session:** #40 — Production UI: dashboard UPH/yield/cycle-time (số liệu ProductionRecorder)
+**Commit:** `(điền sau push)`  ·  (S39: Engineering/Debug UI — khép nền mục 1–7)
 
 ---
 
@@ -45,7 +45,8 @@
 | `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
 | AM.Infrastructure.Tests | ✅ Hoàn thành | **55 tests**: ISA-88 + busy-guard + StationBase + e2e + i18n + alarm catalog + **StepSequence (4) + AxisMap (5)** |
 | AM.Modules.Engineering | ✅ Hoàn thành | **Mới** — auto-discovery [StationUI]/[MechanismUI] + chạy SubRoutine + E-Stop từng cụm; nav order 80 |
-| AM.Modules.* (còn lại) | ❌ Chưa có | Production, Vision, Logging, Diagnostics |
+| AM.Modules.Production | ✅ Hoàn thành | **Mới** — KPI UPH/yield/cycle-time (IProductionService), tự refresh khi CycleCompleted; nav order 15 |
+| AM.Modules.* (còn lại) | ❌ Chưa có | Vision, Logging, Diagnostics |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---

@@ -39,6 +39,7 @@ using AM.Modules.IoMonitor;
 using AM.Modules.Engineering;
 using AM.Modules.Motion;
 using AM.Modules.Parameter;
+using AM.Modules.Production;
 using AM.Services;
 using AM.Core.Models;
 using AM.Core.Abstractions.Interfaces;
@@ -136,6 +137,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<MotionViewModel>();
         services.AddSingleton<ParameterViewModel>();
         services.AddSingleton<EngineeringViewModel>();
+        services.AddSingleton<ProductionViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips
         return services;
     }

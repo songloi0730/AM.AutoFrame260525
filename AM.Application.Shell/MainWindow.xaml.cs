@@ -41,6 +41,7 @@ public partial class MainWindow : Window
         ["recipe"]    = "E8A5", // Document (recipe)
         ["user"]      = "E77B", // Contact (account)
         ["engineering"] = "E90F", // Repair (engineering/debug)
+        ["production"] = "E9D9", // BarChart4 (production stats)
     };
     private const string DefaultHex = "E700"; // GlobalNavigationButton (fallback)
 

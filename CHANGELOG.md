@@ -24,6 +24,27 @@
 
 ---
 
+## [Session 40] 2026-06-07 — Production UI: dashboard UPH/yield/cycle-time (số liệu ProductionRecorder)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Hiển thị số liệu sản xuất đã wire ở S37 (ProductionRecorder ghi mỗi cycle).
+
+### ✅ AM.Modules.Production (project mới — thứ 26)
+- `ProductionViewModel`: KPI **Total/OK/NG/Yield%/UPH/Cycle TB** qua `IProductionService.GetStatisticsAsync` theo cửa sổ
+  thời gian chọn được (**1 giờ qua / Ca 8 giờ / Hôm nay**). Tự refresh khi `CycleCompleted` + định kỳ 10s + nút Làm mới.
+- **Captive dependency**: VM Singleton, `IProductionService` Scoped (EF) → tạo scope mỗi query bằng `IServiceScopeFactory`.
+- `ProductionView.xaml`: 6 KPI card (OK xanh, NG đỏ), combo cửa sổ + Refresh. Theme ISA-101 + i18n (Prod.*).
+- `[ModuleNavigation("Nav.Production", order: 15)]` + glyph Segoe MDL2 (BarChart).
+- CPM: thêm `Microsoft.Extensions.DependencyInjection.Abstractions` 9.0.0 (cho IServiceScopeFactory).
+- Wire Shell: ProjectReference + `AddUiViewModels` + .sln + nav glyph + i18n (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (26 projects). `dotnet test` → **165 passed**.
+- Chạy máy (Start) → mỗi cycle ProductionRecorder ghi record → màn **Sản xuất** hiện UPH/yield/cycle-time tăng theo thời gian thực.
+
+---
+
 ## [Session 39] 2026-06-07 — Engineering/Debug UI (tiêu thụ [StationUI]/[MechanismUI] + chạy SubRoutine) — KHÉP NỀN
 
 **Commit:** `f02b39d`

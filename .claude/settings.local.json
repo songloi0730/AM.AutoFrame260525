@@ -17,7 +17,8 @@
       "Bash(bash scripts/am-commit.sh *)",
       "Bash(bash .claude/hooks/*.sh)",
       "Bash(grep -viE \"obj/|bin/|RecipeService|IRecipeService|RecipeEventArgs|RecipeValidator|RecipeChanged|recipeService|RecipeNames|LoadRecipe|SaveRecipe|DeleteRecipe|GetRecipe|\\\\.Recipe\\\\b|RecipeModule|Recipe/|//|ActiveRecipe|SelectedRecipe|EditingRecipe|ChangeRecipe|RecipeText|recipe\\\\b\")",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(dotnet sln *)"
     ]
   },
   "hooks": {
