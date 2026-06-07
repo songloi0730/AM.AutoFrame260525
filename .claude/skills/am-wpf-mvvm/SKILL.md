@@ -443,20 +443,25 @@ Chart.BackgroundBrush    #0D1B2A   #F8FAFC   Nền biểu đồ
 ✅ Mọi màu kết hợp thêm icon hoặc text (hỗ trợ người mù màu ~8% nam giới)
 ```
 
-### Layout màn hình chuẩn (ISA-101)
+### Layout màn hình chuẩn (ISA-101) — IPC 1920×1080, 21–24"
+
+> Chi tiết kích thước/màu/touch: skill `am-hmi-design`. Tóm tắt: nội dung KHÔNG giãn hết 1920px (khối ≤ ~1400px, chia cột).
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  TOP BAR (48px): Logo | Machine Name | State | User | Time | Lang │
-├──────────┬──────────────────────────────────────────┤
-│  SIDE    │                                          │
-│  MENU    │          CONTENT AREA                    │
-│  (200px) │          (Level 1-4 screens)             │
-│          │                                          │
-├──────────┴──────────────────────────────────────────┤
-│  STATUS BAR (32px): Alarm Summary | Cycle Time | UPH | Recipe    │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│ HEADER (80–96px): Logo|Machine|State|Mode|Recipe|đèn tháp|[Start/Stop/Reset]|User|Lang|Clock │
+├──────────────┬──────────────────────────────────────────────────────┤
+│ NAV          │                                                      │
+│ (220–260px,  │          CONTENT AREA (lưới nhiều cột, ≤~1400px)     │
+│  collapse    │          (Level 1-4 screens)                         │
+│  →64px icon) │                                                      │
+├──────────────┴──────────────────────────────────────────────────────┤
+│ ALARM BAR (48–56px): alarm mới nhất (đỏ nếu active) + [Acknowledge]  │
+├──────────────────────────────────────────────────────────────────────┤
+│ STATUS BAR (32–40px): chip kết nối PLC RFID CAM MES HIVE SECS/GEM DB │
+└──────────────────────────────────────────────────────────────────────┘
 ```
+Touch (đeo găng — SEMI S8): nút chính ≥60×60px · nút thường ≥44×44px · gap ≥8px · nút nguy hiểm cách ≥48px.
 
 ### Phân cấp màn hình (4 Levels)
 

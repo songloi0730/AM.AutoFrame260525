@@ -8,8 +8,12 @@ Tạo màn hình WPF hoàn chỉnh: View + ViewModel + Prism Module.
 ```
 Level: 1=Overview, 2=Workstation, 3=Detail/Faceplate, 4=Engineering
 
+> 🎯 **Target: IPC 21–24" / 1920×1080, chuột + cảm ứng** (không phải HMI panel nhỏ).
+> Nội dung KHÔNG giãn hết 1920px — khối dữ liệu ≤ ~1400px, chia cột. Header có nút lệnh toàn cục,
+> Alarm bar + Status bar (chip kết nối) là 2 dải riêng. Nút chính ≥60×60, nút thường ≥44×44, gap ≥8px.
+
 ## What this command does
-1. Read skill `am-wpf-mvvm` for templates and ISA-101 rules
+1. Read skill `am-hmi-design` (layout/màu/touch IPC) + `am-wpf-mvvm` (template) + `docs/HMI_Components_Catalog.md` (checklist thành phần cho màn này)
 2. Create `{ScreenName}View.xaml` + `{ScreenName}View.xaml.cs` (minimal code-behind)
 3. Create `{ScreenName}ViewModel.cs` (CommunityToolkit.Mvvm + ObservableObject)
 4. Create or update `{ModuleName}Module.cs` with navigation registration

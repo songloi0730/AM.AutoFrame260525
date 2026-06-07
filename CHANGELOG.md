@@ -4,6 +4,30 @@
 
 ---
 
+## [Session 30] 2026-06-07 — Cập nhật guidance UI: target IPC 21–24" 1920×1080 (ISA-101/SEMI E95)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User cung cấp 2 tài liệu tham khảo; chỉ ra UI hiện thiết kế như HMI panel nhỏ (~10"), trong khi mục tiêu là
+**máy tính công nghiệp 21–24" / 1920×1080, chuột + cảm ứng**. Cập nhật các file guidance để Claude thiết kế đúng hơn.
+
+### ✅ Cập nhật (chỉ tài liệu/guidance — không đụng code, 143 tests giữ nguyên)
+- **`.claude/skills/am-hmi-design/SKILL.md`** (rewrite): thêm mục **Target hardware (IPC 21–24")**; layout Shell 1920×1080
+  (Header 80–96px có nút lệnh toàn cục · Nav 220–260px collapse→64px · Content lưới nhiều cột **≤~1400px** không giãn hết
+  1920 · **Alarm bar 48–56px + Status bar 32–40px là 2 dải riêng**); nền theo 4 cấp ISA-101; typography (data 16–20pt);
+  touch SEMI S8 (≥60×60 / ≥44×44 / gap ≥8); **Connection Status chips** (PLC/RFID/Camera/MES/HIVE/SECS-GEM/DB, SECS/GEM
+  hiện cả COMM+CONTROL state); **sitemap** màn hình rộng; checklist cập nhật.
+- **`docs/HMI_Components_Catalog.md`** (mới): checklist thành phần/tham số cho 17 nhóm màn (Dashboard/Auto/IO/Settings/
+  Motion/Calibration/Alarm/Manual/Recipe/Connectivity/User/Maintenance/History/OEE/Vision/Traceability/System).
+- **`.claude/skills/am-wpf-mvvm/SKILL.md`**: sửa sơ đồ layout từ panel nhỏ (48/200/32px) → IPC (80–96/220–260/48–56/32–40px) + touch sizing.
+- **`CLAUDE.md`**: thêm dòng "UI target = IPC 21–24" 1920×1080 chuột+cảm ứng" + trỏ đọc skill/docs; thêm 2 doc HMI vào bảng tham khảo.
+- **`.claude/commands/am-new-screen.md`**: ghi rõ target IPC + đọc `am-hmi-design` + components catalog.
+
+> Lưu ý: đây là cập nhật **guidance để thiết kế đúng từ giờ**. Shell đang chạy (Header 40px, chưa tách alarm/status bar,
+> chưa có connection chips) NÊN re-tune theo spec mới ở session sau — chưa làm trong session này.
+
+---
+
 ## [Session 29] 2026-06-07 — Light theme + cửa sổ kích thước cố định + i18n toàn module
 
 **Commit:** `58b7257`

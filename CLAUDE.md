@@ -42,6 +42,10 @@
 - Nền tảng: .NET 9 / WPF / Prism 9 / DryIoc / EF Core + SQLite
 - Build: `TreatWarningsAsErrors=true` + `AnalysisMode=All` — mọi warning CA/Sonar là lỗi build
 - Kiến trúc: 3 tầng máy (MasterController → Station → Mechanism) + ISA-88 state machine 8 trạng thái
+- **Mục tiêu giao diện (UI target):** chạy trên **máy tính công nghiệp (IPC)** màn hình **21–24" / 1920×1080**,
+  **chuột + cảm ứng** — KHÔNG phải HMI panel nhỏ 7–10". Thiết kế theo **ISA-101 / SEMI E95** (High-Performance HMI:
+  yên tĩnh khi bình thường, 4 cấp màn hình, connection status chips). Trước khi làm/đánh giá UI, ĐỌC:
+  `.claude/skills/am-hmi-design/SKILL.md` → `docs/HMI_UI_Architecture_Template.md` → `docs/HMI_Components_Catalog.md`.
 
 ---
 
@@ -292,5 +296,7 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/AGENTS.md` | Agent definitions + ECC routing table |
 | `docs/PROMPT_TEMPLATES.md` | PT-01 đến PT-14 — copy & fill |
 | `docs/QUICK_REFERENCE.md` | In ra dán cạnh màn hình |
+| `docs/HMI_UI_Architecture_Template.md` | **UI** — khung layout ISA-101/SEMI E95 cho IPC 1920×1080 |
+| `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
 | `CLAUDE.md` | File này — project instructions cho Claude |
 | `README.md` | *(chưa có — TODO)* Tổng quan kiến trúc solution |

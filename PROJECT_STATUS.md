@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #29 — Light theme + cửa sổ cố định + i18n toàn module (AM.UI.Localization)
-**Commit:** `58b7257`  ·  (S28: Parameter/Recipe attribute-driven)
+**Session:** #30 — Guidance UI: target IPC 21–24" 1920×1080 (ISA-101/SEMI E95) + components catalog
+**Commit:** `(điền sau push)`  ·  (S29: light theme + cửa sổ cố định + i18n toàn module)
 
 ---
 
