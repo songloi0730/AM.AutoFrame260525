@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 24] 2026-06-07 — Nền backend: IUserService (login/RBAC) + lưu lựa chọn ngôn ngữ
+
+**Commit:** *(pending)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Hoàn thiện phần nền (service layer) TRƯỚC khi làm UI — tránh lặp lại tình trạng UI viết theo API chưa có.
+
+### ✅ IUserService + UserService (login / RBAC)
+- `IUserService` (Abstractions): CurrentUser/CurrentLevel/IsLoggedIn, `LoginAsync`, `Logout`, `HasPermission(UserLevel)`,
+  event `UserChanged`. `UserChangedEventArgs` (AM.Core).
+- `UserService` (AM.Services): user store JSON (`users.json`), mật khẩu băm **BCrypt** (Verify chạy ngoài thread);
+  seed mặc định lần đầu (operator/engineer/admin — log cảnh báo đổi mật khẩu trước sản xuất). Thread-safe (Lock).
+- Đăng ký DI singleton (AddCoreServices) + thêm ref BCrypt.Net-Next vào AM.Services.
+
+### ✅ Lưu lựa chọn ngôn ngữ (i18n §7.4)
+- `App` khôi phục culture đã lưu từ `parameters.json` (key `ui.culture`) lúc khởi động → `SetCulture`;
+  mỗi lần đổi ngôn ngữ tự lưu lại (qua `IParameterService`). Lần mở sau giữ nguyên ngôn ngữ đã chọn.
+
+### ✅ Tests (+8 → AM.Services.Tests 58)
+- `UserServiceTests` — seed default, login đúng/sai/unknown, HasPermission theo cấp, logout + event, reload từ file.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **132 passed** (58 services + 41 infra + 27 hardware + 6 architecture).
+
+> Phần nền sẵn sàng cho UI: Identity module (dùng IUserService), gate Engineer/Force ở các màn (HasPermission).
+
+---
+
 ## [Session 23] 2026-06-07 — Revert 7-screen commit (vỡ build) + thêm HMI master template
 
 **Commit:** `1cf7e27` (+ revert commit)

@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-04
-**Session:** #22 — G0 Nav auto-discovery ([ModuleNavigation]) + AM.Modules.IoMonitor
-**Commit:** `4246aaf`
+**Session:** #24 — Nền backend: IUserService (login/RBAC) + lưu lựa chọn ngôn ngữ
+**Commit:** *(pending)*  ·  (S23: revert commit 7-màn-hình vỡ build, +docs/HMI template)
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **20 projects** (CPM), 0 warning, **124 tests pass** · README + CI/CD + arch-test + i18n |
+| Solution structure | ✅ Hoàn thành | **20 projects** (CPM), 0 warning, **132 tests pass** · README + CI/CD + arch-test + i18n + RBAC |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -23,8 +23,8 @@
 | AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice + **SimulatedVisionProcessor (IVisionProcessor)** |
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule + **SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions** |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
-| AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, HardwareWatchdog, **Production** (UPH/yield) |
-| AM.Services.Tests | ✅ Hoàn thành | 50 tests (Alarm, Recipe, StationSync, HardwareManager, **Watchdog**, **Production**) |
+| AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, **UserService (login/RBAC, BCrypt)** |
+| AM.Services.Tests | ✅ Hoàn thành | **58 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, **UserService**) |
 | AM.Hardware.Tests | ✅ Hoàn thành | **27 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |

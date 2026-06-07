@@ -66,6 +66,9 @@ public partial class App
             };
             watchdog.Start();
 
+            // 4c. Khôi phục ngôn ngữ đã lưu (i18n §7.4) + lưu lại khi đổi
+            RestoreAndPersistLanguage(_serviceProvider);
+
             // 5. Initialize database
 #pragma warning disable CA2007 // Shell OnStartup: phải giữ UI thread context để tạo MainWindow sau khi await
             await Bootstrapper.InitializeDatabaseAsync(_serviceProvider);
@@ -87,6 +90,37 @@ public partial class App
             MessageBox.Show($"Lỗi khởi động: {ex.Message}", "AutoMachine",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
+        }
+    }
+
+    private const string LanguageKey = "ui.culture";
+
+    /// <summary>Khôi phục ngôn ngữ đã lưu trong parameters.json; lưu lại mỗi lần đổi (i18n §7.4).</summary>
+    private static void RestoreAndPersistLanguage(IServiceProvider sp)
+    {
+        var loc = sp.GetRequiredService<ILocalizationService>();
+        var paramService = sp.GetRequiredService<IParameterService>();
+
+        string saved = paramService.GetValue(LanguageKey, loc.CurrentCulture);
+        loc.SetCulture(saved);
+
+        // Lưu lựa chọn mỗi lần đổi (async void handler — chuẩn WPF event)
+        loc.LanguageChanged += async (_, args) =>
+            await PersistLanguageAsync(paramService, args.Culture).ConfigureAwait(false);
+    }
+
+    private static async Task PersistLanguageAsync(IParameterService paramService, string culture)
+    {
+        try
+        {
+            await paramService.SetAsync(LanguageKey, culture, "system").ConfigureAwait(false);
+            await paramService.SaveAsync().ConfigureAwait(false);
+        }
+#pragma warning disable CA1031 // lưu lựa chọn ngôn ngữ thất bại không được làm sập app
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            Log.Warning(ex, "Không lưu được lựa chọn ngôn ngữ '{Culture}'", culture);
         }
     }
 

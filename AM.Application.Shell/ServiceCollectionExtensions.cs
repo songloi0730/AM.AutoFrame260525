@@ -83,6 +83,9 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IHardwareManagerService, HardwareManagerService>();
         services.AddSingleton<IStationSyncService, StationSyncService>();
         services.AddSingleton<IHardwareWatchdogService, HardwareWatchdogService>();
+        // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
+        services.AddSingleton<IUserService, UserService>(sp =>
+            new UserService(sp.GetRequiredService<ILogger<UserService>>(), "users.json"));
 
         // i18n: nạp strings.*.json từ thư mục lang/ cạnh executable; đổi ngôn ngữ runtime
         services.AddSingleton<ILocalizationService>(sp => new JsonLocalizationService(
