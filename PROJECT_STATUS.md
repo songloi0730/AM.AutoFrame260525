@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #35 — Safety interlock (gating Start) + ILightController + TowerLightService (andon)
-**Commit:** `(điền sau push)`  ·  (S34: StepSequence + AxisMap/MachineConfig + concrete IAxis)
+**Commit:** `fa28883`  ·  (S34: StepSequence + AxisMap/MachineConfig + concrete IAxis)
 
 ---
 

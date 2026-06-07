@@ -26,7 +26,7 @@
 
 ## [Session 35] 2026-06-07 — Safety interlock + ILightController (đèn tháp andon)
 
-**Commit:** `(điền sau push)`
+**Commit:** `fa28883`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Mục 4 trong gap analysis — an toàn là bắt buộc trước khi dựng máy thật.
 
