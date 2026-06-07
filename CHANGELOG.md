@@ -6,7 +6,7 @@
 
 ## [Session 26] 2026-06-07 — UI module Identity (login/logout/RBAC) — mục B.1
 
-**Commit:** `(điền sau push)`
+**Commit:** `a7ab3a8`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Bắt đầu mục B (UI modules) — làm lại ĐÚNG API. Module đầu: Identity dùng `IUserService` (đã có từ S24).
 
