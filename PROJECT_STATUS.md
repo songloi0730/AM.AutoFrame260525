@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #26 — UI module Identity (login/logout/RBAC) — bắt đầu mục B
-**Commit:** `a7ab3a8`  ·  (S25: cycle-time đo thực + alarm catalog đa ngữ)
+**Session:** #27 — UI module Motion (jog/home/move + Point Table) — mục B.2
+**Commit:** `(điền sau push)`  ·  (S26: UI Identity login/logout/RBAC)
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **21 projects** (CPM), 0 warning, **137 tests pass** · README + CI/CD + arch-test + i18n + RBAC + alarm catalog |
+| Solution structure | ✅ Hoàn thành | **22 projects** (CPM), 0 warning, **143 tests pass** · README + CI/CD + arch-test + i18n + RBAC + alarm catalog + point table |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -24,7 +24,7 @@
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule + **SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions** |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, **UserService (login/RBAC, BCrypt)** |
-| AM.Services.Tests | ✅ Hoàn thành | **58 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, **UserService**) |
+| AM.Services.Tests | ✅ Hoàn thành | **64 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, **PointTable**) |
 | AM.Infrastructure (i18n) | ✅ Hoàn thành | **JsonAlarmCatalogService** — Alarms.{vi,en,zh}.json (44 mã), dịch tên/remedy theo culture |
 | AM.Hardware.Tests | ✅ Hoàn thành | **27 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
@@ -35,13 +35,14 @@
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
+| AM.Modules.Motion | ✅ Hoàn thành | **Mới** — jog/home/move/stop từng trục (poll live) + Point Table (IPointTableService); nav order 40 |
 | AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + RegisterRealHardware + **HardwareFactory** (vision/scanner/safety/io-tagmap) + io.map.json |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
 | `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
 | AM.Infrastructure.Tests | ✅ Hoàn thành | **46 tests**: ISA-88 transitions + busy-guard + StationBase + end-to-end + i18n + **alarm catalog (5)** |
-| AM.Modules.* (còn lại) | ❌ Chưa có | Motion, Parameter, Vision, Logging, Diagnostics |
+| AM.Modules.* (còn lại) | ❌ Chưa có | Parameter, Vision, Logging, Diagnostics |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---
@@ -142,6 +143,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 | `IParameterService` | `AM.Services/ParameterService.cs` ✅ |
 | `IHardwareManagerService` | `AM.Services/HardwareManagerService.cs` ✅ |
 | `IStationSyncService` | `AM.Services/StationSyncService.cs` ✅ |
+| `IPointTableService` | `AM.Services/PointTableService.cs` ✅ (Point Table — toạ độ đặt tên JSON) |
 
 ### Enums (AM.Core/Enums/)
 | Enum | Values |

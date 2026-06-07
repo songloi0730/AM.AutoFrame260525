@@ -1,0 +1,183 @@
+<UserControl x:Class="AM.Modules.Motion.MotionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:conv="clr-namespace:AM.Modules.Motion.Converters"
+             mc:Ignorable="d"
+             Background="{DynamicResource Screen.BackgroundBrush}">
+
+    <UserControl.Resources>
+        <conv:PositionsToTextConverter x:Key="PosText"/>
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header + thanh điều khiển chung -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock Text="Motion" FontSize="18" FontWeight="Bold"
+                       Foreground="{DynamicResource Text.HeadingBrush}" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Vận tốc (mm/s)" VerticalAlignment="Center" Margin="0,0,6,0"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <TextBox Width="64" Height="28" VerticalContentAlignment="Center"
+                         Text="{Binding Velocity, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Home All" Width="90" Height="28" Margin="12,0,0,0"
+                        Command="{Binding HomeAllCommand}"
+                        Background="{DynamicResource Button.PrimaryBrush}"
+                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                <Button Content="Stop All" Width="90" Height="28" Margin="8,0,0,0"
+                        Command="{Binding StopAllCommand}"
+                        Background="{DynamicResource Button.DangerBrush}"
+                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Bảng trục -->
+        <Border Grid.Row="1" CornerRadius="6" Padding="12" Margin="0,0,0,12"
+                Background="{DynamicResource Panel.BackgroundBrush}">
+            <ItemsControl ItemsSource="{Binding Axes}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,6" Padding="10" CornerRadius="4"
+                                Background="{DynamicResource Panel.BackgroundAltBrush}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" Width="64" VerticalAlignment="Center"
+                                           FontWeight="SemiBold" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+
+                                <!-- Vị trí live -->
+                                <TextBlock Text="{Binding Position, StringFormat={}{0:F2} mm}" Width="100"
+                                           VerticalAlignment="Center" FontSize="15"
+                                           Foreground="{DynamicResource Text.LiveValueBrush}"/>
+
+                                <!-- Homed indicator -->
+                                <Ellipse Width="12" Height="12" Margin="4,0" VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="{DynamicResource Status.DisabledBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsHomed}" Value="True">
+                                                    <Setter Property="Fill" Value="{DynamicResource Status.NormalBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Text="Homed" Width="48" VerticalAlignment="Center" FontSize="11"
+                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+
+                                <!-- Moving indicator -->
+                                <Ellipse Width="12" Height="12" Margin="4,0" VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="{DynamicResource Status.DisabledBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMoving}" Value="True">
+                                                    <Setter Property="Fill" Value="{DynamicResource Status.ManualBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Text="Moving" Width="52" VerticalAlignment="Center" FontSize="11"
+                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+
+                                <Button Content="Home" Width="60" Height="28" Margin="8,0,0,0"
+                                        Command="{Binding DataContext.HomeAxisCommand,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"/>
+
+                                <!-- Jog -->
+                                <Button Content="◄ Jog" Width="56" Height="28" Margin="8,0,0,0"
+                                        Command="{Binding DataContext.JogMinusCommand,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"/>
+                                <TextBox Width="56" Height="28" Margin="4,0" VerticalContentAlignment="Center"
+                                         Text="{Binding JogStep, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Content="Jog ►" Width="56" Height="28"
+                                        Command="{Binding DataContext.JogPlusCommand,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"/>
+
+                                <!-- Move abs -->
+                                <TextBox Width="72" Height="28" Margin="12,0,4,0" VerticalContentAlignment="Center"
+                                         Text="{Binding MoveTarget, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Button Content="Move" Width="60" Height="28"
+                                        Command="{Binding DataContext.MoveAbsCommand,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"/>
+
+                                <Button Content="Stop" Width="56" Height="28" Margin="8,0,0,0"
+                                        Command="{Binding DataContext.StopAxisCommand,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Background="{DynamicResource Button.DangerBrush}"
+                                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <!-- Point Table -->
+        <Border Grid.Row="2" CornerRadius="6" Padding="12"
+                Background="{DynamicResource Panel.BackgroundBrush}">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBlock Text="Point Table" FontWeight="SemiBold" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBox Width="140" Height="28" VerticalContentAlignment="Center"
+                                 Text="{Binding NewPointName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Content="Teach" Width="70" Height="28" Margin="8,0,0,0"
+                                Command="{Binding TeachCommand}"
+                                Background="{DynamicResource Button.PrimaryBrush}"
+                                Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                        <Button Content="Lưu" Width="70" Height="28" Margin="8,0,0,0"
+                                Command="{Binding SavePointsCommand}"/>
+                    </StackPanel>
+                </DockPanel>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Points}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,4" Padding="8" CornerRadius="4"
+                                        Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}" Width="140" VerticalAlignment="Center"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                        <TextBlock Text="{Binding Positions, Converter={StaticResource PosText}}"
+                                                   Width="240" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                        <Button Content="Go" Width="56" Height="26" Margin="8,0,0,0"
+                                                Command="{Binding DataContext.GoToPointCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Background="{DynamicResource Button.PrimaryBrush}"
+                                                Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                                        <Button Content="Xoá" Width="56" Height="26" Margin="8,0,0,0"
+                                                Command="{Binding DataContext.DeletePointCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- Status -->
+        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource Status.AlarmBrush}"/>
+    </Grid>
+</UserControl>

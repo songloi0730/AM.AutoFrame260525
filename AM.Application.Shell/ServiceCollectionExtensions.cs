@@ -34,6 +34,7 @@ using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
 using AM.Modules.Identity;
 using AM.Modules.IoMonitor;
+using AM.Modules.Motion;
 using AM.Services;
 using AM.WorkStation.Demo.Controllers;
 using AM.WorkStation.Demo.Mechanisms;
@@ -83,6 +84,9 @@ internal static class ServiceCollectionExtensions
             new ParameterService(sp.GetRequiredService<ILogger<ParameterService>>(), "parameters.json"));
         services.AddSingleton<IHardwareManagerService, HardwareManagerService>();
         services.AddSingleton<IStationSyncService, StationSyncService>();
+        // Point Table: toạ độ đặt tên lưu points.json (tách toạ độ khỏi code — Motion module)
+        services.AddSingleton<IPointTableService, PointTableService>(sp =>
+            new PointTableService(sp.GetRequiredService<ILogger<PointTableService>>(), "points.json"));
         services.AddSingleton<IHardwareWatchdogService, HardwareWatchdogService>();
         // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
         services.AddSingleton<IUserService, UserService>(sp =>
@@ -109,6 +113,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<AlarmListViewModel>();
         services.AddSingleton<IoMonitorViewModel>();
         services.AddSingleton<IdentityViewModel>();
+        services.AddSingleton<MotionViewModel>();
         return services;
     }
 

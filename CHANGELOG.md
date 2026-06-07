@@ -4,6 +4,42 @@
 
 ---
 
+## [Session 27] 2026-06-07 — UI module Motion (jog/home/move + Point Table) — mục B.2
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Mục B.2 — Motion module bám ĐÚNG `IMotionController`/`IAxis`. Point Table tách toạ độ khỏi code (file JSON).
+
+### ✅ Point Table — service nền (AM.Services, testable)
+- `MotionPoint` (AM.Core): `Name` + `Positions` (IReadOnlyList&lt;double&gt;, tránh CA1819) + `Velocity`.
+- `IPointTableService` (Abstractions) + `PointTableService` (AM.Services): nạp/lưu `points.json`,
+  `AddOrUpdate` (teach theo tên, không phân biệt hoa thường), `Remove`, `Find`, `SaveAsync`/`ReloadAsync`.
+  Thread-safe (Lock) + ghi file qua SemaphoreSlim, IDisposable. Đăng ký DI singleton.
+- **Tests (+6 → AM.Services.Tests 64):** `PointTableServiceTests` — add/update, remove, find, save+reload, reload-discard.
+
+### ✅ AM.Modules.Motion (project mới — project thứ 22)
+- `MotionViewModel`: dựng `AxisVm` theo `IMotionController.AxisCount`, **poll vị trí** live (PeriodicTimer 300ms:
+  GetPosition/IsMoving/IsHomed). Lệnh: HomeAxis/HomeAll, JogPlus/JogMinus (MoveRel theo bước), MoveAbs, StopAxis/StopAll;
+  vận tốc dùng chung. Bọc `RunMotionAsync` bắt `AlarmException` (vd chưa home → MotionNotHomed) → `StatusMessage`.
+- **Point Table UI:** Teach (lưu vị trí hiện tại theo tên), Go (di chuyển mọi trục tới điểm), Xoá, Lưu.
+- `AxisVm` (live position + JogStep/MoveTarget người dùng nhập), `PositionsToTextConverter` hiển thị toạ độ điểm.
+- `MotionView.xaml` — DynamicResource theme ISA-101, indicator Homed/Moving bằng DataTrigger.
+- `[ModuleNavigation("Nav.Motion", icon: "motion", order: 40)]` → sidebar tự sinh.
+
+### ✅ Wiring
+- Shell: ProjectReference + `AddUiViewModels` đăng ký `MotionViewModel` + thêm project vào .sln.
+- i18n: key `Nav.Motion` (vi "Chuyển động", en "Motion", zh "运动").
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error** (22 projects).
+- `dotnet test` → **143 passed** (64 services + 46 infra + 27 hardware + 6 architecture).
+- WPF không chạy được ở môi trường này → kiểm tra trực quan: `dotnet run --project AM.Application.Shell`
+  (Home All → đèn Homed xanh → Jog/Move → Teach điểm → Go).
+
+> Tiếp theo (mục B): Parameter/Recipe (bám `IRecipeService.ActiveRecipe/GetRecipeNamesAsync/...`), rồi Production/Logging/Diagnostics/Vision.
+
+---
+
 ## [Session 26] 2026-06-07 — UI module Identity (login/logout/RBAC) — mục B.1
 
 **Commit:** `a7ab3a8`

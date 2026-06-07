@@ -4,6 +4,7 @@
   "Nav.Alarms": "Alarms",
   "Nav.IoMonitor": "I/O Monitor",
   "Nav.Identity": "Account",
+  "Nav.Motion": "Motion",
   "Common.Language": "Language",
   "Status.Ready": "Ready"
 }
