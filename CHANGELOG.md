@@ -26,7 +26,7 @@
 
 ## [Session 36] 2026-06-07 — Recipe extensibility: RecipeBase + recipe theo máy (bỏ cứng P&P)
 
-**Commit:** `(điền sau push)`
+**Commit:** `f2626c2`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Mục 3 gap — `Recipe` đang cứng field Pick&Place; máy khác không khớp. Tách base + recipe theo máy.
 
