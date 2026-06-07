@@ -4,6 +4,40 @@
 
 ---
 
+## [Session 25] 2026-06-07 — Nền backend: cycle-time đo thực + alarm catalog đa ngữ
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Nốt 2 mục nền (mục A trong handoff) TRƯỚC khi làm UI modules — Production cần cycle-time, Alarm UI cần tên alarm đa ngữ.
+
+### ✅ Cycle-time đo thực (Production cần)
+- `CycleCompletedEventArgs` thêm `double CycleDurationMs` (constructor optional, mặc định 0 → tương thích call cũ).
+  Validate `ThrowIfNegative`.
+- `BaseMasterController.RunLoopAsync` đo thời gian quanh `RunOneCycleAsync` bằng
+  `Stopwatch.GetTimestamp`/`GetElapsedTime` (không cấp phát Stopwatch object), log kèm `{Duration:F0}ms`,
+  truyền vào event. Dashboard ViewModel không đổi (vẫn đọc `CycleCount`).
+
+### ✅ Alarm catalog đa ngữ (i18n §7.3 — tách tên alarm khỏi UI strings)
+- `IAlarmCatalogService` (Abstractions): `GetName(code)` + `GetRemedy(code)`, dịch theo `ILocalizationService.CurrentCulture`.
+- `JsonAlarmCatalogService` (AM.Infrastructure/Localization): nạp `Alarms.{culture}.json`
+  (mã alarm → {name, remedy}) từ thư mục `lang/`; tra theo culture hiện tại lúc gọi (đổi ngôn ngữ runtime tự phản ánh),
+  fallback culture mặc định → `"Alarm {code}"`. Bất biến sau nạp → không lock khi đọc.
+- Data: `lang/Alarms.{vi,en,zh}.json` — đủ 44 mã alarm (Motion/Vision/IO/System/Comm/Production/Safety).
+- Đăng ký DI singleton (`AddCoreServices`), dùng chung thư mục `lang/` với strings.*.json (đã copy PreserveNewest).
+
+### ✅ Tests (+5 → AM.Infrastructure.Tests 46, tổng 137)
+- `JsonAlarmCatalogServiceTests` — dịch theo culture, fallback default, culture lạ, mã không tồn tại, remedy.
+
+### 🔍 Kết quả
+- `dotnet build AM.AutoFrame.sln` → **0 Warning, 0 Error**.
+- `dotnet test` → **137 passed** (58 services + 46 infra + 27 hardware + 6 architecture).
+
+> Còn lại của mục A: (đã xong cả 2). Tiếp theo (mục B): UI Identity (IUserService) → Motion + Point Table.
+> Lưu ý: tên alarm hiển thị ở Alarm module chưa wire `IAlarmCatalogService` vào `AlarmListViewModel` —
+> sẽ làm khi dựng lại Alarm UI đúng (thêm cột Name + refresh khi đổi ngôn ngữ).
+
+---
+
 ## [Session 24] 2026-06-07 — Nền backend: IUserService (login/RBAC) + lưu lựa chọn ngôn ngữ
 
 **Commit:** `6094df5`

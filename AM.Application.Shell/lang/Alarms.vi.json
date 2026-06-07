@@ -1,0 +1,53 @@
+{
+  "10001": { "name": "Quá thời gian chuyển động", "remedy": "Kiểm tra nguồn và cáp servo drive" },
+  "10002": { "name": "Trục chưa về gốc", "remedy": "Thực hiện Home trục trước khi chạy" },
+  "10003": { "name": "Dừng khẩn cấp trục", "remedy": "Nhả nút E-Stop và reset trục" },
+  "10004": { "name": "Sai lệch bám vị trí", "remedy": "Kiểm tra tải cơ khí và thông số servo" },
+  "10005": { "name": "Vượt giới hạn mềm", "remedy": "Kiểm tra lệnh vị trí và cấu hình soft limit" },
+  "10006": { "name": "Chạm giới hạn cứng", "remedy": "Kiểm tra công tắc hành trình và cơ khí" },
+  "10007": { "name": "Lỗi driver trục", "remedy": "Kiểm tra mã lỗi servo drive và nguồn" },
+  "10008": { "name": "Mất kết nối motion", "remedy": "Kiểm tra cáp và nguồn card motion" },
+
+  "20001": { "name": "Chụp ảnh thất bại", "remedy": "Kiểm tra kết nối và trigger camera" },
+  "20002": { "name": "Tool vision lỗi", "remedy": "Kiểm tra cấu hình tool và vùng ROI" },
+  "20003": { "name": "Phát hiện sản phẩm NG", "remedy": "Kiểm tra sản phẩm và ngưỡng kiểm tra" },
+  "20004": { "name": "Quá thời gian vision", "remedy": "Kiểm tra tải xử lý và kết nối camera" },
+  "20005": { "name": "Mất kết nối camera", "remedy": "Kiểm tra cáp và nguồn camera" },
+  "20006": { "name": "Hiệu chuẩn vision lỗi", "remedy": "Thực hiện lại calibration với bàn chuẩn" },
+
+  "30001": { "name": "Thiếu sản phẩm", "remedy": "Kiểm tra cấp phôi và cảm biến vị trí" },
+  "30002": { "name": "Kẹp giữ thất bại", "remedy": "Kiểm tra van khí và cảm biến kẹp" },
+  "30003": { "name": "Lỗi cảm biến", "remedy": "Kiểm tra dây tín hiệu và nguồn cảm biến" },
+  "30004": { "name": "Mất kết nối I/O", "remedy": "Kiểm tra cáp và nguồn module I/O" },
+  "30005": { "name": "Lỗi ngõ ra", "remedy": "Kiểm tra tải ngõ ra và cầu chì" },
+
+  "40001": { "name": "Lỗi cơ sở dữ liệu", "remedy": "Kiểm tra file/dịch vụ database và dung lượng đĩa" },
+  "40002": { "name": "Lỗi hệ thống nghiêm trọng", "remedy": "Xem log hệ thống và khởi động lại ứng dụng" },
+  "40003": { "name": "Cấu hình không hợp lệ", "remedy": "Kiểm tra file cấu hình và giá trị tham số" },
+  "40004": { "name": "License hết hạn", "remedy": "Liên hệ nhà cung cấp để gia hạn license" },
+  "40005": { "name": "Khởi tạo hệ thống lỗi", "remedy": "Xem log khởi tạo và kiểm tra phần cứng" },
+
+  "50001": { "name": "Kết nối thất bại", "remedy": "Kiểm tra cáp mạng và địa chỉ thiết bị" },
+  "50002": { "name": "Quá thời gian truyền thông", "remedy": "Kiểm tra thiết bị và độ trễ mạng" },
+  "50003": { "name": "Lỗi CRC/checksum", "remedy": "Kiểm tra nhiễu đường truyền và đấu nối" },
+  "50004": { "name": "Lỗi giao thức", "remedy": "Kiểm tra cấu hình giao thức hai đầu" },
+  "50010": { "name": "Modbus trả về exception", "remedy": "Kiểm tra địa chỉ thanh ghi và quyền truy cập PLC" },
+  "50011": { "name": "Modbus slave không trả lời", "remedy": "Kiểm tra slave ID và đường truyền" },
+  "50020": { "name": "Lỗi khung serial", "remedy": "Kiểm tra baudrate, parity và đấu dây" },
+  "50021": { "name": "Tràn bộ đệm serial", "remedy": "Giảm tốc độ gửi hoặc tăng tần suất đọc" },
+  "50030": { "name": "Lỗi socket TCP", "remedy": "Kiểm tra kết nối mạng và trạng thái thiết bị" },
+  "50040": { "name": "OPC UA chất lượng xấu", "remedy": "Kiểm tra trạng thái tag và server OPC" },
+  "50041": { "name": "OPC UA không tìm thấy node", "remedy": "Kiểm tra nodeId trong cấu hình" },
+  "50050": { "name": "EtherNet/IP không tìm thấy tag", "remedy": "Kiểm tra tên tag trong PLC" },
+  "50051": { "name": "EtherNet/IP sai kiểu dữ liệu", "remedy": "Kiểm tra kiểu dữ liệu tag hai đầu" },
+
+  "60001": { "name": "Công thức không hợp lệ", "remedy": "Kiểm tra và sửa giá trị recipe" },
+  "60002": { "name": "Trùng số serial", "remedy": "Kiểm tra mã vạch và lịch sử sản xuất" },
+  "60003": { "name": "Lô sản xuất đã đầy", "remedy": "Đóng lô hiện tại và mở lô mới" },
+  "60004": { "name": "Đạt giới hạn NG", "remedy": "Kiểm tra nguyên nhân lỗi và reset bộ đếm" },
+
+  "70001": { "name": "Dừng khẩn cấp", "remedy": "Nhả nút E-Stop và reset an toàn" },
+  "70002": { "name": "Cửa an toàn mở", "remedy": "Đóng cửa và xác nhận interlock" },
+  "70003": { "name": "Rèm sáng bị che", "remedy": "Loại vật cản khỏi vùng rèm sáng và reset" },
+  "70004": { "name": "Vi phạm interlock", "remedy": "Kiểm tra chuỗi an toàn và xác nhận reset" }
+}

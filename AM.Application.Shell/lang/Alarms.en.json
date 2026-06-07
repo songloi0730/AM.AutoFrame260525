@@ -1,0 +1,53 @@
+{
+  "10001": { "name": "Motion timeout", "remedy": "Check servo drive power and cabling" },
+  "10002": { "name": "Axis not homed", "remedy": "Home the axis before running" },
+  "10003": { "name": "Axis emergency stop", "remedy": "Release E-Stop and reset the axis" },
+  "10004": { "name": "Following error", "remedy": "Check mechanical load and servo tuning" },
+  "10005": { "name": "Soft limit exceeded", "remedy": "Check target position and soft limit config" },
+  "10006": { "name": "Hard limit hit", "remedy": "Check limit switches and mechanics" },
+  "10007": { "name": "Axis driver fault", "remedy": "Check servo drive fault code and power" },
+  "10008": { "name": "Motion connection lost", "remedy": "Check motion card cabling and power" },
+
+  "20001": { "name": "Image grab failed", "remedy": "Check camera connection and trigger" },
+  "20002": { "name": "Vision tool failed", "remedy": "Check tool configuration and ROI" },
+  "20003": { "name": "NG part detected", "remedy": "Inspect part and check threshold" },
+  "20004": { "name": "Vision timeout", "remedy": "Check processing load and camera link" },
+  "20005": { "name": "Camera connection lost", "remedy": "Check camera cabling and power" },
+  "20006": { "name": "Vision calibration failed", "remedy": "Re-run calibration with reference target" },
+
+  "30001": { "name": "Part missing", "remedy": "Check part feeding and position sensor" },
+  "30002": { "name": "Clamp failed", "remedy": "Check air valve and clamp sensor" },
+  "30003": { "name": "Sensor fault", "remedy": "Check sensor wiring and power" },
+  "30004": { "name": "I/O connection lost", "remedy": "Check I/O module cabling and power" },
+  "30005": { "name": "Output fault", "remedy": "Check output load and fuse" },
+
+  "40001": { "name": "Database error", "remedy": "Check database file/service and disk space" },
+  "40002": { "name": "Critical system error", "remedy": "Review system log and restart application" },
+  "40003": { "name": "Invalid configuration", "remedy": "Check config file and parameter values" },
+  "40004": { "name": "License expired", "remedy": "Contact vendor to renew the license" },
+  "40005": { "name": "System init failed", "remedy": "Review init log and check hardware" },
+
+  "50001": { "name": "Connection failed", "remedy": "Check network cable and device address" },
+  "50002": { "name": "Communication timeout", "remedy": "Check device and network latency" },
+  "50003": { "name": "CRC/checksum error", "remedy": "Check line noise and wiring" },
+  "50004": { "name": "Protocol error", "remedy": "Check protocol configuration on both ends" },
+  "50010": { "name": "Modbus exception", "remedy": "Check register address and PLC access rights" },
+  "50011": { "name": "Modbus slave no response", "remedy": "Check slave ID and bus wiring" },
+  "50020": { "name": "Serial frame error", "remedy": "Check baudrate, parity and wiring" },
+  "50021": { "name": "Serial buffer overflow", "remedy": "Lower send rate or read more frequently" },
+  "50030": { "name": "TCP socket error", "remedy": "Check network connection and device state" },
+  "50040": { "name": "OPC UA bad quality", "remedy": "Check tag status and OPC server" },
+  "50041": { "name": "OPC UA node not found", "remedy": "Check nodeId in configuration" },
+  "50050": { "name": "EtherNet/IP tag not found", "remedy": "Check tag name in the PLC" },
+  "50051": { "name": "EtherNet/IP type mismatch", "remedy": "Check tag data type on both ends" },
+
+  "60001": { "name": "Invalid recipe", "remedy": "Review and fix recipe values" },
+  "60002": { "name": "Duplicate serial number", "remedy": "Check barcode and production history" },
+  "60003": { "name": "Batch full", "remedy": "Close current batch and open a new one" },
+  "60004": { "name": "NG limit reached", "remedy": "Investigate defect cause and reset counter" },
+
+  "70001": { "name": "Emergency stop", "remedy": "Release E-Stop and reset safety" },
+  "70002": { "name": "Safety door open", "remedy": "Close door and confirm interlock" },
+  "70003": { "name": "Light curtain broken", "remedy": "Clear obstruction from light curtain and reset" },
+  "70004": { "name": "Interlock breach", "remedy": "Check safety chain and confirm reset" }
+}

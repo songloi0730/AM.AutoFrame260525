@@ -266,10 +266,12 @@ public abstract class BaseMasterController : IMasterController
 
             try
             {
+                var startTs = System.Diagnostics.Stopwatch.GetTimestamp();
                 await RunOneCycleAsync(ct).ConfigureAwait(false);
+                var durationMs = System.Diagnostics.Stopwatch.GetElapsedTime(startTs).TotalMilliseconds;
                 var count = Interlocked.Increment(ref _cycleCount);
-                Logger.LogInformation("[MasterController] Cycle {Count} completed", count);
-                CycleCompleted?.Invoke(this, new CycleCompletedEventArgs(count));
+                Logger.LogInformation("[MasterController] Cycle {Count} completed in {Duration:F0}ms", count, durationMs);
+                CycleCompleted?.Invoke(this, new CycleCompletedEventArgs(count, durationMs));
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {

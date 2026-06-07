@@ -92,6 +92,12 @@ internal static class ServiceCollectionExtensions
             sp.GetRequiredService<ILogger<JsonLocalizationService>>(),
             Path.Combine(AppContext.BaseDirectory, "lang"), defaultCulture: "vi"));
         services.AddSingleton(sp => new LocalizedStrings(sp.GetRequiredService<ILocalizationService>())); // proxy WPF binding live
+
+        // Alarm catalog đa ngữ: nạp Alarms.*.json từ cùng thư mục lang/ (template §7.3)
+        services.AddSingleton<IAlarmCatalogService>(sp => new JsonAlarmCatalogService(
+            sp.GetRequiredService<ILogger<JsonAlarmCatalogService>>(),
+            sp.GetRequiredService<ILocalizationService>(),
+            Path.Combine(AppContext.BaseDirectory, "lang"), defaultCulture: "vi"));
         return services;
     }
 
