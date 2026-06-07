@@ -8,6 +8,9 @@
   "Nav.Parameter": "Recipe",
   "Common.Language": "Language",
   "Status.Ready": "Ready",
+  "Shell.Mode": "Mode",
+  "Shell.Guest": "Not signed in",
+  "Shell.NoAlarm": "No active alarm",
 
   "Col.Code": "Code",
   "Col.Level": "Level",

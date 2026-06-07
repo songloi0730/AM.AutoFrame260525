@@ -8,6 +8,9 @@
   "Nav.Parameter": "Recipe",
   "Common.Language": "Ngôn ngữ",
   "Status.Ready": "Sẵn sàng",
+  "Shell.Mode": "Chế độ",
+  "Shell.Guest": "Chưa đăng nhập",
+  "Shell.NoAlarm": "Không có cảnh báo",
 
   "Col.Code": "Mã",
   "Col.Level": "Mức",

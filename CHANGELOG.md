@@ -4,6 +4,35 @@
 
 ---
 
+## [Session 31] 2026-06-07 — Re-tune Shell layout theo chuẩn IPC ISA-101 (header lệnh toàn cục + alarm/status bar)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Áp guidance S30 vào Shell đang chạy — bố cục 4 vùng cho IPC 1920×1080.
+
+### ✅ Shell layout mới (MainWindow + ShellViewModel)
+- **Header (88px):** tên máy + **state chip** (màu theo MachineState) + Mode + Recipe đang chạy +
+  **nút lệnh toàn cục Init/Start/Stop/Reset** (≥76×56, màu semantic, CanExecute theo state) + User (từ IUserService) +
+  ComboBox ngôn ngữ + đồng hồ realtime.
+- **Nav (240px, collapse→64px):** nút module có **glyph + label**; nút ☰ thu gọn (ẩn label). Auto-discovery giữ nguyên.
+- **Content:** giới hạn bề rộng **MaxWidth 1500px** (không giãn hết màn).
+- **Alarm bar (52px) — dải riêng:** alarm mới nhất + nút Acknowledge (hiện khi có alarm); nền đỏ khi active.
+- **Status bar (36px) — chip kết nối:** sinh từ `IHardwareManagerService.GetMonitoredDevices()`, chấm xanh/đỏ theo
+  `IsConnected`, poll 1s (DispatcherTimer).
+- `ShellViewModel` (internal, DI singleton) bám IMasterController/IAlarmService/IRecipeService/IUserService/
+  IHardwareManagerService + `Loc.Strings` (state/label đa ngữ, refresh khi đổi ngôn ngữ). 2 converter:
+  `MachineStateToBrushConverter`, `ConnectionToBrushConverter`.
+- Cửa sổ: 1680×1040, CenterScreen, ResizeMode=CanMinimize (khung cố định). i18n thêm Shell.Mode/Guest/NoAlarm.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Warning, 0 Error** (24 projects). `dotnet test` → **143 passed**.
+- Kiểm tra trực quan: `dotnet run --project AM.Application.Shell` → header có state chip + lệnh toàn cục;
+  alarm bar + dãy chip kết nối ở dưới; nav ☰ thu gọn được.
+
+> Lưu ý: Dashboard module vẫn còn cụm control + state riêng (trùng một phần với header) — có thể tinh gọn sau.
+
+---
+
 ## [Session 30] 2026-06-07 — Cập nhật guidance UI: target IPC 21–24" 1920×1080 (ISA-101/SEMI E95)
 
 **Commit:** `3cedd47`

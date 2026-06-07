@@ -8,6 +8,9 @@
   "Nav.Parameter": "配方",
   "Common.Language": "语言",
   "Status.Ready": "就绪",
+  "Shell.Mode": "模式",
+  "Shell.Guest": "未登录",
+  "Shell.NoAlarm": "无报警",
 
   "Col.Code": "代码",
   "Col.Level": "等级",

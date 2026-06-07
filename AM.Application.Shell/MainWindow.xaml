@@ -1,56 +1,171 @@
-﻿<Window x:Class="AM.Application.Shell.MainWindow"
+<Window x:Class="AM.Application.Shell.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+        xmlns:conv="clr-namespace:AM.Application.Shell.Converters"
         mc:Ignorable="d"
         Title="AutoMachine Framework"
-        Height="720" Width="1180"
+        Height="1040" Width="1680"
         WindowState="Normal" WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize" SizeToContent="Manual"
         Background="{DynamicResource Screen.BackgroundBrush}">
 
+    <Window.Resources>
+        <conv:MachineStateToBrushConverter x:Key="StateBrush"/>
+        <conv:ConnectionToBrushConverter x:Key="ConnBrush"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>   <!-- Header / Title bar -->
-            <RowDefinition Height="*"/>    <!-- Main content / Prism region -->
-            <RowDefinition Height="28"/>   <!-- Status bar -->
+            <RowDefinition Height="88"/>   <!-- Header -->
+            <RowDefinition Height="*"/>    <!-- Nav + Content -->
+            <RowDefinition Height="52"/>   <!-- Alarm bar -->
+            <RowDefinition Height="36"/>   <!-- Status bar (connection chips) -->
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Background="{DynamicResource Panel.BackgroundBrush}">
-            <TextBlock Text="{StaticResource Shell.Title}"
-                       Foreground="{DynamicResource Text.HeadingBrush}"
-                       FontWeight="Bold" FontSize="14"
-                       VerticalAlignment="Center" Margin="12,0"/>
+        <!-- ═══ HEADER (88px) ════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Background="{DynamicResource Header.BackgroundBrush}"
+                BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Border.DefaultBrush}">
+            <Grid Margin="16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Trái: tên máy + state chip + mode + recipe -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{StaticResource Shell.Title}" FontWeight="Bold" FontSize="16"
+                               VerticalAlignment="Center" Foreground="{DynamicResource Text.HeadingBrush}"/>
+                    <Border CornerRadius="4" Padding="12,5" Margin="20,0,0,0" VerticalAlignment="Center"
+                            Background="{Binding MachineState, Converter={StaticResource StateBrush}}">
+                        <TextBlock Text="{Binding StateText}" FontWeight="Bold" FontSize="15"
+                                   Foreground="{DynamicResource Status.ForegroundBrush}"/>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding [Shell.Mode], Source={x:Static loc:Loc.Strings}}"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <TextBlock Text=": " Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <TextBlock Text="{Binding ModeText}" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="20,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding [Param.Recipe], Source={x:Static loc:Loc.Strings}}"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <TextBlock Text=": " Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <TextBlock Text="{Binding RecipeText}" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Phải: lệnh toàn cục + user + ngôn ngữ + đồng hồ -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="{Binding [Dash.Btn.Init], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding InitializeCommand}" MinWidth="76" Height="56" Margin="2,0"
+                            Background="{DynamicResource Status.ManualBrush}" BorderThickness="0"
+                            Foreground="{DynamicResource Status.ForegroundBrush}" FontWeight="SemiBold"/>
+                    <Button Content="{Binding [Dash.Btn.Start], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding StartCommand}" MinWidth="76" Height="56" Margin="2,0"
+                            Background="{DynamicResource Status.NormalBrush}" BorderThickness="0"
+                            Foreground="{DynamicResource Status.ForegroundBrush}" FontWeight="SemiBold"/>
+                    <Button Content="{Binding [Dash.Btn.Stop], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding StopCommand}" MinWidth="76" Height="56" Margin="2,0"
+                            Background="{DynamicResource Status.AlarmBrush}" BorderThickness="0"
+                            Foreground="{DynamicResource Status.ForegroundBrush}" FontWeight="SemiBold"/>
+                    <Button Content="{Binding [Dash.Btn.Reset], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding ResetCommand}" MinWidth="76" Height="56" Margin="2,0"
+                            Background="{DynamicResource Status.InterlockBrush}" BorderThickness="0"
+                            Foreground="{DynamicResource Status.ForegroundBrush}" FontWeight="SemiBold"/>
+
+                    <Border Width="1" Margin="14,12" Background="{DynamicResource Border.DefaultBrush}"/>
+
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding UserText}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                        <TextBlock Text="{Binding ClockText}" FontSize="11" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    </StackPanel>
+                    <ComboBox x:Name="LanguageCombo" Width="80" Height="30" VerticalAlignment="Center"
+                              SelectionChanged="LanguageCombo_SelectionChanged"
+                              ToolTip="{Binding [Common.Language], Source={x:Static loc:Loc.Strings}}"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- Main area: side-nav + content (module nạp từ DI khi Loaded) -->
+        <!-- ═══ NAV + CONTENT ════════════════════════════════════════════════════ -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel x:Name="NavPanel" Grid.Column="0" Width="150"
-                        Background="{DynamicResource Panel.BackgroundBrush}">
-                <ComboBox x:Name="LanguageCombo" Margin="8,8,8,12"
-                          SelectionChanged="LanguageCombo_SelectionChanged"
-                          ToolTip="{Binding [Common.Language]}"/>
-                <!-- Nút module được sinh động trong code-behind từ [ModuleNavigation] -->
-            </StackPanel>
+            <Border x:Name="NavBorder" Grid.Column="0" Width="240"
+                    Background="{DynamicResource NavBar.BackgroundBrush}"
+                    BorderThickness="0,0,1,0" BorderBrush="{DynamicResource Border.DefaultBrush}">
+                <StackPanel x:Name="NavPanel">
+                    <Button x:Name="NavToggle" Content="☰" Height="40" FontSize="16" Margin="8,8,8,12"
+                            HorizontalContentAlignment="Left" Padding="14,0,0,0"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource Text.SecondaryBrush}"
+                            Click="NavToggle_Click"/>
+                    <!-- Nút module sinh động trong code-behind từ [ModuleNavigation] -->
+                </StackPanel>
+            </Border>
 
-            <Border Grid.Column="1" Background="{DynamicResource Screen.BackgroundBrush}" Margin="4">
-                <ContentControl x:Name="MainContent"/>
+            <Border Grid.Column="1" Background="{DynamicResource Screen.BackgroundBrush}">
+                <Border MaxWidth="1500" HorizontalAlignment="Stretch" Margin="6">
+                    <ContentControl x:Name="MainContent"/>
+                </Border>
             </Border>
         </Grid>
 
-        <!-- Status bar -->
-        <Border Grid.Row="2" Background="{DynamicResource Status.ManualBrush}">
-            <TextBlock x:Name="StatusText"
-                       Text="{StaticResource Shell.StatusReady}"
-                       Foreground="{DynamicResource Status.ForegroundBrush}" FontSize="11"
-                       VerticalAlignment="Center" Margin="8,0"/>
+        <!-- ═══ ALARM BAR (52px) — dải riêng ════════════════════════════════════ -->
+        <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.DefaultBrush}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource Panel.BackgroundAltBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasActiveAlarm}" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource Status.AlarmBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <DockPanel Margin="16,0">
+                <Button DockPanel.Dock="Right" VerticalAlignment="Center" Height="34" Padding="16,0"
+                        Content="{Binding [Alarm.Ack], Source={x:Static loc:Loc.Strings}}"
+                        Command="{Binding AcknowledgeAlarmCommand}"
+                        Visibility="{Binding HasActiveAlarm, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource Button.DefaultBrush}"
+                        Foreground="{DynamicResource Text.PrimaryBrush}" BorderThickness="0"/>
+                <TextBlock Text="{Binding LatestAlarmText}" VerticalAlignment="Center" FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ STATUS BAR (36px) — chip kết nối thiết bị ═══════════════════════ -->
+        <Border Grid.Row="3" Background="{DynamicResource Header.BackgroundBrush}"
+                BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.DefaultBrush}">
+            <ItemsControl ItemsSource="{Binding Connections}" VerticalAlignment="Center" Margin="12,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,14,0" Padding="2,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="10" Height="10" Margin="0,0,5,0" VerticalAlignment="Center"
+                                         Fill="{Binding Connected, Converter={StaticResource ConnBrush}}"/>
+                                <TextBlock Text="{Binding Name}" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Border>
     </Grid>
 </Window>

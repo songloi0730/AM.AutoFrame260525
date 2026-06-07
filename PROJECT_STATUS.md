@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #30 — Guidance UI: target IPC 21–24" 1920×1080 (ISA-101/SEMI E95) + components catalog
-**Commit:** `3cedd47`  ·  (S29: light theme + cửa sổ cố định + i18n toàn module)
+**Session:** #31 — Re-tune Shell layout IPC ISA-101 (header lệnh toàn cục + state chip + alarm/status bar chips)
+**Commit:** `(điền sau push)`  ·  (S30: guidance UI target IPC 21–24")
 
 ---
 
@@ -37,7 +37,8 @@
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Modules.Motion | ✅ Hoàn thành | **Mới** — jog/home/move/stop từng trục (poll live) + Point Table (IPointTableService); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |
-| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + RegisterRealHardware + **HardwareFactory** (vision/scanner/safety/io-tagmap) + io.map.json |
+| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + HardwareFactory + **Shell layout IPC ISA-101** (header lệnh toàn cục+state chip, nav collapse, alarm bar + connection chips) |
+| AM.UI.Localization | ✅ Hoàn thành | Proxy i18n dùng chung `Loc.Strings` (module bind `{x:Static loc:Loc.Strings}`) |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |

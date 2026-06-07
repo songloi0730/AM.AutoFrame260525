@@ -116,6 +116,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IdentityViewModel>();
         services.AddSingleton<MotionViewModel>();
         services.AddSingleton<ParameterViewModel>();
+        services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips
         return services;
     }
 
