@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #29 — Light theme + cửa sổ cố định + i18n toàn module (AM.UI.Localization)
-**Commit:** `(điền sau push)`  ·  (S28: Parameter/Recipe attribute-driven)
+**Commit:** `58b7257`  ·  (S28: Parameter/Recipe attribute-driven)
 
 ---
 

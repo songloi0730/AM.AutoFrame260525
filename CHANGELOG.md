@@ -6,7 +6,7 @@
 
 ## [Session 29] 2026-06-07 — Light theme + cửa sổ kích thước cố định + i18n toàn module
 
-**Commit:** `(điền sau push)`
+**Commit:** `58b7257`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Phản hồi sau khi chạy thử: (1) nhiều chuỗi không đổi theo ngôn ngữ, (2) đổi sang light theme, (3) khởi động kích thước cố định.
 
