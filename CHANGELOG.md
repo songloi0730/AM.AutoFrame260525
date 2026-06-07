@@ -6,7 +6,7 @@
 
 ## [Session 23] 2026-06-07 — Revert 7-screen commit (vỡ build) + thêm HMI master template
 
-**Commit:** *(pending)*
+**Commit:** `1cf7e27` (+ revert commit)
 **Người thực hiện:** Claude (Cowork) + Nhan
 
 ### 🔙 Revert
