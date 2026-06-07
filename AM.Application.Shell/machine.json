@@ -1,0 +1,10 @@
+{
+  "machineName": "Demo P&P Line",
+  "stations": [
+    {
+      "name": "DemoStation",
+      "axes": [ "PickX", "PickZ", "PlaceX", "PlaceZ" ],
+      "devices": [ "MainMotion", "MainCamera", "MainIO" ]
+    }
+  ]
+}

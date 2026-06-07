@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #33 — Mở maximized + chữ to chuẩn công nghiệp + icon Segoe MDL2
-**Commit:** `84bce47`  ·  (S32: fix cửa sổ tràn màn scale 125%)
+**Session:** #34 — Nền WorkStation: StepSequence + AxisMap/MachineConfig (concrete IAxis đầu tiên)
+**Commit:** `(điền sau push)`  ·  (S33: mở maximized + chữ to + icon Segoe MDL2)
 
 ---
 
@@ -43,7 +43,7 @@
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
 | `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
-| AM.Infrastructure.Tests | ✅ Hoàn thành | **46 tests**: ISA-88 transitions + busy-guard + StationBase + end-to-end + i18n + **alarm catalog (5)** |
+| AM.Infrastructure.Tests | ✅ Hoàn thành | **55 tests**: ISA-88 + busy-guard + StationBase + e2e + i18n + alarm catalog + **StepSequence (4) + AxisMap (5)** |
 | AM.Modules.* (còn lại) | ❌ Chưa có | Production, Vision, Logging, Diagnostics |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
@@ -146,6 +146,8 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 | `IHardwareManagerService` | `AM.Services/HardwareManagerService.cs` ✅ |
 | `IStationSyncService` | `AM.Services/StationSyncService.cs` ✅ |
 | `IPointTableService` | `AM.Services/PointTableService.cs` ✅ (Point Table — toạ độ đặt tên JSON) |
+| `IAxisMap` | `AM.Infrastructure/Motion/JsonAxisMap.cs` ✅ (trục logic→IAxis qua `MotionAxisAdapter` — concrete IAxis đầu tiên) |
+| `IMachineConfigProvider` | `AM.Infrastructure/Configuration/JsonMachineConfigProvider.cs` ✅ (layout máy machine.json) |
 
 ### Enums (AM.Core/Enums/)
 | Enum | Values |

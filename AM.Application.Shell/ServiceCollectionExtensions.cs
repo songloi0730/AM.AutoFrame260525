@@ -29,7 +29,9 @@ using AM.Hardware.Motion;
 using AM.Hardware.Motion.Advantech;
 using AM.Hardware.Motion.Gts;
 using AM.Hardware.Vision;
+using AM.Infrastructure.Configuration;
 using AM.Infrastructure.Localization;
+using AM.Infrastructure.Motion;
 using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
 using AM.Modules.Identity;
@@ -88,6 +90,16 @@ internal static class ServiceCollectionExtensions
         // Point Table: toạ độ đặt tên lưu points.json (tách toạ độ khỏi code — Motion module)
         services.AddSingleton<IPointTableService, PointTableService>(sp =>
             new PointTableService(sp.GetRequiredService<ILogger<PointTableService>>(), "points.json"));
+
+        // AxisMap: trục logic → IAxis bind controller (axismap.json) — Mechanism nhận IAxis theo tên
+        services.AddSingleton<IAxisMap>(sp => new JsonAxisMap(
+            sp.GetRequiredService<ILogger<JsonAxisMap>>(),
+            sp.GetRequiredService<IHardwareManagerService>(),
+            Path.Combine(AppContext.BaseDirectory, "axismap.json")));
+        // MachineConfig: layout máy (machine.json) — đổi máy chỉ đổi config
+        services.AddSingleton<IMachineConfigProvider>(sp => new JsonMachineConfigProvider(
+            sp.GetRequiredService<ILogger<JsonMachineConfigProvider>>(),
+            Path.Combine(AppContext.BaseDirectory, "machine.json")));
         services.AddSingleton<IHardwareWatchdogService, HardwareWatchdogService>();
         // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
         services.AddSingleton<IUserService, UserService>(sp =>

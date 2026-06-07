@@ -31,6 +31,8 @@
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
     <ProjectReference Include="..\AM.Infrastructure\AM.Infrastructure.csproj" />
     <ProjectReference Include="..\AM.Hardware.IO\AM.Hardware.IO.csproj" />
+    <ProjectReference Include="..\AM.Hardware.Motion\AM.Hardware.Motion.csproj" />
+    <ProjectReference Include="..\AM.Services\AM.Services.csproj" />
   </ItemGroup>
 
 </Project>

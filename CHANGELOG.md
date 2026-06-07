@@ -24,6 +24,38 @@
 
 ---
 
+## [Session 34] 2026-06-07 — Nền WorkStation: chuẩn hoá StepSequence + AxisMap/MachineConfig (concrete IAxis)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Làm 2 nền tảng bắt buộc trước khi dựng máy thật (mục 1 + 2 trong phân tích gap).
+
+### ✅ Mục 1 — Chuẩn hoá Sequence (bỏ pattern trùng)
+- Thêm **`AM.Infrastructure/StepSequence.cs`** — step-runner tái dùng: foreach Step (sắp theo StepNumber) +
+  Validate + Execute; **để exception nổi lên** `BaseMasterController.RunLoopAsync` (đã chuẩn ISA-88: Alarm→RunAlarm→Reset,
+  Cancel→dừng). Mỗi máy KHÔNG copy vòng lặp + catch-3-exception nữa.
+- **Xoá `DemoMachineSequence.cs`** (mồ côi, không ai dùng, trùng vai trò với BaseMasterController).
+- Cập nhật skill `am-sequence-patterns`: Station/MasterController chạy `StepSequence` thay vì viết lại vòng lặp.
+- Test: `StepSequenceTests` (thứ tự step, propagate AlarmException, Validate-fail chặn Execute, cancel).
+
+### ✅ Mục 2 — AxisMap + MachineConfig (logical → physical) + concrete IAxis ĐẦU TIÊN
+- `AxisConfig` (Core): tên logic → controller + index + đơn vị + vận tốc mặc định + soft-limit.
+- **`MotionAxisAdapter`** (Infrastructure) — **concrete `IAxis` đầu tiên** của framework: bọc `IMotionController`+index,
+  áp vận tốc mặc định, clamp soft-limit; trạng thái cache theo lệnh.
+- `IAxisMap` + **`JsonAxisMap`** (nạp `axismap.json`, `ResolveAxis(name)` → IAxis bind controller qua HardwareManager, cache).
+- `MachineConfig`/`StationConfig` + `IMachineConfigProvider` + **`JsonMachineConfigProvider`** (nạp `machine.json` — layout máy).
+- Sample `axismap.json` + `machine.json` (Shell, copy PreserveNewest) + đăng ký DI singleton.
+- Test: `JsonAxisMapTests` (nạp, Get/TryGet, ResolveAxis cache, Home→Move cập nhật state, clamp soft-limit) —
+  dùng SimulatedMotionController + HardwareManagerService thật.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Warning, 0 Error**. `dotnet test` → **152 passed** (Infra 46→**55**: +4 StepSequence, +5 AxisMap).
+
+> Còn lại trước khi dựng máy (mục 3–7): Recipe extensibility, Safety interlock + ILightController, wire Production,
+> SubRoutines base, Debug/Engineering UI tiêu thụ [MechanismUI]/[StationUI].
+
+---
+
 ## [Session 32] 2026-06-07 — Fix: cửa sổ tràn màn hình laptop khi scale 125% (DIP vs pixel)
 
 **Commit:** `6f6a17e`

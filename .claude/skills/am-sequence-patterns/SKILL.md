@@ -16,8 +16,9 @@ AM.WorkStation.{MachineName}/
 │   ├── Step02WaitForPart.cs
 │   ├── Step03LoadPart.cs
 │   └── Step05Inspect.cs
-├── DemoMachineSequence.cs      ← Orchestrator (foreach step → validate + execute)
+├── Stations/{Name}Station.cs   ← chạy StepSequence(steps) trong RunCycleCoreAsync
 └── ...
+   (KHÔNG cần file *MachineSequence riêng — dùng StepSequence của AM.Infrastructure)
 ```
 
 ## Step Template
@@ -118,91 +119,35 @@ public sealed class Step{NN}{Name} : IStep
 
 ## Sequence Orchestrator Template
 
+> ⚠️ **KHÔNG copy vòng lặp + catch-3-exception nữa.** Vòng lặp ISA-88 + xử lý
+> AlarmException/Cancel/Critical đã CHUẨN HOÁ một chỗ ở `BaseMasterController.RunLoopAsync`.
+> Để chạy danh sách Step trong một cycle, dùng **`StepSequence`** (AM.Infrastructure) — chỉ foreach +
+> Validate + Execute, để exception nổi lên cho MasterController xử lý. Mỗi máy KHÔNG viết lại vòng lặp.
+
+**Pattern chuẩn — Station/MasterController chạy `StepSequence`:**
+
 ```csharp
-// -------------------------------------------------------
-// File:    {MachineName}MachineSequence.cs
-// Project: AM.WorkStation.{MachineName}
-// Purpose: Orchestrate Steps for {MachineName} — DO NOT put logic here
-// -------------------------------------------------------
-namespace AM.WorkStation.{MachineName};
-
-public sealed class {MachineName}MachineSequence
+// Trong Station.RunCycleCoreAsync (hoặc MasterController.RunOneCycleAsync):
+public sealed class {Name}Station : StationBase<{Name}Station>
 {
-    private readonly IReadOnlyList<IStep> _steps;
-    private readonly IAlarmService _alarmService;
-    private readonly ILogger<{MachineName}MachineSequence> _logger;
-    private int _cycleCount;
+    private readonly StepSequence _sequence;
 
-    public bool IsRunning { get; private set; }
-    public int CycleCount => _cycleCount;
-
-    public {MachineName}MachineSequence(
-        IReadOnlyList<IStep> steps, IAlarmService alarmService,
-        ILogger<{MachineName}MachineSequence> logger)
+    public {Name}Station(/* mechanisms, recipe, */ IAlarmService alarm, ILogger<{Name}Station> logger)
+        : base(alarm, logger)
     {
-        ArgumentNullException.ThrowIfNull(steps);
-        ArgumentNullException.ThrowIfNull(alarmService);
-        ArgumentNullException.ThrowIfNull(logger);
-        _steps = steps; _alarmService = alarmService; _logger = logger;
+        // Dựng các Step (mỗi Step gọi domain method của Mechanism), rồi tạo StepSequence 1 lần:
+        var steps = new IStep[] { /* new Step01...(...), new Step02...(...) */ };
+        _sequence = new StepSequence(steps, logger);
     }
 
-    public async Task RunAsync(CancellationToken ct)
-    {
-        _logger.LogInformation("Sequence starting — {StepCount} steps", _steps.Count);
-        IsRunning = true;
-        try
-        {
-            while (!ct.IsCancellationRequested)
-                await RunOneCycleAsync(ct).ConfigureAwait(false);
-        }
-        finally { IsRunning = false; }
-    }
-
-    private async Task RunOneCycleAsync(CancellationToken ct)
-    {
-        foreach (var step in _steps)
-        {
-            ct.ThrowIfCancellationRequested();
-            try
-            {
-                step.Validate();
-                await step.ExecuteAsync(ct).ConfigureAwait(false);
-            }
-            catch (AlarmException ex)
-            {
-                _logger.LogError(ex, "[Cycle {N}] Alarm code={Code} station={Station}",
-                    _cycleCount + 1, ex.AlarmCode, ex.Station);
-                await _alarmService.RaiseAsync(ex.AlarmCode, ex.Station, ex.Message, ct).ConfigureAwait(false);
-                await WaitForAlarmClearAsync(ct).ConfigureAwait(false);
-                return; // restart cycle from beginning
-            }
-            // S2139: intentional — log for audit trail then rethrow
-#pragma warning disable S2139
-            catch (OperationCanceledException oce)
-#pragma warning restore S2139
-            {
-                _logger.LogInformation(oce, "[Cycle {N}] Stopped by operator", _cycleCount + 1);
-                throw;
-            }
-#pragma warning disable CA1031
-            catch (Exception ex)
-#pragma warning restore CA1031
-            {
-                _logger.LogCritical(ex, "[Cycle {N}] Unhandled error in step {Step}",
-                    _cycleCount + 1, step.StepName);
-                await _alarmService.RaiseAsync(AlarmCodes.SystemCritical, "SEQUENCE",
-                    $"Unhandled: {ex.Message}", ct).ConfigureAwait(false);
-                return;
-            }
-        }
-        _cycleCount++;
-        _logger.LogInformation("Cycle {N} completed", _cycleCount);
-    }
-
-    private async Task WaitForAlarmClearAsync(CancellationToken ct)
-    {
-        while (!ct.IsCancellationRequested && _alarmService.HasActiveAlarms)
-            await Task.Delay(500, ct).ConfigureAwait(false);
-    }
+    protected override Task RunCycleCoreAsync(CancellationToken ct)
+        => _sequence.RunCycleAsync(ct);   // exception → bubble lên BaseMasterController (ISA-88)
 }
 ```
+
+- **AlarmException** từ Step → nổi lên `RunLoopAsync` → `FireTrigger(Error)` → state `RunAlarm` → operator **Reset**
+  (đúng ISA-88). KHÔNG tự `WaitForAlarmClear` rồi resume ngầm.
+- **OperationCanceled** (operator Stop) → nổi lên → dừng bình thường.
+- Pause/Resume: `BaseMasterController.CheckPauseAsync` đã lo (checkpoint giữa các cycle).
+
+> Cũng có thể bỏ Step, để Station gọi trực tiếp domain method của Mechanism (xem `DemoStation`) — chọn 1 kiểu, nhất quán.

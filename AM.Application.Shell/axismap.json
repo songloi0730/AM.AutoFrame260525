@@ -1,0 +1,6 @@
+[
+  { "name": "PickX",  "controller": "MainMotion", "index": 0, "unit": "mm", "defaultVelocity": 100, "softLimitMin": -500, "softLimitMax": 500 },
+  { "name": "PickZ",  "controller": "MainMotion", "index": 1, "unit": "mm", "defaultVelocity": 80,  "softLimitMin": -200, "softLimitMax": 200 },
+  { "name": "PlaceX", "controller": "MainMotion", "index": 2, "unit": "mm", "defaultVelocity": 100, "softLimitMin": -500, "softLimitMax": 500 },
+  { "name": "PlaceZ", "controller": "MainMotion", "index": 3, "unit": "mm", "defaultVelocity": 80,  "softLimitMin": -200, "softLimitMax": 200 }
+]
