@@ -26,7 +26,7 @@
 
 ## [Session 40] 2026-06-07 — Production UI: dashboard UPH/yield/cycle-time (số liệu ProductionRecorder)
 
-**Commit:** `(điền sau push)`
+**Commit:** `eeeb1b0`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Hiển thị số liệu sản xuất đã wire ở S37 (ProductionRecorder ghi mỗi cycle).
 
