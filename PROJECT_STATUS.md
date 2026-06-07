@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #41 — Phê phán + chắt lọc chuẩn HMI nâng cao (SEMI E95/EEMUA/Siemens) → docs/skill
-**Commit:** `(điền sau push)`  ·  (S40: Production UI UPH/yield)
+**Commit:** `d663f01`  ·  (S40: Production UI UPH/yield)
 
 ---
 

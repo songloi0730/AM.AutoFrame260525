@@ -26,7 +26,7 @@
 
 ## [Session 41] 2026-06-07 — Phê phán + chắt lọc chuẩn HMI nâng cao (SEMI E95/EEMUA/ISA-18.2/Siemens)
 
-**Commit:** `(điền sau push)`
+**Commit:** `d663f01`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User cung cấp tài liệu HMI mở rộng; yêu cầu **phản biện phần không phù hợp** cho IPC 21–24" mouse+touch
 (máy đơn lẻ) + cập nhật phần phù hợp vào docs/skill.
