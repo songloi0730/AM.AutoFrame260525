@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #27 — UI module Motion (jog/home/move + Point Table) — mục B.2
-**Commit:** `8d07549`  ·  (S26: UI Identity login/logout/RBAC)
+**Session:** #28 — UI module Parameter/Recipe (attribute-driven [ParamView]) — mục B.3
+**Commit:** `(điền sau push)`  ·  (S27: UI Motion jog/home/move + Point Table)
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **22 projects** (CPM), 0 warning, **143 tests pass** · README + CI/CD + arch-test + i18n + RBAC + alarm catalog + point table |
+| Solution structure | ✅ Hoàn thành | **23 projects** (CPM), 0 warning, **143 tests pass** · README + CI/CD + arch-test + i18n + RBAC + alarm catalog + point table + recipe editor |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -36,13 +36,14 @@
 | AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Modules.Motion | ✅ Hoàn thành | **Mới** — jog/home/move/stop từng trục (poll live) + Point Table (IPointTableService); nav order 40 |
+| AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |
 | AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + RegisterRealHardware + **HardwareFactory** (vision/scanner/safety/io-tagmap) + io.map.json |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
 | scripts/am-commit.sh | ✅ Hoàn thành | Git wrapper xử lý Windows index.lock |
 | `libs/` vendor DLLs | ✅ Structure tạo xong | Placeholder + README; DLL do developer tự copy từ SDK |
 | AM.Infrastructure.Tests | ✅ Hoàn thành | **46 tests**: ISA-88 transitions + busy-guard + StationBase + end-to-end + i18n + **alarm catalog (5)** |
-| AM.Modules.* (còn lại) | ❌ Chưa có | Parameter, Vision, Logging, Diagnostics |
+| AM.Modules.* (còn lại) | ❌ Chưa có | Production, Vision, Logging, Diagnostics |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---

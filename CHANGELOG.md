@@ -4,6 +4,37 @@
 
 ---
 
+## [Session 28] 2026-06-07 — UI module Parameter/Recipe (attribute-driven form) — mục B.3
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Mục B.3 — Recipe editor bám ĐÚNG `IRecipeService` (`ActiveRecipe`/`GetRecipeNamesAsync`/`LoadRecipeAsync`/`SaveRecipeAsync`/`ValidateAsync`). Dùng `[ParamView]` để UI tự render (lần đầu attribute này có tác dụng).
+
+### ✅ Recipe gắn `[ParamView]` (AM.Core)
+- Gắn `[ParamView]` cho 13 tham số kỹ thuật có setter (Pick/Place X/Y/Z, Vận tốc/Gia tốc, Vision score/timeout, Timing step/clamp/vacuum) — group + unit + min/max + order. Thuần additive, không đổi hành vi (143 tests vẫn xanh).
+
+### ✅ AM.Modules.Parameter (project mới — project thứ 23)
+- `ParameterViewModel` (bám IRecipeService + IUserService): nạp danh sách recipe + recipe active, **sửa trên bản clone**
+  (Reload huỷ được, không đụng cache RecipeService), Validate (`ValidateAsync`), **Save gate quyền Engineer**
+  (`IUserService.HasPermission`), operatorId = CurrentUser. Bắt `ArgumentException` (validate-fail khi save) → list lỗi.
+- `ParamRowVm`: sinh từ `[ParamView]` qua **reflection**, đọc/ghi giá trị về property (int làm tròn), hiện khoảng hợp lệ.
+- `ParameterView.xaml`: ComboBox chọn recipe + Nạp/Khôi phục/Kiểm tra/Lưu; form group theo `[ParamView].Group`
+  bằng `CollectionViewSource` + `GroupStyle`; list lỗi validate + status. Theme ISA-101.
+- `[ModuleNavigation("Nav.Parameter", icon: "recipe", order: 50)]`.
+
+### ✅ Wiring
+- Shell: ProjectReference + `AddUiViewModels` đăng ký `ParameterViewModel` + thêm project .sln.
+- i18n: key `Nav.Parameter` (vi/en "Recipe", zh "配方").
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Warning, 0 Error** (23 projects). `dotnet test` → **143 passed**.
+- Kiểm tra trực quan: `dotnet run --project AM.Application.Shell` → menu "Recipe": Nạp Default → sửa tham số →
+  Kiểm tra/Lưu (cần đăng nhập engineer/admin ở màn Tài khoản, nếu không sẽ báo "Cần quyền Engineer").
+
+> Tiếp theo (mục B): Production (UPH/yield — dùng `CycleDurationMs` đã thêm ở S25), Logging, Diagnostics, Vision.
+
+---
+
 ## [Session 27] 2026-06-07 — UI module Motion (jog/home/move + Point Table) — mục B.2
 
 **Commit:** `8d07549` (+ cleanup: gỡ tracking parameters.json/users.json runtime, thêm gitignore)

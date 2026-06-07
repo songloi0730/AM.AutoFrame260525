@@ -5,6 +5,7 @@
   "Nav.IoMonitor": "I/O Monitor",
   "Nav.Identity": "Account",
   "Nav.Motion": "Motion",
+  "Nav.Parameter": "Recipe",
   "Common.Language": "Language",
   "Status.Ready": "Ready"
 }

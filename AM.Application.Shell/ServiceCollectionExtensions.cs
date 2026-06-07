@@ -35,6 +35,7 @@ using AM.Modules.Dashboard;
 using AM.Modules.Identity;
 using AM.Modules.IoMonitor;
 using AM.Modules.Motion;
+using AM.Modules.Parameter;
 using AM.Services;
 using AM.WorkStation.Demo.Controllers;
 using AM.WorkStation.Demo.Mechanisms;
@@ -114,6 +115,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IoMonitorViewModel>();
         services.AddSingleton<IdentityViewModel>();
         services.AddSingleton<MotionViewModel>();
+        services.AddSingleton<ParameterViewModel>();
         return services;
     }
 

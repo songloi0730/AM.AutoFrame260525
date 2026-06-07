@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Modules.Identity", "AM.M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Modules.Motion", "AM.Modules.Motion\AM.Modules.Motion.csproj", "{094EA5A5-EB60-4E8A-886C-BFCA789645E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.Modules.Parameter", "AM.Modules.Parameter\AM.Modules.Parameter.csproj", "{28354106-B7AA-4CE4-A5C7-95139172CB28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -321,6 +323,18 @@ Global
 		{094EA5A5-EB60-4E8A-886C-BFCA789645E7}.Release|x64.Build.0 = Release|Any CPU
 		{094EA5A5-EB60-4E8A-886C-BFCA789645E7}.Release|x86.ActiveCfg = Release|Any CPU
 		{094EA5A5-EB60-4E8A-886C-BFCA789645E7}.Release|x86.Build.0 = Release|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Debug|x64.Build.0 = Debug|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Debug|x86.Build.0 = Debug|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Release|x64.ActiveCfg = Release|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Release|x64.Build.0 = Release|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Release|x86.ActiveCfg = Release|Any CPU
+		{28354106-B7AA-4CE4-A5C7-95139172CB28}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

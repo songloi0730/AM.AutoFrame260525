@@ -5,6 +5,7 @@
   "Nav.IoMonitor": "Giám sát I/O",
   "Nav.Identity": "Tài khoản",
   "Nav.Motion": "Chuyển động",
+  "Nav.Parameter": "Recipe",
   "Common.Language": "Ngôn ngữ",
   "Status.Ready": "Sẵn sàng"
 }
