@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
 **Session:** #42 — Alarm: AlarmCategory + AlarmAction + AlarmPolicy (mở rộng isStoppable)
-**Commit:** `(điền sau push)`  ·  (S41: phê phán/chắt lọc chuẩn HMI nâng cao)
+**Commit:** `d0154c3`  ·  (S41: phê phán/chắt lọc chuẩn HMI nâng cao)
 
 ---
 

@@ -26,7 +26,7 @@
 
 ## [Session 42] 2026-06-07 — Alarm: AlarmCategory + AlarmAction (mở rộng isStoppable nhị phân)
 
-**Commit:** `(điền sau push)`
+**Commit:** `d0154c3`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Việc nhỏ "dùng chung mọi máy" (mục (a) từ phản biện review): phân loại + hành động alarm rõ ràng hơn.
 
