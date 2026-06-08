@@ -111,7 +111,7 @@ Every public class, method, property must have XML doc comments.
 
 ## R15: Attributes — annotate every applicable class/field
 ```csharp
-[AlarmInfo("Motion timeout", "Check servo drive", isStoppable: true)]
+[AlarmInfo("Motion timeout", "Check servo drive", AlarmAction.Stop)]
 public const int MotionTimeout = 10001;
 
 [MechanismUI("Cụm gắp", group: "Station A", order: 1)]

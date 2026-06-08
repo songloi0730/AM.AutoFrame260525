@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-07
-**Session:** #41 — Phê phán + chắt lọc chuẩn HMI nâng cao (SEMI E95/EEMUA/Siemens) → docs/skill
-**Commit:** `d663f01`  ·  (S40: Production UI UPH/yield)
+**Session:** #42 — Alarm: AlarmCategory + AlarmAction + AlarmPolicy (mở rộng isStoppable)
+**Commit:** `(điền sau push)`  ·  (S41: phê phán/chắt lọc chuẩn HMI nâng cao)
 
 ---
 

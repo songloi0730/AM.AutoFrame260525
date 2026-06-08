@@ -41,26 +41,30 @@ Pattern: [Thiết bị/Vị trí] [Vấn đề] — [Hành động operator cầ
 public static class AlarmCodes
 {
     // ── Motion (10000–10999) ──────────────────────────────
-    [AlarmInfo("Axis timeout", "Kiểm tra cơ học trục, servo drive enable", isStoppable: true)]
+    [AlarmInfo("Axis timeout", "Kiểm tra cơ học trục, servo drive enable", AlarmAction.Stop)]
     public const int MotionTimeout = 10001;
 
-    [AlarmInfo("Trục chưa home", "Chạy lại Initialize hoặc Home thủ công", isStoppable: true)]
+    [AlarmInfo("Trục chưa home", "Chạy lại Initialize hoặc Home thủ công", AlarmAction.Stop)]
     public const int AxisNotHomed = 10002;
 
-    [AlarmInfo("E-Stop kích hoạt", "Xác nhận an toàn, reset E-Stop rồi Initialize lại", isStoppable: true)]
+    [AlarmInfo("E-Stop kích hoạt", "Xác nhận an toàn, reset E-Stop rồi Initialize lại", AlarmAction.ResetRequired)]
     public const int EStopTriggered = 10003;
 
     // ── Vision (20000–20999) ─────────────────────────────
-    [AlarmInfo("Camera grab thất bại", "Kiểm tra kết nối camera, tăng exposure nếu ảnh tối", isStoppable: true)]
+    [AlarmInfo("Camera grab thất bại", "Kiểm tra kết nối camera, tăng exposure nếu ảnh tối", AlarmAction.Stop)]
     public const int CameraGrabFail = 20001;
 
-    [AlarmInfo("Vision tool lỗi", "Kiểm tra vùng ROI, ánh sáng, vị trí phôi", isStoppable: false)]
+    [AlarmInfo("Vision tool lỗi", "Kiểm tra vùng ROI, ánh sáng, vị trí phôi", AlarmAction.Continue)]
     public const int VisionToolFail = 20002;
 
-    [AlarmInfo("Sản phẩm NG", "Loại bỏ phôi NG, xác nhận để tiếp tục", isStoppable: false)]
+    [AlarmInfo("Sản phẩm NG", "Loại bỏ phôi NG, xác nhận để tiếp tục", AlarmAction.Continue)]
     public const int InspectNg = 20003;
 }
 ```
+
+> `AlarmAction`: **Continue** (chạy tiếp) · **Pause** (tạm dừng) · **Stop** (dừng, clear là chạy lại) ·
+> **ResetRequired** (dừng + phải Reset/home). Bỏ trống → `AlarmService` suy mặc định theo dải mã (AlarmPolicy):
+> Safety/Critical → ResetRequired · hardware (High) → Stop · còn lại → Continue.
 
 ## Cách throw AlarmException đúng
 
@@ -83,7 +87,7 @@ catch (OperationCanceledException) when (!ct.IsCancellationRequested)
 
 ```
 □ Chọn đúng range (10xxx-70xxx) theo loại thiết bị
-□ Thêm [AlarmInfo(displayName, remedy, isStoppable)] attribute
+□ Thêm [AlarmInfo(displayName, remedy, action)] attribute (action = AlarmAction.*)
 □ Message format: [Thiết bị] [Vấn đề] — [Hành động]
 □ isStoppable: true nếu cần dừng máy, false nếu chỉ log
 □ Throw đúng vị trí: Mechanism (không phải Station/Controller)

@@ -9,7 +9,7 @@ Thêm alarm code mới vào hệ thống.
 Level: Critical | High | Medium | Low
 
 ## What this command does
-1. Add `[AlarmInfo("{en-US}", "{remedy}", isStoppable)]` attribute
+1. Add `[AlarmInfo("{en-US}", "{remedy}", AlarmAction.{Continue|Pause|Stop|ResetRequired})]` attribute
 2. Add `public const int {CODE_NAME} = {N}` to `AM.Core/Constants/AlarmCodes.cs`
 3. Show where to throw: `throw new AlarmException(AlarmCodes.{CODE_NAME}, station, msg)`
 

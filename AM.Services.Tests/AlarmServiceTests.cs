@@ -113,6 +113,39 @@ public sealed class AlarmServiceTests
         sut.ActiveAlarms[0].Level.Should().Be(AM.Core.Enums.AlarmLevel.Critical);
     }
 
+    [Fact]
+    public async Task RaiseAsync_Should_ResolveCategoryAndAction_Motion()
+    {
+        var sut = CreateSut();
+        await sut.RaiseAsync(AlarmCodes.MotionTimeout, "AXIS_X"); // 10xxx, High
+
+        var a = sut.ActiveAlarms[0];
+        a.Category.Should().Be(AM.Core.Enums.AlarmCategory.Motion);
+        a.Action.Should().Be(AM.Core.Enums.AlarmAction.Stop);
+    }
+
+    [Fact]
+    public async Task RaiseAsync_Should_ResolveCategoryAndAction_Safety()
+    {
+        var sut = CreateSut();
+        await sut.RaiseAsync(AlarmCodes.SafetyEstop, "SAFETY"); // 70xxx, Critical
+
+        var a = sut.ActiveAlarms[0];
+        a.Category.Should().Be(AM.Core.Enums.AlarmCategory.Safety);
+        a.Action.Should().Be(AM.Core.Enums.AlarmAction.ResetRequired);
+    }
+
+    [Fact]
+    public async Task RaiseAsync_Should_ResolveContinue_ForUncategorizedLowCode()
+    {
+        var sut = CreateSut();
+        await sut.RaiseAsync(5, "MISC"); // ngoài dải → General/Medium → Continue
+
+        var a = sut.ActiveAlarms[0];
+        a.Category.Should().Be(AM.Core.Enums.AlarmCategory.General);
+        a.Action.Should().Be(AM.Core.Enums.AlarmAction.Continue);
+    }
+
     // ─── AcknowledgeAsync ─────────────────────────────────────────────────────────
 
     [Fact]

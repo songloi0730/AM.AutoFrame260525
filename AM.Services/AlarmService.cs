@@ -67,12 +67,15 @@ public sealed class AlarmService : IAlarmService
         _logger.LogDebug("Starting {Method} alarmCode={AlarmCode} station={Station}",
             nameof(RaiseAsync), alarmCode, station);
 
+        var level = AlarmPolicy.ResolveLevel(alarmCode);
         var alarm = new AlarmModel
         {
             AlarmCode = alarmCode,
             Station   = station,
             Message   = message ?? $"Alarm {alarmCode} at {station}",
-            Level     = ResolveLevel(alarmCode),
+            Level     = level,
+            Category  = AlarmPolicy.ResolveCategory(alarmCode),
+            Action    = AlarmPolicy.ResolveAction(alarmCode, level),
             RaisedAt  = DateTime.UtcNow
         };
 
@@ -190,17 +193,5 @@ public sealed class AlarmService : IAlarmService
         return await _repository.GetByDateRangeAsync(from, endDate, ct).ConfigureAwait(false);
     }
 
-    // ─── Private helpers ─────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Xác định AlarmLevel dựa trên dải alarm code theo chuẩn định nghĩa trong AlarmCodes.cs.
-    /// Dải range: 70xxx Safety=Critical | 40xxx System=Critical | 10xxx-60xxx Hardware/Production=High | khác=Medium
-    /// </summary>
-    private static AM.Core.Enums.AlarmLevel ResolveLevel(int code) => code switch
-    {
-        >= 70000 and <= 79999 => AM.Core.Enums.AlarmLevel.Critical,  // Safety / Interlock
-        >= 40000 and <= 49999 => AM.Core.Enums.AlarmLevel.Critical,  // System / Application
-        >= 10000 and <= 69999 => AM.Core.Enums.AlarmLevel.High,      // Motion/Vision/IO/Comm/Production
-        _                     => AM.Core.Enums.AlarmLevel.Medium
-    };
+    // Level/Category/Action suy ra qua AM.Core.Constants.AlarmPolicy (dùng chung mọi máy).
 }

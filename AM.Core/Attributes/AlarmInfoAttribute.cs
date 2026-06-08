@@ -4,6 +4,8 @@
 // Purpose: Metadata cho alarm code — mô tả, hướng dẫn xử lý, severity
 // -------------------------------------------------------
 
+using AM.Core.Enums;
+
 namespace AM.Core.Attributes;
 
 /// <summary>
@@ -12,7 +14,7 @@ namespace AM.Core.Attributes;
 /// </summary>
 /// <example>
 /// <code>
-/// [AlarmInfo("Motion timeout", "Check servo drive power and cable", isStoppable: true)]
+/// [AlarmInfo("Motion timeout", "Check servo drive power and cable", AlarmAction.Stop)]
 /// public const int MotionTimeout = 10001;
 /// </code>
 /// </example>
@@ -25,22 +27,22 @@ public sealed class AlarmInfoAttribute : Attribute
     /// <summary>Hướng dẫn xử lý dành cho operator.</summary>
     public string Remedy { get; }
 
-    /// <summary>
-    /// True nếu alarm này dừng hẳn sequence và yêu cầu Reset.
-    /// False nếu chỉ là warning, sequence có thể tiếp tục.
-    /// </summary>
-    public bool IsStoppable { get; }
+    /// <summary>Hành động máy khi alarm phát sinh (override mặc định của AlarmPolicy cho mã này).</summary>
+    public AlarmAction Action { get; }
+
+    /// <summary>True nếu alarm dừng/đòi reset sequence (Pause/Stop/ResetRequired); False nếu Continue.</summary>
+    public bool IsStoppable => Action is not AlarmAction.Continue;
 
     /// <summary>
     /// Khởi tạo AlarmInfoAttribute.
     /// </summary>
     /// <param name="displayName">Tên alarm hiển thị trên UI.</param>
     /// <param name="remedy">Hướng dẫn khắc phục cho operator.</param>
-    /// <param name="isStoppable">True nếu alarm này dừng sequence.</param>
-    public AlarmInfoAttribute(string displayName, string remedy, bool isStoppable = true)
+    /// <param name="action">Hành động máy khi alarm này phát sinh (mặc định Stop).</param>
+    public AlarmInfoAttribute(string displayName, string remedy, AlarmAction action = AlarmAction.Stop)
     {
-        DisplayName  = displayName;
-        Remedy       = remedy;
-        IsStoppable  = isStoppable;
+        DisplayName = displayName;
+        Remedy      = remedy;
+        Action      = action;
     }
 }

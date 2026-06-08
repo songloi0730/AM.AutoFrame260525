@@ -16,6 +16,13 @@ public sealed class AlarmModel
     public int AlarmCode { get; init; }
     public string Station { get; init; } = string.Empty;
     public AlarmLevel Level { get; init; }
+
+    /// <summary>Phân loại hệ con (suy ra từ dải mã).</summary>
+    public AlarmCategory Category { get; init; } = AlarmCategory.General;
+
+    /// <summary>Hành động máy cần khi alarm này phát sinh.</summary>
+    public AlarmAction Action { get; init; } = AlarmAction.Stop;
+
     public string Message { get; init; } = string.Empty;
     public DateTime RaisedAt { get; init; } = DateTime.UtcNow;
     public bool IsAcknowledged { get; private set; }

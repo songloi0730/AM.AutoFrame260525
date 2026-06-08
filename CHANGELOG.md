@@ -24,6 +24,28 @@
 
 ---
 
+## [Session 42] 2026-06-07 — Alarm: AlarmCategory + AlarmAction (mở rộng isStoppable nhị phân)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Việc nhỏ "dùng chung mọi máy" (mục (a) từ phản biện review): phân loại + hành động alarm rõ ràng hơn.
+
+### ✅ Mở rộng alarm framework
+- `AlarmCategory` (enum): General/Motion/Vision/Io/System/Communication/Production/Safety — suy từ dải mã.
+- `AlarmAction` (enum): **Continue / Pause / Stop / ResetRequired** — thay cờ `isStoppable` nhị phân.
+- **`AlarmPolicy`** (Core, static): `ResolveCategory/ResolveLevel/ResolveAction` từ mã + level → **dùng chung mọi máy**
+  không cần annotate (Safety/Critical → ResetRequired · hardware High → Stop · còn lại → Continue).
+- `AlarmModel` thêm `Category` + `Action`; `AlarmService.RaiseAsync` set qua `AlarmPolicy` (gom logic ResolveLevel về Core).
+- `[AlarmInfo]` đổi `isStoppable` → `AlarmAction action` (IsStoppable suy ra); cập nhật skill/command/rule examples.
+- Test: `AlarmServiceTests` +3 (Motion→Stop · Safety→ResetRequired · mã ngoài dải→Continue).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error**. `dotnet test` → **168 passed** (Services 75→78).
+
+> Tiếp theo (khi bắt tay máy thật): HAL thiết bị domain (`IScrewdriver`/`IForceController`/`IFeeder`) + Capability motion khi cần.
+
+---
+
 ## [Session 41] 2026-06-07 — Phê phán + chắt lọc chuẩn HMI nâng cao (SEMI E95/EEMUA/ISA-18.2/Siemens)
 
 **Commit:** `d663f01`
