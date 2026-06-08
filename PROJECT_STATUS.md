@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-07
-**Session:** #42 — Alarm: AlarmCategory + AlarmAction + AlarmPolicy (mở rộng isStoppable)
-**Commit:** `d0154c3`  ·  (S41: phê phán/chắt lọc chuẩn HMI nâng cao)
+**Ngày:** 2026-06-09
+**Session:** #43 — UI module Diagnostics + Logging (machine-agnostic)
+**Commit:** `(điền sau push)`  ·  (S42: Alarm Category/Action/Policy)
 
 ---
 
@@ -46,7 +46,9 @@
 | AM.Infrastructure.Tests | ✅ Hoàn thành | **55 tests**: ISA-88 + busy-guard + StationBase + e2e + i18n + alarm catalog + **StepSequence (4) + AxisMap (5)** |
 | AM.Modules.Engineering | ✅ Hoàn thành | **Mới** — auto-discovery [StationUI]/[MechanismUI] + chạy SubRoutine + E-Stop từng cụm; nav order 80 |
 | AM.Modules.Production | ✅ Hoàn thành | **Mới** — KPI UPH/yield/cycle-time (IProductionService), tự refresh khi CycleCompleted; nav order 15 |
-| AM.Modules.* (còn lại) | ❌ Chưa có | Vision, Logging, Diagnostics |
+| AM.Modules.Diagnostics | ✅ Hoàn thành | **Mới** — device health + system info + Reconnect All; nav order 70 |
+| AM.Modules.Logging | ✅ Hoàn thành | **Mới** — tail file Serilog + lọc level/search + mở thư mục; nav order 75 |
+| AM.Modules.* (còn lại) | ❌ Chưa có | Vision (live camera) |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---

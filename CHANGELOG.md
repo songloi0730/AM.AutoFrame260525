@@ -24,6 +24,33 @@
 
 ---
 
+## [Session 43] 2026-06-09 — UI module Diagnostics + Logging (machine-agnostic, mọi máy dùng)
+
+**Commit:** `(điền sau push)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chưa chọn máy → làm 2 module UI thuần framework mọi máy đều dùng khi bring-up.
+
+### ✅ AM.Modules.Diagnostics (project mới — thứ 27)
+- `DiagnosticsViewModel`: bảng **health thiết bị** (Name/Category/Connected) từ `IHardwareManagerService.GetMonitoredDevices`,
+  poll 1s; **system info** (version/uptime/RAM-process/host/OS); nút **Reconnect All** (`ConnectAllAsync`).
+- `[ModuleNavigation("Nav.Diagnostics", order: 70)]`.
+
+### ✅ AM.Modules.Logging (project mới — thứ 28)
+- `LoggingViewModel`: đọc **tail file Serilog** mới nhất trong `logs/` (FileShare.ReadWrite, ~400 dòng cuối),
+  **lọc theo level** (ALL/DBG/INF/WRN/ERR) + **tìm kiếm text**, auto-refresh 3s, nút **Mở thư mục log**.
+- `LogLineVm` tự parse level → tô màu (WRN vàng/ERR đỏ); ListBox virtualized + monospace.
+- `[ModuleNavigation("Nav.Logging", order: 75)]`.
+
+### ✅ Wire Shell
+- ProjectReference + `AddUiViewModels` + .sln + i18n (vi/en/zh) + nav glyph Segoe MDL2.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Warning, 0 Error** (28 projects). `dotnet test` → **168 passed**.
+
+> UI module còn lại: **Vision** (live camera). Đề xuất: dựng 1 máy reference để nghiệm thu nền thay vì thêm UI suy đoán.
+
+---
+
 ## [Session 42] 2026-06-07 — Alarm: AlarmCategory + AlarmAction (mở rộng isStoppable nhị phân)
 
 **Commit:** `d0154c3`

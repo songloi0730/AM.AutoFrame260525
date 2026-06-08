@@ -36,7 +36,9 @@ using AM.Modules.Alarm;
 using AM.Modules.Dashboard;
 using AM.Modules.Identity;
 using AM.Modules.IoMonitor;
+using AM.Modules.Diagnostics;
 using AM.Modules.Engineering;
+using AM.Modules.Logging;
 using AM.Modules.Motion;
 using AM.Modules.Parameter;
 using AM.Modules.Production;
@@ -138,6 +140,8 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<ParameterViewModel>();
         services.AddSingleton<EngineeringViewModel>();
         services.AddSingleton<ProductionViewModel>();
+        services.AddSingleton<DiagnosticsViewModel>();
+        services.AddSingleton<LoggingViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips
         return services;
     }

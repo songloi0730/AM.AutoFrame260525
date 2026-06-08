@@ -42,6 +42,8 @@ public partial class MainWindow : Window
         ["user"]      = "E77B", // Contact (account)
         ["engineering"] = "E90F", // Repair (engineering/debug)
         ["production"] = "E9D9", // BarChart4 (production stats)
+        ["diagnostics"] = "E950", // Health (diagnostics)
+        ["log"] = "E9D5", // List (log viewer)
     };
     private const string DefaultHex = "E700"; // GlobalNavigationButton (fallback)
 

@@ -1,0 +1,99 @@
+<UserControl x:Class="AM.Modules.Diagnostics.DiagnosticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             mc:Ignorable="d"
+             Background="{DynamicResource Screen.BackgroundBrush}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding [Nav.Diagnostics], Source={x:Static loc:Loc.Strings}}"
+                   FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
+                   Foreground="{DynamicResource Text.HeadingBrush}"/>
+
+        <!-- System info -->
+        <Border Grid.Row="1" CornerRadius="6" Padding="12" Margin="0,0,0,12"
+                Background="{DynamicResource Panel.BackgroundBrush}">
+            <UniformGrid Columns="4" Rows="1">
+                <StackPanel>
+                    <TextBlock Text="{Binding AppVersion}" FontWeight="SemiBold" FontSize="15"
+                               Foreground="{DynamicResource Text.LiveValueBrush}"/>
+                    <TextBlock Text="Version" FontSize="11" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding Uptime}" FontWeight="SemiBold" FontSize="15"
+                               Foreground="{DynamicResource Text.LiveValueBrush}"/>
+                    <TextBlock Text="Uptime" FontSize="11" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding Memory}" FontWeight="SemiBold" FontSize="15"
+                               Foreground="{DynamicResource Text.LiveValueBrush}"/>
+                    <TextBlock Text="RAM (process)" FontSize="11" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding Host}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                    <TextBlock Text="{Binding Os}" FontSize="10" TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                </StackPanel>
+            </UniformGrid>
+        </Border>
+
+        <!-- Device health -->
+        <Border Grid.Row="2" CornerRadius="6" Padding="12"
+                Background="{DynamicResource Panel.BackgroundBrush}">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBlock Text="{Binding [Diag.Devices], Source={x:Static loc:Loc.Strings}}"
+                               FontWeight="SemiBold" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <Button DockPanel.Dock="Right" HorizontalAlignment="Right" Height="30" Padding="14,0"
+                            Content="{Binding [Diag.Reconnect], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding ReconnectAllCommand}"
+                            Background="{DynamicResource Button.PrimaryBrush}"
+                            Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                </DockPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Devices}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,4" Padding="10,6" CornerRadius="4"
+                                        Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="12" Height="12" Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="{DynamicResource Status.AlarmBrush}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Connected}" Value="True">
+                                                            <Setter Property="Fill" Value="{DynamicResource Status.NormalBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                        <TextBlock Text="{Binding Name}" Width="200" VerticalAlignment="Center"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                        <TextBlock Text="{Binding Category}" Width="160" VerticalAlignment="Center"
+                                                   FontSize="12" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource Text.LiveValueBrush}"/>
+    </Grid>
+</UserControl>
