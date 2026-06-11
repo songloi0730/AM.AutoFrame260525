@@ -6,7 +6,7 @@
 
 ## [Session 44] 2026-06-11 — Dashboard L1 theo chuẩn HMI IPC 24" + HMI_Dashboard_Spec.md
 
-**Commit:** *(điền sau)*
+**Commit:** `87f3607`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User yêu cầu sửa màn hình chính theo hướng "Giao diện điều khiển tự động hoá cho máy IPC 24 inch"
 (ISA-101/SEMI E95 — đã chuẩn hoá trong `am-hmi-design` + `HMI_Components_Catalog.md` §1) + tạo tài liệu đi kèm.

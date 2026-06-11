@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-11
 **Session:** #44 — Dashboard L1 theo chuẩn HMI IPC 24" (KPI + station tiles + connection panel) + `docs/HMI_Dashboard_Spec.md`
-**Commit:** *(điền sau commit)*  ·  (S43: Diagnostics + Logging)
+**Commit:** `87f3607`  ·  (S43: Diagnostics + Logging)
 
 ---
 
