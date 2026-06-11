@@ -54,6 +54,13 @@
   "Dash.Btn.Resume": "Tiếp tục",
   "Dash.Btn.Stop": "Dừng",
   "Dash.Btn.Reset": "Reset",
+  "Dash.Production": "Sản xuất — 1 giờ qua",
+  "Dash.Stations": "Trạm sản xuất",
+  "Dash.Connections": "Kết nối thiết bị",
+  "Dash.ConnLost": "Mất kết nối thiết bị — kiểm tra panel kết nối bên phải",
+  "Dash.Mech": "cụm cơ học",
+  "Conn.OK": "Kết nối",
+  "Conn.Lost": "Mất kết nối",
 
   "Alarm.ClearAll": "Xoá tất cả",
   "Alarm.Ack": "Xác nhận",

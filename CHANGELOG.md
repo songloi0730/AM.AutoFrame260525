@@ -4,6 +4,39 @@
 
 ---
 
+## [Session 44] 2026-06-11 — Dashboard L1 theo chuẩn HMI IPC 24" + HMI_Dashboard_Spec.md
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User yêu cầu sửa màn hình chính theo hướng "Giao diện điều khiển tự động hoá cho máy IPC 24 inch"
+(ISA-101/SEMI E95 — đã chuẩn hoá trong `am-hmi-design` + `HMI_Components_Catalog.md` §1) + tạo tài liệu đi kèm.
+Gap: Dashboard cũ chỉ có state + nút + bảng alarm — thiếu KPI sản xuất, station tiles, cảnh báo kết nối.
+
+### ✅ AM.Modules.Dashboard — nâng cấp thành L1 overview đúng catalog §1
+- `DashboardView.xaml` viết lại: 5 hàng — state banner (22pt + chu kỳ/alarm) → **KPI sản xuất 1h**
+  (Total/OK/NG/Yield/UPH/CycleTB, 6 tile 28pt) → **banner đỏ mất kết nối** (chỉ hiện khi có thiết bị rớt)
+  → lưới 2 cột (**station tiles** + alarm DataGrid | **connection panel** màu+chữ ✓/✕ an toàn mù màu)
+  → hàng nút nhanh **60px** (SEMI S8; Stop cách 48px). Nội dung MaxWidth **1400px** — không giãn hết 1920.
+- `DashboardViewModel`: +`IServiceScopeFactory`→`IProductionService` (KPI, scope/lần query — Scoped EF),
+  +`IHardwareManagerService` (chips, poll 2s qua `PeriodicTimer` — giữ R-UI-01 không System.Windows),
+  +station tiles từ `IMasterController.Stations` (sub `StateChanged` từng station), KPI refresh khi
+  `CycleCompleted` + mỗi 10s; đổi ngôn ngữ cập nhật cả nhãn state trong tile + status chip.
+- Mới: `DashboardTileVms.cs` (`StationTileVm`, `DeviceChipVm`); csproj +`Microsoft.Extensions.DependencyInjection.Abstractions`.
+- i18n vi/en/zh: +`Dash.Production/Stations/Connections/ConnLost/Mech`, `Conn.OK/Lost`.
+
+### ✅ Tài liệu
+- **Mới `docs/HMI_Dashboard_Spec.md`**: spec màn hình chính L1 — layout, phân công Shell↔Dashboard,
+  bảng thành phần↔interface, quy tắc màu/i18n/SEMI S8, **checklist nghiệm thu**, ghi rõ "đổi máy = không sửa XAML".
+- `CLAUDE.md`: thêm doc vào bảng tham khảo + thứ tự đọc khi chạm Dashboard. PROJECT_STATUS cập nhật
+  (kèm vá phần TODO cuối file bị cụt ký tự từ session trước).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (28 projects; 7 warning có sẵn ở test projects, không thuộc thay đổi này).
+- `dotnet test` → **168 passed**.
+- Dashboard giờ data-driven 100% qua interface — đổi máy chỉ đổi đăng ký DI, tiles/chips tự sinh.
+
+---
+
 ## [Session 33] 2026-06-07 — Mở maximized + chữ to chuẩn công nghiệp + icon Segoe MDL2
 
 **Commit:** `84bce47`

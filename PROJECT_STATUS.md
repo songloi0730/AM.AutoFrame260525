@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-09
-**Session:** #43 — UI module Diagnostics + Logging (machine-agnostic)
-**Commit:** `83c948f`  ·  (S42: Alarm Category/Action/Policy)
+**Ngày:** 2026-06-11
+**Session:** #44 — Dashboard L1 theo chuẩn HMI IPC 24" (KPI + station tiles + connection panel) + `docs/HMI_Dashboard_Spec.md`
+**Commit:** *(điền sau commit)*  ·  (S43: Diagnostics + Logging)
 
 ---
 
@@ -31,7 +31,7 @@
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
-| AM.Modules.Dashboard | ✅ Hoàn thành | **Đã wire vào Shell** (side-nav, resolve từ DI) |
+| AM.Modules.Dashboard | ✅ Hoàn thành | **L1 overview chuẩn ISA-101** (S44): state banner + KPI 1h (IProductionService) + station tiles + connection panel/banner mất kết nối + alarm list + nút 60px — spec: `docs/HMI_Dashboard_Spec.md` |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
@@ -210,4 +210,8 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 ## ⚠️ Known Issues & TODO
 
 ### BUGS hiện tại
-*(Không có bug nào đang m�
+*(Không có bug nào đang mở)*
+
+### TODO tiếp theo
+- [ ] AM.Modules.Vision — live camera view (UI module cuối còn thiếu)
+- [ ] Dựng 1 máy reference để nghiệm thu nền framework (đề xuất từ S43)

@@ -54,6 +54,13 @@
   "Dash.Btn.Resume": "继续",
   "Dash.Btn.Stop": "停止",
   "Dash.Btn.Reset": "复位",
+  "Dash.Production": "生产 — 近1小时",
+  "Dash.Stations": "工位状态",
+  "Dash.Connections": "设备连接",
+  "Dash.ConnLost": "设备连接丢失 — 请检查右侧连接面板",
+  "Dash.Mech": "个机构",
+  "Conn.OK": "已连接",
+  "Conn.Lost": "断开",
 
   "Alarm.ClearAll": "全部清除",
   "Alarm.Ack": "确认",

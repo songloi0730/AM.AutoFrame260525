@@ -1,7 +1,8 @@
 // -------------------------------------------------------
 // File:    DashboardViewModel.cs
 // Project: AM.Modules.Dashboard
-// Purpose: ViewModel chính cho màn hình Dashboard — MachineState + Alarms + Controls
+// Purpose: ViewModel màn hình chính L1 (ISA-101) — MachineState + KPI sản xuất +
+//          station tiles + connection panel + active alarms + lệnh điều khiển
 // -------------------------------------------------------
 
 using System.Collections.ObjectModel;
@@ -13,22 +14,29 @@ using AM.Core.Models.EventArgs;
 using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace AM.Modules.Dashboard;
 
 /// <summary>
-/// ViewModel cho Dashboard: hiển thị machine state, active alarms, và cung cấp control commands.
-/// Tuân thủ R-UI-01: không import System.Windows.*
-/// UI thread safety: dùng SynchronizationContext (set trong constructor khi chạy trên UI thread).
+/// ViewModel cho Dashboard L1 (màn hình chính, ISA-101 High-Performance HMI):
+/// machine state, KPI sản xuất (1 giờ qua), trạng thái từng station, kết nối thiết bị
+/// (cảnh báo ngay khi mất kết nối), active alarms, và control commands.
+/// Tuân thủ R-UI-01: không import System.Windows.* — UI thread qua SynchronizationContext.
+/// <see cref="IProductionService"/> là Scoped (EF) → tạo scope mỗi lần truy vấn
+/// qua <see cref="IServiceScopeFactory"/> (tránh captive dependency).
 /// </summary>
 public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 {
     // ─── Private fields ─────────────────────────────────────────────────────────
     private readonly IAlarmService _alarmService;
     private readonly IMasterController _masterController;
+    private readonly IHardwareManagerService _hardware;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<DashboardViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
+    private readonly CancellationTokenSource _cts = new();
     private bool _disposed;
 
     // ─── Observable properties (CommunityToolkit source generators) ──────────────
@@ -38,8 +46,25 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty] private int _cycleCount;
     [ObservableProperty] private bool _isBusy;
 
+    // KPI sản xuất — cửa sổ 1 giờ qua (IProductionService)
+    [ObservableProperty] private int _total;
+    [ObservableProperty] private int _passed;
+    [ObservableProperty] private int _failed;
+    [ObservableProperty] private double _yieldPercent;
+    [ObservableProperty] private double _unitsPerHour;
+    [ObservableProperty] private double _avgCycleTimeMs;
+
+    /// <summary>True khi có ít nhất một thiết bị mất kết nối — hiện banner cảnh báo.</summary>
+    [ObservableProperty] private bool _hasDisconnectedDevice;
+
     /// <summary>Danh sách alarm đang active — bound tới DataGrid.</summary>
     public ObservableCollection<AlarmModel> ActiveAlarms { get; } = [];
+
+    /// <summary>Tile trạng thái từng station (L1 overview).</summary>
+    public ObservableCollection<StationTileVm> Stations { get; } = [];
+
+    /// <summary>Chip kết nối từng thiết bị phần cứng.</summary>
+    public ObservableCollection<DeviceChipVm> Connections { get; } = [];
 
     // ─── Constructor ─────────────────────────────────────────────────────────────
 
@@ -49,14 +74,20 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     public DashboardViewModel(
         IAlarmService alarmService,
         IMasterController masterController,
+        IHardwareManagerService hardware,
+        IServiceScopeFactory scopeFactory,
         ILogger<DashboardViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(alarmService);
         ArgumentNullException.ThrowIfNull(masterController);
+        ArgumentNullException.ThrowIfNull(hardware);
+        ArgumentNullException.ThrowIfNull(scopeFactory);
         ArgumentNullException.ThrowIfNull(logger);
 
         _alarmService      = alarmService;
         _masterController  = masterController;
+        _hardware          = hardware;
+        _scopeFactory      = scopeFactory;
         _logger            = logger;
         _uiContext         = SynchronizationContext.Current;
 
@@ -65,16 +96,37 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         CycleCount       = _masterController.CycleCount;
         StateDisplayName = GetStateDisplayName(_masterController.State);
 
+        // Station tiles từ cây máy 3 tầng (IMasterController.Stations)
+        foreach (var station in _masterController.Stations)
+        {
+            var tile = new StationTileVm(station.Name, station.Mechanisms.Count)
+            {
+                State     = station.State,
+                StateText = GetStateDisplayName(station.State),
+            };
+            Stations.Add(tile);
+            station.StateChanged += OnStationStateChanged;
+        }
+
+        // Connection chips từ HardwareManager (cùng nguồn với watchdog/status bar)
+        foreach (var d in _hardware.GetMonitoredDevices())
+            Connections.Add(new DeviceChipVm(d.Name));
+        RefreshConnections();
+
         // Subscribe events
-        _masterController.StateChanged  += OnStateChanged;
+        _masterController.StateChanged   += OnStateChanged;
         _masterController.CycleCompleted += OnCycleCompleted;
-        _alarmService.AlarmRaised       += OnAlarmRaised;
-        _alarmService.AlarmCleared      += OnAlarmCleared;
-        Loc.Strings.PropertyChanged     += OnLanguageChanged; // refresh nhãn state khi đổi ngôn ngữ
+        _alarmService.AlarmRaised        += OnAlarmRaised;
+        _alarmService.AlarmCleared       += OnAlarmCleared;
+        Loc.Strings.PropertyChanged      += OnLanguageChanged; // refresh nhãn khi đổi ngôn ngữ
 
         // Load active alarms hiện tại
         foreach (var alarm in _alarmService.ActiveAlarms)
             ActiveAlarms.Add(alarm);
+
+        // KPI lần đầu + vòng monitor nền (connections 2s, KPI 10s)
+        _ = RefreshKpiAsync();
+        _ = Task.Run(() => MonitorLoopAsync(_cts.Token));
     }
 
     // ─── Computed properties ──────────────────────────────────────────────────────
@@ -166,9 +218,22 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         });
     }
 
+    private void OnStationStateChanged(object? sender, MachineStateChangedEventArgs e)
+    {
+        if (sender is not IStation station) return;
+        RunOnUIThread(() =>
+        {
+            var tile = Stations.FirstOrDefault(t => t.Name == station.Name);
+            if (tile is null) return;
+            tile.State     = e.NewState;
+            tile.StateText = GetStateDisplayName(e.NewState);
+        });
+    }
+
     private void OnCycleCompleted(object? sender, CycleCompletedEventArgs e)
     {
         RunOnUIThread(() => CycleCount = e.CycleCount);
+        _ = RefreshKpiAsync();
     }
 
     private void OnAlarmRaised(object? sender, AlarmEventArgs e)
@@ -189,6 +254,64 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         });
     }
 
+    // ─── Monitor loop (connections + KPI) ─────────────────────────────────────────
+
+    private async Task MonitorLoopAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        var tick = 0;
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                RunOnUIThread(RefreshConnections);
+                tick++;
+                if (tick % 5 == 0) // KPI mỗi 10s — đủ cho counter (ISA-101 update rate)
+                    await RefreshKpiAsync().ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException) { /* dừng bình thường khi Dispose */ }
+    }
+
+    private void RefreshConnections()
+    {
+        var devices = _hardware.GetMonitoredDevices();
+        foreach (var chip in Connections)
+        {
+            var device = devices.FirstOrDefault(d => d.Name == chip.Name);
+            chip.Connected  = device?.Device.IsConnected == true;
+            chip.StatusText = Loc.Strings[chip.Connected ? "Conn.OK" : "Conn.Lost"];
+        }
+        HasDisconnectedDevice = Connections.Any(c => !c.Connected);
+    }
+
+    private async Task RefreshKpiAsync()
+    {
+        var now = DateTime.UtcNow;
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var production = scope.ServiceProvider.GetRequiredService<IProductionService>();
+            var s = await production.GetStatisticsAsync(now.AddHours(-1), now, _cts.Token).ConfigureAwait(false);
+            RunOnUIThread(() =>
+            {
+                Total          = s.Total;
+                Passed         = s.Passed;
+                Failed         = s.Failed;
+                YieldPercent   = s.YieldPercent;
+                UnitsPerHour   = s.UnitsPerHour;
+                AvgCycleTimeMs = s.AvgCycleTimeMs;
+            });
+        }
+        catch (OperationCanceledException) { /* đóng app */ }
+#pragma warning disable CA1031 // UI: lỗi truy vấn KPI không được làm sập Dashboard, chỉ log
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "[Dashboard] Refresh KPI thất bại");
+        }
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────────
 
     private void RunOnUIThread(Action action)
@@ -203,7 +326,14 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private static string GetStateDisplayName(MachineState state) => Loc.Strings[$"State.{state}"];
 
     private void OnLanguageChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        => RunOnUIThread(() => StateDisplayName = GetStateDisplayName(MachineState));
+        => RunOnUIThread(() =>
+        {
+            StateDisplayName = GetStateDisplayName(MachineState);
+            foreach (var tile in Stations)
+                tile.StateText = GetStateDisplayName(tile.State);
+            foreach (var chip in Connections)
+                chip.StatusText = Loc.Strings[chip.Connected ? "Conn.OK" : "Conn.Lost"];
+        });
 
     // ─── IDisposable ──────────────────────────────────────────────────────────────
 
@@ -211,10 +341,14 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        foreach (var station in _masterController.Stations)
+            station.StateChanged -= OnStationStateChanged;
         _masterController.StateChanged   -= OnStateChanged;
         _masterController.CycleCompleted -= OnCycleCompleted;
         _alarmService.AlarmRaised        -= OnAlarmRaised;
         _alarmService.AlarmCleared       -= OnAlarmCleared;
         Loc.Strings.PropertyChanged      -= OnLanguageChanged;
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

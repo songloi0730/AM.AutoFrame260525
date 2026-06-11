@@ -4,26 +4,64 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:AM.Modules.Dashboard.Converters"
-             xmlns:enums="clr-namespace:AM.Core.Enums;assembly=AM.Core"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
+    <!--
+    Dashboard L1 — ISA-101 High-Performance HMI cho IPC 1920×1080 (21–24").
+    Bố cục theo HMI_Components_Catalog §1: state banner → KPI sản xuất →
+    stations | kết nối → active alarms → hàng nút nhanh (SEMI S8: nút chính ≥60px).
+    Khối dữ liệu giới hạn 1400px — KHÔNG giãn hết 1920px (skill am-hmi-design).
+    -->
+
     <UserControl.Resources>
         <conv:MachineStateToColorConverter x:Key="StateToColor"/>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Tile KPI: số to (live value > label, ISA-101 typography) -->
+        <Style x:Key="KpiTile" TargetType="Border">
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Background" Value="{DynamicResource Panel.BackgroundBrush}"/>
+        </Style>
+        <Style x:Key="KpiNumber" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.LiveValueBrush}"/>
+        </Style>
+        <Style x:Key="KpiCaption" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        </Style>
+
+        <!-- Panel khối nội dung -->
+        <Style x:Key="DashPanel" TargetType="Border">
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Background" Value="{DynamicResource Panel.BackgroundBrush}"/>
+        </Style>
+        <Style x:Key="PanelTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        </Style>
     </UserControl.Resources>
 
-    <Grid Margin="16">
+    <Grid Margin="16" MaxWidth="1400" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>  <!-- State Header -->
-            <RowDefinition Height="Auto"/>  <!-- Control Buttons -->
-            <RowDefinition Height="16"/>    <!-- Separator -->
-            <RowDefinition Height="Auto"/>  <!-- Alarm Section Title -->
-            <RowDefinition Height="*"/>     <!-- Alarm List -->
+            <RowDefinition Height="Auto"/>  <!-- 0: State banner -->
+            <RowDefinition Height="Auto"/>  <!-- 1: KPI sản xuất -->
+            <RowDefinition Height="Auto"/>  <!-- 2: Cảnh báo mất kết nối -->
+            <RowDefinition Height="*"/>     <!-- 3: Stations | Connections + Alarms -->
+            <RowDefinition Height="Auto"/>  <!-- 4: Nút nhanh -->
         </Grid.RowDefinitions>
 
-        <!-- ═══ Row 0: Machine State Indicator ═══════════════════════════════════ -->
+        <!-- ═══ Row 0: Machine State banner ═════════════════════════════════════ -->
         <Border Grid.Row="0" CornerRadius="6" Padding="16,10"
                 Background="{DynamicResource Panel.BackgroundBrush}"
                 Margin="0,0,0,12">
@@ -36,21 +74,22 @@
 
                 <!-- State Color Indicator -->
                 <Ellipse Grid.Column="0" Width="24" Height="24" Margin="0,0,12,0"
+                         VerticalAlignment="Center"
                          Fill="{Binding MachineState, Converter={StaticResource StateToColor}}"/>
 
-                <!-- State Name -->
+                <!-- State Name + cycle/alarm summary -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="{Binding StateDisplayName}"
-                               FontSize="20" FontWeight="Bold"
+                               FontSize="22" FontWeight="Bold"
                                Foreground="{DynamicResource Text.HeadingBrush}"/>
                     <TextBlock Foreground="{DynamicResource Text.SecondaryBrush}" FontSize="12">
                         <Run Text="{Binding [Dash.Cycle], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
                         <Run Text=": "/>
-                        <Run Text="{Binding CycleCount, Mode=OneWay}"/>
+                        <Run Text="{Binding CycleCount, Mode=OneWay}" FontWeight="SemiBold"/>
                         <Run Text="  |  "/>
                         <Run Text="{Binding [Dash.Alarms], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
                         <Run Text=": "/>
-                        <Run Text="{Binding ActiveAlarms.Count, Mode=OneWay}"/>
+                        <Run Text="{Binding ActiveAlarms.Count, Mode=OneWay}" FontWeight="SemiBold"/>
                     </TextBlock>
                 </StackPanel>
 
@@ -62,32 +101,264 @@
             </Grid>
         </Border>
 
-        <!-- ═══ Row 1: Control Buttons (ISA-101: 48px min, màu rõ ràng) ════════ -->
-        <UniformGrid Grid.Row="1" Rows="1" Margin="0,0,0,4">
+        <!-- ═══ Row 1: KPI sản xuất — cửa sổ 1 giờ (catalog §1 "Sản xuất") ═════ -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,12">
+            <TextBlock Style="{StaticResource PanelTitle}"
+                       Text="{Binding [Dash.Production], Source={x:Static loc:Loc.Strings}}"/>
+            <UniformGrid Rows="1" Columns="6">
+                <Border Style="{StaticResource KpiTile}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource KpiNumber}" Text="{Binding Total}"/>
+                        <TextBlock Style="{StaticResource KpiCaption}"
+                                   Text="{Binding [Prod.Total], Source={x:Static loc:Loc.Strings}}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource KpiTile}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource KpiNumber}" Text="{Binding Passed}"
+                                   Foreground="{StaticResource Status.NormalBrush}"/>
+                        <TextBlock Style="{StaticResource KpiCaption}"
+                                   Text="{Binding [Prod.OK], Source={x:Static loc:Loc.Strings}}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource KpiTile}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource KpiNumber}" Text="{Binding Failed}"
+                                   Foreground="{StaticResource Status.AlarmBrush}"/>
+                        <TextBlock Style="{StaticResource KpiCaption}"
+                                   Text="{Binding [Prod.NG], Source={x:Static loc:Loc.Strings}}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource KpiTile}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource KpiNumber}"
+                                   Text="{Binding YieldPercent, StringFormat={}{0:F1} %}"/>
+                        <TextBlock Style="{StaticResource KpiCaption}"
+                                   Text="{Binding [Prod.Yield], Source={x:Static loc:Loc.Strings}}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource KpiTile}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource KpiNumber}"
+                                   Text="{Binding UnitsPerHour, StringFormat={}{0:F1}}"/>
+                        <TextBlock Style="{StaticResource KpiCaption}"
+                                   Text="{Binding [Prod.UPH], Source={x:Static loc:Loc.Strings}}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource KpiTile}" Margin="0">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource KpiNumber}"
+                                   Text="{Binding AvgCycleTimeMs, StringFormat={}{0:F0} ms}"/>
+                        <TextBlock Style="{StaticResource KpiCaption}"
+                                   Text="{Binding [Prod.Cycle], Source={x:Static loc:Loc.Strings}}"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </StackPanel>
+
+        <!-- ═══ Row 2: Banner mất kết nối (ISA-101: cảnh báo ngay trên Dashboard) ═ -->
+        <Border Grid.Row="2" CornerRadius="6" Padding="12,8" Margin="0,0,0,12"
+                Background="{StaticResource Status.AlarmBrush}"
+                Visibility="{Binding HasDisconnectedDevice, Converter={StaticResource BoolToVis}}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="✕" FontWeight="Bold" Margin="0,0,8,0"
+                           Foreground="{DynamicResource Status.ForegroundBrush}"/>
+                <TextBlock Text="{Binding [Dash.ConnLost], Source={x:Static loc:Loc.Strings}}"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource Status.ForegroundBrush}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══ Row 3: Stations + Alarms (trái) | Connections (phải) ═══════════ -->
+        <Grid Grid.Row="3" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Trái: station tiles + active alarms -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Station tiles -->
+                <Border Grid.Row="0" Style="{StaticResource DashPanel}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PanelTitle}"
+                                   Text="{Binding [Dash.Stations], Source={x:Static loc:Loc.Strings}}"/>
+                        <ItemsControl ItemsSource="{Binding Stations}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="2"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="6" Padding="12,10" Margin="0,0,8,8"
+                                            Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Ellipse Grid.Column="0" Width="14" Height="14" Margin="0,0,10,0"
+                                                     VerticalAlignment="Center"
+                                                     Fill="{Binding State, Converter={StaticResource StateToColor}}"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                                <TextBlock FontSize="11"
+                                                           Foreground="{DynamicResource Text.SecondaryBrush}">
+                                                    <Run Text="{Binding MechanismCount, Mode=OneWay}"/>
+                                                    <Run Text="{Binding [Dash.Mech], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding StateText}"
+                                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Active alarms -->
+                <Border Grid.Row="2" Style="{StaticResource DashPanel}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelTitle}"
+                                   Text="{Binding [Dash.ActiveAlarms], Source={x:Static loc:Loc.Strings}}"/>
+                        <DataGrid ItemsSource="{Binding ActiveAlarms}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  Background="{DynamicResource Panel.BackgroundBrush}"
+                                  Foreground="{DynamicResource Text.PrimaryBrush}"
+                                  BorderBrush="{DynamicResource Border.DefaultBrush}"
+                                  BorderThickness="0"
+                                  RowBackground="{DynamicResource Panel.BackgroundBrush}"
+                                  AlternatingRowBackground="{DynamicResource Panel.BackgroundAltBrush}"
+                                  HorizontalScrollBarVisibility="Disabled">
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="{DynamicResource Header.BackgroundBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+                                    <Setter Property="Padding" Value="8,6"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{Binding [Col.Code], Source={x:Static loc:Loc.Strings}}" Binding="{Binding AlarmCode}"
+                                                    Width="80" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
+                                <DataGridTextColumn Header="{Binding [Col.Level], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Level}"
+                                                    Width="90" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
+                                <DataGridTextColumn Header="{Binding [Col.Station], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Station}"
+                                                    Width="120" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
+                                <DataGridTextColumn Header="{Binding [Col.Message], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Message}"
+                                                    Width="*" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
+                                <DataGridTextColumn Header="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}"
+                                                    Width="80" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
+                                <DataGridCheckBoxColumn Header="{Binding [Col.Ack], Source={x:Static loc:Loc.Strings}}" Binding="{Binding IsAcknowledged}"
+                                                        Width="50"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+            </Grid>
+
+            <!-- Phải: kết nối thiết bị (màu + hình ✓/✕ + chữ — an toàn mù màu) -->
+            <Border Grid.Column="2" Style="{StaticResource DashPanel}" VerticalAlignment="Stretch">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelTitle}"
+                               Text="{Binding [Dash.Connections], Source={x:Static loc:Loc.Strings}}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Connections}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="8,7" Margin="0,0,0,4" CornerRadius="4"
+                                            Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Ellipse Grid.Column="0" Width="12" Height="12" Margin="0,0,8,0"
+                                                     VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Connected}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <TextBlock Grid.Column="2" FontSize="12" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{StaticResource Text.ErrorBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Connected}" Value="True">
+                                                                <Setter Property="Foreground" Value="{StaticResource Text.SuccessBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                                <Run Text="{Binding StatusText, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- ═══ Row 4: Nút nhanh (SEMI S8: nút lệnh chính ≥60px; Stop cách ≥48px) ═ -->
+        <UniformGrid Grid.Row="4" Rows="1">
             <Button Content="{Binding [Dash.Btn.Init], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding InitializeCommand}"
-                    Height="48" FontSize="14" FontWeight="SemiBold" Margin="0,0,4,0"
+                    Height="60" FontSize="15" FontWeight="SemiBold" Margin="0,0,4,0"
                     Background="{DynamicResource Status.ManualBrush}"
                     Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
             <Button Content="{Binding [Dash.Btn.Start], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding StartCommand}"
-                    Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0"
+                    Height="60" FontSize="15" FontWeight="SemiBold" Margin="4,0"
                     Background="{DynamicResource Status.NormalBrush}"
                     Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
             <Button Content="{Binding [Dash.Btn.Pause], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding PauseCommand}"
-                    Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0"
+                    Height="60" FontSize="15" FontWeight="SemiBold" Margin="4,0"
                     Background="{DynamicResource Status.WarningBrush}"
                     Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
             <Button Content="{Binding [Dash.Btn.Resume], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding ResumeCommand}"
-                    Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0"
+                    Height="60" FontSize="15" FontWeight="SemiBold" Margin="4,0"
                     Background="{DynamicResource Status.NormalBrush}"
                     Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
@@ -95,65 +366,17 @@
             <!-- Nút nguy hiểm — màu đỏ, cách 48px+ với nút thường (ISA-101 R-UI) -->
             <Button Content="{Binding [Dash.Btn.Stop], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding StopCommand}"
-                    Height="48" FontSize="14" FontWeight="SemiBold" Margin="48,0,4,0"
+                    Height="60" FontSize="15" FontWeight="SemiBold" Margin="48,0,4,0"
                     Background="{DynamicResource Status.AlarmBrush}"
                     Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
 
             <Button Content="{Binding [Dash.Btn.Reset], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding ResetCommand}"
-                    Height="48" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,0"
+                    Height="60" FontSize="15" FontWeight="SemiBold" Margin="4,0,0,0"
                     Background="{DynamicResource Status.InterlockBrush}"
                     Foreground="{DynamicResource Status.ForegroundBrush}"
                     BorderThickness="0"/>
         </UniformGrid>
-
-        <!-- ═══ Row 3: Alarm Section Header ══════════════════════════════════════ -->
-        <TextBlock Grid.Row="3"
-                   Text="{Binding [Dash.ActiveAlarms], Source={x:Static loc:Loc.Strings}}"
-                   FontSize="14" FontWeight="Bold"
-                   Foreground="{DynamicResource Text.SecondaryBrush}"
-                   Margin="0,0,0,8"/>
-
-        <!-- ═══ Row 4: Active Alarm List ════════════════════════════════════════ -->
-        <DataGrid Grid.Row="4"
-                  ItemsSource="{Binding ActiveAlarms}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  GridLinesVisibility="Horizontal"
-                  Background="{DynamicResource Panel.BackgroundBrush}"
-                  Foreground="{DynamicResource Text.PrimaryBrush}"
-                  BorderBrush="{DynamicResource Border.DefaultBrush}"
-                  RowBackground="{DynamicResource Panel.BackgroundBrush}"
-                  AlternatingRowBackground="{DynamicResource Panel.BackgroundAltBrush}"
-                  HorizontalScrollBarVisibility="Disabled">
-
-            <DataGrid.ColumnHeaderStyle>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="{DynamicResource Header.BackgroundBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
-                    <Setter Property="Padding" Value="8,6"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
-                </Style>
-            </DataGrid.ColumnHeaderStyle>
-
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="{Binding [Col.Code], Source={x:Static loc:Loc.Strings}}" Binding="{Binding AlarmCode}"
-                                    Width="80" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="{Binding [Col.Level], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Level}"
-                                    Width="90" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="{Binding [Col.Station], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Station}"
-                                    Width="120" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="{Binding [Col.Message], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Message}"
-                                    Width="*" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridTextColumn Header="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}"
-                                    Width="80" ElementStyle="{StaticResource {x:Type TextBlock}}"/>
-                <DataGridCheckBoxColumn Header="{Binding [Col.Ack], Source={x:Static loc:Loc.Strings}}" Binding="{Binding IsAcknowledged}"
-                                        Width="50"/>
-            </DataGrid.Columns>
-        </DataGrid>
     </Grid>
 </UserControl>

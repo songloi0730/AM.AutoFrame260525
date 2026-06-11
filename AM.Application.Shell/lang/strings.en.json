@@ -54,6 +54,13 @@
   "Dash.Btn.Resume": "Resume",
   "Dash.Btn.Stop": "Stop",
   "Dash.Btn.Reset": "Reset",
+  "Dash.Production": "Production — last hour",
+  "Dash.Stations": "Stations",
+  "Dash.Connections": "Device connections",
+  "Dash.ConnLost": "Device connection lost — check the connection panel on the right",
+  "Dash.Mech": "mechanisms",
+  "Conn.OK": "Connected",
+  "Conn.Lost": "Lost",
 
   "Alarm.ClearAll": "Clear All",
   "Alarm.Ack": "Ack",
