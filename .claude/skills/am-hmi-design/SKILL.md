@@ -21,10 +21,14 @@ description: >
 | Môi trường | Sàn xưởng / phòng sạch — có thể đeo **găng tay** (SEMI S8: giảm ~15% lực, vùng chạm phải to) |
 | Chuẩn | **ANSI/ISA-101.01-2015**, **SEMI E95**, ISA-88/PackML, ISA-18.2 (alarm) |
 
-> ⚠️ Vì là màn LỚN: **đừng giãn nội dung hết 1920px** — dòng dữ liệu quá dài khó đọc.
-> Giới hạn bề rộng khối dữ liệu **~1200–1400px**, chia **lưới nhiều cột**, chừa lề hai bên.
-> Tài liệu master: `docs/HMI_UI_Architecture_Template.md` + `docs/HMI_Components_Catalog.md` +
-> `docs/HMI_Advanced_Standards.md` (SEMI E95/EEMUA/định lượng + quyết định adoption).
+> ⚠️ Vì là màn LỚN: layout tổng dùng full 1920px (work area + right rail), nhưng **dòng dữ liệu
+> trong bảng không kéo dài vô hạn** — bảng nằm trong card có bề rộng xác định, chia cột rõ.
+> Tài liệu master (đọc theo thứ tự): **`docs/HMI_UI_Architecture_Template_v2.md`** (bố cục Home 7 vùng
+> + quyết định adoption) → `docs/HMI_Button_Spec.md` (đặc tả từng nút: precondition/role/audit) →
+> `docs/HMI_UI_Architecture_Template.md` (v1.1 — CHỈ còn hiệu lực phần template điều khiển
+> ManualControlView/AxisControlView/VisionTeachView) → `docs/HMI_Components_Catalog.md` +
+> `docs/HMI_Advanced_Standards.md`.
+> **Mô hình vận hành:** 1 kỹ thuật viên / nhiều máy — ghé máy ~30 giây. Tối ưu cho can thiệp nhanh.
 
 ---
 
@@ -53,40 +57,49 @@ description: >
 
 ---
 
-## Layout Shell 1920×1080 (cố định mọi màn hình)
+## Layout Shell 1920×1080 — 7 vùng cố định (v2, Persistent Frame)
 
 ```
-┌─ HEADER (80–96px) ───────────────────────────────────────────────────────────┐
-│ Logo | Machine Name | [PackML State chip] | Mode(Auto/Man/Maint) | Recipe |   │
-│ đèn tháp ảo 🔴🟡🟢 | [Start][Stop][Reset] toàn cục | User | 🌐 Lang | Clock     │
-├──────────┬───────────────────────────────────────────────────────────────────┤
-│ NAV      │ CONTENT (vùng lớn nhất)                                            │
-│ 220–260px│   Lưới nhiều cột, GIỚI HẠN bề rộng khối dữ liệu ~1200–1400px,      │
-│ collapse │   chừa lề. Nút cục bộ của riêng màn hình nằm trong đây.            │
-│ →64px    │                                                                    │
-│ (icon+   │                                                                    │
-│  chữ)    │                                                                    │
-├──────────┴───────────────────────────────────────────────────────────────────┤
-│ ALARM BAR (48–56px): alarm mới nhất (đỏ nếu active) + [Acknowledge] + breadcrumb│
-├───────────────────────────────────────────────────────────────────────────────┤
-│ STATUS BAR (32–40px): dãy CHIP kết nối — PLC RFID CAM MES HIVE SECS/GEM DB ... │
-└───────────────────────────────────────────────────────────────────────────────┘
+┌─ 1 HEADER (64px) ─────────────────────────────────────────────────────────────┐
+│ Logo | AM.AutoFrame · {MachineId} | [AUTO/DRY] [LOCAL/REMOTE] [State badge]    │
+│ (tiến độ lô nếu có MES) … Recipe · Clock+♥heartbeat · [🌐 Ngôn ngữ] [User ▾]  │
+├─ 2 NAV TABS (48px) — tab NGANG icon+chữ, KHÔNG BAO GIỜ icon-only ─────────────┤
+├─ 3 ALARM BANNER (40px) — DUY NHẤT alarm ưu tiên cao nhất CHƯA ACK + [ACK ≥40px]│
+│    + chip "+N khác ▾" · xám khi sạch (vẫn chiếm chỗ) · hổ phách=warn, đỏ=lỗi   │
+├─ 4 WORK AREA (≈1310px) ──────────────────────┬─ 5 RIGHT RAIL (560px) ─────────┤
+│   Sub-tab theo máy (HomeSubViews config):     │  KPI ca (3×2) → Thao tác nhanh │
+│   "Sản phẩm" mặc định: thumbnail vision        │  → Trạm & an toàn (2 cột)      │
+│   (ảnh KẾT QUẢ per cycle, không stream live)   │  → Nhật ký (1 dòng/entry,      │
+│   + bảng truy vết SN (dòng ≥40px, NG tô màu)   │     ellipsis, bấm bung)        │
+├─ 6 ACTION BAR (84px) — Start·Pause/Resume·Stop·Reset │ Dry run·Manual ─────────┤
+│    Nút TRẮNG phẳng 64px, icon 1 màu trên + nhãn dưới; CHỈ Start có viền nhấn   │
+├─ 7 CONNECTION BAR (40px): Thiết bị │ Host │ … version (góc phải) ──────────────┤
+└────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Quy tắc bố cục:**
-- **Nút lệnh toàn cục (Start/Stop/Reset) ở HEADER** — cố định, cùng vị trí mọi màn hình (SEMI E95).
-- **Nav ở cột trái** 220–260px, **collapse được về ~64px** (chỉ icon) để nhường chỗ content.
-- **Tách ALARM BAR và STATUS BAR thành 2 dải riêng** — cảnh báo không bị loãng bởi thông tin kết nối tĩnh.
-- E-Stop **vật lý** là chính; nút trên màn chỉ phản ánh trạng thái, KHÔNG thay nút cứng.
-- Padding 8/16/24px; grid 8px (mọi kích thước là bội số 8). Tối đa 7±2 elements chính/màn (Miller's Law).
+**Quy tắc bố cục (v2):**
+- **Phân tầng nhận thức → hành động**: trên xuống = trạng thái → nội dung → lệnh.
+  **Lệnh máy KHÔNG BAO GIỜ ở nửa trên màn hình** — action bar nằm ĐÁY, không ở header.
+- **Một lệnh một chỗ** — không trùng nút giữa các vùng (Tắt còi chỉ ở Thao tác nhanh…).
+- **Giải thích thay vì giấu**: nút không khả dụng → MỜ + nêu lý do (toast/tooltip). KHÔNG ẩn.
+  Ngoại lệ: tab nguyên module không liên quan role (Motion/IO với Operator) thì ẩn hẳn.
+- **Hai hình thái nút**: dạng lưới (quick actions) = icon 24–28px TRÊN + nhãn DƯỚI;
+  dạng thanh (tab, action bar ngang chữ) = icon TRÁI + chữ PHẢI. Không trộn.
+- E-Stop **vật lý** là chính; màn hình chỉ phản ánh trạng thái, KHÔNG thay nút cứng.
+- ACK ≠ tắt còi — hai lệnh tách biệt (EEMUA 201).
+- Padding 8/16/20px; vùng 4+5 grid `1fr 560px` gap 12.
 
-**Kích thước chạm/nút (tính cả đeo găng — SEMI S8):**
+**Kích thước chạm — spec theo mm, không chỉ px** (1920×1080 @24"≈92PPI; 21.5" co ~12%, đeo găng ESD):
 | Loại | Tối thiểu |
 |------|-----------|
-| Nút lệnh chính (Start/Stop/E-Stop ảo) | **≥ 60×60 px** |
-| Nút thường | **≥ 44×44 px** |
-| Khoảng cách 2 nút | **≥ 8 px** |
-| Khoảng cách nút nguy hiểm ↔ nút thường | **≥ 48 px** |
+| Lệnh chính (action bar) + thao tác nhanh | **≥ 64 px cao** (icon trên + nhãn dưới) |
+| Nút thường | **≥ 48 px** (≈10.5mm trên 21.5") |
+| Dòng bảng / danh sách chạm được | **≥ 40–44 px** |
+| Nút ACK | **≥ 40 px** |
+| Khoảng cách 2 vùng chạm liền kề | **≥ 8 px** |
+| Nút có hậu quả vật lý (mở cửa…) | **nhấn-giữ 1 giây** + audit log |
+
+> Mỗi máy khai `UiScale` trong machine config (24"→1.0, 21.5"→1.1) áp vào LayoutTransform Shell *(TODO)*.
 
 ---
 
@@ -106,15 +119,25 @@ description: >
 
 ## Alarm Display — ISA-101 / ISA-18.2
 
-### Mức độ và màu (dành riêng — KHÔNG dùng trang trí)
+### Palette v2 (bảng màu DUY NHẤT — không thêm màu ngoài bảng này)
 
-| Level | Màu | Hex | Nhấp nháy | Phản hồi |
-|-------|-----|-----|-----------|----------|
-| Critical | Đỏ đậm | `#B71C1C` | 1 Hz | Ngay lập tức |
-| High | Đỏ | `#F44336` | Không | < 5 phút |
-| Medium | Vàng/Cam | `#FFC107` | Không | < 30 phút |
-| Low | Xanh dương nhạt | `#64B5F6` | Không | Cuối ca |
-| Suppressed | Tím | `#9370DB` | Không | (đã chặn/ẩn) |
+| Vai trò | Hex (light, mặc định) |
+|---------|----------------------|
+| Nền màn hình | `#DCDCDC` |
+| Panel | `#F2F2F2` / `#FAFAFA` |
+| Viền | `#C8C8C8` |
+| Chữ chính / phụ / mờ | `#2B2B2B` / `#6A6A6A` / `#9A9A9A` |
+| OK / nền OK | `#1E7E46` / `#E2F1E8` |
+| NG-lỗi / nền lỗi | `#C0392B` / `#F9E6E3` |
+| Cảnh báo / nền cảnh báo | `#B26A00` / `#FBF0DC` |
+| Thông tin-active / nền | `#1565C0` / `#E3EDF8` |
+| Nền ảnh camera | `#1F1F1F` |
+
+### Banner alarm — quy tắc nhiều alarm (EEMUA 201)
+
+- Hiển thị **duy nhất alarm ưu tiên cao nhất chưa ACK** + nút ACK + chip `+N cảnh báo khác ▾`.
+- ACK xong → alarm kế tiếp tự trồi lên. KHÔNG xếp chồng nhiều banner.
+- Màu: **đỏ** = lỗi dừng máy · **hổ phách** = cảnh báo (máy vẫn chạy) · **xám** = sạch (banner vẫn chiếm chỗ).
 
 **Format message:** `[Thiết bị] [Vấn đề] — [Hành động]`
 ```
@@ -145,17 +168,22 @@ Mỗi thiết bị ≥ **2 cách** biểu thị (màu + icon/text):
 
 ---
 
-## Connection Status Bar — chip kết nối (dải dưới cùng)
+## Connection bar — chip kết nối (dải dưới cùng, 40px)
 
-Yêu cầu cốt lõi cho máy IPC tích hợp nhà máy. Mỗi kết nối là một **chip**: `icon + tên + chấm màu (+ ký hiệu hình dạng)`.
-Click chip → popup chi tiết (IP/port, last heartbeat, lỗi gần nhất, nút Reconnect).
+Hai nhóm: **Thiết bị** (PLC, EtherCAT, driver, CAM, RFID…) │ **Host** (MES, SECS/GEM, OPC-UA, DB).
+Danh sách theo hardware config — thiết bị không cấu hình tự ẩn. Góc phải: chuỗi phiên bản
+`AM.AutoFrame v{x.y.z} · HMI build {date} · máy {serial}` (gọi support/audit).
+Đây là vùng ưu tiên THẤP NHẤT — chỉ thông tin thụ động, KHÔNG đặt tín hiệu an toàn ở đây.
 
-| Màu | Ký hiệu | Trạng thái |
-|-----|---------|-----------|
-| Xanh | ✓ | Connected / bình thường |
-| Vàng | ! | Connecting / chậm / đồng bộ dở |
-| Đỏ | ✕ | Mất kết nối / lỗi / timeout |
-| Xám | – | Chưa cấu hình / disabled |
+| Ký hiệu + màu (an toàn mù màu) | Trạng thái |
+|--------------------------------|-----------|
+| ● xanh `#1E7E46` | Kết nối |
+| ▲ hổ phách `#B26A00` | Cảnh báo / chậm |
+| ✕ đỏ `#C0392B` | Mất kết nối |
+| ○ viền xám | Chưa cấu hình / tắt |
+
+Chú giải để trong tooltip, KHÔNG chiếm chỗ thường trực. Click chip → popup chẩn đoán
+(địa chỉ, thống kê truyền thông, Reconnect [Engineer]; SECS/GEM thêm comm state + control state).
 
 **Nhóm kết nối nên có:**
 - **Device:** PLC · Motion controller (servo bus) · Camera/Vision (FPS) · RFID reader · Barcode scanner · IO/fieldbus EtherCAT (slave online) · Printer/Labeler.

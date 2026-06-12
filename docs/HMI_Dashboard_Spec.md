@@ -1,105 +1,74 @@
-# HMI Dashboard Spec — Màn hình chính L1 (IPC 1920×1080, 21–24")
+# HMI Dashboard Spec — Màn hình chính Home (v2.0, IPC 24" 1920×1080)
 
-> **Mục đích:** Spec chuẩn cho **màn hình chính (Dashboard, ISA-101 Level 1)** của AM.AutoFrame —
-> tài liệu nghiệm thu + tham chiếu khi đổi máy mới (layout giữ nguyên, chỉ đổi data binding).
+> **Mục đích:** Spec nghiệm thu cho **màn Home** của AM.AutoFrame theo
+> `HMI_UI_Architecture_Template_v2.md` (bố cục 7 vùng, mockup `hmi_home_v2.html`).
+> Bản này THAY THẾ spec layout 5 hàng cũ (S44).
 >
-> **Đọc cùng:** `.claude/skills/am-hmi-design/SKILL.md` (quy tắc thiết kế) ·
-> `docs/HMI_UI_Architecture_Template.md` (khung Shell) · `docs/HMI_Components_Catalog.md` §1 (checklist Dashboard).
+> **Đọc cùng:** `.claude/skills/am-hmi-design/SKILL.md` · `docs/HMI_UI_Architecture_Template_v2.md`
+> (kèm mục Quyết định adoption §9) · `docs/HMI_Button_Spec.md`.
 >
-> **Hiện thực:** `AM.Modules.Dashboard/DashboardView.xaml` + `DashboardViewModel.cs` + `DashboardTileVms.cs`.
+> **Hiện thực:** Shell = `AM.Application.Shell/MainWindow.xaml` + `ShellViewModel.cs`;
+> Home = `AM.Modules.Dashboard/DashboardView.xaml` + `DashboardViewModel.cs` + `DashboardTileVms.cs`.
 
 ---
 
-## 1. Vai trò & nguyên tắc
+## 1. Phân công Shell ↔ Home (Persistent Frame)
 
-| Mục | Giá trị |
-|-----|---------|
-| Level (ISA-101) | **L1 — Process Overview**: đánh giá toàn máy trong 1–2 giây |
-| Target | IPC 1920×1080, 21–24", chuột + cảm ứng (găng tay — SEMI S8) |
-| Triết lý | High-Performance HMI: **yên tĩnh khi bình thường** — màu chỉ cho bất thường |
-| Bề rộng nội dung | **MaxWidth = 1400px**, căn trái, KHÔNG giãn hết 1920px |
-| Điều hướng | Là màn mặc định (nav order 10); mọi màn khác ≤ 3 click từ đây |
+| Vùng | Cao | Thuộc | Nội dung đã hiện thực |
+|------|-----|-------|----------------------|
+| 1 Header | 64 | Shell | Logo + tên máy · badge **AUTO/DRY** · badge **LOCAL** (tĩnh — GEM TODO) · badge **state ISA-88** · Recipe · Clock + **heartbeat** (chấm nháy 1Hz) · nút Ngôn ngữ · User |
+| 2 Nav tabs | 48 | Shell | Tab ngang icon+chữ tự sinh từ `[ModuleNavigation]`, active = nền đậm + chữ đậm |
+| 3 Alarm banner | 40 | Shell | **Duy nhất alarm ưu tiên cao nhất chưa ACK** + ACK (40px) + chip `+N khác`; xám khi sạch, hổ phách = Warning, đỏ = Error/Critical |
+| 4 Work area | * | Home | Sub-tab "Sản phẩm": dải thumbnail vision + bảng truy vết SN (dòng NG tô `#F9E6E3`) + footer đếm |
+| 5 Right rail | 560px | Home | KPI ca (3×2) → Thao tác nhanh (lưới 2–3 cột, ≥64px) → Trạm & an toàn (2 cột) → Nhật ký (1 dòng/entry) |
+| 6 Action bar | 84 | Shell | `Start · Pause/Resume · Stop · Reset │ Dry run · Manual` — nút trắng phẳng 64px, icon MDL2 trên + nhãn dưới, CHỈ Start viền xanh; mờ + tooltip lý do khi không khả dụng |
+| 7 Connection bar | 40 | Shell | Nhóm **Thiết bị** │ **Host** (ký hiệu ●/✕, ○ chưa cấu hình) + version góc phải |
 
-Phân công với Shell (tránh trùng lặp):
-- **Shell header** (cố định mọi màn): tên máy, state chip, mode, recipe, user, clock + lệnh toàn cục Init/Start/Stop/Reset.
-- **Shell alarm bar / status bar**: alarm mới nhất + Acknowledge; dãy chip kết nối thu gọn.
-- **Dashboard** (content L1): chi tiết hơn — KPI sản xuất, trạng thái từng station, panel kết nối đầy đủ
-  (kèm banner cảnh báo), danh sách alarm active, hàng nút nhanh đủ Pause/Resume (header không có).
-
----
-
-## 2. Layout (5 hàng, lưới 8px)
-
-```
-┌─ Row 0: STATE BANNER ───────────────────────────────────────────────┐
-│ ●(màu state 24px)  TÊN TRẠNG THÁI (22pt bold)   Chu kỳ: N | Cảnh báo: N │ [Đang xử lý...] │
-├─ Row 1: KPI SẢN XUẤT — 1 GIỜ QUA (6 tile, UniformGrid) ─────────────┤
-│ [Tổng] [Đạt(xanh)] [Lỗi(đỏ)] [Tỉ lệ đạt %] [UPH] [Cycle TB ms]      │
-├─ Row 2: BANNER MẤT KẾT NỐI (đỏ, chỉ hiện khi có thiết bị rớt) ──────┤
-├─ Row 3: 2 cột (2* | 1*) ────────────────────────────────────────────┤
-│ ┌ Trạm sản xuất (tile/station: ●state + tên + n cụm + nhãn state) ┐ │ ┌ Kết nối thiết bị ┐ │
-│ ├ Cảnh báo đang active (DataGrid: Mã|Mức|Trạm|Thông điệp|Giờ|Ack) ┤ │ │ ●/✕ + tên + nhãn  │ │
-│ └──────────────────────────────────────────────────────────────────┘ │ └ (scroll khi dài) ┘ │
-├─ Row 4: NÚT NHANH 60px (SEMI S8 nút lệnh chính ≥60×60) ─────────────┤
-│ [Khởi tạo][Chạy][Tạm dừng][Tiếp tục]   ←48px→   [DỪNG][Reset]       │
-└──────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 3. Thành phần ↔ nguồn dữ liệu (interface-only, không vendor type)
+## 2. Nguồn dữ liệu (interface-only — đổi máy không sửa XAML)
 
 | Thành phần | Nguồn | Cập nhật |
 |------------|-------|----------|
-| State banner + CanExecute nút | `IMasterController.State/StateChanged` | event, tức thì |
-| Chu kỳ | `IMasterController.CycleCount/CycleCompleted` | event |
-| KPI Total/OK/NG/Yield/UPH/CycleTB | `IProductionService.GetStatisticsAsync(now-1h, now)` qua `IServiceScopeFactory` (Scoped EF — tránh captive dependency) | CycleCompleted + 10s |
-| Station tiles | `IMasterController.Stations` (`IStation.Name/State/Mechanisms.Count/StateChanged`) | event/station |
-| Connection panel + banner | `IHardwareManagerService.GetMonitoredDevices()` → `IsConnected` | poll 2s |
-| Active alarms | `IAlarmService.ActiveAlarms/AlarmRaised/AlarmCleared` | event |
-| Lệnh Init/Start/Pause/Resume/Stop/Reset | `IMasterController.*Async()` | — |
+| Badge state + enable nút action bar | `IMasterController.State/StateChanged` (`CanExecute` ≙ CanFire) | event |
+| Badge AUTO/DRY | `IMasterController.OperationMode` (`Mode.{enum}` i18n) | RefreshState |
+| Alarm banner | `IAlarmService.ActiveAlarms` lọc `!IsAcknowledged`, sort `Level` desc → `RaisedAt` desc | event |
+| KPI ca (3×2) | `IProductionService.GetStatisticsAsync(now-8h, now)` qua scope | CycleCompleted + 10s |
+| Bảng sản phẩm | `IProductionRepository.GetByDateRangeAsync` → 14 dòng mới nhất | CycleCompleted + 10s |
+| Thumbnail vision | `IHardwareManagerService` Category=Camera (tên + IsConnected; ảnh kết quả = TODO vision service) | poll 2s |
+| Trạm & an toàn | `IMasterController.Stations` (event) + `ISafetyInput` (event `SafetyStateChanged` — push, không poll) | event |
+| Thao tác nhanh | `QuickActionVm` list — **Tắt còi** wired `ILightController.SetAsync(Current with {Buzzer=false})`; còn lại disabled + lý do (HAL/audit TODO) | poll buzzer 2s |
+| Nhật ký | In-memory từ events (state/alarm/cycle), 1 dòng/entry, cap 30 | event |
+| Connection bar | `IHardwareManagerService.GetMonitoredDevices()` — Host = OPC-UA + DB, còn lại = Thiết bị | poll 1s |
 
-ViewModel **không import System.Windows.\*** (R-UI-01): UI thread qua `SynchronizationContext`,
-vòng poll dùng `PeriodicTimer` (không `DispatcherTimer`).
+## 3. Quy tắc đã áp (theo template v2 §1)
 
-## 4. Quy tắc màu / mù màu / i18n đã áp
+- Lệnh máy KHÔNG ở nửa trên màn hình; một lệnh một chỗ; nút khoá thì **mờ + tooltip lý do**, không ẩn.
+- Palette v2 duy nhất (`App.xaml` — GIỮ TÊN token cũ, đổi value); màu chỉ mang nghĩa trạng thái.
+- Icon: Segoe MDL2 một màu (quyết định adoption — không thêm package MDI); emoji không vào code.
+- Nút: action bar/quick action ≥64px; thường ≥48px; dòng bảng ≥40px; ACK ≥40px; gap ≥8px.
+- ACK ≠ tắt còi (EEMUA 201) — ACK ở banner, Tắt còi ở Thao tác nhanh.
+- i18n: mọi chuỗi qua `Loc.Strings` key vi/en/zh, đổi runtime.
 
-- State → màu qua `MachineStateToColorConverter` (token `Status.*`, semantic = StaticResource).
-- Kết nối: **màu (xanh/đỏ) + chữ ("Kết nối"/"Mất kết nối") + vị trí** — không chỉ màu (mù màu OK).
-- Equipment bình thường hiển thị xám/yên tĩnh; đỏ/vàng chỉ cho alarm/warning.
-- Live value (KPI 28pt bold) > label (12pt) — ISA-101 typography; mọi giá trị có **đơn vị** (`%`, `ms`).
-- Không hardcode chuỗi: mọi text qua `Loc.Strings[key]` (`Dash.*`, `Prod.*`, `Conn.*`, `State.*`),
-  đổi ngôn ngữ runtime cập nhật cả nhãn state trong tile.
-- Không hardcode hex: nền/chữ `DynamicResource`, semantic `StaticResource`.
-
-## 5. Nút lệnh (SEMI S8 — đeo găng)
-
-| Quy tắc | Áp dụng |
-|---------|---------|
-| Nút lệnh chính ≥ 60×60px | Hàng nút nhanh Height=60 |
-| Nút nguy hiểm cách ≥ 48px | Stop có `Margin="48,0,4,0"` |
-| Disable khi điều kiện chưa đạt | `CanExecute` theo state machine (ngăn lỗi thay vì báo lỗi) |
-| Title-Case, không TOÀN HOA | Nhãn từ i18n catalog |
-
-## 6. Checklist nghiệm thu màn hình chính
+## 4. Checklist nghiệm thu Home v2
 
 ```
-□ Nhìn 2 giây biết: máy đang state gì, có alarm không, sản lượng ra sao
-□ Mất kết nối 1 thiết bị → banner đỏ hiện ngay trên Dashboard (không cần mở Diagnostics)
-□ Station nào lỗi → tile đổi màu + nhãn state đổi (màu + chữ, không chỉ màu)
-□ KPI có đơn vị, live value đậm > label; không NaN khi chưa có dữ liệu (ProductionStatistics.Empty)
-□ Nút đúng CanExecute theo 8-state ISA-88; Stop cách nút thường ≥48px; nút chính ≥60px
-□ Đổi ngôn ngữ runtime: mọi nhãn (kể cả state trong tile, status chip) đổi ngay, layout không vỡ
-□ Nội dung ≤1400px, không giãn hết màn; screenshot grayscale vẫn đọc được
-□ Đổi máy mới: KHÔNG sửa XAML — station tiles/connection chips tự sinh từ IMasterController/IHardwareManagerService
+□ Liếc 2 giây: badge state + banner alarm + KPI ca + trạm & an toàn đọc được ngay
+□ Banner: chỉ 1 alarm (ưu tiên cao nhất chưa ACK); ACK xong alarm kế trồi lên; +N đúng số
+□ Action bar: nút trắng phẳng icon-trên; đúng CanExecute theo state; mờ + tooltip khi khoá
+□ Pause/Resume một nút tự đổi nhãn; Dry run đổi badge header sang DRY
+□ Bảng sản phẩm: chỉ dòng NG có màu; footer đếm đúng; 14 dòng mới nhất
+□ Quick action không có HAL → mờ + lý do; Tắt còi chỉ sáng khi còi đang kêu; KHÔNG ACK alarm
+□ Mất kết nối thiết bị → chip đổi ✕ đỏ ở connection bar (+ camera tile đổi trạng thái)
+□ E-Stop/cửa qua ISafetyInput event (không poll); đổi trạng thái hiện ngay ở rail
+□ Đổi ngôn ngữ runtime: toàn bộ nhãn đổi ngay, layout không vỡ
+□ Đổi máy mới: chỉ đổi đăng ký DI/máy — Shell + Home không sửa code
 ```
 
-## 7. Phần thay đổi khi đổi máy
+## 5. TODO theo adoption §9 (không làm nửa vời trong S45)
 
-**Không có.** Toàn bộ Dashboard data-driven qua interface: máy mới chỉ cần đăng ký
-MasterController/Stations/hardware devices trong Bootstrapper — tiles và chips tự sinh.
-(Đúng nguyên tắc vàng `HMI_UI_Architecture_Template.md` §0.)
+LOCAL/REMOTE + popup GEM · tiến độ lô (MES) · Stop popup 2 lựa chọn · Start pre-check popup ·
+Manual overlay · QuickActions HoldToConfirm + audit · UiScale · billboard mode · heartbeat amber >3s ·
+vision thumbnail ảnh kết quả thật (gRPC/vision service) · popup chẩn đoán chip kết nối.
 
 ---
 
-*Phiên bản 1.0 — Session 44. Chuẩn tham chiếu: ISA-101.01, SEMI E95, SEMI S8, ISA-88/PackML, EEMUA 201.*
+*Phiên bản 2.0 — Session 45 (12/06/2026). Thay thế bản 1.0 (S44, layout 5 hàng).*

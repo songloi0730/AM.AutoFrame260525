@@ -26,47 +26,54 @@
         ═══════════════════════════════════════════════════════════════════════
         -->
 
-        <!-- ── Backgrounds (DynamicResource — đổi theo theme) · LIGHT THEME ─────── -->
-        <SolidColorBrush x:Key="Screen.BackgroundBrush"        Color="#FFF4F4F5"/>
-        <SolidColorBrush x:Key="Panel.BackgroundBrush"         Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Panel.BackgroundAltBrush"      Color="#FFEDEDED"/>
-        <SolidColorBrush x:Key="Panel.BackgroundHoverBrush"    Color="#FFE2E2E4"/>
-        <SolidColorBrush x:Key="Header.BackgroundBrush"        Color="#FFE6E6E8"/>
-        <SolidColorBrush x:Key="NavBar.BackgroundBrush"        Color="#FFEDEDED"/>
-        <SolidColorBrush x:Key="NavBar.ActiveBrush"            Color="#FFCDE3F5"/>
-        <SolidColorBrush x:Key="TopBar.BackgroundBrush"        Color="#FFE6E6E8"/>
-        <SolidColorBrush x:Key="StatusBar.BackgroundBrush"     Color="#FF007ACC"/>
+        <!-- ── Backgrounds (DynamicResource) · PALETTE v2 (HMI_UI_Architecture_Template_v2 §5) ── -->
+        <SolidColorBrush x:Key="Screen.BackgroundBrush"        Color="#FFDCDCDC"/>
+        <SolidColorBrush x:Key="Panel.BackgroundBrush"         Color="#FFFAFAFA"/>
+        <SolidColorBrush x:Key="Panel.BackgroundAltBrush"      Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Panel.BackgroundHoverBrush"    Color="#FFF0F0F0"/>
+        <SolidColorBrush x:Key="Header.BackgroundBrush"        Color="#FFF2F2F2"/>
+        <SolidColorBrush x:Key="NavBar.BackgroundBrush"        Color="#FFF2F2F2"/>
+        <SolidColorBrush x:Key="NavBar.ActiveBrush"            Color="#FFDCDCDC"/>
+        <SolidColorBrush x:Key="TopBar.BackgroundBrush"        Color="#FFF2F2F2"/>
+        <SolidColorBrush x:Key="StatusBar.BackgroundBrush"     Color="#FFE4E4E4"/>
         <SolidColorBrush x:Key="Card.BackgroundBrush"          Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Card.BorderBrush"              Color="#FFD4D4D8"/>
+        <SolidColorBrush x:Key="Card.BorderBrush"              Color="#FFE2E2E2"/>
         <SolidColorBrush x:Key="Input.BackgroundBrush"         Color="#FFFFFFFF"/>
-        <SolidColorBrush x:Key="Input.BorderBrush"             Color="#FFB5B5BB"/>
-        <SolidColorBrush x:Key="Input.FocusBrush"              Color="#FF007ACC"/>
-        <SolidColorBrush x:Key="Border.DefaultBrush"           Color="#FFD4D4D8"/>
-        <SolidColorBrush x:Key="Border.StrongBrush"            Color="#FF007ACC"/>
-        <SolidColorBrush x:Key="Separator.BackgroundBrush"     Color="#FFD4D4D8"/>
+        <SolidColorBrush x:Key="Input.BorderBrush"             Color="#FFC8C8C8"/>
+        <SolidColorBrush x:Key="Input.FocusBrush"              Color="#FF1565C0"/>
+        <SolidColorBrush x:Key="Border.DefaultBrush"           Color="#FFC8C8C8"/>
+        <SolidColorBrush x:Key="Border.StrongBrush"            Color="#FF1565C0"/>
+        <SolidColorBrush x:Key="Separator.BackgroundBrush"     Color="#FFC8C8C8"/>
 
-        <!-- ── Text (DynamicResource) · LIGHT THEME ──────────────────────────────── -->
-        <SolidColorBrush x:Key="Text.PrimaryBrush"             Color="#FF1E1E1E"/>
-        <SolidColorBrush x:Key="Text.SecondaryBrush"           Color="#FF5A5A5F"/>
-        <SolidColorBrush x:Key="Text.HeadingBrush"             Color="#FF111114"/>
-        <SolidColorBrush x:Key="Text.LiveValueBrush"           Color="#FF0066CC"/>
-        <SolidColorBrush x:Key="Text.DisabledBrush"            Color="#FF9A9A9F"/>
-        <SolidColorBrush x:Key="Text.PlaceholderBrush"         Color="#FF8A8A90"/>
-        <SolidColorBrush x:Key="Text.LinkBrush"                Color="#FF0066CC"/>
-        <SolidColorBrush x:Key="Text.ErrorBrush"               Color="#FFC62828"/>
-        <SolidColorBrush x:Key="Text.SuccessBrush"             Color="#FF2E7D32"/>
+        <!-- ── Text (DynamicResource) · PALETTE v2 ───────────────────────────────── -->
+        <SolidColorBrush x:Key="Text.PrimaryBrush"             Color="#FF2B2B2B"/>
+        <SolidColorBrush x:Key="Text.SecondaryBrush"           Color="#FF6A6A6A"/>
+        <SolidColorBrush x:Key="Text.HeadingBrush"             Color="#FF2B2B2B"/>
+        <SolidColorBrush x:Key="Text.LiveValueBrush"           Color="#FF1565C0"/>
+        <SolidColorBrush x:Key="Text.DisabledBrush"            Color="#FF9A9A9A"/>
+        <SolidColorBrush x:Key="Text.PlaceholderBrush"         Color="#FF9A9A9A"/>
+        <SolidColorBrush x:Key="Text.LinkBrush"                Color="#FF1565C0"/>
+        <SolidColorBrush x:Key="Text.ErrorBrush"               Color="#FFC0392B"/>
+        <SolidColorBrush x:Key="Text.SuccessBrush"             Color="#FF1E7E46"/>
 
-        <!-- ── Status / Semantic (StaticResource — cứng, KHÔNG đổi theo theme) ──── -->
-        <SolidColorBrush x:Key="Status.NormalBrush"            Color="#FF4CAF50"/>
-        <SolidColorBrush x:Key="Status.WarningBrush"           Color="#FFFFC107"/>
-        <SolidColorBrush x:Key="Status.AlarmBrush"             Color="#FFF44336"/>
-        <SolidColorBrush x:Key="Status.CriticalBrush"          Color="#FFB71C1C"/>
-        <SolidColorBrush x:Key="Status.DisabledBrush"          Color="#FF9E9E9E"/>
-        <SolidColorBrush x:Key="Status.ManualBrush"            Color="#FF1E88E5"/>
+        <!-- ── Status / Semantic (StaticResource — cứng) · PALETTE v2 ────────────── -->
+        <SolidColorBrush x:Key="Status.NormalBrush"            Color="#FF1E7E46"/>
+        <SolidColorBrush x:Key="Status.WarningBrush"           Color="#FFB26A00"/>
+        <SolidColorBrush x:Key="Status.AlarmBrush"             Color="#FFC0392B"/>
+        <SolidColorBrush x:Key="Status.CriticalBrush"          Color="#FF8E1F12"/>
+        <SolidColorBrush x:Key="Status.DisabledBrush"          Color="#FF9A9A9A"/>
+        <SolidColorBrush x:Key="Status.ManualBrush"            Color="#FF1565C0"/>
         <SolidColorBrush x:Key="Status.InterlockBrush"         Color="#FF7B1FA2"/>
-        <SolidColorBrush x:Key="Status.TransitioningBrush"     Color="#FFFF6D00"/>
-        <SolidColorBrush x:Key="Status.ReadyBrush"             Color="#FF26A69A"/>
-        <SolidColorBrush x:Key="Status.InfoBrush"              Color="#FF42A5F5"/>
+        <SolidColorBrush x:Key="Status.TransitioningBrush"     Color="#FFB26A00"/>
+        <SolidColorBrush x:Key="Status.ReadyBrush"             Color="#FF1E7E46"/>
+        <SolidColorBrush x:Key="Status.InfoBrush"              Color="#FF1565C0"/>
+
+        <!-- Nền nhạt theo nghĩa trạng thái (badge/banner/hàng bảng) · PALETTE v2 -->
+        <SolidColorBrush x:Key="Ok.BackgroundBrush"            Color="#FFE2F1E8"/>
+        <SolidColorBrush x:Key="Ng.BackgroundBrush"            Color="#FFF9E6E3"/>
+        <SolidColorBrush x:Key="Info.BackgroundBrush"          Color="#FFE3EDF8"/>
+        <SolidColorBrush x:Key="Warn.BackgroundBrush"          Color="#FFFBF0DC"/>
+        <SolidColorBrush x:Key="Warn.TextBrush"                Color="#FF7A4A00"/>
 
         <!-- Foreground trên nền semantic -->
         <SolidColorBrush x:Key="Status.ForegroundBrush"        Color="#FFFFFFFF"/>
@@ -109,7 +116,11 @@
         <SolidColorBrush x:Key="JogButton.HoverBrush"          Color="#FF1976D2"/>
 
         <!-- ── Vision ────────────────────────────────────────────────────────────── -->
-        <SolidColorBrush x:Key="Vision.PassBrush"              Color="#FF4CAF50"/>
+        <SolidColorBrush x:Key="Vision.PreviewBrush"           Color="#FF1F1F1F"/>
+        <SolidColorBrush x:Key="Vision.PreviewTextBrush"       Color="#FF9A9A9A"/>
+        <SolidColorBrush x:Key="Row.NgBackgroundBrush"         Color="#FFF9E6E3"/>
+        <SolidColorBrush x:Key="Notice.OkBrush"                Color="#FFEBEBEB"/>
+        <SolidColorBrush x:Key="Vision.PassBrush"              Color="#FF1E7E46"/>
         <SolidColorBrush x:Key="Vision.FailBrush"              Color="#FFF44336"/>
         <SolidColorBrush x:Key="Vision.PendingBrush"           Color="#FFFFC107"/>
         <SolidColorBrush x:Key="Vision.OverlayPassBrush"       Color="#8044FF44"/>

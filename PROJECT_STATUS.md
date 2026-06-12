@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-11
-**Session:** #44 — Dashboard L1 theo chuẩn HMI IPC 24" (KPI + station tiles + connection panel) + `docs/HMI_Dashboard_Spec.md`
-**Commit:** `87f3607`  ·  (S43: Diagnostics + Logging)
+**Ngày:** 2026-06-12
+**Session:** #45 — Shell + Home theo **spec HMI v2.0** (7 vùng Persistent Frame, mockup `hmi_home_v2.html`): palette v2, nav tab ngang, alarm banner multi-alarm, action bar trắng icon-trên, right rail 560px (KPI ca/quick actions/trạm & an toàn/nhật ký), connection bar Thiết bị│Host. Docs mới: `HMI_UI_Architecture_Template_v2.md` (+ adoption §9) + `HMI_Button_Spec.md`
+**Commit:** *(điền sau commit)*  ·  (S44: Dashboard L1 bản cũ)
 
 ---
 
@@ -31,13 +31,13 @@
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
-| AM.Modules.Dashboard | ✅ Hoàn thành | **L1 overview chuẩn ISA-101** (S44): state banner + KPI 1h (IProductionService) + station tiles + connection panel/banner mất kết nối + alarm list + nút 60px — spec: `docs/HMI_Dashboard_Spec.md` |
+| AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2** (S45): work area (thumbnail vision + bảng truy vết SN, dòng NG tô màu) + right rail 560px (KPI ca 8h, quick actions — Tắt còi wired ILightController, trạm & an toàn ISafetyInput event, nhật ký 1 dòng) — spec: `docs/HMI_Dashboard_Spec.md` v2 |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Modules.Motion | ✅ Hoàn thành | **Mới** — jog/home/move/stop từng trục (poll live) + Point Table (IPointTableService); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |
-| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + HardwareFactory + **Shell layout IPC ISA-101** (header lệnh toàn cục+state chip, nav collapse, alarm bar + connection chips) |
+| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + HardwareFactory + **Shell v2 — 7 vùng Persistent Frame** (S45): header badge AUTO/LOCAL/state + heartbeat, nav tab ngang, alarm banner 1-alarm + ACK 40px + chip "+N", action bar trắng icon-trên (Pause/Resume 1 nút, Dry run), connection bar Thiết bị│Host + version |
 | AM.UI.Localization | ✅ Hoàn thành | Proxy i18n dùng chung `Loc.Strings` (module bind `{x:Static loc:Loc.Strings}`) |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |

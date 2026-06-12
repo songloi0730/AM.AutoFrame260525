@@ -45,8 +45,11 @@
 - **Mục tiêu giao diện (UI target):** chạy trên **máy tính công nghiệp (IPC)** màn hình **21–24" / 1920×1080**,
   **chuột + cảm ứng** — KHÔNG phải HMI panel nhỏ 7–10". Thiết kế theo **ISA-101 / SEMI E95** (High-Performance HMI:
   yên tĩnh khi bình thường, 4 cấp màn hình, connection status chips). Trước khi làm/đánh giá UI, ĐỌC:
-  `.claude/skills/am-hmi-design/SKILL.md` → `docs/HMI_UI_Architecture_Template.md` → `docs/HMI_Components_Catalog.md`.
-  Khi chạm **màn hình chính (Dashboard L1)**: đọc thêm `docs/HMI_Dashboard_Spec.md` (spec + checklist nghiệm thu).
+  `.claude/skills/am-hmi-design/SKILL.md` → **`docs/HMI_UI_Architecture_Template_v2.md`** (bố cục Home 7 vùng
+  + palette + quyết định adoption — CHUẨN HIỆN HÀNH) → `docs/HMI_Button_Spec.md` (precondition/role từng nút)
+  → `docs/HMI_Components_Catalog.md`. Bản v1.1 (`HMI_UI_Architecture_Template.md`) CHỈ còn hiệu lực phần
+  template điều khiển (ManualControlView/AxisControlView/VisionTeachView).
+  Khi chạm **màn hình chính (Home)**: đọc thêm `docs/HMI_Dashboard_Spec.md` (spec + checklist nghiệm thu).
 
 ---
 
@@ -297,9 +300,11 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/AGENTS.md` | Agent definitions + ECC routing table |
 | `docs/PROMPT_TEMPLATES.md` | PT-01 đến PT-14 — copy & fill |
 | `docs/QUICK_REFERENCE.md` | In ra dán cạnh màn hình |
-| `docs/HMI_UI_Architecture_Template.md` | **UI** — khung layout ISA-101/SEMI E95 cho IPC 1920×1080 |
+| `docs/HMI_UI_Architecture_Template_v2.md` | **UI — CHUẨN HIỆN HÀNH** — bố cục Home 7 vùng (work area + right rail), palette v2, multi-alarm banner, quick actions, + quyết định adoption/phản biện |
+| `docs/HMI_Button_Spec.md` | **UI** — đặc tả MỌI nút trên Home: precondition (state machine), role, audit, mở ra gì |
+| `docs/HMI_UI_Architecture_Template.md` | **UI** — v1.1, CHỈ còn hiệu lực phần template điều khiển (ManualControlView/AxisControlView/VisionTeachView) |
 | `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
 | `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") |
-| `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính L1 (Dashboard): layout 5 hàng, data binding interface-only, checklist nghiệm thu |
+| `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính Home (v2): work area + right rail, data binding interface-only, checklist nghiệm thu |
 | `CLAUDE.md` | File này — project instructions cho Claude |
 | `README.md` | *(chưa có — TODO)* Tổng quan kiến trúc solution |

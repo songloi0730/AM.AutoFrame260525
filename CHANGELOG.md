@@ -4,6 +4,53 @@
 
 ---
 
+## [Session 45] 2026-06-12 — Shell + Home theo spec HMI v2.0 (7 vùng, mockup hmi_home_v2)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User gửi 3 tài liệu mới từ chat "Giao diện điều khiển tự động hoá cho máy IPC 24 inch":
+`hmi_home_v2.html` (mockup) + `HMI_UI_Architecture_Template_v2.0.md` + `HMI_Button_Spec_v2.0.md`.
+Yêu cầu: phản biện nội dung không phù hợp → cập nhật docs/claude → sửa UI theo mockup.
+
+### ✅ Phản biện + adoption (ghi tại `docs/HMI_UI_Architecture_Template_v2.md` §9)
+- **Giữ ISA-88 8 trạng thái** (không đổi sang PackML/Stateless — việc tầng máy, 55 tests đang xanh).
+- **Segoe MDL2** thay Material Design Icons (sẵn trên Windows, không thêm package).
+- Hoãn có chủ đích: LOCAL/REMOTE+GEM popup, tiến độ lô (MES), Stop popup 2 lựa chọn, Start pre-check
+  popup, Manual overlay, QuickActions HoldToConfirm+audit, UiScale, billboard, heartbeat >3s.
+- Bắt mâu thuẫn nội bộ spec: ACK 32px (mockup) vs ≥40px (§1.8) → áp 40; legend conn bar → tooltip.
+
+### ✅ Docs / .claude
+- Mới: `docs/HMI_UI_Architecture_Template_v2.md` (spec gốc + §9 adoption), `docs/HMI_Button_Spec.md`.
+- `docs/HMI_Dashboard_Spec.md` → v2.0 (work area + right rail). `CLAUDE.md` đổi thứ tự đọc UI.
+- `.claude/skills/am-hmi-design/SKILL.md`: layout 7 vùng, palette v2, kích thước chạm theo mm,
+  nguyên tắc "một lệnh một chỗ"/"mờ + lý do, không ẩn", banner multi-alarm, conn bar ●▲✕○.
+
+### ✅ AM.Application.Shell — Shell v2
+- `App.xaml`: toàn bộ token đổi sang **palette v2** (#DCDCDC nền, OK #1E7E46, NG #C0392B, info #1565C0,
+  warn #B26A00...) — GIỮ TÊN token nên 10 module khác không phải sửa. +Ok/Ng/Info/Warn.BackgroundBrush.
+- `MainWindow.xaml`: 7 vùng — header 64 (logo + badge AUTO/DRY · LOCAL · state viền màu + recipe→tab
+  + clock + **heartbeat 1Hz** + ngôn ngữ + user→tab Identity), nav tab ngang 48, **alarm banner 48**
+  (xám/hổ phách/đỏ theo mức, ACK 40px, chip "+N cảnh báo khác"), action bar 84 (**nút trắng phẳng 64px
+  icon MDL2 trên + nhãn dưới**, chỉ Start viền xanh, Pause/Resume 1 nút, Dry run; Manual mờ + lý do),
+  connection bar 40 (**Thiết bị│Host** + version, chú giải ở tooltip).
+- `ShellViewModel`: banner multi-alarm (`Level` desc → `RaisedAt` desc, chỉ alarm CHƯA ACK; ACK xong
+  alarm kế trồi lên), PauseResume 1 lệnh, ToggleDryRun, VersionText, tách Device/HostConnections.
+
+### ✅ AM.Modules.Dashboard — Home v2
+- Work area: sub-tab "Sản phẩm" + thumbnail camera (nền tối #1F1F1F) + **bảng truy vết SN**
+  (RowHeight 40, cột SN·Vào·Cycle·Data trạm·Recipe·KQ, CHỈ dòng NG tô #F9E6E3) + footer đếm.
+- Right rail 560px: KPI ca 8h (3×2) → **Thao tác nhanh** (6 nút 64px icon-trên; "Tắt còi" wired
+  `ILightController.SetAsync(Buzzer=false)` chỉ enable khi còi kêu, KHÔNG ACK alarm; 5 nút còn lại
+  mờ + "chưa cấu hình HAL") → Trạm & an toàn (2 cột, ISafetyInput event push) → Nhật ký 1 dòng/entry.
+- `DashboardTileVms`: +`QuickActionVm` (nhận hex MDL2, convert runtime — source không chứa PUA),
+  `RecordRowVm` +cột DataText (vision score/lý do NG). Bỏ time-block + banner mất kết nối (theo v2).
+- i18n vi/en/zh: +52 key (badge, banner, quick actions, safety, log...).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (28 projects; 7 warning có sẵn ở test projects). `dotnet test` → **168 passed**.
+
+---
+
 ## [Session 44] 2026-06-11 — Dashboard L1 theo chuẩn HMI IPC 24" + HMI_Dashboard_Spec.md
 
 **Commit:** `87f3607`

@@ -1,15 +1,18 @@
 // -------------------------------------------------------
 // File:    ShellViewModel.cs
 // Project: AM.Application.Shell
-// Purpose: VM cho Shell — header (state/mode/recipe/user/clock + lệnh toàn cục),
-//          alarm bar, và status bar (chip kết nối thiết bị). Theo layout IPC ISA-101.
+// Purpose: VM cho Shell v2 (HMI_UI_Architecture_Template_v2) — header badge AUTO/LOCAL/state
+//          + heartbeat, alarm banner multi-alarm (1 alarm ưu tiên cao nhất chưa ACK),
+//          action bar (Start/Pause-Resume/Stop/Reset/DryRun), connection bar Thiết bị│Host.
 // -------------------------------------------------------
 
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Windows.Threading;
 using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Enums;
+using AM.Core.Models;
 using AM.Core.Models.EventArgs;
 using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,7 +20,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AM.Application.Shell;
 
-/// <summary>Một chip kết nối thiết bị trên status bar.</summary>
+/// <summary>Một chip kết nối thiết bị/host trên connection bar.</summary>
 internal sealed partial class ConnectionChipVm : ObservableObject
 {
     /// <summary>Tên thiết bị hiển thị.</summary>
@@ -31,9 +34,10 @@ internal sealed partial class ConnectionChipVm : ObservableObject
 }
 
 /// <summary>
-/// ViewModel của Shell: cung cấp dữ liệu cho header (trạng thái máy, mode, recipe, user, đồng hồ,
-/// lệnh toàn cục Init/Start/Stop/Reset), alarm bar, và status bar (chip kết nối).
-/// Bám ISA-101/SEMI E95: lệnh toàn cục ở header, alarm + connection tách 2 dải dưới.
+/// ViewModel của Shell v2: header (badge AUTO/DRY · LOCAL · state ISA-88, recipe, clock+heartbeat,
+/// user), alarm banner theo quy tắc multi-alarm (EEMUA 201 — duy nhất alarm ưu tiên cao nhất chưa
+/// ACK + đếm "+N khác"), action bar dưới (lệnh toàn cục, Pause/Resume một nút), connection bar
+/// 2 nhóm Thiết bị│Host + chuỗi phiên bản.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812",
     Justification = "Khởi tạo qua DI (AddSingleton) + set làm DataContext của MainWindow")]
@@ -51,8 +55,10 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InitializeCommand))]
     [NotifyCanExecuteChangedFor(nameof(StartCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PauseResumeCommand))]
     [NotifyCanExecuteChangedFor(nameof(StopCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResetCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ToggleDryRunCommand))]
     private MachineState _machineState;
 
     [ObservableProperty] private string _stateText = string.Empty;
@@ -60,11 +66,23 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _recipeText = "—";
     [ObservableProperty] private string _userText = string.Empty;
     [ObservableProperty] private string _clockText = string.Empty;
-    [ObservableProperty] private string _latestAlarmText = string.Empty;
-    [ObservableProperty] private bool _hasActiveAlarm;
+    [ObservableProperty] private string _pauseResumeText = string.Empty;
 
-    /// <summary>Chip kết nối thiết bị (status bar).</summary>
-    public ObservableCollection<ConnectionChipVm> Connections { get; } = [];
+    // Alarm banner — multi-alarm rule: chỉ alarm ưu tiên cao nhất CHƯA ACK
+    [ObservableProperty] private string _bannerText = string.Empty;
+    [ObservableProperty] private bool _hasUnackedAlarm;
+    [ObservableProperty] private bool _isBannerError;
+    [ObservableProperty] private int _extraAlarmCount;
+    [ObservableProperty] private bool _hasExtraAlarms;
+
+    /// <summary>Chuỗi phiên bản thường trực ở connection bar (audit/support).</summary>
+    public string VersionText { get; }
+
+    /// <summary>Chip nhóm Thiết bị (PLC, motion, camera, IO...).</summary>
+    public ObservableCollection<ConnectionChipVm> DeviceConnections { get; } = [];
+
+    /// <summary>Chip nhóm Host (OPC-UA, DB...).</summary>
+    public ObservableCollection<ConnectionChipVm> HostConnections { get; } = [];
 
     /// <summary>Tạo VM Shell (resolve trên UI thread để capture SynchronizationContext).</summary>
     public ShellViewModel(IMasterController master, IAlarmService alarm, IRecipeService recipe,
@@ -82,8 +100,17 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         _hardware = hardware;
         _ui = SynchronizationContext.Current;
 
+        var ver = Assembly.GetExecutingAssembly().GetName().Version;
+        VersionText = $"AM.AutoFrame v{ver?.ToString(3) ?? "0.0.0"}";
+
+        // Connection bar: Host = OPC-UA + DB (luôn local); còn lại = Thiết bị
         foreach (var d in _hardware.GetMonitoredDevices())
-            Connections.Add(new ConnectionChipVm(d.Name) { Connected = d.Device.IsConnected });
+        {
+            var chip = new ConnectionChipVm(d.Name) { Connected = d.Device.IsConnected };
+            if (d.Category == HardwareCategory.OpcUaClient) HostConnections.Add(chip);
+            else DeviceConnections.Add(chip);
+        }
+        HostConnections.Add(new ConnectionChipVm("DB") { Connected = true }); // EF SQLite local
 
         RefreshState();
         RefreshRecipe();
@@ -103,11 +130,13 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         OnTick(this, EventArgs.Empty);
     }
 
-    // ─── Lệnh toàn cục (header) ───────────────────────────────────────────────
+    // ─── Lệnh toàn cục (action bar đáy — SEMI E95: cố định mọi màn hình) ──────
     private bool CanInitialize() => MachineState == MachineState.Uninitialized;
     private bool CanStart() => MachineState == MachineState.Idle;
+    private bool CanPauseResume() => MachineState is MachineState.Running or MachineState.Paused;
     private bool CanStop() => MachineState is MachineState.Running or MachineState.Paused;
     private bool CanReset() => MachineState is MachineState.InitAlarm or MachineState.RunAlarm;
+    private bool CanToggleDryRun() => MachineState == MachineState.Idle;
 
     [RelayCommand(CanExecute = nameof(CanInitialize))]
     private Task Initialize() => _master.InitializeAsync();
@@ -115,20 +144,34 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanStart))]
     private Task Start() => _master.StartAsync();
 
+    /// <summary>Pause/Resume một nút — nhãn tự đổi theo state (template v2 §3.6).</summary>
+    [RelayCommand(CanExecute = nameof(CanPauseResume))]
+    private Task PauseResume()
+        => MachineState == MachineState.Paused ? _master.ResumeAsync() : _master.PauseAsync();
+
     [RelayCommand(CanExecute = nameof(CanStop))]
     private Task Stop() => _master.StopAsync();
 
     [RelayCommand(CanExecute = nameof(CanReset))]
     private Task Reset() => _master.ResetAsync();
 
-    /// <summary>Acknowledge alarm mới nhất đang active (alarm bar).</summary>
+    /// <summary>Đảo chế độ Normal ↔ DryRun (chỉ khi Idle) — badge header đổi AUTO/DRY.</summary>
+    [RelayCommand(CanExecute = nameof(CanToggleDryRun))]
+    private void ToggleDryRun()
+    {
+        _master.SetOperationMode(
+            _master.OperationMode == OperationMode.Normal ? OperationMode.DryRun : OperationMode.Normal);
+        RefreshState();
+    }
+
+    /// <summary>ACK alarm đang hiển thị trên banner (ưu tiên cao nhất chưa ACK).</summary>
     [RelayCommand]
     private async Task AcknowledgeAlarm()
     {
-        var active = _alarm.ActiveAlarms;
-        if (active.Count == 0) return;
-        var latest = active[^1];
-        await _alarm.AcknowledgeAsync(latest.AlarmCode, _user.CurrentUser ?? "operator").ConfigureAwait(true);
+        var top = HighestUnacked();
+        if (top is null) return;
+        await _alarm.AcknowledgeAsync(top.AlarmCode, _user.CurrentUser ?? "operator").ConfigureAwait(true);
+        RefreshAlarm(); // Acknowledge không raise event — refresh để alarm kế tiếp trồi lên
     }
 
     // ─── Event handlers ───────────────────────────────────────────────────────
@@ -137,14 +180,15 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     private void OnRecipeChanged(object? sender, RecipeEventArgs e) => RunOnUi(RefreshRecipe);
     private void OnUserChanged(object? sender, UserChangedEventArgs e) => RunOnUi(RefreshUser);
     private void OnLanguageChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        => RunOnUi(() => { RefreshState(); RefreshUser(); });
+        => RunOnUi(() => { RefreshState(); RefreshUser(); RefreshAlarm(); });
 
     private void OnTick(object? sender, EventArgs e)
     {
-        ClockText = DateTime.Now.ToString("HH:mm:ss  yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        ClockText = DateTime.Now.ToString("HH:mm · dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
         foreach (var d in _hardware.GetMonitoredDevices())
         {
-            var chip = Connections.FirstOrDefault(c => c.Name == d.Name);
+            var chip = DeviceConnections.FirstOrDefault(c => c.Name == d.Name)
+                    ?? HostConnections.FirstOrDefault(c => c.Name == d.Name);
             if (chip is not null) chip.Connected = d.Device.IsConnected;
         }
     }
@@ -153,23 +197,44 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     {
         MachineState = _master.State;
         StateText = Loc.Strings[$"State.{_master.State}"];
-        ModeText = _master.OperationMode.ToString();
+        ModeText = Loc.Strings[$"Mode.{_master.OperationMode}"];
+        PauseResumeText = Loc.Strings[MachineState == MachineState.Paused ? "Dash.Btn.Resume" : "Dash.Btn.Pause"];
     }
 
     private void RefreshRecipe() => RecipeText = _recipe.ActiveRecipe?.Name ?? "—";
 
     private void RefreshUser()
         => UserText = _user.IsLoggedIn
-            ? $"{_user.CurrentUser} ({_user.CurrentLevel})"
+            ? $"{_user.CurrentUser} · {_user.CurrentLevel}"
             : Loc.Strings["Shell.Guest"];
+
+    /// <summary>Alarm chưa ACK ưu tiên cao nhất (Level desc → mới nhất trước).</summary>
+    private AlarmModel? HighestUnacked()
+        => _alarm.ActiveAlarms
+            .Where(a => !a.IsAcknowledged)
+            .OrderByDescending(a => a.Level)
+            .ThenByDescending(a => a.RaisedAt)
+            .FirstOrDefault();
 
     private void RefreshAlarm()
     {
-        var active = _alarm.ActiveAlarms;
-        HasActiveAlarm = active.Count > 0;
-        LatestAlarmText = active.Count > 0
-            ? $"[{active[^1].AlarmCode}] {active[^1].Message}"
-            : Loc.Strings["Shell.NoAlarm"];
+        var unackedCount = _alarm.ActiveAlarms.Count(a => !a.IsAcknowledged);
+        var top = HighestUnacked();
+        HasUnackedAlarm = top is not null;
+        ExtraAlarmCount = Math.Max(0, unackedCount - 1);
+        HasExtraAlarms = ExtraAlarmCount > 0;
+        if (top is not null)
+        {
+            IsBannerError = top.Level >= AlarmLevel.High;
+            BannerText = $"[{top.AlarmCode}] {top.Message} · "
+                + $"{top.RaisedAt.ToLocalTime().ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)}"
+                + $" · {top.Station}";
+        }
+        else
+        {
+            IsBannerError = false;
+            BannerText = Loc.Strings["Shell.NoAlarm"];
+        }
     }
 
     private void RunOnUi(Action action)
