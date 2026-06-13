@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-13
 **Session:** #46 — Màn **điều khiển trục** theo `HMI_Naming_and_Axis_Point_Model` + mockup `hmi_axis_detail`: bảng đèn 8 tín hiệu/trục, servo/home/clear/move từng trục, jog pad + inching, phản hồi servo, bảng điểm Set/Confirm 2-chạm. Thêm interface tuỳ chọn `IAxisDiagnostics` (sim implement) — non-breaking.
-**Commit:** *(điền sau commit)*  ·  (S45: Shell + Home v2)
+**Commit:** `e8eead2`  ·  (S45: Shell + Home v2)
 
 ---
 

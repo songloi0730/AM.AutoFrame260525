@@ -6,7 +6,7 @@
 
 ## [Session 46] 2026-06-13 — Màn điều khiển trục (bảng đèn 8 tín hiệu, jog/inching, điểm Set/Confirm)
 
-**Commit:** *(điền sau)*
+**Commit:** `e8eead2`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User gửi `HMI_Naming_and_Axis_Point_Model_v1.0` + mockup `hmi_axis_detail_v1_2.html` (tổng hợp
 phần mềm thật Secote/Mesa/Hanmi). Yêu cầu: phản biện điểm bất hợp lý → xây màn điều khiển trục theo mẫu.
