@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-12
 **Session:** #45 — Shell + Home theo **spec HMI v2.0** (7 vùng Persistent Frame, mockup `hmi_home_v2.html`): palette v2, nav tab ngang, alarm banner multi-alarm, action bar trắng icon-trên, right rail 560px (KPI ca/quick actions/trạm & an toàn/nhật ký), connection bar Thiết bị│Host. Docs mới: `HMI_UI_Architecture_Template_v2.md` (+ adoption §9) + `HMI_Button_Spec.md`
-**Commit:** *(điền sau commit)*  ·  (S44: Dashboard L1 bản cũ)
+**Commit:** `ae9a822`  ·  (S44: Dashboard L1 bản cũ)
 
 ---
 

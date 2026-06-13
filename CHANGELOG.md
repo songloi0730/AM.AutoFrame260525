@@ -6,7 +6,7 @@
 
 ## [Session 45] 2026-06-12 — Shell + Home theo spec HMI v2.0 (7 vùng, mockup hmi_home_v2)
 
-**Commit:** *(điền sau)*
+**Commit:** `ae9a822`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User gửi 3 tài liệu mới từ chat "Giao diện điều khiển tự động hoá cho máy IPC 24 inch":
 `hmi_home_v2.html` (mockup) + `HMI_UI_Architecture_Template_v2.0.md` + `HMI_Button_Spec_v2.0.md`.
