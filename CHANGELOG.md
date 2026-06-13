@@ -4,6 +4,41 @@
 
 ---
 
+## [Session 46] 2026-06-13 — Màn điều khiển trục (bảng đèn 8 tín hiệu, jog/inching, điểm Set/Confirm)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User gửi `HMI_Naming_and_Axis_Point_Model_v1.0` + mockup `hmi_axis_detail_v1_2.html` (tổng hợp
+phần mềm thật Secote/Mesa/Hanmi). Yêu cầu: phản biện điểm bất hợp lý → xây màn điều khiển trục theo mẫu.
+
+### ✅ Phản biện + adoption (ghi `docs/HMI_Naming_and_Axis_Point_Model.md §7`)
+- **Lấy**: bảng đèn 8 tín hiệu/trục, Set/Confirm, tên có nghĩa, 2-chạm, jog+inching, nhóm trục, Clear Error riêng.
+- **Non-breaking**: Servo/8-tín-hiệu/phản-hồi KHÔNG nhét vào `IMotionController` (sẽ phá Gts/Advantech P/Invoke)
+  → tách interface **tuỳ chọn** `IAxisDiagnostics` (tiền lệ `ISafetyInput`); UI cast runtime, driver chưa hỗ trợ thì ẩn.
+- **Hoãn có chủ đích**: deadman "giữ-để-chạy" liên tục cần `IAxisJog` velocity-mode (interface chỉ có MoveAbs/Rel/Stop)
+  → mỗi lần bấm = nhích một bước inching (an toàn, không dựng vòng MoveRel rủi ro). Tên IO 4 lớp/IOMap → màn Cài đặt riêng.
+
+### ✅ AM.Core / Abstractions / Hardware (non-breaking)
+- Mới: `AxisSignals` (8 tín hiệu) + `AxisFeedback` (following error/velocity/torque/load) + `IAxisDiagnostics`.
+- `MotionPoint` +`SetPositions` (additive — Set/Confirm; `Positions`=confirm). PointTable test cũ vẫn xanh.
+- `SimulatedMotionController` implement `IAxisDiagnostics` (+mảng servo/alarm; Clear xoá alarm; tín hiệu suy từ
+  homed/moving). Move/Home KHÔNG gate servo → 27 hardware-test cũ không đổi.
+- Test mới `SimulatedAxisDiagnosticsTests` (4): implements interface · servo toggle · home→origin/zero/inpos · feedback.
+
+### ✅ AM.Modules.Motion — viết lại theo mockup (palette v2, ISA-101 phẳng)
+- `AxisVm`: +8 tín hiệu + servo + SpeedPercent + IsSelected. `PointRowVm`/`PointCellVm` mới (Set/Confirm/▲delta 0.05mm).
+- `MotionViewModel`: cast `IAxisDiagnostics`; poll vị trí+tín hiệu+phản hồi; servo/home/clear/move từng trục;
+  HomeAll/ClearAllErrors; nhóm trục (lô 4: XYZU…); jog pad (mode Tương đối/Tuyệt đối, STOP dừng mọi trục) + inching
+  3 mức/tuỳ ý/nudge; bảng điểm 2-chạm (chọn ô=1 trục, chọn tên=cả điểm → Tới/Teach), teach 1 trục gate Servo+Home,
+  Lưu recipe. +`NullToVisibilityConverter`.
+- `MotionView.xaml`: trái (bảng đèn 8 cột + điều khiển từng trục) · phải (jog pad + bước + phản hồi servo) · dưới
+  (bảng điểm Set/Confirm + thanh chọn Tới/Teach/Lưu). i18n vi/en/zh +37 key `Axis.*`.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (28 projects). `dotnet test` → **172 passed** (+4 so với S45).
+
+---
+
 ## [Session 45] 2026-06-12 — Shell + Home theo spec HMI v2.0 (7 vùng, mockup hmi_home_v2)
 
 **Commit:** `ae9a822`

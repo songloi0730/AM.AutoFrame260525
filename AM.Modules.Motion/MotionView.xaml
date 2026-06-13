@@ -3,182 +3,792 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:conv="clr-namespace:AM.Modules.Motion.Converters"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             xmlns:conv="clr-namespace:AM.Modules.Motion.Converters"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
+    <!--
+    Màn điều khiển trục — theo HMI_Naming_and_Axis_Point_Model + mockup hmi_axis_detail_v1.
+    Trái: bảng đèn 8 tín hiệu/trục + điều khiển từng trục (servo/home/clear/move).
+    Phải: jog pad (inching) + bước + phản hồi servo. Dưới: bảng điểm Set/Confirm 2-chạm.
+    Bind interface-only (IMotionController + IAxisDiagnostics tuỳ chọn). Palette v2, ISA-101 phẳng.
+    -->
+
     <UserControl.Resources>
-        <conv:PositionsToTextConverter x:Key="PosText"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Background" Value="{DynamicResource Panel.BackgroundAltBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style x:Key="CardTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        </Style>
+        <Style x:Key="Mono" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+
+        <!-- Nút thao tác nhỏ (servo/home/clear/move) — chữ nhật phẳng -->
+        <Style x:Key="MiniButton" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="{DynamicResource Card.BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Ô nhập số nhỏ -->
+        <Style x:Key="NumBox" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Width" Value="92"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="Padding" Value="0,0,8,0"/>
+            <Setter Property="Background" Value="{DynamicResource Input.BackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Input.BorderBrush}"/>
+        </Style>
+
+        <!-- Nút jog pad -->
+        <Style x:Key="JogButton" TargetType="Button">
+            <Setter Property="Width" Value="72"/>
+            <Setter Property="Height" Value="64"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="{DynamicResource Card.BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Segment chọn (mode jog / mức inching) -->
+        <Style x:Key="SegButton" TargetType="RadioButton">
+            <Setter Property="MinWidth" Value="64"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="{DynamicResource Card.BackgroundBrush}"
+                                BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
+                                Padding="10,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Info.BackgroundBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Status.InfoBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- LED tín hiệu 16px: off = xám viền; chuyển màu theo trigger ở chỗ dùng -->
+        <Style x:Key="Led" TargetType="Ellipse">
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Fill" Value="{DynamicResource Border.DefaultBrush}"/>
+        </Style>
+        <Style x:Key="SigHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        </Style>
+
+        <!-- Ô toạ độ bảng điểm: chạm = chọn riêng trục; hiện confirm (to) + set/▲lệch (nhỏ) -->
+        <DataTemplate x:Key="CellTemplate">
+            <Button HorizontalContentAlignment="Stretch" Cursor="Hand"
+                    Command="{Binding DataContext.SelectCellCommand,
+                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                    CommandParameter="{Binding}">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent" Padding="6,2"
+                                BorderBrush="{StaticResource Status.InfoBrush}" BorderThickness="0">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Info.BackgroundBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <StackPanel>
+                    <TextBlock Text="{Binding ConfirmText}" TextAlignment="Right" FontFamily="Consolas" FontSize="13"
+                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                    <TextBlock Text="{Binding SetText}" TextAlignment="Right" FontFamily="Consolas" FontSize="10">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{DynamicResource Text.PlaceholderBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasDelta}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
     </UserControl.Resources>
 
-    <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16,12">
+        <StackPanel>
 
-        <!-- Header + thanh điều khiển chung -->
-        <DockPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="{Binding [Nav.Motion], Source={x:Static loc:Loc.Strings}}" FontSize="18" FontWeight="Bold"
-                       Foreground="{DynamicResource Text.HeadingBrush}" VerticalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <TextBlock Text="{Binding [Motion.Velocity], Source={x:Static loc:Loc.Strings}}" VerticalAlignment="Center" Margin="0,0,6,0"
-                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                <TextBox Width="64" Height="28" VerticalContentAlignment="Center"
-                         Text="{Binding Velocity, UpdateSourceTrigger=PropertyChanged}"/>
-                <Button Content="{Binding [Motion.HomeAll], Source={x:Static loc:Loc.Strings}}" Width="90" Height="28" Margin="12,0,0,0"
-                        Command="{Binding HomeAllCommand}"
-                        Background="{DynamicResource Button.PrimaryBrush}"
-                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
-                <Button Content="{Binding [Motion.StopAll], Source={x:Static loc:Loc.Strings}}" Width="90" Height="28" Margin="8,0,0,0"
-                        Command="{Binding StopAllCommand}"
-                        Background="{DynamicResource Button.DangerBrush}"
-                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
-            </StackPanel>
-        </DockPanel>
+            <!-- ═══ HÀNG TRÊN: (trái) tín hiệu + điều khiển trục · (phải) jog + phản hồi ═══ -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="356"/>
+                </Grid.ColumnDefinitions>
 
-        <!-- Bảng trục -->
-        <Border Grid.Row="1" CornerRadius="6" Padding="12" Margin="0,0,0,12"
-                Background="{DynamicResource Panel.BackgroundBrush}">
-            <ItemsControl ItemsSource="{Binding Axes}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Margin="0,0,0,6" Padding="10" CornerRadius="4"
-                                Background="{DynamicResource Panel.BackgroundAltBrush}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Name}" Width="64" VerticalAlignment="Center"
-                                           FontWeight="SemiBold" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                <!-- ── Cột trái ─────────────────────────────────────────────────── -->
+                <StackPanel Grid.Column="0">
 
-                                <!-- Vị trí live -->
-                                <TextBlock Text="{Binding Position, StringFormat={}{0:F2} mm}" Width="100"
-                                           VerticalAlignment="Center" FontSize="15"
-                                           Foreground="{DynamicResource Text.LiveValueBrush}"/>
+                    <!-- Bảng đèn 8 tín hiệu (chỉ khi có IAxisDiagnostics) -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12"
+                            Visibility="{Binding HasDiagnostics, Converter={StaticResource BoolToVis}}">
+                        <Grid Grid.IsSharedSizeScope="True">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                                <!-- Homed indicator -->
-                                <Ellipse Width="12" Height="12" Margin="4,0" VerticalAlignment="Center">
-                                    <Ellipse.Style>
-                                        <Style TargetType="Ellipse">
-                                            <Setter Property="Fill" Value="{DynamicResource Status.DisabledBrush}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsHomed}" Value="True">
-                                                    <Setter Property="Fill" Value="{DynamicResource Status.NormalBrush}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Ellipse.Style>
-                                </Ellipse>
-                                <TextBlock Text="{Binding [Motion.Homed], Source={x:Static loc:Loc.Strings}}" Width="56" VerticalAlignment="Center" FontSize="11"
-                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <TextBlock Grid.Row="0" Style="{StaticResource CardTitle}"
+                                       Text="{Binding [Axis.SignalTable], Source={x:Static loc:Loc.Strings}}"/>
 
-                                <!-- Moving indicator -->
-                                <Ellipse Width="12" Height="12" Margin="4,0" VerticalAlignment="Center">
-                                    <Ellipse.Style>
-                                        <Style TargetType="Ellipse">
-                                            <Setter Property="Fill" Value="{DynamicResource Status.DisabledBrush}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMoving}" Value="True">
-                                                    <Setter Property="Fill" Value="{DynamicResource Status.ManualBrush}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Ellipse.Style>
-                                </Ellipse>
-                                <TextBlock Text="{Binding [Motion.Moving], Source={x:Static loc:Loc.Strings}}" Width="56" VerticalAlignment="Center" FontSize="11"
-                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <!-- Header -->
+                            <Grid Grid.Row="1" Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.6*" SharedSizeGroup="cName"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Style="{StaticResource SigHeader}" HorizontalAlignment="Left"
+                                           Text="{Binding [Axis.Col], Source={x:Static loc:Loc.Strings}}"/>
+                                <TextBlock Grid.Column="1" Style="{StaticResource SigHeader}" Text="Alarm&#x0a;报警"/>
+                                <TextBlock Grid.Column="2" Style="{StaticResource SigHeader}" Text="+Limit&#x0a;正限位"/>
+                                <TextBlock Grid.Column="3" Style="{StaticResource SigHeader}" Text="−Limit&#x0a;负限位"/>
+                                <TextBlock Grid.Column="4" Style="{StaticResource SigHeader}" Text="Origin&#x0a;原点"/>
+                                <TextBlock Grid.Column="5" Style="{StaticResource SigHeader}" Text="E-Stop&#x0a;急停"/>
+                                <TextBlock Grid.Column="6" Style="{StaticResource SigHeader}" Text="Zero&#x0a;零位"/>
+                                <TextBlock Grid.Column="7" Style="{StaticResource SigHeader}" Text="In-Pos&#x0a;到位"/>
+                                <TextBlock Grid.Column="8" Style="{StaticResource SigHeader}" Text="Servo&#x0a;励磁"/>
+                            </Grid>
 
-                                <Button Content="{Binding [Motion.Home], Source={x:Static loc:Loc.Strings}}" Width="60" Height="28" Margin="8,0,0,0"
-                                        Command="{Binding DataContext.HomeAxisCommand,
-                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"/>
+                            <ItemsControl Grid.Row="2" ItemsSource="{Binding Axes}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Height="34" Background="Transparent">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1.6*" SharedSizeGroup="cName"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.ColumnSpan="9" BorderThickness="0,1,0,0"
+                                                    BorderBrush="{DynamicResource Card.BorderBrush}"/>
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"
+                                                       FontWeight="SemiBold" FontSize="13"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <!-- Alarm (đỏ khi true) -->
+                                            <Ellipse Grid.Column="1" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Alarm}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Grid.Column="2" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding PlusLimit}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Grid.Column="3" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding MinusLimit}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Grid.Column="4" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Origin}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Grid.Column="5" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding EStop}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Grid.Column="6" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Zero}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Grid.Column="7" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding InPosition}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                            <Ellipse Grid.Column="8" VerticalAlignment="Center">
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding ServoOn}" Value="True">
+                                                                <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
 
-                                <!-- Jog -->
-                                <Button Content="◄ Jog" Width="56" Height="28" Margin="8,0,0,0"
-                                        Command="{Binding DataContext.JogMinusCommand,
-                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"/>
-                                <TextBox Width="56" Height="28" Margin="4,0" VerticalContentAlignment="Center"
-                                         Text="{Binding JogStep, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Content="Jog ►" Width="56" Height="28"
-                                        Command="{Binding DataContext.JogPlusCommand,
-                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"/>
+                    <!-- Điều khiển từng trục -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock Style="{StaticResource CardTitle}" Margin="0"
+                                           Text="{Binding [Axis.PerAxis], Source={x:Static loc:Loc.Strings}}"/>
+                            </DockPanel>
 
-                                <!-- Move abs -->
-                                <TextBox Width="72" Height="28" Margin="12,0,4,0" VerticalContentAlignment="Center"
-                                         Text="{Binding MoveTarget, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Button Content="{Binding [Motion.Move], Source={x:Static loc:Loc.Strings}}" Width="60" Height="28"
-                                        Command="{Binding DataContext.MoveAbsCommand,
-                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"/>
+                            <!-- Thanh nhóm + lệnh toàn cục -->
+                            <DockPanel Margin="0,0,0,8">
+                                <ItemsControl DockPanel.Dock="Left" ItemsSource="{Binding AxisGroups}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource Card}" Padding="10,6" Margin="0,0,6,0"
+                                                    Background="{DynamicResource Card.BackgroundBrush}">
+                                                <TextBlock Text="{Binding}" FontSize="13"
+                                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Style="{StaticResource MiniButton}" Command="{Binding ClearAllErrorsCommand}"
+                                            BorderBrush="{StaticResource Status.WarningBrush}"
+                                            Foreground="{StaticResource Status.WarningBrush}"
+                                            Content="{Binding [Axis.ClearAll], Source={x:Static loc:Loc.Strings}}"/>
+                                    <Button Style="{StaticResource MiniButton}" Margin="0" Command="{Binding HomeAllCommand}"
+                                            BorderBrush="{StaticResource Status.NormalBrush}"
+                                            Foreground="{StaticResource Status.NormalBrush}"
+                                            Content="{Binding [Axis.HomeAll], Source={x:Static loc:Loc.Strings}}"/>
+                                </StackPanel>
+                            </DockPanel>
 
-                                <Button Content="{Binding [Motion.Stop], Source={x:Static loc:Loc.Strings}}" Width="56" Height="28" Margin="8,0,0,0"
-                                        Command="{Binding DataContext.StopAxisCommand,
-                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"
-                                        Background="{DynamicResource Button.DangerBrush}"
-                                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                            <!-- Hàng mỗi trục -->
+                            <ItemsControl ItemsSource="{Binding VisibleAxes}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Card.BorderBrush}"
+                                                Padding="0,8" Background="Transparent">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Trái: tên + vị trí + servo/home/clear -->
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock Width="92" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Alarm}" Value="True">
+                                                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                        <Run Text="{Binding Name, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                    <TextBlock Width="104" VerticalAlignment="Center" FontFamily="Consolas"
+                                                               FontSize="17" TextAlignment="Right" Margin="0,0,10,0"
+                                                               Text="{Binding Position, StringFormat={}{0:F3}}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Text.LiveValueBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsMoving}" Value="True">
+                                                                        <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Alarm}" Value="True">
+                                                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+
+                                                    <!-- Servo ON (chỉ khi có IAxisDiagnostics) -->
+                                                    <Button Visibility="{Binding HasDiagnostics, Converter={StaticResource BoolToVis}}"
+                                                            Command="{Binding DataContext.ToggleServoCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button" BasedOn="{StaticResource MiniButton}">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding ServoOn}" Value="True">
+                                                                        <Setter Property="Background" Value="{StaticResource Ok.BackgroundBrush}"/>
+                                                                        <Setter Property="BorderBrush" Value="{StaticResource Status.NormalBrush}"/>
+                                                                        <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <TextBlock>
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="OFF"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding ServoOn}" Value="True">
+                                                                            <Setter Property="Text" Value="ON"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Button>
+                                                    <Button Style="{StaticResource MiniButton}"
+                                                            Content="{Binding [Axis.Home], Source={x:Static loc:Loc.Strings}}"
+                                                            Command="{Binding DataContext.HomeAxisCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}"/>
+                                                    <Button Style="{StaticResource MiniButton}"
+                                                            BorderBrush="{StaticResource Status.WarningBrush}"
+                                                            Foreground="{StaticResource Status.WarningBrush}"
+                                                            Content="{Binding [Axis.Clear], Source={x:Static loc:Loc.Strings}}"
+                                                            Command="{Binding DataContext.ClearErrorCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </StackPanel>
+
+                                                <!-- Phải: đích + di chuyển + tốc độ (ẩn khi alarm) -->
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal"
+                                                                Visibility="{Binding Alarm, Converter={StaticResource BoolToVis}}">
+                                                        <TextBlock Text="{Binding [Axis.ServoAlarmClear], Source={x:Static loc:Loc.Strings}}"
+                                                                   VerticalAlignment="Center" FontSize="12"
+                                                                   Foreground="{StaticResource Status.AlarmBrush}"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding [Axis.MoveTo], Source={x:Static loc:Loc.Strings}}"
+                                                               VerticalAlignment="Center" Margin="0,0,6,0"
+                                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                                    <TextBox Style="{StaticResource NumBox}"
+                                                             Text="{Binding MoveTarget, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F3}}"/>
+                                                    <Button Style="{StaticResource MiniButton}" Margin="6,0,6,0"
+                                                            BorderBrush="{StaticResource Status.InfoBrush}"
+                                                            Foreground="{StaticResource Status.InfoBrush}"
+                                                            Content="{Binding [Axis.Move], Source={x:Static loc:Loc.Strings}}"
+                                                            Command="{Binding DataContext.MoveAbsCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}"/>
+                                                    <TextBlock Text="{Binding [Axis.Speed], Source={x:Static loc:Loc.Strings}}"
+                                                               VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12"
+                                                               Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                                                    <TextBox Style="{StaticResource NumBox}" Width="56"
+                                                             Text="{Binding SpeedPercent, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F0}}"/>
+                                                    <TextBlock Text="%" VerticalAlignment="Center" Margin="4,0,0,0"
+                                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ── Cột phải: jog + phản hồi ─────────────────────────────────── -->
+                <StackPanel Grid.Column="2">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}">
+                                <Run Text="{Binding [Axis.Jog], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                                <Run Text="{Binding SelectedAxis.Name, Mode=OneWay}"
+                                     Foreground="{StaticResource Status.InfoBrush}"/>
+                            </TextBlock>
+
+            <!-- Mode tương đối / tuyệt đối (Absolute radio TwoWay; Relative là trạng thái còn lại của nhóm) -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <RadioButton Style="{StaticResource SegButton}" GroupName="jogmode" IsChecked="True"
+                                             Content="{Binding [Axis.Relative], Source={x:Static loc:Loc.Strings}}"/>
+                                <RadioButton Style="{StaticResource SegButton}" GroupName="jogmode"
+                                             IsChecked="{Binding AbsoluteJog, Mode=TwoWay}"
+                                             Content="{Binding [Axis.Absolute], Source={x:Static loc:Loc.Strings}}"/>
                             </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Border>
 
-        <!-- Point Table -->
-        <Border Grid.Row="2" CornerRadius="6" Padding="12"
-                Background="{DynamicResource Panel.BackgroundBrush}">
-            <DockPanel>
-                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <TextBlock Text="{Binding [Motion.PointTable], Source={x:Static loc:Loc.Strings}}" FontWeight="SemiBold" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBox Width="140" Height="28" VerticalContentAlignment="Center"
-                                 Text="{Binding NewPointName, UpdateSourceTrigger=PropertyChanged}"/>
-                        <Button Content="{Binding [Motion.Teach], Source={x:Static loc:Loc.Strings}}" Width="70" Height="28" Margin="8,0,0,0"
-                                Command="{Binding TeachCommand}"
-                                Background="{DynamicResource Button.PrimaryBrush}"
-                                Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
-                        <Button Content="{Binding [Motion.Save], Source={x:Static loc:Loc.Strings}}" Width="70" Height="28" Margin="8,0,0,0"
-                                Command="{Binding SavePointsCommand}"/>
-                    </StackPanel>
-                </DockPanel>
+                            <!-- Jog pad 3×3 (slot0=X giữa, slot1=Y, slot2=Z, slot3=U) -->
+                            <UniformGrid Rows="3" Columns="3" HorizontalAlignment="Center">
+                                <Button Style="{StaticResource JogButton}" Content="U +"
+                                        Visibility="{Binding JogSlots[3], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[3]}"/>
+                                <Button Style="{StaticResource JogButton}" Content="Y ↑"
+                                        Visibility="{Binding JogSlots[1], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[1]}"/>
+                                <Button Style="{StaticResource JogButton}" Content="Z ↑"
+                                        Visibility="{Binding JogSlots[2], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[2]}"/>
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Points}">
+                                <Button Style="{StaticResource JogButton}" Content="X −"
+                                        Visibility="{Binding JogSlots[0], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[0]}"/>
+                                <Button Style="{StaticResource JogButton}" Content="STOP" Command="{Binding StopMotionCommand}"
+                                        BorderBrush="{StaticResource Status.AlarmBrush}"
+                                        Foreground="{StaticResource Status.AlarmBrush}" FontWeight="Bold"/>
+                                <Button Style="{StaticResource JogButton}" Content="X +"
+                                        Visibility="{Binding JogSlots[0], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[0]}"/>
+
+                                <Button Style="{StaticResource JogButton}" Content="U −"
+                                        Visibility="{Binding JogSlots[3], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[3]}"/>
+                                <Button Style="{StaticResource JogButton}" Content="Y ↓"
+                                        Visibility="{Binding JogSlots[1], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[1]}"/>
+                                <Button Style="{StaticResource JogButton}" Content="Z ↓"
+                                        Visibility="{Binding JogSlots[2], Converter={StaticResource NullToVis}}"
+                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[2]}"/>
+                            </UniformGrid>
+
+                            <!-- Bước inching -->
+                            <TextBlock Text="{Binding [Axis.InchingStep], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="12" Margin="0,12,0,4"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <UniformGrid Columns="3">
+                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" Command="{Binding StepFineCommand}">
+                                    <StackPanel><TextBlock Text="0.001" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding [Axis.Fine], Source={x:Static loc:Loc.Strings}}" FontSize="10"
+                                                   HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/></StackPanel>
+                                </RadioButton>
+                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" IsChecked="True" Command="{Binding StepMediumCommand}">
+                                    <StackPanel><TextBlock Text="0.01" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding [Axis.Med], Source={x:Static loc:Loc.Strings}}" FontSize="10"
+                                                   HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/></StackPanel>
+                                </RadioButton>
+                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" Command="{Binding StepCoarseCommand}">
+                                    <StackPanel><TextBlock Text="0.1" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding [Axis.Coarse], Source={x:Static loc:Loc.Strings}}" FontSize="10"
+                                                   HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/></StackPanel>
+                                </RadioButton>
+                            </UniformGrid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
+                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" MinWidth="56"
+                                             Command="{Binding StepCustomCommand}"
+                                             Content="{Binding [Axis.Custom], Source={x:Static loc:Loc.Strings}}"/>
+                                <TextBox Style="{StaticResource NumBox}" Width="80" Margin="6,0"
+                                         Text="{Binding CustomStep, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F3}}"/>
+                                <TextBlock Text="mm" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                            </StackPanel>
+
+                            <!-- Nudge +/− -->
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Style="{StaticResource MiniButton}" Content="−" FontSize="18"
+                                        Command="{Binding NudgeMinusCommand}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding CurrentStep, StringFormat={}{0:F3}}"
+                                           FontFamily="Consolas" FontSize="14" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                <Button Grid.Column="2" Style="{StaticResource MiniButton}" Margin="0" Content="+" FontSize="18"
+                                        Command="{Binding NudgePlusCommand}"/>
+                            </Grid>
+
+                            <TextBlock Text="{Binding [Axis.JogHint], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11.5" Margin="0,10,0,0" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Phản hồi servo trục đang chọn -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Margin="0,0,0,6">
+                                <Run Text="{Binding [Axis.Feedback], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                                <Run Text="{Binding SelectedAxis.Name, Mode=OneWay}"/>
+                            </TextBlock>
+                            <DockPanel Margin="0,3">
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackFollowingError}"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                <TextBlock Text="Following error" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,3">
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackVelocity}"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                <TextBlock Text="Feedback velocity" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,3">
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackTorque}"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                <TextBlock Text="Feedback torque" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,3">
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackMotorLoad}"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                <TextBlock Text="Motor load" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- ═══ BẢNG ĐIỂM — chọn ô/tên rồi Tới/Teach (2 chạm) ═══════════════ -->
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CardTitle}"
+                               Text="{Binding [Axis.PointTable], Source={x:Static loc:Loc.Strings}}"/>
+
+                    <!-- Header -->
+                    <Grid Margin="0,0,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="#" Foreground="{DynamicResource Text.PlaceholderBrush}" FontSize="12"/>
+                        <TextBlock Grid.Column="1" Text="{Binding [Axis.PointName], Source={x:Static loc:Loc.Strings}}"
+                                   Foreground="{DynamicResource Text.PlaceholderBrush}" FontSize="12"/>
+                        <TextBlock Grid.Column="2" Text="X" TextAlignment="Right" Foreground="{DynamicResource Text.PlaceholderBrush}" FontSize="12"/>
+                        <TextBlock Grid.Column="3" Text="Y" TextAlignment="Right" Foreground="{DynamicResource Text.PlaceholderBrush}" FontSize="12"/>
+                        <TextBlock Grid.Column="4" Text="Z" TextAlignment="Right" Foreground="{DynamicResource Text.PlaceholderBrush}" FontSize="12"/>
+                        <TextBlock Grid.Column="5" Text="U" TextAlignment="Right" Foreground="{DynamicResource Text.PlaceholderBrush}" FontSize="12"/>
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding PointRows}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Margin="0,0,0,4" Padding="8" CornerRadius="4"
-                                        Background="{DynamicResource Panel.BackgroundAltBrush}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Name}" Width="140" VerticalAlignment="Center"
-                                                   FontWeight="SemiBold" Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                                        <TextBlock Text="{Binding Positions, Converter={StaticResource PosText}}"
-                                                   Width="240" VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                        <Button Content="{Binding [Motion.Go], Source={x:Static loc:Loc.Strings}}" Width="56" Height="26" Margin="8,0,0,0"
-                                                Command="{Binding DataContext.GoToPointCommand,
+                                <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Card.BorderBrush}">
+                                    <Grid Height="40">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Text="{Binding Ordinal}" VerticalAlignment="Center"
+                                                   FontWeight="SemiBold" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+
+                                        <!-- Tên điểm: chạm = chọn cả điểm -->
+                                        <Button Grid.Column="1" HorizontalContentAlignment="Left" Cursor="Hand"
+                                                Command="{Binding DataContext.SelectPointRowCommand,
                                                           RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"
-                                                Background="{DynamicResource Button.PrimaryBrush}"
-                                                Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
-                                        <Button Content="{Binding [Motion.Delete], Source={x:Static loc:Loc.Strings}}" Width="56" Height="26" Margin="8,0,0,0"
-                                                Command="{Binding DataContext.DeletePointCommand,
-                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"/>
-                                    </StackPanel>
+                                                CommandParameter="{Binding}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="Bd" Background="Transparent" Padding="2,0">
+                                                        <ContentPresenter VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                                                        </Trigger>
+                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Info.BackgroundBrush}"/>
+                                                        </DataTrigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                        </Button>
+
+                                        <!-- 4 ô toạ độ X/Y/Z/U: chạm = chọn riêng trục -->
+                                        <ContentControl Grid.Column="2" Content="{Binding Cells[0]}"
+                                                        ContentTemplate="{StaticResource CellTemplate}" VerticalAlignment="Center"/>
+                                        <ContentControl Grid.Column="3" Content="{Binding Cells[1]}"
+                                                        ContentTemplate="{StaticResource CellTemplate}" VerticalAlignment="Center"/>
+                                        <ContentControl Grid.Column="4" Content="{Binding Cells[2]}"
+                                                        ContentTemplate="{StaticResource CellTemplate}" VerticalAlignment="Center"/>
+                                        <ContentControl Grid.Column="5" Content="{Binding Cells[3]}"
+                                                        ContentTemplate="{StaticResource CellTemplate}" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ScrollViewer>
-            </DockPanel>
-        </Border>
 
-        <!-- Status -->
-        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap"
-                   Foreground="{DynamicResource Status.AlarmBrush}"/>
-    </Grid>
+                    <!-- Thanh chọn + Tới/Teach/Lưu -->
+                    <Border CornerRadius="8" Padding="12,8" Margin="0,10,0,0"
+                            Background="{DynamicResource Info.BackgroundBrush}"
+                            BorderBrush="{StaticResource Status.InfoBrush}" BorderThickness="1"
+                            Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Style="{StaticResource MiniButton}"
+                                        BorderBrush="{StaticResource Status.InfoBrush}"
+                                        Foreground="{StaticResource Status.InfoBrush}"
+                                        Content="{Binding [Axis.GoToSel], Source={x:Static loc:Loc.Strings}}"
+                                        Command="{Binding GoToSelectionCommand}"/>
+                                <Button Style="{StaticResource MiniButton}"
+                                        Content="{Binding [Axis.TeachSel], Source={x:Static loc:Loc.Strings}}"
+                                        Command="{Binding TeachSelectionCommand}"/>
+                                <Button Style="{StaticResource MiniButton}" Margin="0"
+                                        BorderBrush="{StaticResource Status.NormalBrush}"
+                                        Foreground="{StaticResource Status.NormalBrush}"
+                                        Content="{Binding [Axis.SavePoints], Source={x:Static loc:Loc.Strings}}"
+                                        Command="{Binding SavePointsCommand}"/>
+                            </StackPanel>
+                            <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource Text.PrimaryBrush}">
+                                <Run Text="{Binding [Axis.Selecting], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                                <Run Text="{Binding SelectionScope, Mode=OneWay}" FontWeight="SemiBold"
+                                     Foreground="{StaticResource Status.InfoBrush}"/>
+                            </TextBlock>
+                        </DockPanel>
+                    </Border>
+
+                    <TextBlock Text="{Binding [Axis.PointHint], Source={x:Static loc:Loc.Strings}}"
+                               FontSize="11.5" Margin="0,8,0,0" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                    <TextBlock Text="{Binding StatusMessage}" Margin="0,6,0,0" TextWrapping="Wrap"
+                               Foreground="{StaticResource Status.AlarmBrush}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

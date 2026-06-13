@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-12
-**Session:** #45 — Shell + Home theo **spec HMI v2.0** (7 vùng Persistent Frame, mockup `hmi_home_v2.html`): palette v2, nav tab ngang, alarm banner multi-alarm, action bar trắng icon-trên, right rail 560px (KPI ca/quick actions/trạm & an toàn/nhật ký), connection bar Thiết bị│Host. Docs mới: `HMI_UI_Architecture_Template_v2.md` (+ adoption §9) + `HMI_Button_Spec.md`
-**Commit:** `ae9a822`  ·  (S44: Dashboard L1 bản cũ)
+**Ngày:** 2026-06-13
+**Session:** #46 — Màn **điều khiển trục** theo `HMI_Naming_and_Axis_Point_Model` + mockup `hmi_axis_detail`: bảng đèn 8 tín hiệu/trục, servo/home/clear/move từng trục, jog pad + inching, phản hồi servo, bảng điểm Set/Confirm 2-chạm. Thêm interface tuỳ chọn `IAxisDiagnostics` (sim implement) — non-breaking.
+**Commit:** *(điền sau commit)*  ·  (S45: Shell + Home v2)
 
 ---
 
@@ -19,14 +19,14 @@
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
-| AM.Hardware.Motion | ✅ Hoàn thành | Sim + **GtsMotionController (固高, P/Invoke)** + **AdvantechMotionController (P/Invoke)** |
+| AM.Hardware.Motion | ✅ Hoàn thành | Sim (+**IAxisDiagnostics**: 8 tín hiệu/servo/phản hồi) + **GtsMotionController (固高, P/Invoke)** + **AdvantechMotionController (P/Invoke)** |
 | AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice + **SimulatedVisionProcessor (IVisionProcessor)** |
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule + **SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions** |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, **UserService (login/RBAC, BCrypt)** |
 | AM.Services.Tests | ✅ Hoàn thành | **64 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, **PointTable**) |
 | AM.Infrastructure (i18n) | ✅ Hoàn thành | **JsonAlarmCatalogService** — Alarms.{vi,en,zh}.json (44 mã), dịch tên/remedy theo culture |
-| AM.Hardware.Tests | ✅ Hoàn thành | **27 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap |
+| AM.Hardware.Tests | ✅ Hoàn thành | **31 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap, **SimAxisDiagnostics (servo/signals/feedback)** |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
@@ -35,7 +35,7 @@
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
-| AM.Modules.Motion | ✅ Hoàn thành | **Mới** — jog/home/move/stop từng trục (poll live) + Point Table (IPointTableService); nav order 40 |
+| AM.Modules.Motion | ✅ Hoàn thành | **Màn điều khiển trục v2** (S46): bảng đèn 8 tín hiệu + servo/home/clear/move từng trục + jog pad/inching + phản hồi servo + bảng điểm Set/Confirm 2-chạm (Tới/Teach/Lưu recipe). Bám `IMotionController` + `IAxisDiagnostics` (tuỳ chọn); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |
 | AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + HardwareFactory + **Shell v2 — 7 vùng Persistent Frame** (S45): header badge AUTO/LOCAL/state + heartbeat, nav tab ngang, alarm banner 1-alarm + ACK 40px + chip "+N", action bar trắng icon-trên (Pause/Resume 1 nút, Dry run), connection bar Thiết bị│Host + version |
 | AM.UI.Localization | ✅ Hoàn thành | Proxy i18n dùng chung `Loc.Strings` (module bind `{x:Static loc:Loc.Strings}`) |

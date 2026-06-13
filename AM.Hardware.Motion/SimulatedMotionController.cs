@@ -8,6 +8,7 @@
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Constants;
 using AM.Core.Exceptions;
+using AM.Core.Models;
 using Microsoft.Extensions.Logging;
 
 namespace AM.Hardware.Motion;
@@ -16,8 +17,10 @@ namespace AM.Hardware.Motion;
 /// Simulator cho motion controller.
 /// Lưu trạng thái trục trong memory, giả lập thời gian di chuyển.
 /// Dùng trong development và test không cần phần cứng.
+/// Cũng implement <see cref="IAxisDiagnostics"/> để HMI điều khiển trục "sống" đầy đủ
+/// (bảng đèn 8 tín hiệu, servo on/off, phản hồi servo) khi chạy mô phỏng.
 /// </summary>
-public sealed class SimulatedMotionController : IMotionController
+public sealed class SimulatedMotionController : IMotionController, IAxisDiagnostics
 {
     // ─── Constants ─────────────────────────────────────────────────────────────
     private const int HomeTimeoutMs   = 10_000;
@@ -31,6 +34,8 @@ public sealed class SimulatedMotionController : IMotionController
     private readonly double[] _positions;
     private readonly bool[] _homed;
     private readonly bool[] _moving;
+    private readonly bool[] _servoOn;     // IAxisDiagnostics: servo励磁 state per axis
+    private readonly bool[] _alarm;       // IAxisDiagnostics: servo alarm per axis (Clear để xoá)
     private bool _isConnected;
     private bool _disposed;
 
@@ -45,6 +50,8 @@ public sealed class SimulatedMotionController : IMotionController
         _positions = new double[axisCount];
         _homed     = new bool[axisCount];
         _moving    = new bool[axisCount];
+        _servoOn   = new bool[axisCount];
+        _alarm     = new bool[axisCount];
     }
 
     // ─── Public properties ───────────────────────────────────────────────────────
@@ -222,7 +229,51 @@ public sealed class SimulatedMotionController : IMotionController
     public Task ClearDriverFaultAsync(int axisIndex, CancellationToken ct = default)
     {
         ValidateAxis(axisIndex);
+        _alarm[axisIndex] = false; // Clear servo alarm (清错)
         _logger.LogDebug("[SimMotion] ClearDriverFault axis={Axis}", axisIndex);
+        return Task.CompletedTask;
+    }
+
+    // ─── IAxisDiagnostics (chỉ sim — bảng đèn 8 tín hiệu, servo, phản hồi) ────────
+
+    /// <inheritdoc/>
+    public Task<AxisSignals> GetAxisSignalsAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        bool homed = _homed[axisIndex];
+        bool moving = _moving[axisIndex];
+        // Sim không có giới hạn/E-Stop vật lý; suy tín hiệu còn lại từ trạng thái nội bộ.
+        var signals = new AxisSignals(
+            Alarm: _alarm[axisIndex],
+            PlusLimit: false,
+            MinusLimit: false,
+            Origin: homed,                       // home xong = ở gốc
+            EStop: false,
+            Zero: homed && Math.Abs(_positions[axisIndex]) < 0.001,
+            InPosition: homed && !moving,        // đứng yên sau khi home = đã tới vị trí
+            ServoOn: _servoOn[axisIndex]);
+        return Task.FromResult(signals);
+    }
+
+    /// <inheritdoc/>
+    public Task<AxisFeedback> GetAxisFeedbackAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        // Đứng yên: gần 0. Đang chạy: vài giá trị hợp lý để panel chẩn đoán có nội dung.
+        var fb = _moving[axisIndex]
+            ? new AxisFeedback(FollowingErrorMm: 0.012, FeedbackVelocity: DefaultVelocity,
+                               TorquePercent: 18.0, MotorLoadPercent: 24.0)
+            : new AxisFeedback(FollowingErrorMm: 0.001, FeedbackVelocity: 0.0,
+                               TorquePercent: 2.1, MotorLoadPercent: 8.0);
+        return Task.FromResult(fb);
+    }
+
+    /// <inheritdoc/>
+    public Task SetServoAsync(int axisIndex, bool enabled, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        _servoOn[axisIndex] = enabled;
+        _logger.LogDebug("[SimMotion] Servo axis={Axis} → {State}", axisIndex, enabled ? "ON" : "OFF");
         return Task.CompletedTask;
     }
 

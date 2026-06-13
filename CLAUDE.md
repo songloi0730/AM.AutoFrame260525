@@ -67,10 +67,11 @@ AM.Core/                         — Enums, Models, Constants, Exceptions
 
 AM.Core.Abstractions/            — Interfaces only, no implementation
   Interfaces/Hardware/           — IHardwareDevice (base: Connect/Disconnect), IMotionController, IAxis,
+                                    IAxisDiagnostics (tuỳ chọn: 8 tín hiệu + servo + phản hồi, sim implement),
                                     ICameraDevice, IVisionProcessor, IIoModule, IIoTagMap, ISafetyInput,
                                     IModbusClient, ISerialDevice, ITcpDevice, IOpcUaClient, IEthernetIpClient,
-                                    IPlcDevice, IRobotDevice, IBarcodeScanner
-                                    (TODO chưa có: IAxisGroup, ILightController)
+                                    IPlcDevice, IRobotDevice, IBarcodeScanner, ILightController
+                                    (chưa có: IAxisGroup, IAxisJog velocity-mode cho deadman)
   Interfaces/Machine/            — IMechanism, IStation, IMasterController
   Interfaces/Services/           — IAlarmService, IRecipeService, IParameterService,
                                     IHardwareManagerService, IStationSyncService,
@@ -303,6 +304,7 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/HMI_UI_Architecture_Template_v2.md` | **UI — CHUẨN HIỆN HÀNH** — bố cục Home 7 vùng (work area + right rail), palette v2, multi-alarm banner, quick actions, + quyết định adoption/phản biện |
 | `docs/HMI_Button_Spec.md` | **UI** — đặc tả MỌI nút trên Home: precondition (state machine), role, audit, mở ra gì |
 | `docs/HMI_UI_Architecture_Template.md` | **UI** — v1.1, CHỈ còn hiệu lực phần template điều khiển (ManualControlView/AxisControlView/VisionTeachView) |
+| `docs/HMI_Naming_and_Axis_Point_Model.md` | **UI** — màn điều khiển trục: quy ước tên IO/trục/điểm, mô hình Trục–Điểm Set/Confirm, bảng đèn 8 tín hiệu, jog/inching + quyết định adoption (IAxisDiagnostics, hoãn deadman) |
 | `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
 | `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") |
 | `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính Home (v2): work area + right rail, data binding interface-only, checklist nghiệm thu |

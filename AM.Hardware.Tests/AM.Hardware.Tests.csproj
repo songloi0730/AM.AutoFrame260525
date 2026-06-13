@@ -31,6 +31,7 @@
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
     <ProjectReference Include="..\AM.Hardware.Comm\AM.Hardware.Comm.csproj" />
     <ProjectReference Include="..\AM.Hardware.IO\AM.Hardware.IO.csproj" />
+    <ProjectReference Include="..\AM.Hardware.Motion\AM.Hardware.Motion.csproj" />
     <ProjectReference Include="..\AM.Hardware.Scanner\AM.Hardware.Scanner.csproj" />
     <ProjectReference Include="..\AM.Hardware.Vision\AM.Hardware.Vision.csproj" />
   </ItemGroup>
