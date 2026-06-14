@@ -10,6 +10,7 @@
   "Manual.Locked": "🔒 Máy đang chạy — chỉ xem, mọi điều chỉnh đã khóa",
   "Manual.Tab.Axis": "Điều khiển trục",
   "Manual.Tab.Points": "Bảng điểm",
+  "Manual.Tab.Io": "Giám sát I/O",
   "Manual.Tab.Station": "Thao tác trạm",
   "Manual.Tab.Override": "⚠ Override",
   "Manual.Station.Pending": "Thao tác trạm (R0–R1, Line Lead+) — cần guard engine + HardwareInputEventBus. Đang phát triển; xem HMI_Manual_Operation_and_Safety §7.3.",

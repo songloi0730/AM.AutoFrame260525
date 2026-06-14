@@ -152,7 +152,27 @@ public partial class MainWindow : Window
 
     private void RecipeButton_Click(object sender, RoutedEventArgs e) => NavigateToView("ParameterView");
 
-    private void UserButton_Click(object sender, RoutedEventArgs e) => NavigateToView("IdentityView");
+    // Login: KHÔNG còn tab "Tài khoản" — nút User ở header là lối duy nhất (bỏ trùng login).
+    private void UserButton_Click(object sender, RoutedEventArgs e)
+        => ShowStandaloneView(typeof(AM.Modules.Identity.IdentityView));
+
+    /// <summary>Hiện một view KHÔNG thuộc nav (vd Identity) trong vùng content, bỏ chọn tab đang active.</summary>
+    private void ShowStandaloneView(Type viewType)
+    {
+        if (!_viewCache.TryGetValue(viewType, out var view))
+        {
+            view = (UserControl)Activator.CreateInstance(viewType)!;
+            view.DataContext = ResolveViewModel(viewType);
+            _viewCache[viewType] = view;
+        }
+        MainContent.Content = view;
+        if (_activeNavButton is not null)
+        {
+            _activeNavButton.Background = Brushes.Transparent;
+            _activeNavButton.FontWeight = FontWeights.Normal;
+            _activeNavButton = null;
+        }
+    }
 
     private void SetActiveTab(Button button)
     {

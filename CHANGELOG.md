@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 49] 2026-06-14 — Bỏ nút trùng chức năng (login, I/O) theo HMI_Home_Buttons_Checklist
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User thấy nav có nút trùng chức năng (login, io) + gửi `HMI_Home_Buttons_Checklist_v1.0` + Master Index
+(bản cập nhật có dòng checklist). Nguyên tắc: "một lệnh một chỗ"; login/ngôn ngữ là nút mép phải (KHÔNG tab);
+IO gộp vào Vận hành tay.
+
+### ✅ Bỏ trùng theo checklist
+- **Login**: bỏ `[ModuleNavigation]` ở `IdentityView` → KHÔNG còn tab "Tài khoản". Nút **User ở header** là lối
+  duy nhất (`MainWindow.ShowStandaloneView` hiện Identity trong content, bỏ chọn tab active). Khớp checklist §2.
+- **I/O**: bỏ `[ModuleNavigation]` ở `IoMonitorView` → KHÔNG còn tab "Giám sát I/O" riêng. Nhúng làm **sub-tab
+  "Giám sát I/O"** trong Vận hành tay (Motion ref IoMonitor; `MotionViewModel` inject `IoMonitorViewModel`,
+  expose `IoMonitor`; `MotionView` host `IoMonitorView`). Sub-tab Vận hành tay: Trục · Điểm · **I/O** · Thao tác trạm · Override.
+- Nav từ 10 → **8 tab**: Home · Sản xuất · Cảnh báo · Vận hành tay · Recipe · Chẩn đoán · Nhật ký · Kỹ thuật.
+
+### 🔎 Phản biện (giữ nguyên, chưa sửa — báo user quyết)
+- **Chẩn đoán (Diagnostics) + Kỹ thuật (Engineering)** cũng KHÔNG thuộc nav chuẩn (checklist: nằm trong "Cài đặt").
+  Chưa có module "Cài đặt"/GridMenu → GIỮ tạm làm tab, gom vào Cài đặt ở phiên sau (tránh orphan).
+- **Recipe ở header** (nút → tab Recipe) là shortcut theo Template v2 §3.1 (KHÔNG phải lỗi trùng) — giữ.
+- **Action bar "Manual"** cũng mở Vận hành tay (checklist §6) = lối tắt có chủ đích — giữ (đang disabled).
+- IO-write (toggle DO) trong sub-tab I/O CHƯA gate theo `IsAdjustAllowed`/role — chờ guard engine (giữ hành vi cũ).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (28 projects). `dotnet test` → **174 passed**. Arch test xanh (Motion→IoMonitor hợp lệ).
+
+---
+
 ## [Session 48] 2026-06-14 — Nav "Chuyển động" → "Vận hành tay" (dải khóa trạng thái + sub-tab)
 
 **Commit:** `ff3adec`

@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              xmlns:conv="clr-namespace:AM.Modules.Motion.Converters"
+             xmlns:iomon="clr-namespace:AM.Modules.IoMonitor;assembly=AM.Modules.IoMonitor"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -282,9 +283,12 @@
                              Content="{Binding [Manual.Tab.Points], Source={x:Static loc:Loc.Strings}}"/>
                 <RadioButton Style="{StaticResource SubTab}" GroupName="mtab"
                              Command="{Binding SelectSubTabCommand}" CommandParameter="2"
-                             Content="{Binding [Manual.Tab.Station], Source={x:Static loc:Loc.Strings}}"/>
+                             Content="{Binding [Manual.Tab.Io], Source={x:Static loc:Loc.Strings}}"/>
                 <RadioButton Style="{StaticResource SubTab}" GroupName="mtab"
                              Command="{Binding SelectSubTabCommand}" CommandParameter="3"
+                             Content="{Binding [Manual.Tab.Station], Source={x:Static loc:Loc.Strings}}"/>
+                <RadioButton Style="{StaticResource SubTab}" GroupName="mtab"
+                             Command="{Binding SelectSubTabCommand}" CommandParameter="4"
                              Foreground="{StaticResource Status.AlarmBrush}"
                              Content="{Binding [Manual.Tab.Override], Source={x:Static loc:Loc.Strings}}"/>
             </StackPanel>
@@ -887,9 +891,14 @@
             </Border>
             </ScrollViewer>
 
-            <!-- ══ PANE 2: Thao tác trạm (R0–R1) — chờ guard engine ══ -->
+            <!-- ══ PANE 2: Giám sát I/O (nhúng IoMonitorView — gộp Motion/IO) ══ -->
+            <Border Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=2}">
+                <iomon:IoMonitorView DataContext="{Binding IoMonitor}"/>
+            </Border>
+
+            <!-- ══ PANE 3: Thao tác trạm (R0–R1) — chờ guard engine ══ -->
             <Border Style="{StaticResource Card}" VerticalAlignment="Top"
-                    Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=2}">
+                    Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=3}">
                 <StackPanel Margin="8,16" HorizontalAlignment="Center">
                     <TextBlock Text="&#xE90F;" FontFamily="Segoe MDL2 Assets" FontSize="32"
                                HorizontalAlignment="Center" Margin="0,0,0,10"
@@ -900,9 +909,9 @@
                 </StackPanel>
             </Border>
 
-            <!-- ══ PANE 3: Override có giám sát — chờ chốt §9 + guard engine ══ -->
+            <!-- ══ PANE 4: Override có giám sát — chờ chốt §9 + guard engine ══ -->
             <Border Style="{StaticResource Card}" VerticalAlignment="Top"
-                    Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=3}">
+                    Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=4}">
                 <StackPanel Margin="8,16" HorizontalAlignment="Center">
                     <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="32"
                                HorizontalAlignment="Center" Margin="0,0,0,10"

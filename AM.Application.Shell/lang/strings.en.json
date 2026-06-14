@@ -10,6 +10,7 @@
   "Manual.Locked": "🔒 Machine running — view only, all adjustments locked",
   "Manual.Tab.Axis": "Axis control",
   "Manual.Tab.Points": "Point table",
+  "Manual.Tab.Io": "I/O monitor",
   "Manual.Tab.Station": "Station ops",
   "Manual.Tab.Override": "⚠ Override",
   "Manual.Station.Pending": "Station operations (R0–R1, Line Lead+) — needs guard engine + HardwareInputEventBus. In development; see HMI_Manual_Operation_and_Safety §7.3.",

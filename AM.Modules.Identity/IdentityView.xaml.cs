@@ -6,15 +6,14 @@
 
 using System.Windows.Controls;
 using System.Windows.Input;
-using AM.Core.Attributes;
 
 namespace AM.Modules.Identity;
 
 /// <summary>
 /// View đăng nhập/đăng xuất. Logic ở <see cref="IdentityViewModel"/>.
 /// Mật khẩu KHÔNG bind (PasswordBox.Password không phải DP) — đọc tại đây rồi truyền vào LoginCommand.
+/// KHÔNG còn là tab nav riêng (bỏ trùng login) — vào qua nút User ở header (checklist §2: login = nút mép phải).
 /// </summary>
-[ModuleNavigation("Nav.Identity", icon: "user", order: 90)]
 public partial class IdentityView : UserControl
 {
     /// <summary>Khởi tạo component XAML.</summary>

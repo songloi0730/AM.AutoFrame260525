@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
-**Session:** #48 — Đổi nav **"Chuyển động" → "Vận hành tay"**: thêm dải khóa trạng thái (máy chạy→khóa điều chỉnh, `IsAdjustAllowed`) + sub-tab (Điều khiển trục · Bảng điểm · Thao tác trạm · ⚠ Override). 2 sub-tab sau là empty-state (chờ guard engine). MotionViewModel +IMasterController +IUserService.
-**Commit:** `ff3adec`  ·  (S47: 4 role + tài liệu)
+**Session:** #49 — Bỏ nút trùng chức năng (checklist "một lệnh một chỗ"): **bỏ tab "Tài khoản"** (login chỉ qua nút User ở header) + **bỏ tab "Giám sát I/O" riêng**, nhúng IoMonitor làm sub-tab trong Vận hành tay. Nav còn 8 tab.
+**Commit:** *(điền sau commit)*  ·  (S48: nav Vận hành tay)
 
 ---
 

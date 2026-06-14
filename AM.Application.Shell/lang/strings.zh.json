@@ -10,6 +10,7 @@
   "Manual.Locked": "🔒 设备运行中 — 仅查看，所有调整已锁定",
   "Manual.Tab.Axis": "轴控制",
   "Manual.Tab.Points": "点位表",
+  "Manual.Tab.Io": "I/O 监视",
   "Manual.Tab.Station": "工位操作",
   "Manual.Tab.Override": "⚠ 越权操作",
   "Manual.Station.Pending": "工位操作（R0–R1，班长以上）— 需 guard engine + HardwareInputEventBus。开发中；见 HMI_Manual_Operation_and_Safety §7.3。",

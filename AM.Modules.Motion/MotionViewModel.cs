@@ -15,6 +15,7 @@ using AM.Core.Enums;
 using AM.Core.Exceptions;
 using AM.Core.Models;
 using AM.Core.Models.EventArgs;
+using AM.Modules.IoMonitor;
 using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -41,6 +42,9 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private readonly IMasterController _master;
     private readonly IUserService _user;
     private readonly ILogger<MotionViewModel> _logger;
+
+    /// <summary>VM giám sát I/O nhúng làm sub-tab "Giám sát I/O" (sở hữu bởi DI — KHÔNG dispose ở đây).</summary>
+    public IoMonitorViewModel IoMonitor { get; }
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
     private readonly int _pollMs;
@@ -92,19 +96,21 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     /// <summary>Tạo VM, dựng trục/nhóm + nạp Point Table + bắt đầu poll.</summary>
     public MotionViewModel(IMotionController motion, IPointTableService pointTable,
-        IMasterController master, IUserService user,
+        IMasterController master, IUserService user, IoMonitorViewModel ioMonitor,
         ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
     {
         ArgumentNullException.ThrowIfNull(motion);
         ArgumentNullException.ThrowIfNull(pointTable);
         ArgumentNullException.ThrowIfNull(master);
         ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(ioMonitor);
         ArgumentNullException.ThrowIfNull(logger);
         _motion = motion;
         _diag = motion as IAxisDiagnostics;
         _pointTable = pointTable;
         _master = master;
         _user = user;
+        IoMonitor = ioMonitor;
         _logger = logger;
         _uiContext = SynchronizationContext.Current;
         _pollMs = pollIntervalMs;
