@@ -9,64 +9,151 @@
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
-    <!-- Cài đặt: container gom các màn kỹ thuật (Chẩn đoán, Kỹ thuật) làm sub-tab -->
+    <!-- Cài đặt = GridMenu: landing lưới thẻ → chọn thẻ mở mục đó + nút quay lại -->
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <Style x:Key="SubTab" TargetType="RadioButton">
-            <Setter Property="MinWidth" Value="130"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        <!-- Thẻ chức năng (icon trên + tên + mô tả); placeholder mờ -->
+        <Style x:Key="MenuCard" TargetType="Button">
+            <Setter Property="Height" Value="120"/>
+            <Setter Property="Margin" Value="0,0,12,12"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Bd" Background="Transparent" Padding="18,0"
-                                BorderThickness="0,0,0,3" BorderBrush="Transparent">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="8" Padding="16"
+                                Background="{DynamicResource Panel.BackgroundAltBrush}"
+                                BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock x:Name="Ico" FontFamily="Segoe MDL2 Assets" FontSize="26"
+                                           Margin="0,0,0,10"
+                                           Foreground="{DynamicResource Status.InfoBrush}"
+                                           Text="{TemplateBinding Tag}"/>
+                                <ContentPresenter/>
+                            </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource Status.InfoBrush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                                <Setter TargetName="Ico" Property="Foreground" Value="{DynamicResource Text.PlaceholderBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="CardTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+        </Style>
+        <Style x:Key="CardDesc" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="16,12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>  <!-- thanh sub-tab -->
-            <RowDefinition Height="*"/>     <!-- nội dung -->
-        </Grid.RowDefinitions>
 
-        <!-- Thanh sub-tab: Chẩn đoán · Kỹ thuật -->
-        <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Border.DefaultBrush}"
-                Margin="0,0,0,10">
-            <StackPanel Orientation="Horizontal">
-                <RadioButton Style="{StaticResource SubTab}" GroupName="settab" IsChecked="True"
-                             Command="{Binding SelectSubTabCommand}" CommandParameter="0"
-                             Content="{Binding [Nav.Diagnostics], Source={x:Static loc:Loc.Strings}}"/>
-                <RadioButton Style="{StaticResource SubTab}" GroupName="settab"
-                             Command="{Binding SelectSubTabCommand}" CommandParameter="1"
-                             Content="{Binding [Nav.Engineering], Source={x:Static loc:Loc.Strings}}"/>
+        <!-- ═══ LANDING — lưới thẻ ═══════════════════════════════════════════════ -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Visibility="{Binding IsLanding, Converter={StaticResource BoolToVis}}">
+            <StackPanel MaxWidth="1100" HorizontalAlignment="Left">
+                <TextBlock Text="{Binding [Nav.Settings], Source={x:Static loc:Loc.Strings}}"
+                           FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
+                           Foreground="{DynamicResource Text.HeadingBrush}"/>
+                <UniformGrid Columns="3">
+                    <!-- Có chức năng -->
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE950;"
+                            Command="{Binding OpenCommand}" CommandParameter="diagnostics">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Nav.Diagnostics], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.DiagDesc], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE90F;"
+                            Command="{Binding OpenCommand}" CommandParameter="engineering">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Nav.Engineering], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.EngDesc], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE946;"
+                            Command="{Binding OpenCommand}" CommandParameter="about">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.About], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.AboutDesc], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Placeholder (mờ + "đang phát triển") -->
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
+                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Hardware], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
+                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Calib], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
+                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Users], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
+                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Host], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
+                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Backup], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
             </StackPanel>
-        </Border>
+        </ScrollViewer>
 
-        <!-- Nội dung: nhúng view tương ứng -->
-        <Grid Grid.Row="1">
-            <diag:DiagnosticsView DataContext="{Binding Diagnostics}"
-                                  Visibility="{Binding ShowDiagnostics, Converter={StaticResource BoolToVis}}"/>
-            <eng:EngineeringView DataContext="{Binding Engineering}"
-                                 Visibility="{Binding ShowEngineering, Converter={StaticResource BoolToVis}}"/>
-        </Grid>
+        <!-- ═══ DETAIL — mục đang mở + nút quay lại ══════════════════════════════ -->
+        <DockPanel Visibility="{Binding IsDetail, Converter={StaticResource BoolToVis}}">
+            <Button DockPanel.Dock="Top" HorizontalAlignment="Left" Height="36" Padding="14,0"
+                    Margin="0,0,0,8" Cursor="Hand" Command="{Binding BackCommand}"
+                    Content="{Binding [Set.Back], Source={x:Static loc:Loc.Strings}}"
+                    Background="{DynamicResource Panel.BackgroundAltBrush}"
+                    BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
+                    Foreground="{DynamicResource Text.PrimaryBrush}"/>
+            <Grid>
+                <diag:DiagnosticsView DataContext="{Binding Diagnostics}"
+                                      Visibility="{Binding ShowDiagnostics, Converter={StaticResource BoolToVis}}"/>
+                <eng:EngineeringView DataContext="{Binding Engineering}"
+                                     Visibility="{Binding ShowEngineering, Converter={StaticResource BoolToVis}}"/>
+                <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
+                        Background="{DynamicResource Panel.BackgroundBrush}"
+                        BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
+                        Visibility="{Binding ShowAbout, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{Binding AboutText}" FontFamily="Consolas" FontSize="14"
+                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                </Border>
+            </Grid>
+        </DockPanel>
     </Grid>
 </UserControl>

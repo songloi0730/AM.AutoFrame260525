@@ -1,38 +1,48 @@
 // -------------------------------------------------------
 // File:    SettingsViewModel.cs
 // Project: AM.Modules.Settings
-// Purpose: VM container "Cài đặt" — gom các màn kỹ thuật (Chẩn đoán, Kỹ thuật) làm sub-tab.
+// Purpose: VM "Cài đặt" kiểu GridMenu — landing lưới thẻ → mở từng mục (detail + nút quay lại).
 // -------------------------------------------------------
 
 using System.Globalization;
+using System.Reflection;
 using AM.Modules.Diagnostics;
 using AM.Modules.Engineering;
+using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AM.Modules.Settings;
 
 /// <summary>
-/// "Cài đặt" gom các màn kỹ thuật không thuộc nav chính (checklist: Diagnostics/Engineering nằm trong Cài đặt).
-/// Hiện có 2 sub-tab: Chẩn đoán · Kỹ thuật. Các mục khác (Phần cứng, User, Host, Backup, Giới thiệu) bổ sung sau.
-/// VM con sở hữu bởi DI (KHÔNG dispose ở đây).
+/// "Cài đặt" theo spec = GridMenuView: landing là lưới thẻ chức năng; chọn thẻ → mở mục đó kèm nút
+/// quay lại. Mục đã có: Chẩn đoán · Kỹ thuật · Giới thiệu. Mục chờ build (Phần cứng, Hiệu chuẩn,
+/// Người dùng, Host, Sao lưu) hiển thị mờ + "đang phát triển" (giải thích thay vì giấu).
+/// VM con (Diagnostics/Engineering) sở hữu bởi DI — KHÔNG dispose ở đây.
 /// </summary>
 public sealed partial class SettingsViewModel : ObservableObject
 {
-    /// <summary>VM màn Chẩn đoán (nhúng làm sub-tab).</summary>
+    /// <summary>VM màn Chẩn đoán (nhúng khi mở thẻ).</summary>
     public DiagnosticsViewModel Diagnostics { get; }
 
-    /// <summary>VM màn Kỹ thuật (nhúng làm sub-tab).</summary>
+    /// <summary>VM màn Kỹ thuật (nhúng khi mở thẻ).</summary>
     public EngineeringViewModel Engineering { get; }
 
-    /// <summary>Sub-tab đang chọn: 0=Chẩn đoán, 1=Kỹ thuật.</summary>
-    [ObservableProperty] private int _subTabIndex;
+    /// <summary>Thông tin "Giới thiệu" (phiên bản app + .NET) — không localize từng dòng.</summary>
+    public string AboutText { get; }
 
-    /// <summary>True nếu đang xem sub-tab Chẩn đoán.</summary>
-    public bool ShowDiagnostics => SubTabIndex == 0;
+    /// <summary>Mục đang mở: null=landing(lưới thẻ); "diagnostics"/"engineering"/"about".</summary>
+    [ObservableProperty] private string? _section;
 
-    /// <summary>True nếu đang xem sub-tab Kỹ thuật.</summary>
-    public bool ShowEngineering => SubTabIndex == 1;
+    /// <summary>True khi đang ở landing (lưới thẻ).</summary>
+    public bool IsLanding => Section is null;
+
+    /// <summary>True khi đang mở một mục (hiện nút quay lại + detail).</summary>
+    public bool IsDetail => Section is not null;
+
+    public bool ShowDiagnostics => Section == "diagnostics";
+    public bool ShowEngineering => Section == "engineering";
+    public bool ShowAbout       => Section == "about";
 
     /// <summary>Tạo VM Cài đặt với các VM con đã đăng ký DI.</summary>
     public SettingsViewModel(DiagnosticsViewModel diagnostics, EngineeringViewModel engineering)
@@ -41,19 +51,27 @@ public sealed partial class SettingsViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(engineering);
         Diagnostics = diagnostics;
         Engineering = engineering;
+
+        var asm = Assembly.GetExecutingAssembly().GetName();
+        var ver = asm.Version?.ToString(3) ?? "0.0.0";
+        AboutText = string.Create(CultureInfo.InvariantCulture,
+            $"AM.AutoFrame\nPhiên bản: v{ver}\n.NET: {Environment.Version}\nHĐH: {Environment.OSVersion.VersionString}");
     }
 
-    partial void OnSubTabIndexChanged(int value)
+    /// <summary>Mở một mục theo id (thẻ đã có chức năng).</summary>
+    [RelayCommand]
+    private void Open(string? id) => Section = id;
+
+    /// <summary>Quay lại lưới thẻ.</summary>
+    [RelayCommand]
+    private void Back() => Section = null;
+
+    partial void OnSectionChanged(string? value)
     {
+        OnPropertyChanged(nameof(IsLanding));
+        OnPropertyChanged(nameof(IsDetail));
         OnPropertyChanged(nameof(ShowDiagnostics));
         OnPropertyChanged(nameof(ShowEngineering));
-    }
-
-    /// <summary>Đổi sub-tab theo tham số chuỗi index.</summary>
-    [RelayCommand]
-    private void SelectSubTab(string? index)
-    {
-        if (int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out int i))
-            SubTabIndex = i;
+        OnPropertyChanged(nameof(ShowAbout));
     }
 }
