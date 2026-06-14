@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
 **Session:** #47 — Tích hợp bộ tài liệu HMI mới (Master Index + Manual Operation & Safety + 5 mockup) + **phản biện/adoption tập trung** (`HMI_Master_Index §11`); **mô hình 4 role**: thêm `UserLevel.LineLead` (R1, giữa Operator–Engineer), seed `linelead`. CỐ Ý HOÃN màn Vận hành tay (cần HardwareInputEventBus + guard engine + chốt chính sách §9).
-**Commit:** *(điền sau commit)*  ·  (S46: màn điều khiển trục)
+**Commit:** `a07ac23`  ·  (S46: màn điều khiển trục)
 
 ---
 
