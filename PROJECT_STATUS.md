@@ -1,6 +1,10 @@
 # PROJECT_STATUS.md — AM.AutoFrame
 > **⚡ Claude: Đọc file này TRƯỚC khi bắt đầu bất kỳ thay đổi nào.**
 > File này là snapshot trạng thái dự án. Cập nhật cuối cùng sau mỗi session làm việc.
+>
+> 📌 **Tiếp tục mạch HMI v2 + Guard Engine (S44–S57)?** Đọc **`docs/SESSION_HANDOFF.md`** — bàn giao chi tiết:
+> trạng thái, các BẪY đã gặp (cross-thread UserChanged, users.json migration, analyzer), workflow, và roadmap
+> phần còn hoãn (Force IO, HardwareInputEventBus, thao tác trạm, Override...).
 
 ---
 
