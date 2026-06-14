@@ -4,6 +4,31 @@
 
 ---
 
+## [Session 48] 2026-06-14 — Nav "Chuyển động" → "Vận hành tay" (dải khóa trạng thái + sub-tab)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User chốt lần lượt từng yêu cầu trên giao diện đang chạy. Mục đầu: đổi nav sang "Vận hành tay"
+theo `HMI_Manual_Operation_and_Safety` (gộp Manual+Motion/IO).
+
+### ✅ AM.Modules.Motion → màn Vận hành tay
+- Nav: `[ModuleNavigation("Nav.ManualOp", icon:"manual", order:40)]` (icon MDL2 TouchPointer). Nhãn "Vận hành tay".
+- **Dải khóa trạng thái** (§1.3): `IsAdjustAllowed = State ∉ {Running, Initializing, Resetting}` — máy chạy →
+  băng xám "🔒 chỉ xem, điều chỉnh đã khóa" + khóa khu điều khiển trục/jog/bảng điểm; máy dừng → băng xanh
+  "✏ Cho phép điều chỉnh — {role}". Bind `IMasterController.StateChanged` + `IUserService.UserChanged` (push).
+- **Sub-tab**: Điều khiển trục · Bảng điểm (tách từ màn S46, dùng lại nguyên) · **Thao tác trạm** (empty-state,
+  R0–R1, chờ guard engine) · **⚠ Override** (empty-state, chờ chốt §9 + guard engine). Bảng đèn 8 tín hiệu +
+  panel phản hồi GIỮ luôn đọc được kể cả khi khóa (monitor sống — §7.2).
+- `MotionViewModel` +`IMasterController` +`IUserService`; +`SubTabIndex`/`SelectSubTab`; +`IndexToVisibilityConverter`.
+- i18n vi/en/zh: +`Nav.ManualOp`, `Manual.*` (dải khóa, sub-tab, empty-state).
+- Phân quyền per-action R0–R3 + Thao tác trạm/Override thật: HOÃN cùng guard engine (Master Index §11C).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (28 projects). `dotnet test` → **174 passed**. (App đang chạy đã xác nhận render
+  bằng ảnh chụp của user — Home + màn trục đúng layout.)
+
+---
+
 ## [Session 47] 2026-06-14 — Tích hợp bộ tài liệu HMI mới + phản biện + mô hình 4 role
 
 **Commit:** `a07ac23`

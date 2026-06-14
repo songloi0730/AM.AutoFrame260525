@@ -9,9 +9,12 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using AM.Core.Abstractions.Interfaces.Hardware;
+using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Core.Enums;
 using AM.Core.Exceptions;
 using AM.Core.Models;
+using AM.Core.Models.EventArgs;
 using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,9 +23,11 @@ using Microsoft.Extensions.Logging;
 namespace AM.Modules.Motion;
 
 /// <summary>
-/// Điều khiển trục thủ công + Point Table. Bám <see cref="IMotionController"/>; nếu controller
-/// còn implement <see cref="IAxisDiagnostics"/> thì có thêm bảng đèn 8 tín hiệu, servo on/off,
-/// phản hồi servo. Tương tác bảng điểm theo nguyên tắc 2 chạm (chọn → Tới/Teach mới chạy).
+/// Màn "Vận hành tay" (gộp Manual + Motion/IO — HMI_Manual_Operation_and_Safety): dải khóa trạng thái
+/// theo máy + sub-tab (Điều khiển trục · Bảng điểm · Thao tác trạm · Override). Khi máy chạy
+/// (EXECUTE) thì khu điều chỉnh khóa (chỉ xem) — <see cref="IsAdjustAllowed"/>.
+/// Điều khiển trục bám <see cref="IMotionController"/> (+ <see cref="IAxisDiagnostics"/> tuỳ chọn:
+/// bảng đèn 8 tín hiệu, servo, phản hồi). Bảng điểm theo nguyên tắc 2 chạm.
 /// Tuân thủ R-UI: không import System.Windows; marshalling qua SynchronizationContext.
 /// </summary>
 public sealed partial class MotionViewModel : ObservableObject, IDisposable
@@ -33,6 +38,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private readonly IMotionController _motion;
     private readonly IAxisDiagnostics? _diag;  // null nếu controller không hỗ trợ
     private readonly IPointTableService _pointTable;
+    private readonly IMasterController _master;
+    private readonly IUserService _user;
     private readonly ILogger<MotionViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
@@ -85,14 +92,19 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     /// <summary>Tạo VM, dựng trục/nhóm + nạp Point Table + bắt đầu poll.</summary>
     public MotionViewModel(IMotionController motion, IPointTableService pointTable,
+        IMasterController master, IUserService user,
         ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
     {
         ArgumentNullException.ThrowIfNull(motion);
         ArgumentNullException.ThrowIfNull(pointTable);
+        ArgumentNullException.ThrowIfNull(master);
+        ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(logger);
         _motion = motion;
         _diag = motion as IAxisDiagnostics;
         _pointTable = pointTable;
+        _master = master;
+        _user = user;
         _logger = logger;
         _uiContext = SynchronizationContext.Current;
         _pollMs = pollIntervalMs;
@@ -107,7 +119,52 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         SelectedAxis = VisibleAxes.Count > 0 ? VisibleAxes[0] : null;
         if (SelectedAxis is not null) SelectedAxis.IsSelected = true;
 
+        _master.StateChanged += OnMasterStateChanged;
+        _user.UserChanged += OnUserChanged;
+        Loc.Strings.PropertyChanged += OnLanguageChanged;
+        RefreshLockState();
+
         _ = Task.Run(() => PollLoopAsync(_cts.Token));
+    }
+
+    private void OnLanguageChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        => RunOnUIThread(RefreshLockState);
+
+    // ─── Dải khóa trạng thái (§1.3 — máy chạy thì khóa điều chỉnh) ────────────────
+
+    /// <summary>True nếu được phép điều chỉnh: máy KHÔNG đang chạy/khởi tạo/reset.
+    /// (Phân quyền per-action R0–R3 sẽ thêm cùng guard engine — xem Master Index §11C.)</summary>
+    [ObservableProperty] private bool _isAdjustAllowed = true;
+
+    /// <summary>Thông điệp dải khóa.</summary>
+    [ObservableProperty] private string _lockText = string.Empty;
+
+    /// <summary>Sub-tab đang chọn: 0=Điều khiển trục, 1=Bảng điểm, 2=Thao tác trạm, 3=Override.</summary>
+    [ObservableProperty] private int _subTabIndex;
+
+    [RelayCommand] private void SelectSubTab(string? index)
+    {
+        if (int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out int i))
+            SubTabIndex = i;
+    }
+
+    private void OnMasterStateChanged(object? sender, MachineStateChangedEventArgs e)
+        => RunOnUIThread(RefreshLockState);
+
+    private void OnUserChanged(object? sender, UserChangedEventArgs e)
+        => RunOnUIThread(RefreshLockState);
+
+    private void RefreshLockState()
+    {
+        // Máy đang vận hành/chuyển trạng thái → khóa mọi điều chỉnh (chỉ xem).
+        bool machineBusy = _master.State is MachineState.Running
+            or MachineState.Initializing or MachineState.Resetting;
+        IsAdjustAllowed = !machineBusy;
+
+        string role = _user.IsLoggedIn ? _user.CurrentLevel.ToString() : Loc.Strings["Shell.Guest"];
+        LockText = IsAdjustAllowed
+            ? $"{Loc.Strings["Manual.AdjustOk"]} — {role}"
+            : Loc.Strings["Manual.Locked"];
     }
 
     // ─── Nhóm trục ────────────────────────────────────────────────────────────────
@@ -434,6 +491,9 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        _master.StateChanged -= OnMasterStateChanged;
+        _user.UserChanged -= OnUserChanged;
+        Loc.Strings.PropertyChanged -= OnLanguageChanged;
         _cts.Cancel();
         _cts.Dispose();
     }

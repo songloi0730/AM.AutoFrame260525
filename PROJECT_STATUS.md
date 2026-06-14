@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
-**Session:** #47 — Tích hợp bộ tài liệu HMI mới (Master Index + Manual Operation & Safety + 5 mockup) + **phản biện/adoption tập trung** (`HMI_Master_Index §11`); **mô hình 4 role**: thêm `UserLevel.LineLead` (R1, giữa Operator–Engineer), seed `linelead`. CỐ Ý HOÃN màn Vận hành tay (cần HardwareInputEventBus + guard engine + chốt chính sách §9).
-**Commit:** `a07ac23`  ·  (S46: màn điều khiển trục)
+**Session:** #48 — Đổi nav **"Chuyển động" → "Vận hành tay"**: thêm dải khóa trạng thái (máy chạy→khóa điều chỉnh, `IsAdjustAllowed`) + sub-tab (Điều khiển trục · Bảng điểm · Thao tác trạm · ⚠ Override). 2 sub-tab sau là empty-state (chờ guard engine). MotionViewModel +IMasterController +IUserService.
+**Commit:** *(điền sau commit)*  ·  (S47: 4 role + tài liệu)
 
 ---
 

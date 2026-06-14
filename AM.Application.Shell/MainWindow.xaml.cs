@@ -37,6 +37,7 @@ public partial class MainWindow : Window
         ["bell"]      = "E7ED", // Ringer (alarm)
         ["io"]        = "E703", // Connect (I/O)
         ["motion"]    = "E713", // Settings gear (motion)
+        ["manual"]    = "E7C9", // TouchPointer (vận hành tay)
         ["recipe"]    = "E8A5", // Document (recipe)
         ["user"]      = "E77B", // Contact (account)
         ["engineering"] = "E90F", // Repair (engineering/debug)

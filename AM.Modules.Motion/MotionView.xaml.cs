@@ -9,8 +9,9 @@ using AM.Core.Attributes;
 
 namespace AM.Modules.Motion;
 
-/// <summary>View điều khiển motion + Point Table. Logic ở <see cref="MotionViewModel"/>.</summary>
-[ModuleNavigation("Nav.Motion", icon: "motion", order: 40)]
+/// <summary>Màn Vận hành tay (dải khóa trạng thái + sub-tab: trục/điểm/thao tác/override).
+/// Logic ở <see cref="MotionViewModel"/>.</summary>
+[ModuleNavigation("Nav.ManualOp", icon: "manual", order: 40)]
 public partial class MotionView : UserControl
 {
     /// <summary>Khởi tạo component XAML.</summary>
