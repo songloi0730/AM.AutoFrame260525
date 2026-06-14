@@ -6,7 +6,7 @@
 
 ## [Session 50] 2026-06-14 — Gom Chẩn đoán + Kỹ thuật vào "Cài đặt" (AM.Modules.Settings)
 
-**Commit:** *(điền sau)*
+**Commit:** `a7233c5`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User: gom Chẩn đoán + Kỹ thuật vào Cài đặt (checklist: 2 màn này thuộc "Cài đặt", không phải nav chính).
 

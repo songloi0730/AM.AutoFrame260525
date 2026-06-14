@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
 **Session:** #50 — Gom **Chẩn đoán + Kỹ thuật vào "Cài đặt"** (module mới `AM.Modules.Settings` host 2 sub-tab). Nav còn 7 tab (Home·Sản xuất·Cảnh báo·Vận hành tay·Recipe·Nhật ký·Cài đặt). Đang chờ user chốt: login = trang riêng hay overlay dialog.
-**Commit:** *(điền sau commit)*  ·  (S49: bỏ nút trùng login/IO)
+**Commit:** `a7233c5`  ·  (S49: bỏ nút trùng login/IO)
 
 ---
 
