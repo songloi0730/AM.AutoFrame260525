@@ -6,7 +6,7 @@
 
 ## [Session 49] 2026-06-14 — Bỏ nút trùng chức năng (login, I/O) theo HMI_Home_Buttons_Checklist
 
-**Commit:** *(điền sau)*
+**Commit:** `036e6c6`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User thấy nav có nút trùng chức năng (login, io) + gửi `HMI_Home_Buttons_Checklist_v1.0` + Master Index
 (bản cập nhật có dòng checklist). Nguyên tắc: "một lệnh một chỗ"; login/ngôn ngữ là nút mép phải (KHÔNG tab);

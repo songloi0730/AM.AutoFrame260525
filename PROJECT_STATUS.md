@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
 **Session:** #49 — Bỏ nút trùng chức năng (checklist "một lệnh một chỗ"): **bỏ tab "Tài khoản"** (login chỉ qua nút User ở header) + **bỏ tab "Giám sát I/O" riêng**, nhúng IoMonitor làm sub-tab trong Vận hành tay. Nav còn 8 tab.
-**Commit:** *(điền sau commit)*  ·  (S48: nav Vận hành tay)
+**Commit:** `036e6c6`  ·  (S48: nav Vận hành tay)
 
 ---
 
