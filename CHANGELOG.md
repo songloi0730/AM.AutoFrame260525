@@ -4,6 +4,26 @@
 
 ---
 
+## [Session 51] 2026-06-14 — Login overlay dialog (thay trang riêng)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User hỏi login nên là trang riêng hay khung hiện ra khi bấm. Khuyến nghị + user chốt: **overlay dialog**
+(checklist §2: login = dialog phiên, không phải màn điều hướng; SEMI E95: dialog không che alarm bar/nav).
+
+### ✅ Login overlay
+- `MainWindow.xaml`: thêm `LoginOverlay` trong **Grid.Row=3** (chỉ phủ vùng content → header/nav/alarm/action bar/
+  conn bar vẫn thấy + dùng được). Card 400px nổi giữa + nền mờ `#66000000`; thanh tiêu đề + nút ✕.
+- `MainWindow.xaml.cs`: nút User mở overlay (host `IdentityView` cache, DataContext từ DI); bấm nền mờ/✕ → đóng;
+  bấm card nuốt event (không đóng nhầm); **đăng nhập thành công tự đóng** (sub `IUserService.UserChanged`, User≠null).
+- `IdentityView.xaml` làm gọn thành **form** (bỏ tiêu đề trang + nền màn + khung 360 — overlay tự đóng khung),
+  giữ code-behind PasswordBox. Không còn dùng kiểu "trang chiếm content".
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (29 projects). `dotnet test` → **174 passed**.
+
+---
+
 ## [Session 50] 2026-06-14 — Gom Chẩn đoán + Kỹ thuật vào "Cài đặt" (AM.Modules.Settings)
 
 **Commit:** `a7233c5`

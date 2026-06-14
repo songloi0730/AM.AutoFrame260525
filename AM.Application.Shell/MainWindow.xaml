@@ -329,6 +329,30 @@
             <ContentControl x:Name="MainContent" Margin="8,0"/>
         </Border>
 
+        <!-- ═══ LOGIN OVERLAY — khung đăng nhập nổi giữa vùng content (SEMI E95: ═══
+             chỉ phủ Grid.Row=3 nên KHÔNG che alarm bar/nav/action bar). Bấm nền mờ → đóng. -->
+        <Border x:Name="LoginOverlay" Grid.Row="3" Visibility="Collapsed"
+                Background="#66000000" MouseLeftButtonDown="LoginBackdrop_MouseDown">
+            <Border Width="400" CornerRadius="10" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Background="{DynamicResource Panel.BackgroundBrush}"
+                    BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
+                    MouseLeftButtonDown="LoginCard_MouseDown">
+                <DockPanel>
+                    <!-- Thanh tiêu đề card + nút đóng -->
+                    <Grid DockPanel.Dock="Top" Background="{DynamicResource Header.BackgroundBrush}">
+                        <TextBlock Text="{Binding [Id.Login], Source={x:Static loc:Loc.Strings}}"
+                                   Margin="18,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                        <Button HorizontalAlignment="Right" Width="44" Height="40" Content="✕"
+                                FontSize="14" Cursor="Hand" Click="CloseLogin_Click"
+                                Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    </Grid>
+                    <ContentControl x:Name="LoginHost"/>
+                </DockPanel>
+            </Border>
+        </Border>
+
         <!-- ═══ 6 ACTION BAR — nút trắng phẳng, icon trên + nhãn dưới ═══════════ -->
         <Border Grid.Row="4" Background="{DynamicResource Header.BackgroundBrush}"
                 BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.DefaultBrush}">

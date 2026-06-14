@@ -6,23 +6,14 @@
              xmlns:conv="clr-namespace:AM.Modules.Identity.Converters"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
-             Background="{DynamicResource Screen.BackgroundBrush}">
+             Background="Transparent">
 
+    <!-- Form đăng nhập gọn — nhúng trong overlay dialog của Shell (bấm nút User ở header) -->
     <UserControl.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
 
-    <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <TextBlock Grid.Row="0" Text="{Binding [Nav.Identity], Source={x:Static loc:Loc.Strings}}" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
-                   Foreground="{DynamicResource Text.HeadingBrush}"/>
-
-        <Border Grid.Row="1" Width="360" VerticalAlignment="Top" HorizontalAlignment="Left"
-                CornerRadius="6" Padding="20" Background="{DynamicResource Panel.BackgroundBrush}">
+    <Border Padding="22" Background="Transparent">
           <Grid>
 
             <!-- ── Form đăng nhập (khi CHƯA đăng nhập) ───────────────────────── -->
@@ -74,5 +65,4 @@
             </StackPanel>
           </Grid>
         </Border>
-    </Grid>
 </UserControl>

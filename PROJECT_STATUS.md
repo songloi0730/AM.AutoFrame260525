@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
-**Session:** #50 — Gom **Chẩn đoán + Kỹ thuật vào "Cài đặt"** (module mới `AM.Modules.Settings` host 2 sub-tab). Nav còn 7 tab (Home·Sản xuất·Cảnh báo·Vận hành tay·Recipe·Nhật ký·Cài đặt). Đang chờ user chốt: login = trang riêng hay overlay dialog.
-**Commit:** `a7233c5`  ·  (S49: bỏ nút trùng login/IO)
+**Session:** #51 — Login đổi sang **overlay dialog** (user chốt): bấm nút User ở header → khung đăng nhập nổi giữa vùng content + nền mờ, KHÔNG che alarm/nav (SEMI E95); bấm nền/✕ đóng, login thành công tự đóng. IdentityView làm gọn thành form.
+**Commit:** *(điền sau commit)*  ·  (S50: gom Cài đặt)
 
 ---
 

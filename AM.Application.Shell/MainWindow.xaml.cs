@@ -85,6 +85,12 @@ public partial class MainWindow : Window
         // Header/alarm/status bind tới ShellViewModel (resolve trên UI thread để capture context)
         DataContext = _services.GetRequiredService<ShellViewModel>();
 
+        // Đăng nhập thành công → tự đóng overlay login (logout giữ overlay để re-login).
+        _services.GetRequiredService<IUserService>().UserChanged += (_, args) =>
+        {
+            if (args.User is not null) LoginOverlay.Visibility = Visibility.Collapsed;
+        };
+
         // i18n: nav button content bind tới proxy LocalizedStrings (cập nhật live)
         NavPanel.DataContext = _services.GetRequiredService<LocalizedStrings>();
         _localization = _services.GetRequiredService<ILocalizationService>();
@@ -153,27 +159,31 @@ public partial class MainWindow : Window
 
     private void RecipeButton_Click(object sender, RoutedEventArgs e) => NavigateToView("ParameterView");
 
-    // Login: KHÔNG còn tab "Tài khoản" — nút User ở header là lối duy nhất (bỏ trùng login).
+    // Login: overlay dialog (SEMI E95 — chỉ phủ vùng content, không che alarm/nav). Nút User mở.
     private void UserButton_Click(object sender, RoutedEventArgs e)
-        => ShowStandaloneView(typeof(AM.Modules.Identity.IdentityView));
-
-    /// <summary>Hiện một view KHÔNG thuộc nav (vd Identity) trong vùng content, bỏ chọn tab đang active.</summary>
-    private void ShowStandaloneView(Type viewType)
     {
-        if (!_viewCache.TryGetValue(viewType, out var view))
+        if (LoginHost.Content is null)
         {
-            view = (UserControl)Activator.CreateInstance(viewType)!;
-            view.DataContext = ResolveViewModel(viewType);
-            _viewCache[viewType] = view;
+            var view = new AM.Modules.Identity.IdentityView
+            {
+                DataContext = ResolveViewModel(typeof(AM.Modules.Identity.IdentityView)),
+            };
+            LoginHost.Content = view;
         }
-        MainContent.Content = view;
-        if (_activeNavButton is not null)
-        {
-            _activeNavButton.Background = Brushes.Transparent;
-            _activeNavButton.FontWeight = FontWeights.Normal;
-            _activeNavButton = null;
-        }
+        LoginOverlay.Visibility = Visibility.Visible;
     }
+
+    private void CloseLogin_Click(object sender, RoutedEventArgs e)
+        => LoginOverlay.Visibility = Visibility.Collapsed;
+
+    // Bấm nền mờ → đóng; bấm vào card thì nuốt event để không lan ra nền.
+    private void LoginBackdrop_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        => LoginOverlay.Visibility = Visibility.Collapsed;
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2325",
+        Justification = "XAML event handler phải là instance method để markup compiler wire được")]
+    private void LoginCard_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        => e.Handled = true;
 
     private void SetActiveTab(Button button)
     {
