@@ -6,7 +6,7 @@
 
 ## [Session 52–54] 2026-06-14 — Hoàn thiện checklist: Settings GridMenu · role-gating nav · module Vision
 
-**Commit:** S52 `ff3b2e5` · S53 `c13f817` · S54 *(điền sau)*
+**Commit:** S52 `ff3b2e5` · S53 `c13f817` · S54 `b81fef9`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User "làm lần lượt đi" — xử lý 3 mục checklist còn lại.
 
