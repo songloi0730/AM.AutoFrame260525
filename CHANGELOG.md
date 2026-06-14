@@ -6,7 +6,7 @@
 
 ## [Session 51] 2026-06-14 — Login overlay dialog (thay trang riêng)
 
-**Commit:** *(điền sau)*
+**Commit:** `13540fc`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User hỏi login nên là trang riêng hay khung hiện ra khi bấm. Khuyến nghị + user chốt: **overlay dialog**
 (checklist §2: login = dialog phiên, không phải màn điều hướng; SEMI E95: dialog không che alarm bar/nav).

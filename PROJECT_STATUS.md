@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
 **Session:** #51 — Login đổi sang **overlay dialog** (user chốt): bấm nút User ở header → khung đăng nhập nổi giữa vùng content + nền mờ, KHÔNG che alarm/nav (SEMI E95); bấm nền/✕ đóng, login thành công tự đóng. IdentityView làm gọn thành form.
-**Commit:** *(điền sau commit)*  ·  (S50: gom Cài đặt)
+**Commit:** `13540fc`  ·  (S50: gom Cài đặt)
 
 ---
 
