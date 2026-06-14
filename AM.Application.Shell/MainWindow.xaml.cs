@@ -35,6 +35,7 @@ public partial class MainWindow : Window
     private static readonly Dictionary<string, string> IconHex = new(StringComparer.OrdinalIgnoreCase)
     {
         ["dashboard"] = "E80F", // Home
+        ["vision"]    = "E722", // Camera (Vision)
         ["bell"]      = "E7ED", // Ringer (alarm)
         ["io"]        = "E703", // Connect (I/O)
         ["motion"]    = "E713", // Settings gear (motion)

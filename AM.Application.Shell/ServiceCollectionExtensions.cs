@@ -133,6 +133,7 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddUiViewModels(this IServiceCollection services)
     {
         services.AddSingleton<DashboardViewModel>();
+        services.AddSingleton<AM.Modules.Vision.VisionViewModel>();
         services.AddSingleton<AlarmListViewModel>();
         services.AddSingleton<IoMonitorViewModel>();
         services.AddSingleton<IdentityViewModel>();

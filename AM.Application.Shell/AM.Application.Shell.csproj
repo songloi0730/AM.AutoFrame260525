@@ -53,6 +53,7 @@
     <ProjectReference Include="..\AM.Hardware.Comm\AM.Hardware.Comm.csproj" />
     <ProjectReference Include="..\AM.Hardware.Scanner\AM.Hardware.Scanner.csproj" />
     <ProjectReference Include="..\AM.Modules.Dashboard\AM.Modules.Dashboard.csproj" />
+    <ProjectReference Include="..\AM.Modules.Vision\AM.Modules.Vision.csproj" />
     <ProjectReference Include="..\AM.Modules.Alarm\AM.Modules.Alarm.csproj" />
     <ProjectReference Include="..\AM.Modules.Identity\AM.Modules.Identity.csproj" />
     <ProjectReference Include="..\AM.Modules.IoMonitor\AM.Modules.IoMonitor.csproj" />

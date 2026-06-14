@@ -4,6 +4,37 @@
 
 ---
 
+## [Session 52–54] 2026-06-14 — Hoàn thiện checklist: Settings GridMenu · role-gating nav · module Vision
+
+**Commit:** S52 `ff3b2e5` · S53 `c13f817` · S54 *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User "làm lần lượt đi" — xử lý 3 mục checklist còn lại.
+
+### ✅ S52 — Cài đặt kiểu GridMenu (`ff3b2e5`)
+- `SettingsView`/`SettingsViewModel` đổi từ 2 sub-tab phẳng → **landing lưới thẻ** (Section=null) → mở thẻ + nút Back.
+  Thẻ có chức năng: Chẩn đoán · Kỹ thuật · Giới thiệu (version app/.NET/OS). Placeholder mờ "đang phát triển":
+  Phần cứng · Hiệu chuẩn · Người dùng · Host · Sao lưu. i18n `Set.*` (vi/en/zh).
+
+### ✅ S53 — Ẩn tab theo role (`c13f817`)
+- `ModuleNavigationAttribute` +`minLevel` (mặc định `UserLevel.Null` = mọi người). `MotionView` (Vận hành tay) =
+  `minLevel: LineLead`. `NavigationEntry` +`MinLevel`; `NavigationBuilder` đọc; `MainWindow.BuildNavigation` lọc
+  `CurrentLevel >= MinLevel`. **Rebuild nav khi `IUserService.UserChanged`** (login/logout): giữ tab đang xem nếu
+  còn quyền, else về Home (`_currentViewType`). ⚠ Chưa login (Null < LineLead) ⇒ Vận hành tay ẩn (đúng spec).
+
+### ✅ S54 — Module Vision (project thứ 30)
+- `AM.Modules.Vision` (`VisionView`/`VisionViewModel`) bám `ICameraDevice` interface-only: trạng thái kết nối +
+  DeviceName, nút **Grab/Inspect/Light/Calibrate** (`RunSafeAsync` bọc alarm/cancel/lỗi), **kết quả inspect**
+  (PASS/NG + score + X/Y/θ + job + giờ). Vùng ảnh = **placeholder** (sim trả `Array.Empty<byte>()` — live-view
+  cần vision service thật). `[ModuleNavigation("Nav.Vision", icon:"vision"(E722 Camera), order:18)]` (Operator+).
+- sln add + Shell ref + đăng ký `VisionViewModel` + i18n `Vision.*`.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (30 projects). `dotnet test` → **174 passed**.
+- **Còn hoãn**: per-action R0–R3 (jog=EN, station ops=LL, override=EN, force=AD) cần guard engine +
+  HardwareInputEventBus + chốt §9 (Master Index §11C). Cài đặt GridMenu mở rộng (Phần cứng/Calib/User/Host/Backup).
+
+---
+
 ## [Session 51] 2026-06-14 — Login overlay dialog (thay trang riêng)
 
 **Commit:** `13540fc`
