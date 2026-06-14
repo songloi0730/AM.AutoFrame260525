@@ -6,7 +6,7 @@
 
 ## [Session 56] 2026-06-14 — Guard engine phân quyền per-action R0–R3
 
-**Commit:** *(điền sau)*
+**Commit:** `a1847b0`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User chốt: R2 cứng ở Engineer + phạm vi = guard engine core + gắn Motion (hoãn Override). Thực hiện
 mô hình an toàn theo tầng của `HMI_Manual_Operation_and_Safety`.
