@@ -2,7 +2,7 @@
 
 Tài liệu chuẩn cho giao diện AM.AutoFrame trên IPC 24" 1920×1080 (cảm ứng + chuột), ngành điện tử/bán dẫn.
 Dùng làm tham chiếu gốc khi sinh màn hình bằng Claude/Claude Code. Thay thế bố cục Home của v1.1;
-các phần template điều khiển (ManualControlView, AxisControlView, VisionTeachView…) của v1.1 vẫn hiệu lực.
+các phần template điều khiển (AxisControlView, VisionTeachView…) của v1.1 vẫn hiệu lực; phần Manual/Motion gộp thành màn **Vận hành tay** — xem `HMI_Manual_Operation_and_Safety_v1.0.md`.
 
 Mockup tham chiếu: `hmi_home_v2.html` (tỷ lệ thật, sub-tab bấm được).
 
@@ -19,6 +19,7 @@ Mockup tham chiếu: `hmi_home_v2.html` (tỷ lệ thật, sub-tab bấm đượ
 7. **Giải thích thay vì giấu**: nút không khả dụng thì làm mờ; bấm vào hiện toast một dòng nêu lý do. Không ẩn nút.
 8. **Cảm ứng — spec theo mm, không chỉ px**: thiết kế gốc 1920×1080 @ 24" (~92 PPI); cùng độ phân giải trên 21.5" (~102 PPI) mọi thứ co ~12%, và operator điện tử thường đeo găng ESD. Tối thiểu: nút thường ≥48 px (≥10.5 mm trên 21.5"), lệnh chính và thao tác nhanh ≥64 px, dòng bảng/danh sách ≥44 px, nút ACK ≥40 px, khoảng cách giữa hai vùng chạm liền kề ≥8 px. Mỗi máy khai `UiScale` trong machine config (24"→1.0, 21.5"→1.1) áp vào LayoutTransform của Shell; nút có hậu quả vật lý dùng nhấn-giữ 1 giây.
 9. **Hình thái nút**: nút dạng lưới (Thao tác nhanh, GridMenuView) dùng icon 24–28 px phía trên + nhãn dưới; nút dạng thanh (tab điều hướng, action bar) dùng icon trái + chữ phải. Không áp một kiểu cho cả hai.
+10. **Nhất quán ba tầng** (cân bằng "vị trí cố định" vs "thích ứng quy mô"): (a) **Persistent Frame nhất quán tuyệt đối** — header/nav/banner/action bar/thanh kết nối giống hệt mọi máy mọi quy mô, cho hành động phản xạ của Operator (Start/Stop/ACK/E-stop); layout thích ứng KHÔNG chạm tầng này. (b) **Khu kỹ thuật nhất quán mô hình** — màn Vận hành tay co giãn khung chứa theo quy mô (4→20 trục) nhưng giữ nguyên thứ tự sub-tab, quy luật điều hướng, và đơn vị nội dung lặp lại; đủ cho hành động có chủ đích của Engineer. (c) **Van `layoutHint`** — ép một kiểu render cho mọi máy khi nhà máy coi nhất quán > tối ưu không gian. Chi tiết: `HMI_Naming_and_Axis_Point_Model.md §7.0`.
 
 ---
 
@@ -28,13 +29,13 @@ Tổng chiều cao 1080 px, chia 7 vùng cố định (Persistent Frame — vùn
 
 | # | Vùng | Cao (px) | Nội dung |
 |---|------|----------|----------|
-| 1 | Header | 64 | Logo + tên máy · badge AUTO/MANUAL · badge LOCAL/REMOTE · badge trạng thái PackML · tiến độ lô · recipe · đồng hồ + heartbeat · nút ngôn ngữ · nút đăng nhập |
-| 2 | Tab điều hướng | 48 | 8 tab module: Home, Vision, Motion/IO, Recipe, Dữ liệu, Alarm, Log, Cài đặt — icon + chữ |
+| 1 | Header | 48 | Logo + tên máy · badge AUTO · LOCAL/REMOTE · PackML · tiến độ lô · đồng hồ + heartbeat. (Login + ngôn ngữ KHÔNG ở đây — đẩy về cuối hàng nav, xem dưới) |
+| 2 | Nav | 48 | 8 tab chức năng (trái) + ngôn ngữ 🌐 + login avatar (đẩy hẳn về mép phải, có phân cách thị giác để không lẫn với tab màn hình) |
 | 3 | Banner alarm | 40 | Alarm ưu tiên cao nhất chưa ACK + nút ACK + chip "+N khác". Xám khi không có alarm |
 | 4 | Vùng làm việc | 664 | Sub-tab theo máy (xem §4). Bề ngang ≈ 1310 px |
 | 5 | Right rail | 664 | Rộng 560 px: KPI ca → Thao tác nhanh → Trạm & an toàn → Nhật ký |
 | 6 | Action bar | 84 | Start · Pause/Resume · Stop · Reset │ Dry run · Manual — icon trên, chữ dưới |
-| 7 | Thanh kết nối | 40 | Thiết bị │ Host │ phiên bản phần mềm (góc phải) |
+| 7 | Thanh kết nối | 32 | Thiết bị │ Host │ phiên bản phần mềm (góc phải). Chỉ chip + text, không vùng chạm chính nên 32 px đủ |
 
 Vùng 4 + 5 dùng grid `1fr 560px`, gap 12, padding ngang 20.
 
@@ -42,7 +43,7 @@ Vùng 4 + 5 dùng grid `1fr 560px`, gap 12, padding ngang 20.
 
 ## 3. Đặc tả từng vùng
 
-### 3.1 Header (64 px)
+### 3.1 Header (48 px)
 
 - Trái: logo 36×36 + `AM.AutoFrame · {MachineId}` (18px, đậm).
 - Badge nhóm trạng thái (cao 30, chữ 14 đậm):
@@ -57,11 +58,11 @@ Vùng 4 + 5 dùng grid `1fr 560px`, gap 12, padding ngang 20.
 ### 3.2 Tab điều hướng (48 px)
 
 - Icon + chữ, KHÔNG BAO GIỜ icon-only. Icon từ `Icons.xaml` (Material Design Icons):
-  Home→`HomeOutline`, Vision→`CameraOutline`, Motion/IO→`TuneVertical`, Recipe→`ClipboardTextOutline`,
+  Home→`HomeOutline`, Vision→`CameraOutline`, Vận hành tay→`HandBackLeftOutline`/`TuneVertical`, Recipe→`ClipboardTextOutline`,
   Dữ liệu→`ChartBar`, Alarm→`BellOutline`, Log→`TextBoxOutline`, Cài đặt→`CogOutline`.
 - Tab active: nền xám đậm hơn + chữ đậm. Tab có sự kiện chưa xem: chấm đỏ 8 px (không tự nhảy tab).
-- Module ẩn theo máy (vd máy không vision → ẩn tab Vision) qua config catalog. Tab ẩn theo role: **Motion/IO chỉ hiện với Engineer trở lên** — Operator không dùng màn này, ẩn để nav bớt nhiễu (khác với nút bị khoá: tab nguyên module không liên quan tới Operator thì ẩn hẳn, không làm mờ).
-- Phân biệt Manual vs Motion/IO (không gộp): **Manual là chế độ** thao tác tay theo trạm — các thao tác đóng gói có interlock (hút, nhả, lên, xuống), vào qua nút Manual ở action bar. **Motion/IO là màn giám sát/kỹ thuật** mức trục và tín hiệu thô — DRO, servo, position table, IO sống, force output. Panel jog trong ManualControlView nhúng lại từ AxisControlView, không viết trùng.
+- Module ẩn theo máy (vd máy không vision → ẩn tab Vision) qua config catalog. Tab ẩn theo role: **Vận hành tay chỉ hiện với Line Lead trở lên**.
+- **Vận hành tay** (gộp Manual + Motion/IO cũ — KHÔNG tách hai màn): một màn đổi hành vi theo trạng thái máy — EXECUTE thì chỉ xem, IDLE/STOPPED/PAUSED thì cho điều chỉnh. Phân quyền theo mức rủi ro R0–R3, không theo màn. Chi tiết đầy đủ: `HMI_Manual_Operation_and_Safety_v1.0.md`.
 
 ### 3.3 Banner alarm (40 px) — quy tắc nhiều alarm
 
@@ -107,9 +108,9 @@ Enable/disable bind trực tiếp `stateMachine.CanFire(trigger)` (thư viện S
 | Stop | EXECUTE, PAUSED | Popup 2 lựa chọn: "Dừng hết chu kỳ" / "Dừng ngay". Stop mềm ≠ E-Stop phần cứng |
 | Reset | STOPPED, ABORTED, COMPLETE (+ mọi alarm đã ACK) | Về IDLE, xoá cờ lỗi, tư thế an toàn. Còn alarm chưa ACK → toast + nhảy tab Alarm |
 | Dry run | toggle khi IDLE | Bỏ qua check vật liệu, vision giả lập (SimulatedXxx), badge header → DRY |
-| Manual | không ở EXECUTE, role ≥ Engineer | Overlay ManualControlView toàn màn; thoát bắt buộc qua Reset |
+| Manual | không ở EXECUTE, role ≥ Line Lead | Mở màn Vận hành tay (cũng vào được trực tiếp từ nav) |
 
-### 3.7 Thanh kết nối (40 px)
+### 3.7 Thanh kết nối (32 px)
 
 - Hai nhóm: **Thiết bị** (PLC, EtherCAT, driver, CAM, RFID…) │ **Host** (MES, SECS/GEM, OPC-UA, DB). Danh sách theo `hardware.config.json`, thiết bị không cấu hình tự ẩn.
 - Ký hiệu hình + màu (an toàn mù màu): ● kết nối · ▲ cảnh báo · ✕ mất · ○ tắt. Chú giải để trong tài liệu/tooltip, không chiếm chỗ thường trực.
@@ -195,7 +196,7 @@ Nút `interlock` không đạt → mờ + toast lý do. `audit: true` → ghi us
 | Tab | Nội dung chính | Role |
 |-----|----------------|------|
 | Vision | Live view, VisionTeachView (ROI, model, hiệu chuẩn px→mm, test grab, lịch sử offset) | Xem: Operator · Sửa: Engineer |
-| Motion/IO | AxisControlView (jog 3 cấp + inching, home, servo, position table) + SensorVacuumMonitor (force output: Admin, ngoài EXECUTE, audit) | Engineer |
+| Vận hành tay | Mockup: `hmi_manual_operation_v1.html`. Màn gộp Manual+Motion/IO, 5 khu: dải khóa trạng thái · giám sát (luôn sống) · thao tác trạm (R0–R1) · trục & IO thô (R2–R3) · override có giám sát. Chính sách đầy đủ ở `HMI_Manual_Operation_and_Safety_v1.0.md` | LineLead+ (R2–R3: EN+ · Force/Override: theo tài liệu) |
 | Recipe | Danh sách JSON, nạp/lưu/sao chép/so sánh, editor min-max | Engineer |
 | Dữ liệu | Sản lượng ca/lô, Pareto NG, trend UPH/cycle, xuất CSV | Operator |
 | Alarm | Active + History, ACK, ErrorDetailView (nguyên nhân, bước xử lý, snapshot IO, retry) | Operator |
@@ -210,7 +211,7 @@ Nút `interlock` không đạt → mờ + toast lý do. `audit: true` → ghi us
 2. Vùng nội dung dùng template nào của v1.1 (ManualControlView, AxisControlView…)? Nếu mới → định nghĩa empty state + role + interlock trước khi vẽ.
 3. Mọi nút: khai precondition theo state machine, role, target view, audit hay không.
 4. Không thêm màu mới ngoài bảng §5. Không icon-only. Vùng chạm ≥44 px.
-5. Chuỗi hiển thị qua `ILocalizationService` (vi/en), không hardcode.
+5. Chuỗi UI hướng người dùng (nhãn nút, thông báo) qua `ILocalizationService` (vi/en), không hardcode. Định danh kỹ thuật (địa chỉ IO, tên biến, tên IO khi `localize:false`) giữ nguyên gốc — xem `HMI_Naming…§2`. Địa chỉ vật lý luôn hiển thị, không dịch.
 6. Dữ liệu an toàn và trạng thái: event push qua `HardwareInputEventBus`, không polling.
 
 ---
@@ -220,35 +221,5 @@ Nút `interlock` không đạt → mờ + toast lý do. `audit: true` → ghi us
 
 ---
 
-## 9. Quyết định adoption — AM.AutoFrame (Session 45, 12/06/2026)
-
-> Mục này do team AM.AutoFrame thêm sau khi phản biện spec gốc. Spec gốc giữ nguyên ở trên.
-
-### Áp ngay (đã code)
-- Bố cục 7 vùng Persistent Frame (§2) — Shell `MainWindow.xaml`.
-- Palette §5 — thay toàn bộ value token trong `App.xaml` (GIỮ TÊN token cũ để module không phải sửa).
-- Action bar trắng phẳng, icon trên + nhãn dưới, Start chỉ viền xanh; Pause/Resume một nút tự đổi nhãn.
-- Banner alarm 1 dòng: chỉ alarm ưu tiên cao nhất CHƯA ACK + nút ACK (40px — spec §1.8 thắng mockup 32px) + chip "+N khác"; xám khi sạch.
-- Right rail 560px: KPI ca → Thao tác nhanh → Trạm & an toàn → Nhật ký 1 dòng/entry.
-- Connection bar 2 nhóm Thiết bị│Host + chuỗi phiên bản; chú giải ●▲✕○ để tooltip (theo §3.7, mockup cũ có legend thường trực — bỏ).
-- "Một lệnh một chỗ", "mờ + nêu lý do (tooltip), không ẩn nút".
-
-### Map sang cái đã có (KHÔNG đổi core)
-| Spec v2 | AM.AutoFrame |
-|---------|--------------|
-| PackML IDLE/EXECUTE/PAUSED/STOPPED/ABORTED | ISA-88 8 trạng thái hiện có (`MachineState`) — badge hiển thị nhãn i18n `State.*`. Đổi sang PackML là việc tầng máy, làm riêng nếu cần |
-| Thư viện Stateless `CanFire(trigger)` | `BaseMasterController` hiện có (55 tests) + `CanExecute` của RelayCommand — tương đương chức năng |
-| Material Design Icons | **Segoe MDL2 Assets** (sẵn trên Windows, một màu, đang dùng toàn codebase) — không thêm package |
-| Vision push gRPC 1 frame/cycle | Chưa có vision service → tile camera hiển thị tên + trạng thái kết nối (empty-state đúng §4.1) |
-
-### Hoãn có chủ đích (TODO — cần hạ tầng riêng, không làm nửa vời)
-- LOCAL/REMOTE thật + popup GEM (module SecsGem chưa build — badge LOCAL tĩnh).
-- Tiến độ lô trên header (chưa có MES/lot service → ẩn theo cold-start §4.1).
-- QuickActions `HoldToConfirm` + audit log + `HardwareInputEventBus` (mới có: Momentary "Tắt còi" qua `ILightController`; còn lại disabled + lý do).
-- Stop popup 2 lựa chọn · Start pre-check popup · Manual overlay (`ManualControlView`) · Billboard mode · `UiScale` theo machine config · heartbeat đổi màu khi mất cập nhật >3s.
-
-### Phản biện spec gốc (điểm cần sửa khi ra v2.1)
-1. Mockup vẽ nút ACK 32px, spec §1.8 yêu cầu ≥40px — mockup phải theo spec.
-2. Mockup có chú giải ●▲✕○ thường trực ở conn bar, §3.7 nói để tooltip — thống nhất một đằng.
-3. §3.6 bỏ quy tắc "nút Stop cách nhóm thường ≥48px" của v1 mà không nêu lý do. Chấp nhận được vì Stop là soft-stop có popup xác nhận, nhưng cần ghi rõ trade-off này vào spec.
-4. Emoji trong mockup dễ bị copy thẳng vào code — spec nên kèm bảng map emoji→icon chuẩn ngay trong mockup.
+> **Adoption AM.AutoFrame**: phản biện + quyết định "build gì / map gì / hoãn gì" cho codebase thật
+> nằm tập trung ở `docs/HMI_Master_Index.md §11` (nguồn DUY NHẤT). Đọc đó trước khi hiện thực màn này.

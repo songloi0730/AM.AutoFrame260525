@@ -21,7 +21,7 @@ Role: OP = Operator, EN = Engineer, AD = Admin (OP+ nghĩa là Operator trở l�
 |-----|--------------------|-------|----------|
 | Home | luôn | Màn Home (tài liệu Template §2–3) | OP+ |
 | Vision | máy có camera (VisionLayout ≠ None) | Live view + VisionTeachView per camera | xem OP+ / teach EN+ |
-| Motion/IO | luôn | AxisControlView + SensorVacuumMonitor | EN+ (xem IO: OP+) |
+| Vận hành tay | Line Lead trở lên (khai báo qua config catalog) | ManualOperationView | LineLead+ (R2–R3: EN+ · Force/Override: theo tài liệu) |
 | Recipe | luôn | Danh sách + editor recipe | xem OP+ / sửa EN+ |
 | Dữ liệu | luôn | Báo cáo sản lượng, Pareto NG, trend, xuất file | OP+ |
 | Alarm | luôn | Active + History + ErrorDetailView | OP+ |
@@ -76,7 +76,7 @@ Role: OP = Operator, EN = Engineer, AD = Admin (OP+ nghĩa là Operator trở l�
 | ⏹ Stop | EXECUTE, PAUSED | STOPPING → STOPPED | Popup chọn: Dừng hết chu kỳ / Dừng ngay | OP+ |
 | ↺ Reset | STOPPED, ABORTED, COMPLETE và mọi alarm đã ACK | RESETTING → IDLE, xoá cờ lỗi, tư thế an toàn | Còn alarm chưa ACK: toast + nhảy tab Alarm | OP+ |
 | Dry run | toggle khi IDLE | Chế độ chạy không vật liệu, vision giả lập, badge → DRY | — | EN+ |
-| Manual | không ở EXECUTE | Overlay ManualControlView toàn màn; thoát qua Reset | ManualControlView | EN+ |
+| Manual | không ở EXECUTE | Mở màn Vận hành tay (cũng vào được trực tiếp từ nav) | ManualOperationView | LineLead+ |
 
 Khi REMOTE: toàn bộ action bar khoá trừ Stop (và thao tác an toàn) — toast "Máy đang do host điều khiển".
 

@@ -67,11 +67,35 @@ public sealed class UserServiceTests : IDisposable
     public async Task HasPermission_RespectsLevelHierarchy()
     {
         var sut = Create();
-        await sut.LoginAsync("engineer", "engineer123"); // Engineer(1)
+        await sut.LoginAsync("engineer", "engineer123"); // Engineer(2)
 
         sut.HasPermission(UserLevel.Operator).Should().BeTrue();
         sut.HasPermission(UserLevel.Engineer).Should().BeTrue();
         sut.HasPermission(UserLevel.Administrator).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Login_WithSeededLineLead_HasR1NotR2()
+    {
+        // Line Lead (R1 phục hồi có guard) nằm giữa Operator và Engineer —
+        // được quyền Operator + LineLead nhưng KHÔNG có quyền Engineer (jog/teach R2–R3).
+        var sut = Create();
+        (await sut.LoginAsync("linelead", "linelead123")).Should().BeTrue();
+        sut.CurrentLevel.Should().Be(UserLevel.LineLead);
+
+        sut.HasPermission(UserLevel.Operator).Should().BeTrue();
+        sut.HasPermission(UserLevel.LineLead).Should().BeTrue();
+        sut.HasPermission(UserLevel.Engineer).Should().BeFalse();
+    }
+
+    [Fact]
+    public void RoleOrdering_OperatorBelowLineLeadBelowEngineer()
+    {
+        // Khoá thứ tự 4 role (tài liệu HMI_Manual_Operation §2) — chống đổi nhầm giá trị enum.
+        ((int)UserLevel.Operator).Should().BeLessThan((int)UserLevel.LineLead);
+        ((int)UserLevel.LineLead).Should().BeLessThan((int)UserLevel.Engineer);
+        ((int)UserLevel.Engineer).Should().BeLessThan((int)UserLevel.Administrator);
+        ((int)UserLevel.Administrator).Should().BeLessThan((int)UserLevel.SuperUser);
     }
 
     [Fact]

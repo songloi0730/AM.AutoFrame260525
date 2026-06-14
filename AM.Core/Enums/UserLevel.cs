@@ -26,21 +26,30 @@ public enum UserLevel
     Operator = 0,
 
     /// <summary>
-    /// Kỹ thuật viên — có thể chỉnh recipe, parameter thông thường.
-    /// Không được thay đổi cấu hình hệ thống hay tạo user.
+    /// Trưởng ca / Line Lead — vận hành viên cấp cao.
+    /// Được thực hiện thao tác phục hồi có guard (R1): nhả xi lanh, bật/tắt khí âm,
+    /// chạy băng tải xả liệu, vào màn Vận hành tay.
+    /// Không được jog trục tự do hay sửa recipe.
     /// </summary>
-    Engineer = 1,
+    LineLead = 1,
 
     /// <summary>
-    /// Quản trị viên — có thể cấu hình toàn bộ hệ thống, quản lý user.
-    /// Không có quyền debug hardware trực tiếp.
+    /// Kỹ thuật viên — có thể chỉnh recipe, parameter, jog trục (R2–R3),
+    /// teach điểm, Supervised Override, reconnect thiết bị.
+    /// Không được thay đổi cấu hình hệ thống hay tạo user.
     /// </summary>
-    Administrator = 2,
+    Engineer = 2,
+
+    /// <summary>
+    /// Quản trị viên — có thể cấu hình toàn bộ hệ thống, quản lý user, Force IO.
+    /// Không có quyền debug hardware ở mức SuperUser.
+    /// </summary>
+    Administrator = 3,
 
     /// <summary>
     /// Super user — toàn quyền, kể cả debug hardware, override safety.
     /// Chỉ dành cho nhà sản xuất / bảo trì nội bộ.
     /// Mọi thao tác phải được audit log.
     /// </summary>
-    SuperUser = 3
+    SuperUser = 4
 }

@@ -52,8 +52,42 @@ Cụm chức năng (ghép sau prefix): `AdjPlatform`, `TapHead`, `Loader`, `Unlo
 ```json
 { "physical": "1.2.17_X017_AdjPlatformVacuumReached",
   "var": "DI_AdjPlatform_VacuumReached",
-  "address": "X017", "type": "DI", "station": "AdjPlatform", "normallyOpen": true }
+  "address": "X017", "type": "DI", "station": "AdjPlatform", "normallyOpen": true,
+  "displayName": { "vi": "Chân không đầu hút 1", "zh": "吸嘴真空1" },
+  "localize": true, "rawName": "吸嘴真空1" }
 ```
+
+**Hiển thị trên HMI — địa chỉ luôn đứng trước tên:** `X017 · Chân không đầu hút 1`.
+- **Địa chỉ vật lý (X017) dùng font mono, KHÔNG dịch, KHÔNG đổi theo ngôn ngữ** — là mỏ neo khớp nhãn trên tủ điện. Khi dò dây, người vận hành đọc địa chỉ, bỏ qua phần chữ. Đây là thứ cứu họ khi bản dịch khó hiểu.
+- **`localize: false` → giữ tên gốc một ngôn ngữ cố định** bất kể UI đang ngôn ngữ nào. Tên IO do nhà SX đặt (thường quy ước nội bộ, đôi khi tiếng Trung/Anh gốc) có thể rõ hơn bản dịch máy móc với người đã quen. `rawName` hiện kèm sau dấu `/` để người quen tên gốc vẫn nhận ra.
+- **Phản biện nguyên tắc "mọi chuỗi qua ILocalizationService"**: quá tuyệt đối. Đúng hơn — *chuỗi UI hướng người dùng cuối* (nhãn nút, thông báo) bắt buộc dịch; *định danh kỹ thuật* (địa chỉ, tên biến, và tên IO khi `localize:false`) được phép giữ nguyên gốc. Bản dịch tốt nhất vẫn là một lớp giữa người và phần cứng; địa chỉ vật lý xuyên qua lớp đó.
+
+### Bộ trạng thái IO (mockup `hmi_io_states.html`)
+
+Phân biệt bằng **hình + màu** (an toàn mù màu). Output cần tách 3 khái niệm dễ lẫn:
+
+| Trạng thái | Ký hiệu | Áp dụng |
+|------------|---------|---------|
+| OFF / chưa kích | đèn tròn xám | in/out mức 0 |
+| ON / đang kích (do logic) | đèn tròn xanh | trạng thái thực tế hiện tại |
+| Chờ / đang chuyển | đèn tròn vàng nhấp nháy | vừa ấn, chờ cảm biến xác nhận |
+| **FORCED** | **ô vuông đỏ chữ F** + badge | bị cưỡng bức đè — KHÁC bật do logic |
+| Đã ấn (momentary) | đèn xanh khi giữ | nút nhấn đang được giữ |
+| Giữa hành trình | tam giác hổ phách "▲" | xi lanh 2 cảm biến đều off (nghi kẹt) |
+
+- **Force phải có dấu hiệu riêng tuyệt đối** (ô vuông, không phải đèn tròn): output bật *do logic* và output bật *do force* là hai việc khác hẳn, lẫn lộn là nguy hiểm.
+- **Cảm biến xi lanh hai đầu**: đọc cả cảm biến KẸP và NHẢ → suy ra KẸP / NHẢ / GIỮA. Cả hai off = "▲ giữa" = nghi kẹt, cảnh báo.
+- **Input nút nhấn**: phân biệt chưa-ấn / đang-ấn (momentary giữ).
+
+### Điều khiển output: set/reset thường vs Force (phương án A)
+
+Set/reset và Force là HAI việc khác bản chất — set/reset ra lệnh nhưng logic vẫn kiểm soát (có thể ghi đè lại); Force *đóng băng* output, cắt quyền logic (quên gỡ = output chết kể cả khi sản xuất → tai nạn kinh điển). Không gộp hai cái vào một cú bấm mơ hồ.
+
+Mô hình (mockup `hmi_io_states.html`):
+- **Mặc định — chế độ thường**: mỗi dòng output là MỘT NÚT bấm-được. Màu/hình = trạng thái hiện tại; bấm = set/reset (logic vẫn kiểm soát). Output có hậu quả cần cú chạm xác nhận thứ hai. KHÔNG còn nút "Force" riêng cho từng dòng (đó là cái thừa) → bảng gọn.
+- **Chế độ Force** (toggle ở đầu bảng, Admin, ngoài EXECUTE, audit): bật lên → nền bảng đỏ cảnh báo, bấm dòng = ĐÓNG BĂNG output. Dòng đã force hiện ô vuông đỏ chữ F + badge + bấm để gỡ. Bộ đếm "đang force N IO" luôn hiển thị + nhắc gỡ trước khi rời màn/chạy máy.
+- Ranh giới hiển nhiên: ở chế độ Force thì MỌI cú bấm là force; ở chế độ thường thì MỌI cú bấm là set/reset. Người dùng luôn biết mình đang "bật tạm" hay "đóng băng" — không nhầm.
+- *(Trường phái an-toàn-tối-đa: bỏ luôn set/reset thường, IO chỉ để xem trừ khi vào Force mode. Máy ưu tiên an toàn hơn linh hoạt có thể chọn cấu hình này. Dự án dùng phương án A — có set/reset thường.)*
 
 ---
 
@@ -142,45 +176,59 @@ Bắt buộc có (mockup `hmi_axis_detail_v1.html`):
 
 ---
 
-*Cần xác nhận: (a) số trục thực tế và cách nhóm (XYZU + Tap 3 trục?); (b) ngưỡng cảnh báo lệch Set–Confirm cho từng loại trục.*
+## 7. Layout thích ứng theo quy mô (4 trục → 20 trục)
+
+Không thiết kế layout cố định; cùng một cấu trúc dữ liệu render khác nhau theo số lượng khai báo. Mockup: `hmi_adaptive_layout.html`.
+
+### 7.0 Nhất quán ba tầng (giải mâu thuẫn "thích ứng" vs "vị trí nhất quán")
+
+Layout thích ứng KHÔNG phá nguyên tắc nhất quán, vì nhất quán được phân theo ba tầng tách biệt:
+
+**Tầng 1 — Nhất quán vị trí TUYỆT ĐỐI (cho Operator, hành động phản xạ).**
+Persistent Frame (header, nav, banner, action bar, thanh kết nối) giống hệt nhau trên MỌI máy, MỌI quy mô. Start/Stop/ACK/E-stop luôn ở đúng vị trí — đây là hành động tần suất cao, áp lực thời gian, cần vị trí cố định cứu phần nghìn giây và tránh bấm nhầm. Layout thích ứng KHÔNG bao giờ chạm tới tầng này. Operator cũng không mở màn Vận hành tay nên không gặp layout thích ứng.
+
+**Tầng 2 — Nhất quán MÔ HÌNH (cho Engineer, hành động có chủ đích).**
+Khu thao tác kỹ thuật (Vận hành tay) thay đổi *khung chứa* theo quy mô nhưng giữ bất biến:
+- **Thứ tự sub-tab** không đổi: Thao tác trạm → Điều khiển trục → Bảng điểm → Override.
+- **Quy luật điều hướng** không đổi: chọn-phạm-vi một phía → nội-dung phía kia. Phẳng/nút-ngang/sidebar khác *hình* nhưng cùng *quy luật* "chọn trạm rồi nội dung hiện".
+- **Đơn vị nội dung lặp lại** không đổi: một hàng trục luôn là (tên trái · vị trí phải · ON/Home/Clear giữa) dù máy 4 hay 20 trục. Layout nút bên trong một trạm giống hệt mọi máy.
+- Cái co giãn là *khung* (số trạm, số trục); cái cố định là *đơn vị* và *thứ tự*. Engineer làm việc có cân nhắc, không phản xạ → nhất quán mô hình là đủ.
+
+**Tầng 3 — Van ép nhất quán tuyệt đối (`layoutHint`).**
+Nhà máy có cả máy nhỏ lẫn lớn, muốn kỹ sư thấy giao diện đồng nhất, có thể ép một kiểu render cho mọi máy (vd `layoutHint: "sidebar"` kể cả máy 4 trục — chấp nhận hơi trống để đổi lấy nhất quán tuyệt đối). Mặc định `auto` tối ưu từng máy; ép tay khi nhà máy coi nhất quán > tối ưu không gian.
+
+Lý do KHÔNG ép một kiểu cho tất cả làm mặc định: ép sidebar → máy 4 trục lãng phí ~150 px cho 1 trạm, trống vô lý; ép phẳng → máy 20 trục thành danh sách trộn lẫn không cuộn nổi. Nhất quán-tuyệt-đối ở tầng 2 sẽ *phá* tính dùng được; nên mặc định là thích ứng-có-quy-luật, van ép để tùy chọn.
+
+### 7.1 Mô hình dữ liệu &amp; ngưỡng render
+
+**Mô hình phân cấp chung (mọi máy):**
+```
+Machine
+ └─ Station[] (Loader, Adjust, Tap…) → Axes[] + Cylinders[] + IO[]
+ └─ SharedAxes[] (trục station:null — gantry dùng chung)
+```
+
+**Engine chọn cách render (áp nhất quán cho cả 3 sub-tab Thao tác/Trục/Bảng điểm):**
+
+| Quy mô | Điều kiện | Render |
+|--------|-----------|--------|
+| Nhỏ | stationCount ≤ 1, axes ≤ 6 | FLAT — bỏ lớp trạm, danh sách phẳng |
+| Vừa | stationCount ≤ 4 và axes ≤ 12 | HORIZONTAL TABS — nút trạm ngang đầu pane |
+| Lớn | ≥ 5 trạm hoặc > 12 trục | SIDEBAR trái (kiểu Mesa ảnh 1) |
+
+`layoutHint: auto|flat|tabs|sidebar` — mặc định auto, cho ép tay khi cần.
+
+**Trục thuộc trạm hay chung — config quyết định**, không cố định:
+- `"station": "Adjust"` → trục hiện trong nhóm trạm đó.
+- `"station": null` → gom vào nhóm "Trục chung" (gantry phục vụ nhiều trạm).
+- Máy die-bonder kiểu Hanmi (mỗi chuck table có cụm trục riêng) → khai station từng trục, sidebar tự gom. Máy gantry XY dùng chung → khai null.
+
+**Trạm KHÔNG lên thanh nav chính.** Nav phân theo *chức năng* (Home, Vision, Vận hành tay…); trạm là *vị trí vật lý*, thuộc bên trong màn thao tác. Trộn hai trục phân loại vào một thanh gây rối.
+
+Người viết máy mới chỉ khai station/axes/io; engine chọn layout. Máy 4 trục tự ra giao diện gọn, máy 20 trục tự ra sidebar — không sửa code HMI.
 
 
 ---
 
-## 7. Quyết định adoption — AM.AutoFrame (Session 46, 13/06/2026)
-
-> Mục này do team AM.AutoFrame thêm. Spec gốc giữ nguyên ở trên. Hiện thực ở
-> `AM.Modules.Motion` (MotionView/MotionViewModel/AxisVm/PointRowVm) + `AM.Hardware.Motion`.
-
-### Áp ngay (đã code, sim "sống" đầy đủ)
-- **Bảng đèn 8 tín hiệu/trục** (Alarm·+Limit·−Limit·Origin·E-Stop·Zero·In-Pos·Servo) — qua interface
-  TUỲ CHỌN `IAxisDiagnostics` (xanh=đạt, đỏ=Alarm/Limit/E-Stop, xám=không active).
-- **Điều khiển từng trục**: Servo ON/OFF · Home · Clear Error (清错 riêng, KHÔNG gộp Reset máy) · Move-to + tốc độ %.
-- **Jog pad + inching**: nhóm trục XYZU; mode Tương đối/Tuyệt đối; STOP đỏ dừng MỌI trục (khác Stop chu trình);
-  inching 3 mức (0.001/0.01/0.1) + ô tuỳ ý + nudge +/−.
-- **Phản hồi servo**: following error / feedback velocity / torque / motor load (trục đang chọn).
-- **Bảng điểm Set/Confirm, 2 chạm**: chạm ô = chọn 1 trục · chạm tên = chọn cả điểm · Tới/Teach ở thanh
-  dưới là cú chạm thứ hai. Teach một trục chỉ cho trục đã Servo ON + Home (更新此轴). ▲ khi confirm lệch set
-  > 0.05 mm. Lưu bảng điểm vào recipe (file points.json).
-
-### Kiến trúc (non-breaking — theo tiền lệ ISafetyInput)
-| Spec yêu cầu | Hiện thực |
-|--------------|-----------|
-| Servo/8 tín hiệu/phản hồi | Interface **tuỳ chọn** `IAxisDiagnostics` — controller MAY implement; UI cast runtime (`motion as IAxisDiagnostics`). Sim implement đầy đủ; driver thật (Gts/Advantech P/Invoke) CHƯA → UI ẩn cột tín hiệu/servo, hiện "—". KHÔNG sửa `IMotionController` (giữ 31 hardware-test xanh). |
-| Set/Confirm trong điểm | `MotionPoint` thêm `SetPositions` (additive, mặc định rỗng) — delta chỉ hiện khi recipe có set-point; không bịa. `Positions` = confirm (teach thực tế). |
-| Tên trục có nghĩa (AX_X_Adjust) | Hiện dùng `AX_{i}` (index). Tên có nghĩa cần `IAxisMap`/AxisMap config — hoãn (đã có JsonAxisMap, sẽ nối sau). |
-
-### Phản biện / hoãn có chủ đích
-1. **Deadman "giữ-để-chạy" liên tục**: `IMotionController` chỉ có MoveAbs/MoveRel/Stop, KHÔNG có velocity-jog
-   (JogStart/JogStop). Tự dựng vòng lặp MoveRel khi giữ nút là rủi ro (queue lệnh, dừng trễ) — **không làm nửa vời**.
-   Hiện: mỗi lần bấm jog/nudge = nhích đúng MỘT bước inching (an toàn, rõ ràng). Deadman thật cần bổ sung
-   `IAxisJog` (velocity-mode + watchdog HAL) — hoãn.
-2. **Tên IO 4 lớp + IOMap** (§2 tài liệu): thuộc màn **Cài đặt → IO mapping**, không phải màn điều khiển trục —
-   tách ra, làm khi xây màn IOMap. Màn này chỉ dùng tên trục/điểm.
-3. **Bảng config trục dày đặc** (Mesa ảnh 1): đúng là màn Cài đặt kỹ thuật (Admin) riêng, không nhồi vào màn vận hành.
-4. Nút emoji trong mockup (💾 ✎) → sản phẩm dùng Segoe MDL2 một màu (giữ nhất quán palette v2); tạm để glyph
-   trong nhãn i18n, thay bằng icon khi gom `Icons.xaml`.
-
-### Đã chốt 2 câu hỏi cuối tài liệu
-- (a) Số trục/nhóm: nhóm theo lô 4 trục (XYZU, rồi AX_4–AX_n…) — tự sinh từ `AxisCount`, không hardcode.
-- (b) Ngưỡng lệch Set–Confirm: mặc định **0.05 mm** (`PointCellVm.DeltaThresholdMm`) — chỉnh theo loại trục sau.
+> **Adoption AM.AutoFrame**: phản biện + quyết định "build gì / map gì / hoãn gì" cho codebase thật
+> nằm tập trung ở `docs/HMI_Master_Index.md §11` (nguồn DUY NHẤT). Đọc đó trước khi hiện thực màn này.

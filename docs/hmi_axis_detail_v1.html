@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AM.AutoFrame — Điều khiển trục (chi tiết)</title>
+<style>
+:root{
+  --bg:#DCDCDC;--panel:#F2F2F2;--panel2:#FAFAFA;--line:#C8C8C8;
+  --txt:#2B2B2B;--txt2:#6A6A6A;--txt3:#9A9A9A;
+  --ok:#1E7E46;--okbg:#E2F1E8;--ng:#C0392B;--ngbg:#F9E6E3;
+  --info:#1565C0;--infobg:#E3EDF8;--warn:#B26A00;--warnbg:#FBF0DC;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#9aa0a6;font-family:"Segoe UI",system-ui,Arial,sans-serif;color:var(--txt);padding:16px}
+.mono{font-family:Consolas,"Cascadia Mono",monospace}
+#fit{margin:0 auto}
+#stage{width:1820px;background:var(--panel2);transform-origin:top left;border:1px solid #555;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.note{max-width:900px;margin:10px auto 0;color:#fff;font-size:13px;text-align:center}
+.ptitle{font-size:14px;font-weight:700;color:var(--txt2);margin-bottom:8px}
+.card{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px}
+
+/* bảng đèn tín hiệu 8 cột */
+#sigtab{width:100%;border-collapse:collapse;font-size:13px}
+#sigtab th{color:var(--txt2);font-weight:600;padding:6px 4px;text-align:center;font-size:12.5px}
+#sigtab td{padding:6px 4px;text-align:center;border-top:1px solid #EEE}
+#sigtab td.axn{font-weight:700;text-align:left;padding-left:8px}
+.led{width:16px;height:16px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+.led.g{background:#27AE60;box-shadow:0 0 4px #27AE6066}
+.led.r{background:#E24B4A;box-shadow:0 0 4px #E24B4A66}
+.led.o{background:#EAEAEA}
+
+/* hàng điều khiển mỗi trục */
+.axctl{display:flex;align-items:center;gap:8px;padding:8px;border-top:1px solid #EEE}
+.axctl .nm{width:120px;font-weight:700;font-size:14px}
+.axctl .pos{width:120px;font-size:17px;text-align:right}
+.axctl .tgt{width:96px;height:36px;border:1px solid var(--line);border-radius:6px;padding:0 8px;font-size:14px;text-align:right}
+.mbtn{height:38px;padding:0 12px;border:1px solid var(--line);border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:var(--txt)}
+.mbtn:hover{background:#F0F0F0}
+.mbtn.on{border-color:var(--ok);color:var(--ok);font-weight:600;background:var(--okbg)}
+.mbtn.clr{border-color:var(--warn);color:var(--warn)}
+.mbtn.move{border-color:var(--info);color:var(--info)}
+
+/* jog cụm */
+.jogpad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,64px);gap:6px;justify-content:center}
+.jb{border:1px solid var(--line);border-radius:8px;background:#fff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.jb:hover{background:#F0F0F0}
+.jb.stop{border:2px solid var(--ng);color:var(--ng);font-weight:700}
+.jb.em{visibility:hidden}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg span{padding:8px 12px;font-size:13px;color:var(--txt2);background:#fff;cursor:pointer;border-right:1px solid var(--line)}
+.seg span:last-child{border-right:none}
+.seg span.on{background:var(--infobg);color:var(--info);font-weight:600}
+
+/* bảng điểm */
+#pt{width:100%;border-collapse:collapse;font-size:13px}
+#pt th{background:#EAF1FB;color:var(--txt2);font-weight:600;padding:7px 6px;text-align:left;position:sticky;top:0}
+#pt td{padding:6px;border-top:1px solid #E8E8E8;color:var(--txt2)}
+#pt td.pn{color:var(--txt);font-weight:600}
+#pt tr.sel td{background:var(--infobg)}
+.delta{color:var(--ng);font-weight:600}
+.tb{height:32px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:var(--txt)}
+.flex{display:flex;gap:14px}
+.col{display:flex;flex-direction:column}
+/* bảng điểm gọn: ô chọn được */
+#pt td.cell{cursor:pointer;border-left:1px solid #EEE}
+#pt td.cell:hover{background:#EEF4FC}
+#pt td.cell.csel{background:var(--infobg);outline:2px solid var(--info);outline-offset:-2px}
+#pt td.pn.csel,#pt td.pname.csel{background:var(--infobg);outline:2px solid var(--info);outline-offset:-2px}
+#pt td.pname{cursor:pointer;font-weight:600;color:var(--txt)}
+#pt td.pname:hover{background:#EEF4FC}
+.cf{font-size:10px;color:var(--txt3);display:block}
+.cf.d{color:var(--ng);font-weight:600}
+#selbar{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;background:var(--infobg);border:1px solid #Bcd;border-radius:8px}
+#selbar .scope{font-weight:600;color:var(--info)}
+</style>
+</head>
+<body>
+<div id="fit"><div id="stage">
+
+  <div class="flex">
+    <!-- trái: bảng đèn + điều khiển trục -->
+    <div class="col" style="flex:1;gap:12px;min-width:0">
+      <div class="card">
+        <div class="ptitle">Trạng thái tín hiệu trục <span style="font-weight:400;color:var(--txt3);font-size:12px">— theo chuẩn bảng đèn công nghiệp (tham khảo Secote/Hanmi)</span></div>
+        <table id="sigtab">
+          <tr><th style="text-align:left;padding-left:8px">Trục</th><th>Alarm<br>报警</th><th>+Limit<br>正限位</th><th>−Limit<br>负限位</th><th>Origin<br>原点</th><th>E-Stop<br>急停</th><th>Zero<br>零位</th><th>In-Pos<br>到位</th><th>Servo<br>励磁</th></tr>
+          <tr><td class="axn">AX_X_Adjust</td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td></tr>
+          <tr><td class="axn">AX_Y_Adjust</td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td></tr>
+          <tr><td class="axn">AX_Z1_Adjust</td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td></tr>
+          <tr><td class="axn">AX_U_Adjust</td><td><span class="led r"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td></tr>
+          <tr><td class="axn">AX_X_Tap</td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led o"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td><td><span class="led g"></span></td></tr>
+        </table>
+        <div style="font-size:11.5px;color:var(--txt3);margin-top:6px">● xanh = active/đạt · ● đỏ = lỗi (AX_U_Adjust đang Alarm, chưa Home) · ○ xám = không active</div>
+      </div>
+
+      <div class="card" style="flex:1">
+        <div class="ptitle">Điều khiển từng trục <span style="font-weight:400;color:var(--txt3);font-size:12px">— mỗi trục một hàng: servo · home · clear error · đích · tốc độ</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <span class="mbtn on">XYZU</span><span class="mbtn">Nhóm 5–7 (Tap)</span>
+          <span style="margin-left:auto" class="mbtn clr">⚠ Clear all errors</span>
+          <span class="mbtn on">⌂ Home tất cả · giữ 1s</span>
+        </div>
+        <div class="axctl" style="border-top:none">
+          <span class="nm">AX_X_Adjust</span><span class="pos mono">190.760</span>
+          <button class="mbtn on">ON</button><button class="mbtn">原点 Home</button><button class="mbtn clr">清错 Clear</button>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:6px">Tới <input class="tgt mono" value="200.000"><button class="mbtn move">→ Di chuyển</button> <span style="color:var(--txt3);font-size:12px">tốc</span> <input class="tgt mono" style="width:56px" value="10"> %</span>
+        </div>
+        <div class="axctl">
+          <span class="nm">AX_Y_Adjust</span><span class="pos mono">97.925</span>
+          <button class="mbtn on">ON</button><button class="mbtn">原点 Home</button><button class="mbtn clr">清错 Clear</button>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:6px">Tới <input class="tgt mono" value="100.000"><button class="mbtn move">→ Di chuyển</button> <span style="color:var(--txt3);font-size:12px">tốc</span> <input class="tgt mono" style="width:56px" value="10"> %</span>
+        </div>
+        <div class="axctl">
+          <span class="nm">AX_Z1_Adjust</span><span class="pos mono">11.038</span>
+          <button class="mbtn on">ON</button><button class="mbtn">原点 Home</button><button class="mbtn clr">清错 Clear</button>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:6px">Tới <input class="tgt mono" value="11.038"><button class="mbtn move">→ Di chuyển</button> <span style="color:var(--txt3);font-size:12px">tốc</span> <input class="tgt mono" style="width:56px" value="10"> %</span>
+        </div>
+        <div class="axctl">
+          <span class="nm" style="color:var(--ng)">AX_U_Adjust</span><span class="pos mono" style="color:var(--ng)">— ALARM —</span>
+          <button class="mbtn">ON</button><button class="mbtn">原点 Home</button><button class="mbtn clr" style="font-weight:700">清错 Clear</button>
+          <span style="margin-left:auto;color:var(--ng);font-size:12px">Servo alarm — Clear trước khi vận hành</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- phải: jog + bước -->
+    <div class="col" style="width:340px;gap:12px">
+      <div class="card">
+        <div class="ptitle">Jog — trục đang chọn: <span style="color:var(--info)">AX_X_Adjust</span></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <div class="seg"><span class="on">Tương đối</span><span>Tuyệt đối</span></div>
+        </div>
+        <div class="jogpad">
+          <button class="jb"><span>U+</span></button><button class="jb">Y+ ↗</button><button class="jb">Z+ ↑</button>
+          <button class="jb">X− ◀</button><button class="jb stop">STOP</button><button class="jb">X+ ▶</button>
+          <button class="jb"><span>U−</span></button><button class="jb">Y− ↙</button><button class="jb">Z− ↓</button>
+        </div>
+        <div style="margin-top:10px">
+          <div style="font-size:12px;color:var(--txt2);margin-bottom:4px">Bước inching (mm)</div>
+          <div class="seg" style="display:flex"><span>0.001<br><small style="font-size:10px;color:var(--txt3)">tinh</small></span><span class="on">0.01<br><small style="font-size:10px;color:var(--txt3)">vừa</small></span><span>0.1<br><small style="font-size:10px;color:var(--txt3)">thô</small></span></div>
+          <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+            <span style="font-size:12px;color:var(--txt2)">Tùy ý</span>
+            <input class="tgt mono" style="flex:1;width:auto" value="0.025"> <span style="font-size:12px;color:var(--txt3)">mm</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+            <button class="mbtn" style="flex:1;font-size:18px">−</button>
+            <span class="mono" style="flex:1;text-align:center;font-size:14px">0.01</span>
+            <button class="mbtn" style="flex:1;font-size:18px">+</button>
+          </div>
+        </div>
+        <div style="font-size:11.5px;color:var(--txt3);margin-top:10px">Jog giữ-để-chạy (deadman). Inching: mỗi lần bấm +/− nhích đúng một bước. STOP dừng mọi chuyển động trục.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:12.5px;color:var(--txt2);line-height:1.7">
+          <b>Phản hồi trục X</b><br>
+          Following error <span class="mono" style="float:right">0.001 mm</span><br>
+          Feedback velocity <span class="mono" style="float:right">0.000</span><br>
+          Feedback torque <span class="mono" style="float:right">2.1 %</span><br>
+          Motor load <span class="mono" style="float:right">8 %</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- bảng điểm gọn: chọn ô rồi thực thi -->
+  <div class="card">
+    <div class="ptitle">Bảng điểm — chạm ô toạ độ để chọn 1 trục, chạm tên điểm để chọn cả điểm; rồi bấm Tới/Teach ở dưới <span style="font-weight:400;color:var(--txt3);font-size:12px">(mỗi ô hiện Set / Confirm)</span></div>
+    <table id="pt">
+      <tr>
+        <th style="width:40px">#</th><th>Tên điểm (PT_)</th>
+        <th style="text-align:right">X<br><small style="font-size:10px;font-weight:400;color:var(--txt3)">set / confirm</small></th>
+        <th style="text-align:right">Y</th><th style="text-align:right">Z</th><th style="text-align:right">U</th>
+      </tr>
+      <tr>
+        <td class="pn">1</td><td class="pname">PT_Screw_SafePoint</td>
+        <td class="cell" style="text-align:right">190.76<span class="cf">190.76</span></td>
+        <td class="cell" style="text-align:right">97.93<span class="cf">97.93</span></td>
+        <td class="cell" style="text-align:right">11.04<span class="cf">11.04</span></td>
+        <td class="cell" style="text-align:right">0<span class="cf">0</span></td>
+      </tr>
+      <tr>
+        <td class="pn">2</td><td class="pname">PT_Screw_SnapPoint</td>
+        <td class="cell" style="text-align:right">190.76<span class="cf">190.76</span></td>
+        <td class="cell" style="text-align:right">318.61<span class="cf">318.61</span></td>
+        <td class="cell" style="text-align:right">11.04<span class="cf">11.04</span></td>
+        <td class="cell" style="text-align:right">0<span class="cf">0</span></td>
+      </tr>
+      <tr>
+        <td class="pn csel">3</td><td class="pname">PT_Screw_AssemblyPoint</td>
+        <td class="cell" style="text-align:right">125.52<span class="cf">125.52</span></td>
+        <td class="cell" style="text-align:right">320.41<span class="cf">320.41</span></td>
+        <td class="cell csel" style="text-align:right">112.56<span class="cf d">112.30 ▲0.26</span></td>
+        <td class="cell" style="text-align:right">0<span class="cf">0</span></td>
+      </tr>
+      <tr>
+        <td class="pn">4</td><td class="pname">PT_BatchHead_CalibPoint</td>
+        <td class="cell" style="text-align:right">123.76<span class="cf">123.76</span></td>
+        <td class="cell" style="text-align:right">320.25<span class="cf">320.25</span></td>
+        <td class="cell" style="text-align:right">115.24<span class="cf">115.24</span></td>
+        <td class="cell" style="text-align:right">0<span class="cf">0</span></td>
+      </tr>
+      <tr>
+        <td class="pn">5</td><td class="pname">PT_LightSource_AvoidL</td>
+        <td class="cell" style="text-align:right">17.93<span class="cf">17.93</span></td>
+        <td class="cell" style="text-align:right">87.25<span class="cf">87.25</span></td>
+        <td class="cell" style="text-align:right">3.04<span class="cf">3.04</span></td>
+        <td class="cell" style="text-align:right">0<span class="cf">0</span></td>
+      </tr>
+      <tr>
+        <td class="pn">6</td><td class="pname">PT_LightSource_AvoidR</td>
+        <td class="cell" style="text-align:right">118.29<span class="cf">118.29</span></td>
+        <td class="cell" style="text-align:right">329.84<span class="cf">329.84</span></td>
+        <td class="cell" style="text-align:right">3.04<span class="cf">3.04</span></td>
+        <td class="cell" style="text-align:right">0<span class="cf">0</span></td>
+      </tr>
+      <tr>
+        <td class="pn">7</td><td class="pname">PT_Screw_UnloadPoint</td>
+        <td class="cell" style="text-align:right">280.00<span class="cf">280.00</span></td>
+        <td class="cell" style="text-align:right">20.00<span class="cf">20.00</span></td>
+        <td class="cell" style="text-align:right">5.00<span class="cf">5.00</span></td>
+        <td class="cell" style="text-align:right">0<span class="cf">0</span></td>
+      </tr>
+    </table>
+    <div id="selbar">
+      <span>Đang chọn: <span class="scope">trục Z của điểm P03 (PT_Screw_AssemblyPoint)</span></span>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        <button class="mbtn move">→ Tới (Z của P03)</button>
+        <button class="mbtn">✎ Teach (Z của P03)</button>
+        <button class="mbtn on">💾 Lưu bảng điểm vào recipe</button>
+      </span>
+    </div>
+    <div style="font-size:11.5px;color:var(--txt3);margin-top:8px">Chạm = chọn (không chạy ngay). "Tới"/"Teach" là cú chạm thứ hai xác nhận. Teach mở popup so cũ→mới, chỉ cho trục đã Servo ON + Home. ▲ = Confirm lệch Set, cần chú ý.</div>
+  </div>
+
+</div></div>
+<p class="note">Khu điều khiển trục chi tiết, tổng hợp các pattern hợp lý từ ảnh thật: bảng đèn 8 tín hiệu/trục, hàng điều khiển mỗi trục với Clear Error riêng, nhóm trục XYZU/Tap, jog deadman + inching nhiều cấp, và bảng điểm Set vs Confirm với teach cả-điểm hoặc một-trục.</p>
+<script>
+function fit(){var s=document.getElementById('stage'),f=document.getElementById('fit');var w=Math.min(document.body.clientWidth-32,1820);var k=w/1820;s.style.transform='scale('+k+')';f.style.width=w+'px';f.style.height=(s.offsetHeight*k)+'px';}
+window.addEventListener('resize',fit);fit();window.addEventListener('load',fit);
+</script>
+</body>
+</html>

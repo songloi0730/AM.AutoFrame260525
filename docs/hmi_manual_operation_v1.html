@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AM.AutoFrame — Vận hành tay (1920×1080)</title>
+<style>
+:root{
+  --bg:#DCDCDC; --panel:#F2F2F2; --panel2:#FAFAFA; --line:#C8C8C8;
+  --txt:#2B2B2B; --txt2:#6A6A6A; --txt3:#9A9A9A;
+  --ok:#1E7E46; --okbg:#E2F1E8; --ng:#C0392B; --ngbg:#F9E6E3;
+  --info:#1565C0; --infobg:#E3EDF8; --warn:#B26A00; --warnbg:#FBF0DC;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#9aa0a6;font-family:"Segoe UI",system-ui,Arial,sans-serif;color:var(--txt);padding:16px}
+#fit{margin:0 auto}
+#stage{width:1920px;height:1080px;background:var(--bg);transform-origin:top left;display:flex;flex-direction:column;border:1px solid #555}
+.note{max-width:900px;margin:10px auto 0;color:#fff;font-size:13px;text-align:center}
+.mono{font-family:Consolas,"Cascadia Mono",monospace}
+
+#hdr{height:56px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 20px}
+#logo{width:36px;height:36px;border-radius:8px;background:var(--infobg);color:var(--info);display:flex;align-items:center;justify-content:center;font-weight:600}
+#hdr .mname{font-size:18px;font-weight:600}
+.badge{font-size:14px;font-weight:600;padding:5px 16px;border-radius:6px}
+.b-auto{background:var(--infobg);color:var(--info)}
+.b-idle{background:#EAEAEA;color:var(--txt2);border:1px solid var(--line)}
+.b-local{background:#EFEFEF;color:var(--txt2);border:1px solid var(--line)}
+.hb{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-left:6px;animation:hb 1s infinite}
+@keyframes hb{0%,100%{opacity:1}50%{opacity:.15}}
+#hdr .right{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:14px;color:var(--txt2)}
+.hbtn{height:40px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:15px;color:var(--txt);cursor:pointer}
+.avt{width:26px;height:26px;border-radius:50%;background:var(--infobg);color:var(--info);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+#nav{height:48px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 20px}
+.nav-t{font-size:15px;color:var(--txt2);padding:7px 18px;border-radius:6px}
+.nav-t.act{background:var(--bg);color:var(--txt);font-weight:600}
+
+#alarm{height:40px;background:#EBEBEB;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 20px;font-size:14px;color:var(--txt2)}
+#alarm .tick{color:var(--ok);font-weight:700}
+
+#content{flex:1;min-height:0;padding:12px 20px;display:flex;flex-direction:column}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+#work{flex:1;display:flex;flex-direction:column;min-height:0}
+#subtabs{display:flex;border-bottom:1px solid var(--line);padding:0 12px}
+.st{font-size:15px;color:var(--txt2);padding:11px 20px;border-bottom:3px solid transparent;cursor:pointer}
+.st.act{color:var(--txt);font-weight:600;border-bottom-color:var(--info)}
+.pane{display:none;flex:1;padding:12px;min-height:0}
+.pane.act{display:flex}
+
+/* axis list */
+#axlist{width:400px;display:flex;flex-direction:column;gap:8px;margin-right:14px}
+.ptitle{font-size:14px;font-weight:600;color:var(--txt2);margin-bottom:6px}
+.axrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px 12px;height:58px;cursor:pointer}
+.axrow.sel{border:2px solid var(--info);background:var(--infobg)}
+.axrow .axn{font-size:17px;font-weight:700;width:42px}
+.axrow .axp{font-size:17px;margin-left:auto}
+.axrow .tag{font-size:11px;color:var(--txt3)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.d-on{background:var(--ok)} .d-off{background:transparent;border:2px solid var(--txt3)}
+.axfoot{display:flex;gap:8px;margin-top:auto}
+.sbtn{flex:1;height:56px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.sbtn .bi{font-size:18px}
+.sbtn.stopm{border:2px solid var(--ng);color:var(--ng);font-weight:700}
+
+/* center axis detail */
+#axdet{flex:1;display:flex;flex-direction:column;gap:10px;margin-right:14px;min-width:0}
+.dro{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 16px}
+.dro .big{font-size:52px;font-weight:600;letter-spacing:1px}
+.dro .sub{display:flex;gap:26px;font-size:14px;color:var(--txt2);margin-top:4px}
+.chip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px;background:var(--okbg);color:var(--ok)}
+.chip.off{background:#EFEFEF;color:var(--txt3)}
+.row{display:flex;gap:10px}
+.cbtn{height:56px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;color:var(--txt);cursor:pointer;padding:0 18px;display:flex;align-items:center;gap:8px}
+.cbtn.on{border:2px solid var(--ok);color:var(--ok);font-weight:600}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg span{padding:10px 16px;font-size:14px;color:var(--txt2);background:#fff;cursor:pointer;border-right:1px solid var(--line)}
+.seg span:last-child{border-right:none}
+.seg span.on{background:var(--infobg);color:var(--info);font-weight:600}
+.jogwrap{display:flex;gap:12px;align-items:stretch}
+.jogbtn{flex:1;height:96px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:17px;font-weight:600;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.jogbtn .bi{font-size:30px}
+.jogbtn small{font-size:11px;color:var(--txt3);font-weight:400}
+.lim{border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px 16px}
+
+/* point table */
+#ptab{width:560px;display:flex;flex-direction:column}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--txt3);font-weight:500;text-align:left;padding:5px 6px}
+td{padding:6px;border-top:1px solid #E2E2E2;color:var(--txt2)}
+td.pn{color:var(--txt);font-weight:600}
+.tbtn{height:38px;min-width:56px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12.5px;cursor:pointer;color:var(--txt)}
+.tbtn:hover{background:#F0F0F0}
+
+/* IO pane */
+#iop{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.iorow{display:flex;align-items:center;gap:10px;padding:8px 10px;border-top:1px solid #E2E2E2;font-size:14px;color:var(--txt2)}
+.iorow .adr{font-family:Consolas,monospace;color:var(--txt3);width:54px}
+.iorow .fbtn{margin-left:auto;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12.5px;cursor:pointer;color:var(--txt3)}
+.iohead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.iohead input{height:38px;border:1px solid var(--line);border-radius:6px;padding:0 12px;font-size:14px;flex:1}
+
+#actions{height:84px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 20px}
+.btn{min-width:104px;height:64px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.btn .bi{font-size:20px;line-height:1}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.start{border-color:var(--ok);color:var(--ok);font-weight:700}
+#actions .right{margin-left:auto;display:flex;gap:12px}
+
+#conn{height:32px;background:#E4E4E4;border-top:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 20px;font-size:14px;color:var(--txt2)}
+#conn .grp{font-weight:600;color:var(--txt)}
+.cdot{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--ok);margin-right:5px;vertical-align:-1px}
+.cdot.off{background:transparent;border:2px solid var(--txt3)}
+#conn .sep{width:1px;height:16px;background:var(--line)}
+#conn .lgd{margin-left:auto;color:var(--txt3);font-size:13px}
+
+/* === Vận hành tay === */
+#work{flex:1;display:flex;flex-direction:column;min-height:0}
+#livebar{flex:0 0 auto;display:flex;align-items:center;gap:16px;padding:8px 14px;background:#F4F8FC;border-bottom:1px solid var(--line);font-size:13px}
+#livebar .lt{font-weight:700;color:var(--info);font-size:12.5px}
+#livebar .ax{display:flex;align-items:center;gap:6px}
+#livebar .ax b{width:22px}
+#msub{flex:0 0 auto;display:flex;border-bottom:1px solid var(--line);padding:0 12px;background:#fff}
+.mst{font-size:14px;color:var(--txt2);padding:10px 20px;border-bottom:3px solid transparent;cursor:pointer}
+.mst.act{color:var(--txt);font-weight:600;border-bottom-color:var(--info)}
+#mpanes{flex:1;min-height:0;position:relative}
+.mpane{display:none;position:absolute;inset:0;padding:12px 14px;overflow:auto;flex-direction:column}
+.mpane.act{display:flex}
+.zh{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex:0 0 auto}
+.zt{font-size:15px;font-weight:700}
+.ztag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:11px;margin-left:auto}
+.ztag.r1{background:var(--okbg);color:var(--ok)}
+.ztag.r3{background:var(--warnbg);color:var(--warn)}
+.ztag.ov{background:var(--ngbg);color:var(--ng)}
+.znote{font-size:11.5px;color:var(--txt3);margin-top:10px}
+.opgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.opb{height:72px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.opb .qi{font-size:22px;line-height:1}
+.opb small{font-size:11px;color:var(--txt3)}
+.opb:hover{background:#F0F0F0}
+.opb.dis{opacity:.5;cursor:not-allowed;border-style:dashed}
+.ovb{height:84px;border:1.5px solid #E3B6B0;border-radius:8px;background:#fff;font-size:14px;color:var(--ng);font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:1}
+.ovb .qi{font-size:22px}
+.ovb small{font-size:11px;color:var(--txt3);font-weight:400}
+/* điều khiển trục: nút giữ kích thước an toàn */
+.axctl2{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #EEE}
+.axctl2 .nm{width:130px;font-weight:700;font-size:14px}
+.axctl2 .pos{width:110px;text-align:right;font-size:16px}
+.mb{height:48px;min-width:64px;padding:0 14px;border:1px solid var(--line);border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:var(--txt)}
+.mb:hover{background:#F0F0F0}
+.mb.on{border-color:var(--ok);color:var(--ok);font-weight:600;background:var(--okbg)}
+.mb.clr{border-color:var(--warn);color:var(--warn)}
+.mb.mv{border-color:var(--info);color:var(--info)}
+.tg{height:40px;width:96px;border:1px solid var(--line);border-radius:6px;padding:0 8px;font-size:14px;text-align:right}
+.jogarea{display:flex;gap:14px;margin-top:14px;align-items:flex-start}
+.jogwrap{display:flex;gap:12px}
+.jogbtn{flex:1;min-width:150px;height:90px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:16px;font-weight:600;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.jogbtn .bi{font-size:28px}
+.jogbtn small{font-size:11px;color:var(--txt3);font-weight:400}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg span{padding:9px 14px;font-size:13px;color:var(--txt2);background:#fff;cursor:pointer;border-right:1px solid var(--line)}
+.seg span:last-child{border-right:none}
+.seg span.on{background:var(--infobg);color:var(--info);font-weight:600}
+.cbtn{height:48px;padding:0 16px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:13px;color:var(--txt)}
+.cbtn.stopm{border:2px solid var(--ng);color:var(--ng);font-weight:700}
+/* bảng điểm cuộn */
+.ptscroll{flex:1;overflow:auto;min-height:0;border:1px solid var(--line);border-radius:8px}
+#pt2{width:100%;border-collapse:collapse;font-size:13px}
+#pt2 th{background:#EAF1FB;color:var(--txt2);font-weight:600;padding:7px 8px;text-align:left;position:sticky;top:0;text-align:right}
+#pt2 th:nth-child(1),#pt2 th:nth-child(2){text-align:left}
+#pt2 td{padding:6px 8px;border-top:1px solid #EEE;color:var(--txt2)}
+#pt2 td.pn{font-weight:600;color:var(--txt)}
+#pt2 td.pname{font-weight:600;color:var(--txt);cursor:pointer}
+#pt2 td.pname:hover{background:#EEF4FC}
+#pt2 td.c{text-align:right;cursor:pointer;border-left:1px solid #F0F0F0}
+#pt2 td.c:hover{background:#EEF4FC}
+#pt2 td.csel{background:var(--infobg);outline:2px solid var(--info);outline-offset:-2px}
+#selbar2{flex:0 0 auto;display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;background:var(--infobg);border:1px solid #Bcd;border-radius:8px;font-size:13px}
+
+#lockbar{height:42px;border-radius:8px;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:14px;flex:0 0 auto}
+#lockbar.adjust-ok{background:var(--okbg);color:#15603a;border:1px solid #B6D9C4}
+#lockbar.locked{background:#ECECEC;color:var(--txt2);border:1px solid var(--line)}
+.lk-ico{font-size:18px}
+
+.dro .big{font-size:36px;font-weight:600;letter-spacing:1px;margin-top:4px}
+.chip{font-size:11px;font-weight:600;padding:2px 9px;border-radius:11px;background:var(--okbg);color:var(--ok)}
+.chip.off{background:#EFEFEF;color:var(--txt3)}
+.axmini{margin-top:8px}
+.amrow{display:flex;align-items:center;gap:10px;font-size:13px;padding:4px 2px;border-top:1px solid #EEE}
+.amrow .axn{font-weight:700;width:30px}
+.amrow .fe{margin-left:auto;color:var(--txt3);font-size:12px}
+.iomini{margin-top:8px}
+.iohead2{font-size:12.5px;color:var(--txt2);font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.iohead2 input{flex:1;height:30px;border:1px solid var(--line);border-radius:6px;padding:0 8px;font-size:12px}
+.ior{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 2px;border-top:1px solid #EEE;color:var(--txt2)}
+.ior .adr{font-family:Consolas,monospace;color:var(--txt3);width:48px}
+
+.opgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opb{height:62px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.opb .qi{font-size:19px;line-height:1}
+.opb small{font-size:10.5px;color:var(--txt3)}
+.opb:hover{background:#F0F0F0}
+.opb.dis{opacity:.5;cursor:not-allowed;border-style:dashed}
+.ovb{height:62px;border:1.5px solid #E3B6B0;border-radius:8px;background:#fff;font-size:13px;color:var(--ng);font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex:1}
+.ovb .qi{font-size:19px;line-height:1}
+.ovb small{font-size:10.5px;color:var(--txt3);font-weight:400}
+.cbtn.admin{border-color:#D9B98C}
+.cbtn.stopm{border:2px solid var(--ng);color:var(--ng);font-weight:700}
+.jogbtn small{font-size:10.5px;color:var(--txt3);font-weight:400}
+
+</style>
+</head>
+<body>
+<div id="fit"><div id="stage">
+
+  <div id="hdr">
+    <div id="logo">AM</div>
+    <span class="mname">AM.AutoFrame · AM-SCR-02</span>
+    <span class="badge b-auto">AUTO</span>
+    <span class="badge b-local">LOCAL</span>
+    <span class="badge b-idle">IDLE</span>
+    <span style="margin-left:24px;font-size:15px;color:var(--txt2)">LOT-240612-03 · <b style="color:var(--txt)">891 / 1200</b> · tạm dừng lô</span>
+    <div class="right">
+      <span>Recipe SCR-A12 · v1.4</span>
+      <span>11:05 · 12/06/2026<span class="hb"></span></span>
+      <button class="hbtn" title="Đổi ngôn ngữ">🌐 VI ▾</button>
+      <button class="hbtn"><span class="avt">AD</span> Admin <small style="color:var(--txt2)">· Engineer</small> ▾</button>
+    </div>
+  </div>
+
+  <div id="nav">
+    <span class="nav-t">🏠 Home</span><span class="nav-t">📷 Vision</span>
+    <span class="nav-t act">🛠 Vận hành tay</span><span class="nav-t">📋 Recipe</span>
+    <span class="nav-t">📊 Dữ liệu</span><span class="nav-t">🔔 Alarm</span>
+    <span class="nav-t">📄 Log</span><span class="nav-t">⚙ Cài đặt</span>
+  </div>
+
+  <div id="alarm"><span class="tick">✓</span> Không có cảnh báo đang hoạt động</div>
+
+  <div id="content"><div id="work" class="card">
+    <!-- dải trạng thái khóa -->
+    <div id="lockbar" class="adjust-ok">
+      <span class="lk-ico">✏</span>
+      <b>Cho phép điều chỉnh</b> — máy IDLE · Engineer. Chuyển EXECUTE sẽ khóa mọi điều chỉnh.
+    </div>
+
+    <!-- giám sát rút gọn: CỐ ĐỊNH, không cuộn -->
+    <div id="livebar">
+      <span class="lt">Giám sát (luôn sống)</span>
+      <span class="ax"><b>X</b><span class="dot d-on"></span><span class="mono">+123.456</span></span>
+      <span class="ax"><b>Y</b><span class="dot d-on"></span><span class="mono">+045.120</span></span>
+      <span class="ax"><b>Z1</b><span class="dot d-on"></span><span class="mono">+002.000</span></span>
+      <span class="ax"><b>Z2</b><span class="dot d-on"></span><span class="mono">+002.000</span></span>
+      <span class="ax"><b>T</b><span class="dot d-off"></span><span class="mono" style="color:var(--warn)">chưa home</span></span>
+      <span style="margin-left:auto;font-size:12px;color:var(--txt3)">fe X 0.002 · cửa ✓ · khí nén ✓ · chân không ✕</span>
+    </div>
+
+    <!-- sub-tab -->
+    <div id="msub">
+      <span class="mst act" data-p="t1">Thao tác trạm</span>
+      <span class="mst" data-p="t2">Điều khiển trục</span>
+      <span class="mst" data-p="t3">Bảng điểm</span>
+      <span class="mst" data-p="t4" style="color:var(--ng)">⚠ Override</span>
+    </div>
+
+    <div id="mpanes">
+      <!-- T1 thao tác trạm -->
+      <div class="mpane act" id="t1">
+        <div class="zh"><span class="zt">Thao tác trạm</span><span class="ztag r1">R0–R1 · Line Lead+ · có guard</span></div>
+        <div class="opgrid">
+          <button class="opb"><span class="qi">⬇</span>Nhả xi lanh kẹp<small>liệu lệch / kẹt</small></button>
+          <button class="opb"><span class="qi">⬆</span>Kẹp lại xi lanh</button>
+          <button class="opb dis" title="Z chưa hạ — tắt khí âm có thể làm rơi liệu"><span class="qi">🚫</span>Tắt khí âm<small style="color:var(--ng)">khóa: Z chưa hạ</small></button>
+          <button class="opb"><span class="qi">💨</span>Bật khí âm</button>
+          <button class="opb"><span class="qi">▶▶</span>Băng tải xả liệu<small>tới khi sạch máy</small></button>
+          <button class="opb"><span class="qi">⤓</span>Hạ Z về điểm dạy</button>
+        </div>
+        <div class="znote">Nút bị guard chặn hiển thị mờ kèm lý do. Mọi thao tác ghi audit theo tài khoản đang đăng nhập.</div>
+      </div>
+
+      <!-- T2 điều khiển trục -->
+      <div class="mpane" id="t2">
+        <div class="zh"><span class="zt">Điều khiển trục</span><span class="ztag r3">R2–R3 · Engineer+ · Force: Admin</span></div>
+        <div class="axctl2"><span class="nm">AX_X_Adjust</span><span class="pos mono">+123.456</span>
+          <button class="mb on">ON</button><button class="mb">Home</button><button class="mb clr">Clear</button>
+          <span style="margin-left:auto;display:flex;gap:6px;align-items:center">Tới <input class="tg mono" value="200.000"><button class="mb mv">→</button></span></div>
+        <div class="axctl2"><span class="nm">AX_Y_Adjust</span><span class="pos mono">+045.120</span>
+          <button class="mb on">ON</button><button class="mb">Home</button><button class="mb clr">Clear</button>
+          <span style="margin-left:auto;display:flex;gap:6px;align-items:center">Tới <input class="tg mono" value="100.000"><button class="mb mv">→</button></span></div>
+        <div class="axctl2"><span class="nm">AX_Z1_Adjust</span><span class="pos mono">+002.000</span>
+          <button class="mb on">ON</button><button class="mb">Home</button><button class="mb clr">Clear</button>
+          <span style="margin-left:auto;display:flex;gap:6px;align-items:center">Tới <input class="tg mono" value="11.038"><button class="mb mv">→</button></span></div>
+        <div class="axctl2"><span class="nm" style="color:var(--ng)">AX_U_Adjust</span><span class="pos mono" style="color:var(--ng)">ALARM</span>
+          <button class="mb">ON</button><button class="mb">Home</button><button class="mb clr" style="font-weight:700">Clear</button>
+          <span style="margin-left:auto;color:var(--ng);font-size:12px">Servo alarm — Clear trước</span></div>
+        <div class="jogarea">
+          <div class="jogwrap" style="flex:1">
+            <button class="jogbtn"><span class="bi">◀</span>JOG −<small>giữ để chạy</small></button>
+            <button class="jogbtn"><span class="bi">▶</span>JOG +<small>nhả là dừng</small></button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="seg"><span>0.001</span><span class="on">0.01</span><span>0.1</span></div>
+            <div style="display:flex;gap:6px;align-items:center"><span style="font-size:11px;color:var(--txt3)">tùy ý</span><input class="tg mono" style="width:70px" value="0.025"><button class="cbtn stopm" style="margin-left:auto">⏹ Dừng chuyển động</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T3 bảng điểm cuộn -->
+      <div class="mpane" id="t3">
+        <div class="zh"><span class="zt">Bảng điểm</span><span style="font-size:12px;color:var(--txt3)">chạm ô = chọn 1 trục · chạm tên = cả điểm · rồi Tới/Teach ở dưới</span></div>
+        <div class="ptscroll">
+        <table id="pt2">
+          <tr><th style="width:34px">#</th><th>Tên điểm</th><th>X</th><th>Y</th><th>Z</th><th>U</th></tr>
+          <tr><td class="pn">1</td><td class="pname">PT_Screw_SafePoint</td><td class="c">190.76</td><td class="c">97.93</td><td class="c">11.04</td><td class="c">0</td></tr>
+          <tr><td class="pn">2</td><td class="pname">PT_Screw_SnapPoint</td><td class="c">190.76</td><td class="c">318.61</td><td class="c">11.04</td><td class="c">0</td></tr>
+          <tr><td class="pn csel">3</td><td class="pname">PT_Screw_AssemblyPoint</td><td class="c">125.52</td><td class="c">320.41</td><td class="c csel">112.56 <span style="color:var(--ng);font-size:10px">▲0.26</span></td><td class="c">0</td></tr>
+          <tr><td class="pn">4</td><td class="pname">PT_BatchHead_CalibPoint</td><td class="c">123.76</td><td class="c">320.25</td><td class="c">115.24</td><td class="c">0</td></tr>
+          <tr><td class="pn">5</td><td class="pname">PT_LightSource_AvoidL</td><td class="c">17.93</td><td class="c">87.25</td><td class="c">3.04</td><td class="c">0</td></tr>
+          <tr><td class="pn">6</td><td class="pname">PT_LightSource_AvoidR</td><td class="c">118.29</td><td class="c">329.84</td><td class="c">3.04</td><td class="c">0</td></tr>
+          <tr><td class="pn">7</td><td class="pname">PT_Screw_UnloadPoint</td><td class="c">280.00</td><td class="c">20.00</td><td class="c">5.00</td><td class="c">0</td></tr>
+          <tr><td class="pn">8</td><td class="pname">PT_Tap_ApproachPoint</td><td class="c">95.10</td><td class="c">142.30</td><td class="c">8.50</td><td class="c">0</td></tr>
+          <tr><td class="pn">9</td><td class="pname">PT_Tap_WorkPoint</td><td class="c">95.10</td><td class="c">142.30</td><td class="c">2.10</td><td class="c">0</td></tr>
+        </table>
+        </div>
+        <div id="selbar2"><span>Đang chọn: <b style="color:var(--info)">trục Z của P03</b></span>
+          <span style="margin-left:auto;display:flex;gap:8px">
+            <button class="mb mv">→ Tới (Z của P03)</button>
+            <button class="mb">✎ Teach (Z của P03)</button>
+            <button class="mb on">💾 Lưu vào recipe</button>
+          </span></div>
+      </div>
+
+      <!-- T4 override -->
+      <div class="mpane" id="t4">
+        <div class="zh"><span class="zt" style="color:var(--ng)">⚠ Override có giám sát</span><span class="ztag ov">Engineer+ · xác nhận 2 bước + lý do · audit nặng</span></div>
+        <div class="opgrid">
+          <button class="ovb"><span class="qi">⬇⬇</span>Nhả liệu (override)<small>khi dị vật kênh — cần người đỡ</small></button>
+          <button class="ovb"><span class="qi">🔓</span>Nhả servo / thả trục<small>⚠ trục Z có thể tụt do trọng lực</small></button>
+        </div>
+        <div class="znote">Cố ý bỏ qua guard an toàn cho tình huống đặc biệt. Bấm → hộp thoại cảnh báo, xác nhận 2 bước rồi nhả có đếm ngược. Guard thường ngày KHÔNG đổi.</div>
+      </div>
+    </div>
+  </div></div>
+
+  <div id="actions">
+    <button class="btn start"><span class="bi">▶</span>Start</button>
+    <button class="btn" disabled title="Máy đang IDLE"><span class="bi">⏸</span>Pause</button>
+    <button class="btn" disabled title="Máy đang IDLE"><span class="bi">⏹</span>Stop</button>
+    <button class="btn" disabled title="Reset chỉ khả dụng từ STOPPED / ABORTED / COMPLETE"><span class="bi">↺</span>Reset</button>
+    <div class="right">
+      <button class="btn"><span class="bi">⏵⏵</span>Dry run</button>
+      <button class="btn"><span class="bi">✋</span>Manual</button>
+    </div>
+  </div>
+
+  <div id="conn">
+    <span class="grp">Thiết bị</span>
+    <span><span class="cdot"></span>PLC</span>
+    <span><span class="cdot"></span>EtherCAT</span>
+    <span><span class="cdot"></span>Driver vít 1·2</span>
+    <span><span class="cdot"></span>CAM 1–2</span>
+    <span class="sep"></span>
+    <span class="grp">Host</span>
+    <span><span class="cdot"></span>MES</span>
+    <span><span class="cdot"></span>OPC-UA</span>
+    <span><span class="cdot"></span>DB</span>
+    <span class="lgd">AM.AutoFrame v2.6.1 · HMI build 2026.05.25 · máy AM-SCR-02-0007</span>
+  </div>
+
+</div></div>
+<p class="note">Màn “Vận hành tay” (hiện với Line Lead trở lên). Năm khu: dải khóa trạng thái · giám sát (luôn sống) · thao tác trạm R0–R1 · trục &amp; IO thô R2–R3 · override có giám sát. Máy đang IDLE nên cho điều chỉnh; chuyển EXECUTE sẽ khóa toàn bộ khu tác động.</p>
+
+<script>
+function fit(){
+  var s=document.getElementById('stage'),f=document.getElementById('fit');
+  var w=Math.min(document.body.clientWidth-32,1920);
+  var k=w/1920;
+  s.style.transform='scale('+k+')';
+  f.style.width=w+'px';
+  f.style.height=(1080*k)+'px';
+}
+window.addEventListener('resize',fit);fit();
+    document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('act')});
+    t.classList.add('act');
+    document.getElementById(t.dataset.p).classList.add('act');
+  });
+});
+
+document.querySelectorAll('.mst').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.mst').forEach(function(x){x.classList.remove('act')});
+    document.querySelectorAll('.mpane').forEach(function(p){p.classList.remove('act')});
+    t.classList.add('act');document.getElementById(t.dataset.p).classList.add('act');
+  });
+});
+</script>
+</body>
+</html>

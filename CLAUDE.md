@@ -45,10 +45,12 @@
 - **Mục tiêu giao diện (UI target):** chạy trên **máy tính công nghiệp (IPC)** màn hình **21–24" / 1920×1080**,
   **chuột + cảm ứng** — KHÔNG phải HMI panel nhỏ 7–10". Thiết kế theo **ISA-101 / SEMI E95** (High-Performance HMI:
   yên tĩnh khi bình thường, 4 cấp màn hình, connection status chips). Trước khi làm/đánh giá UI, ĐỌC:
+  `docs/HMI_Master_Index.md` (đầu mối toàn bộ HMI — đọc đây TRƯỚC) →
   `.claude/skills/am-hmi-design/SKILL.md` → **`docs/HMI_UI_Architecture_Template_v2.md`** (bố cục Home 7 vùng
-  + palette + quyết định adoption — CHUẨN HIỆN HÀNH) → `docs/HMI_Button_Spec.md` (precondition/role từng nút)
+  + palette — CHUẨN HIỆN HÀNH) → `docs/HMI_Button_Spec.md` (precondition/role từng nút)
   → `docs/HMI_Components_Catalog.md`. Bản v1.1 (`HMI_UI_Architecture_Template.md`) CHỈ còn hiệu lực phần
-  template điều khiển (ManualControlView/AxisControlView/VisionTeachView).
+  template điều khiển (AxisControlView/VisionTeachView). Khi chạm **màn Vận hành tay** (gộp Manual+Motion/IO):
+  đọc `docs/HMI_Manual_Operation_and_Safety_v1.0.md` (chính sách an toàn, 4 role, 4 mức rủi ro R0–R3, guard).
   Khi chạm **màn hình chính (Home)**: đọc thêm `docs/HMI_Dashboard_Spec.md` (spec + checklist nghiệm thu).
 
 ---
@@ -199,13 +201,18 @@ Triggers: `Initialize`, `InitializeDone`, `Start`, `Pause`, `Resume`, `Stop`, `E
 
 ```
 Null(-1)        — chưa đăng nhập
-Operator(0)     — Start/Stop, xem alarm/recipe
-Engineer(1)     — chỉnh recipe, parameter, manual jog
-Administrator(2)— cấu hình hệ thống, quản lý user
-SuperUser(3)    — override safety, debug hardware
+Operator(0)     — Start/Stop, xem alarm/recipe, quick actions tiện ích (R0)
+LineLead(1)     — + thao tác phục hồi có guard (R1), vào màn Vận hành tay
+Engineer(2)     — + jog trục (R2–R3), teach, Supervised Override, sửa recipe, reconnect
+Administrator(3)— + cấu hình hệ thống, quản lý user, Force IO
+SuperUser(4)    — override safety, debug hardware trực tiếp
 ```
 
 Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan trọng.
+
+> ⚠ **Breaking change (phiên này):** `Engineer` đổi từ `1` → `2`, `Administrator` từ `2` → `3`, `SuperUser` từ `3` → `4`.
+> Seed user mới thêm `linelead / linelead123`. Mọi so sánh dùng tên enum (`>= UserLevel.Engineer`) vẫn đúng,
+> KHÔNG có hardcoded integer. Xem `HMI_Manual_Operation_and_Safety_v1.0.md §2` để hiểu lý do thiết kế role này.
 
 ---
 
@@ -301,10 +308,12 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/AGENTS.md` | Agent definitions + ECC routing table |
 | `docs/PROMPT_TEMPLATES.md` | PT-01 đến PT-14 — copy & fill |
 | `docs/QUICK_REFERENCE.md` | In ra dán cạnh màn hình |
-| `docs/HMI_UI_Architecture_Template_v2.md` | **UI — CHUẨN HIỆN HÀNH** — bố cục Home 7 vùng (work area + right rail), palette v2, multi-alarm banner, quick actions, + quyết định adoption/phản biện |
+| `docs/HMI_Master_Index.md` | **UI — ĐỌC TRƯỚC** — đầu mối toàn bộ HMI: bộ tài liệu, nguyên tắc bất biến, bố cục 7 vùng tóm tắt, config schemas gộp, checklist sinh màn mới |
+| `docs/HMI_UI_Architecture_Template_v2.md` | **UI — CHUẨN HIỆN HÀNH** — bố cục Home 7 vùng (work area + right rail), palette v2, multi-alarm banner, quick actions |
 | `docs/HMI_Button_Spec.md` | **UI** — đặc tả MỌI nút trên Home: precondition (state machine), role, audit, mở ra gì |
-| `docs/HMI_UI_Architecture_Template.md` | **UI** — v1.1, CHỈ còn hiệu lực phần template điều khiển (ManualControlView/AxisControlView/VisionTeachView) |
-| `docs/HMI_Naming_and_Axis_Point_Model.md` | **UI** — màn điều khiển trục: quy ước tên IO/trục/điểm, mô hình Trục–Điểm Set/Confirm, bảng đèn 8 tín hiệu, jog/inching + quyết định adoption (IAxisDiagnostics, hoãn deadman) |
+| `docs/HMI_Manual_Operation_and_Safety_v1.0.md` | **UI** — chính sách màn Vận hành tay (gộp Manual+Motion/IO): 4 role, 4 mức rủi ro R0–R3, guard, Supervised Override, bất biến an toàn |
+| `docs/HMI_UI_Architecture_Template.md` | **UI** — v1.1, CHỈ còn hiệu lực phần template điều khiển (AxisControlView/VisionTeachView) |
+| `docs/HMI_Naming_and_Axis_Point_Model.md` | **UI** — quy ước tên IO/trục/điểm, mô hình Trục–Điểm Set/Confirm, trạng thái IO, set/reset vs Force, layout thích ứng 3 tầng |
 | `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
 | `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") |
 | `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính Home (v2): work area + right rail, data binding interface-only, checklist nghiệm thu |

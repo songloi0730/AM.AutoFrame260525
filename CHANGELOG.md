@@ -4,6 +4,42 @@
 
 ---
 
+## [Session 47] 2026-06-14 — Tích hợp bộ tài liệu HMI mới + phản biện + mô hình 4 role
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User gửi bộ `file260614s` (10 file): Master Index, Manual Operation & Safety, Naming/Button/UI v2.0
++ 5 mockup (home_v2, manual_operation, axis_detail, io_states, adaptive_layout). Yêu cầu: phản biện nội dung
+chưa phù hợp → sửa tài liệu → sửa code.
+
+### ✅ Phản biện + adoption (tập trung `docs/HMI_Master_Index.md §11`)
+- **A. Đã có**: palette v2/7 vùng/Home/màn trục/4 role.
+- **B. Map không đổi core**: PackML→ISA-88 8 trạng thái; MDI→Segoe MDL2; chốt header 64px, conn bar 40px.
+- **C. Hoãn có chủ đích**: `HardwareInputEventBus` (chưa có), guard engine + Supervised Override (chính sách §9
+  chưa chốt), IO Force mode (HAL chưa expose freeze), adaptive layout, IO actuatorGroup/rawName.
+  → **Lượt này KHÔNG build màn Vận hành tay** (an toàn-trọng yếu, phụ thuộc hạ tầng + quyết định chủ dự án).
+- **D. Mâu thuẫn nội bộ tài liệu**: header 48/56/64px, conn bar 32/40px, tham chiếu treo (Calibration doc/mockup
+  chưa giao), §9 "chưa chốt" vs §8 ví dụ cứng — đã liệt kê để bản sau sửa.
+- **E. Phản biện thiết kế**: SuperUser (tầng 5 OEM ngoài 4 role) cần ghi rõ; màn Motion S46 nên thành sub-tab
+  của Vận hành tay khi dựng; QuickAction/RecoveryAction nên chung kiểu `GuardedAction`.
+
+### ✅ Tài liệu
+- Mới trong `docs/`: `HMI_Master_Index.md` (+§11 adoption), `HMI_Manual_Operation_and_Safety_v1.0.md` + 5 mockup HTML.
+- Cập nhật bản v2.0: Naming/Button/UI_Architecture_v2 (bản đầy đủ hơn) + con trỏ adoption về Master Index §11.
+- `CLAUDE.md`: thứ tự đọc HMI (Master Index đọc TRƯỚC) + bảng role 4 cấp + ghi chú breaking change enum.
+
+### ✅ Code — mô hình 4 role (nền cho guard/RBAC sau)
+- `UserLevel`: thêm **`LineLead=1`** (R1 phục hồi có guard, giữa Operator–Engineer); Engineer 1→2, Admin 2→3,
+  SuperUser 3→4. Mọi RBAC dùng tên enum (`>= UserLevel.X`), KHÔNG hardcode int → không nơi nào vỡ.
+- `UserService`: seed user `linelead/linelead123`. `IdentityViewModel`: nhãn "Line Lead".
+- Test mới (2): `Login_WithSeededLineLead_HasR1NotR2`, `RoleOrdering_*` — khoá thứ tự 4 role + SuperUser.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (28 projects). `dotnet test` → **174 passed** (+2). Enum shift non-breaking (xác nhận
+  bằng grep: không có so sánh int; tests RBAC dùng tên enum).
+
+---
+
 ## [Session 46] 2026-06-13 — Màn điều khiển trục (bảng đèn 8 tín hiệu, jog/inching, điểm Set/Confirm)
 
 **Commit:** `e8eead2`

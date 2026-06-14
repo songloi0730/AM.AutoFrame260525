@@ -129,9 +129,10 @@ public sealed class UserService : IUserService
     private void SeedDefaults()
     {
         _users.Clear();
-        _users.Add(new UserRecord("operator", Hash("operator123"), UserLevel.Operator));
-        _users.Add(new UserRecord("engineer", Hash("engineer123"), UserLevel.Engineer));
-        _users.Add(new UserRecord("admin",    Hash("admin123"),    UserLevel.Administrator));
+        _users.Add(new UserRecord("operator",  Hash("operator123"),  UserLevel.Operator));
+        _users.Add(new UserRecord("linelead",  Hash("linelead123"),  UserLevel.LineLead));
+        _users.Add(new UserRecord("engineer",  Hash("engineer123"),  UserLevel.Engineer));
+        _users.Add(new UserRecord("admin",     Hash("admin123"),     UserLevel.Administrator));
 
         try
         {

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AM.AutoFrame — Layout thích ứng theo quy mô</title>
+<style>
+:root{
+  --bg:#DCDCDC;--panel:#F2F2F2;--panel2:#FAFAFA;--line:#C8C8C8;
+  --txt:#2B2B2B;--txt2:#6A6A6A;--txt3:#9A9A9A;
+  --ok:#1E7E46;--okbg:#E2F1E8;--ng:#C0392B;--ngbg:#F9E6E3;
+  --info:#1565C0;--infobg:#E3EDF8;--warn:#B26A00;--warnbg:#FBF0DC;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#9aa0a6;font-family:"Segoe UI",system-ui,Arial,sans-serif;color:var(--txt);padding:20px;font-size:14px}
+.wrap{max-width:1200px;margin:0 auto}
+h2{color:#fff;margin:24px 0 10px;font-size:17px}
+h2 small{font-weight:400;opacity:.85;font-size:13px}
+.demo{background:var(--panel2);border:1px solid #555;border-radius:8px;overflow:hidden}
+.sub{display:flex;border-bottom:1px solid var(--line);background:#fff;padding:0 10px}
+.st{font-size:13px;color:var(--txt2);padding:9px 16px;border-bottom:3px solid transparent}
+.st.act{color:var(--txt);font-weight:600;border-bottom-color:var(--info)}
+.body{display:flex;min-height:230px}
+/* sidebar */
+.side{width:150px;background:#F0F0F0;border-right:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:4px}
+.side .s{padding:9px 10px;border-radius:6px;font-size:13px;color:var(--txt2);cursor:pointer}
+.side .s.act{background:var(--info);color:#fff;font-weight:600}
+.main{flex:1;padding:12px}
+/* horizontal station chips */
+.chips{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chip{padding:7px 16px;border:1px solid var(--line);border-radius:7px;background:#fff;font-size:13px;color:var(--txt2);cursor:pointer}
+.chip.act{background:var(--infobg);border-color:var(--info);color:var(--info);font-weight:600}
+/* axis list */
+.axl{display:flex;flex-direction:column;gap:6px}
+.axr{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:8px 10px;font-size:13px}
+.axr .n{font-weight:700;width:120px}
+.axr .p{margin-left:auto;font-family:Consolas,monospace}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);display:inline-block}
+.grp{font-size:11px;color:var(--txt3);font-weight:700;margin:8px 0 2px;text-transform:uppercase}
+.opg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:520px}
+.opb{height:52px;border:1px solid var(--line);border-radius:7px;background:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--txt)}
+.cfg{background:#22252b;color:#cdd3da;font-family:Consolas,monospace;font-size:12px;padding:8px 12px;border-radius:6px;margin-top:6px;white-space:pre}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:10px;background:var(--infobg);color:var(--info);margin-left:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div style="background:#22252b;color:#cdd3da;border-radius:8px;padding:16px 20px;margin-bottom:8px;font-size:13.5px;line-height:1.7">
+<b style="color:#fff;font-size:15px">Nhất quán ba tầng — thích ứng KHÔNG phá nguyên tắc vị trí cố định</b><br>
+<span style="color:#8fd19e">● Tầng 1 (Operator, phản xạ):</span> Persistent Frame — header/nav/banner/lệnh/kết nối <b>giống hệt mọi máy</b>. Layout thích ứng không chạm tới.<br>
+<span style="color:#9ec5f0">● Tầng 2 (Engineer, có chủ đích):</span> khu kỹ thuật co giãn <b>khung chứa</b> nhưng giữ nguyên <b>thứ tự sub-tab + quy luật chọn + đơn vị hàng trục</b>.<br>
+<span style="color:#e9b96e">● Tầng 3 (van ép):</span> <code>layoutHint</code> ép một kiểu render cho mọi máy nếu nhà máy coi nhất quán &gt; tối ưu không gian.<br>
+<span style="color:#9aa">Ba kiểu dưới đây KHÁC khung chứa nhưng GIỐNG: thứ tự tab (Thao tác→Trục→Điểm→Override) và đơn vị một-hàng-trục (tên · trạng thái · vị trí).</span>
+</div>
+
+<h2>Quy mô NHỎ <small>— 1 trạm, ≤6 trục → bỏ lớp trạm, danh sách phẳng</small></h2>
+<div class="demo">
+  <div class="sub"><span class="st act">Thao tác</span><span class="st">Điều khiển trục</span><span class="st">Bảng điểm</span></div>
+  <div class="body"><div class="main">
+    <div class="grp">Thao tác (không cần chọn trạm — chỉ 1 trạm)</div>
+    <div class="opg" style="margin-bottom:12px"><div class="opb">Nhả xi lanh</div><div class="opb">Kẹp xi lanh</div><div class="opb">Bật khí âm</div><div class="opb">Tắt khí âm</div></div>
+    <div class="grp">Trục (phẳng)</div>
+    <div class="axl">
+      <div class="axr"><span class="n">AX_X</span><span class="dot"></span><span class="p">+123.456</span></div>
+      <div class="axr"><span class="n">AX_Y</span><span class="dot"></span><span class="p">+045.120</span></div>
+      <div class="axr"><span class="n">AX_Z</span><span class="dot"></span><span class="p">+002.000</span></div>
+      <div class="axr"><span class="n">AX_U</span><span class="dot"></span><span class="p">+000.000</span></div>
+    </div>
+  </div></div>
+</div>
+<div class="cfg">stationCount = 1, axisCount = 4  →  render: FLAT (không trạm, trục phẳng)</div>
+
+<h2>Quy mô VỪA <small>— 2-4 trạm, ≤12 trục → nút trạm ngang ở đầu pane</small></h2>
+<div class="demo">
+  <div class="sub"><span class="st act">Thao tác trạm</span><span class="st">Điều khiển trục</span><span class="st">Bảng điểm</span><span class="st" style="color:var(--ng)">⚠ Override</span></div>
+  <div class="body"><div class="main">
+    <div class="chips"><span class="chip">Loader</span><span class="chip act">Adjust</span><span class="chip">Tap</span><span class="chip">Unloader</span></div>
+    <div class="grp">Adjust — IO &amp; xi lanh</div>
+    <div class="opg" style="margin-bottom:10px"><div class="opb">Nhả kẹp Adjust</div><div class="opb">Kẹp Adjust</div><div class="opb">Van chân không</div><div class="opb">Thổi ion</div></div>
+    <div class="grp">Adjust — trục của trạm</div>
+    <div class="axl">
+      <div class="axr"><span class="n">AX_X_Adjust</span><span class="dot"></span><span class="p">+123.456</span></div>
+      <div class="axr"><span class="n">AX_Y_Adjust</span><span class="dot"></span><span class="p">+045.120</span></div>
+      <div class="axr"><span class="n">AX_Z_Adjust</span><span class="dot"></span><span class="p">+002.000</span></div>
+    </div>
+  </div></div>
+</div>
+<div class="cfg">stationCount = 4, axisCount = 10  →  render: HORIZONTAL TABS (nút trạm ngang)</div>
+
+<h2>Quy mô LỚN <small>— ≥5 trạm hoặc &gt;12 trục → sidebar trái (kiểu Mesa)</small></h2>
+<div class="demo">
+  <div class="sub"><span class="st act">Thao tác trạm</span><span class="st">Điều khiển trục</span><span class="st">Bảng điểm</span><span class="st" style="color:var(--ng)">⚠ Override</span></div>
+  <div class="body">
+    <div class="side">
+      <div class="s act">Loader</div><div class="s">Adjust 1</div><div class="s">Adjust 2</div>
+      <div class="s">Vision</div><div class="s">Tap</div><div class="s">Unloader</div>
+      <div class="s" style="margin-top:6px;color:var(--info)">⚙ Trục chung</div>
+    </div>
+    <div class="main">
+      <div class="grp">Loader — IO &amp; xi lanh</div>
+      <div class="opg" style="margin-bottom:10px"><div class="opb">Nhả kẹp khay</div><div class="opb">Kẹp khay</div><div class="opb">Băng tải vào</div><div class="opb">Băng tải ra</div><div class="opb">Xi lanh đẩy</div><div class="opb">Xi lanh thu</div></div>
+      <div class="grp">Loader — trục của trạm <span class="tag">station: "Loader"</span></div>
+      <div class="axl">
+        <div class="axr"><span class="n">AX_Loader_X</span><span class="dot"></span><span class="p">+088.200</span></div>
+        <div class="axr"><span class="n">AX_Loader_Z</span><span class="dot"></span><span class="p">+012.000</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cfg">stationCount = 6, axisCount = 18  →  render: SIDEBAR
+"Trục chung" = các trục station:null (gantry dùng nhiều trạm)</div>
+
+<h2 style="margin-top:28px">Cùng một cấu trúc dữ liệu, ba cách render</h2>
+<div class="cfg" style="white-space:pre-wrap;background:#1e2127">{
+  "stations": [
+    { "id": "Loader",  "axes": ["AX_Loader_X","AX_Loader_Z"],
+      "cylinders": ["CYL_Loader_Clamp"], "io": ["DI_Loader_Present"] },
+    { "id": "Adjust",  "axes": ["AX_X_Adjust","AX_Y_Adjust","AX_Z_Adjust"], ... }
+  ],
+  "sharedAxes": ["AX_Gantry_X"],        // station:null
+  "layoutHint": "auto"                   // auto | flat | tabs | sidebar (ép tay nếu cần)
+}
+
+Engine chọn render:
+  stationCount<=1            → FLAT
+  stationCount<=4 & axes<=12 → HORIZONTAL TABS
+  else                       → SIDEBAR
+Áp nhất quán cho cả 3 sub-tab (Thao tác / Trục / Bảng điểm).
+
+VAN ÉP (tầng 3): layoutHint = "sidebar"
+  → ép MỌI máy dùng sidebar kể cả 4 trục, cho nhà máy
+    muốn kỹ sư thấy giao diện đồng nhất tuyệt đối.
+  Mặc định "auto" = tối ưu từng máy như bảng trên.
+
+BẤT BIẾN qua mọi kiểu render (tầng 2):
+  • thứ tự sub-tab: Thao tác → Trục → Bảng điểm → Override
+  • quy luật: chọn-phạm-vi một phía → nội dung phía kia
+  • đơn vị hàng trục: [tên trái][trạng thái][vị trí phải][ON|Home|Clear]</div>
+
+</div>
+</body>
+</html>

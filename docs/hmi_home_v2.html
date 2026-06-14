@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AM.AutoFrame — Home v2 (1920×1080)</title>
+<style>
+:root{
+  --bg:#DCDCDC; --panel:#F2F2F2; --panel2:#FAFAFA; --line:#C8C8C8;
+  --txt:#2B2B2B; --txt2:#6A6A6A; --txt3:#9A9A9A;
+  --ok:#1E7E46; --okbg:#E2F1E8; --ng:#C0392B; --ngbg:#F9E6E3;
+  --info:#1565C0; --infobg:#E3EDF8; --warn:#B26A00; --cam:#1F1F1F;
+  font-size:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#9aa0a6;font-family:"Segoe UI",system-ui,Arial,sans-serif;color:var(--txt);padding:16px}
+#fit{margin:0 auto}
+#stage{width:1920px;height:1080px;background:var(--bg);transform-origin:top left;display:flex;flex-direction:column;border:1px solid #555}
+.note{max-width:900px;margin:10px auto 0;color:#fff;font-size:13px;text-align:center}
+
+/* header */
+#hdr{height:48px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 20px}
+#logo{width:36px;height:36px;border-radius:8px;background:var(--infobg);color:var(--info);display:flex;align-items:center;justify-content:center;font-weight:600}
+#hdr .mname{font-size:18px;font-weight:600}
+.badge{font-size:14px;font-weight:600;padding:5px 16px;border-radius:6px}
+.b-auto{background:var(--infobg);color:var(--info)}
+.b-exec{background:var(--okbg);color:var(--ok)}
+.b-local{background:#EFEFEF;color:var(--txt2);border:1px solid var(--line)}
+.hb{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-left:6px;animation:hb 1s infinite}
+@keyframes hb{0%,100%{opacity:1}50%{opacity:.15}}
+.btn:disabled{opacity:.4;cursor:not-allowed;background:#fff}
+#hdr .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:14px;color:var(--txt2)}
+.hbtn{height:44px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;gap:8px;padding:0 14px;font-size:15px;color:var(--txt);cursor:pointer}
+.hbtn:hover{background:#F0F0F0}
+.hbtn small{color:var(--txt2);font-size:13px}
+.avt{width:30px;height:30px;border-radius:50%;background:var(--infobg);color:var(--info);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+/* nav */
+#nav{height:48px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 20px}
+.nav-t{font-size:15px;color:var(--txt2);padding:7px 18px;border-radius:6px}
+.nav-t.act{background:var(--bg);color:var(--txt);font-weight:600}
+
+/* alarm banner */
+#alarm{height:40px;background:#EBEBEB;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 20px;font-size:14px;color:var(--txt2)}
+#alarm .tick{color:var(--ok);font-weight:700}
+#alarm.warn{background:#FBF0DC;color:#7A4A00;border-bottom-color:#D9B98C}
+.ackbtn{height:32px;padding:0 22px;border:1px solid #B26A00;border-radius:6px;background:#fff;color:#7A4A00;font-weight:700;font-size:14px;cursor:pointer}
+.morechip{border:1px solid #D9B98C;border-radius:14px;padding:3px 12px;font-size:13px;background:#fff;cursor:pointer}
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.qab{height:64px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.qab .qi{font-size:20px;line-height:1.1}
+.qab:hover{background:#F0F0F0}
+.qab.on{border:2px solid var(--info);background:var(--infobg);color:var(--info);font-weight:600}
+.qab small{font-size:11px;color:var(--txt3);font-weight:400}
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.kc{background:#fff;border:1px solid #E2E2E2;border-radius:6px;padding:5px 8px;font-size:12px;color:var(--txt2)}
+.kc b{display:block;font-size:16px;color:var(--txt)}
+
+/* content */
+#content{flex:1;display:grid;grid-template-columns:1fr 560px;gap:12px;padding:12px 20px;min-height:0}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:8px}
+
+/* work area */
+#work{display:flex;flex-direction:column;min-width:0;padding:0 0 8px}
+#subtabs{display:flex;border-bottom:1px solid var(--line);padding:0 12px}
+.st{font-size:15px;color:var(--txt2);padding:11px 20px;border-bottom:3px solid transparent;cursor:pointer;display:flex;align-items:center;gap:7px}
+.st:hover{color:var(--txt)}
+.st.act{color:var(--txt);font-weight:600;border-bottom-color:var(--info)}
+.st .ndot{width:8px;height:8px;border-radius:50%;background:var(--ng)}
+.pane{display:none;flex:1;padding:12px;min-height:0;flex-direction:column}
+.pane.act{display:flex}
+
+/* pane 1: product */
+#thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.thumb{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.thumb svg{display:block;width:100%;background:var(--cam)}
+.thumb .cap{display:flex;align-items:center;padding:5px 10px;font-size:14px}
+.thumb .cap b{margin-left:auto}
+.thumb.off{border-style:dashed;display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:14px;background:transparent}
+table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
+th{color:var(--txt3);font-weight:500;text-align:left;padding:6px 8px}
+td{padding:7px 8px;border-top:1px solid #E2E2E2;color:var(--txt2)}
+td.sn{color:var(--info);font-weight:500}
+td.kq-ok{color:var(--ok);font-weight:700;text-align:right}
+td.kq-ng{color:var(--ng);font-weight:700;text-align:right}
+tr.ng td{background:var(--ngbg);color:var(--ng)}
+tr.ng td.sn{color:var(--ng)}
+.tblfoot{font-size:13px;color:var(--txt3);margin-top:8px}
+
+/* pane 2: force */
+#force{display:grid;grid-template-columns:480px 1fr;gap:14px;flex:1;min-height:0}
+.ptitle{font-size:14px;font-weight:600;color:var(--txt2);margin-bottom:8px}
+.legend{font-size:13px;color:var(--txt3);margin-top:8px}
+.scrlist{margin-top:10px;font-size:14px}
+.scrlist div{display:flex;padding:5px 4px;border-top:1px solid #E2E2E2}
+.scrlist span:last-child{margin-left:auto;font-weight:600}
+
+/* pane 3: positions */
+#posmap{flex:1;display:flex;gap:14px;min-height:0}
+
+/* right rail */
+#rail{display:flex;flex-direction:column;padding:14px 16px;gap:12px;min-height:0}
+.rl{font-size:14px;font-weight:600;color:var(--txt2);margin-bottom:6px}
+.kr{display:flex;font-size:15px;padding:4px 0}
+.kr b{margin-left:auto}
+.kr .v-ok{color:var(--ok)} .kr .v-ng{color:var(--ng)}
+.sec{border-top:1px solid var(--line);padding-top:10px}
+.sdot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px}
+.s-on{background:var(--ok)} .s-idle{background:transparent;border:2px solid var(--txt3)}
+#logbox{flex:1;overflow:hidden;min-height:0}
+.lg{font-size:13px;padding:5px 0;border-bottom:1px solid #E2E2E2;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg .meta{color:var(--txt3)}
+.lg .lv-i{color:var(--info);font-weight:600}
+.lg .lv-e{color:var(--ng);font-weight:600}
+.lg .lv-w{color:var(--warn);font-weight:600}
+
+/* action bar */
+#actions{height:84px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 20px}
+.btn{min-width:104px;height:64px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.btn .bi{font-size:20px;line-height:1}
+.btn:hover{background:#F0F0F0}
+.btn.start{border-color:var(--ok);color:var(--ok);font-weight:700}
+#actions .right{margin-left:auto;display:flex;gap:12px}
+
+/* connection bar */
+#conn{height:32px;background:#E4E4E4;border-top:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 20px;font-size:14px;color:var(--txt2)}
+#conn .grp{font-weight:600;color:var(--txt)}
+.cdot{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--ok);margin-right:5px;vertical-align:-1px}
+.cdot.off{background:transparent;border:2px solid var(--txt3)}
+#conn .sep{width:1px;height:16px;background:var(--line)}
+#conn .lgd{margin-left:auto;color:var(--txt3);font-size:13px}
+</style>
+</head>
+<body>
+<div id="fit"><div id="stage">
+
+  <div id="hdr">
+    <div id="logo">AM</div>
+    <span class="mname">AM.AutoFrame · AM-SCR-02</span>
+    <span class="badge b-auto">AUTO</span>
+    <span class="badge b-local" title="Quyền điều khiển: tại máy. REMOTE = host MES điều khiển">LOCAL</span>
+    <span class="badge b-exec">EXECUTE</span>
+    <span style="margin-left:24px;font-size:15px;color:var(--txt2)">LOT-240612-03 · <b style="color:var(--txt)">891 / 1200</b> · còn 309 sp · dự kiến xong 12:48</span>
+    <div class="right">
+      <span>Recipe SCR-A12 · v1.4</span>
+      <span>10:42 · 12/06/2026<span class="hb" title="Heartbeat — dữ liệu đang cập nhật"></span></span>
+      <button class="hbtn" title="Đổi ngôn ngữ">🌐 Tiếng Việt ▾</button>
+      <button class="hbtn" title="Đăng nhập / đổi ca"><span class="avt">AD</span> Admin <small>· Engineer</small> ▾</button>
+    </div>
+  </div>
+
+  <div id="nav">
+    <span class="nav-t act">🏠 Home</span><span class="nav-t">📷 Vision</span>
+    <span class="nav-t">⚙ Vận hành tay</span><span class="nav-t">📋 Recipe</span>
+    <span class="nav-t">📊 Dữ liệu</span><span class="nav-t">🔔 Alarm</span>
+    <span class="nav-t">📄 Log</span><span class="nav-t">⚙ Cài đặt</span>
+  </div>
+
+  <div id="alarm" class="warn">
+    <span style="font-weight:700">⚠ W-1108</span>
+    <span>Mô-men vít #2 chạm 0.49 N·m — gần ngưỡng trên, kiểm tra mũi vít · 10:40:11 · Trục vít 1</span>
+    <button class="ackbtn">ACK</button>
+    <span class="morechip">+2 cảnh báo khác ▾</span>
+    <span style="margin-left:auto;font-size:13px">hiển thị theo ưu tiên · danh sách đầy đủ ở tab Alarm</span>
+  </div>
+
+  <div id="content">
+    <div id="work" class="card">
+      <div id="subtabs">
+        <span class="st act" data-p="p1">Sản phẩm</span>
+        <span class="st" data-p="p2">Lực vít <span class="ndot"></span></span>
+        <span class="st" data-p="p3">Vị trí làm việc</span>
+      </div>
+
+      <div class="pane act" id="p1">
+        <div id="thumbs">
+          <div class="thumb">
+            <svg viewBox="0 0 440 200"><line x1="220" y1="0" x2="220" y2="200" stroke="#555" /><line x1="0" y1="100" x2="440" y2="100" stroke="#555"/><rect x="150" y="50" width="140" height="100" fill="none" stroke="#2EAE6E" stroke-width="3"/><circle cx="220" cy="100" r="24" fill="none" stroke="#7FD4A8" stroke-width="2"/></svg>
+            <div class="cap">CAM 1 · Align trước vít <b style="color:var(--ok)">OK</b></div>
+          </div>
+          <div class="thumb">
+            <svg viewBox="0 0 440 200"><line x1="220" y1="0" x2="220" y2="200" stroke="#555"/><line x1="0" y1="100" x2="440" y2="100" stroke="#555"/><rect x="90" y="30" width="260" height="140" fill="none" stroke="#2EAE6E" stroke-width="3"/></svg>
+            <div class="cap">CAM 2 · Kiểm tra sau vít <b style="color:var(--ok)">OK</b></div>
+          </div>
+          <div class="thumb off">CAM 3 · 4 — không cấu hình</div>
+        </div>
+        <table>
+          <tr><th style="width:170px">SN</th><th style="width:90px">Vào</th><th style="width:80px">Cycle</th><th>Data trạm</th><th style="width:110px">Trạm cuối</th><th style="width:90px;text-align:right">KQ</th></tr>
+          <tr><td class="sn">SN2406120891</td><td>10:42:14</td><td>24.1 s</td><td>6/6 vít · mô-men max 0.42 N·m · góc lệch ≤ 2°</td><td>Unloader</td><td class="kq-ok">OK</td></tr>
+          <tr class="ng"><td class="sn">SN2406120890</td><td>10:41:50</td><td>26.0 s</td><td>vít #4 trượt ren — mô-men 0.18 N·m dưới ngưỡng</td><td>Vít 2</td><td class="kq-ng">NG-S04</td></tr>
+          <tr><td class="sn">SN2406120889</td><td>10:41:26</td><td>24.0 s</td><td>6/6 vít · mô-men max 0.40 N·m</td><td>Unloader</td><td class="kq-ok">OK</td></tr>
+          <tr><td class="sn">SN2406120888</td><td>10:41:02</td><td>24.2 s</td><td>6/6 vít · mô-men max 0.41 N·m</td><td>Unloader</td><td class="kq-ok">OK</td></tr>
+          <tr><td class="sn">SN2406120887</td><td>10:40:38</td><td>24.0 s</td><td>6/6 vít · mô-men max 0.43 N·m</td><td>Unloader</td><td class="kq-ok">OK</td></tr>
+          <tr><td class="sn">SN2406120886</td><td>10:40:14</td><td>23.9 s</td><td>6/6 vít · mô-men max 0.39 N·m</td><td>Unloader</td><td class="kq-ok">OK</td></tr>
+          <tr><td class="sn">SN2406120885</td><td>10:39:50</td><td>24.1 s</td><td>6/6 vít · mô-men max 0.42 N·m</td><td>Unloader</td><td class="kq-ok">OK</td></tr>
+          <tr><td class="sn">SN2406120884</td><td>10:39:26</td><td>24.0 s</td><td>6/6 vít · mô-men max 0.41 N·m</td><td>Unloader</td><td class="kq-ok">OK</td></tr>
+        </table>
+        <div class="tblfoot">891 sản phẩm trong ca · hiển thị 14 dòng gần nhất · ấn vào dòng để xem chi tiết sản phẩm (toàn bộ phép đo + ảnh vision)</div>
+      </div>
+
+      <div class="pane" id="p2">
+        <div id="force">
+          <div>
+            <div class="ptitle">Vị trí vít — SN2406120890 (NG)</div>
+            <svg viewBox="0 0 440 300" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#fff">
+              <rect x="60" y="30" width="320" height="240" rx="10" fill="#F4F4F4" stroke="#888" stroke-width="2"/>
+              <rect x="170" y="100" width="120" height="80" rx="6" fill="#E8E8E8" stroke="#AAA"/>
+              <g font-size="15" font-weight="700" text-anchor="middle">
+                <circle cx="95" cy="65" r="17" fill="#E2F1E8" stroke="#1E7E46" stroke-width="2.5"/><text x="95" y="70" fill="#1E7E46">1</text>
+                <circle cx="345" cy="65" r="17" fill="#E2F1E8" stroke="#1E7E46" stroke-width="2.5"/><text x="345" y="70" fill="#1E7E46">2</text>
+                <circle cx="95" cy="150" r="17" fill="#E2F1E8" stroke="#1E7E46" stroke-width="2.5"/><text x="95" y="155" fill="#1E7E46">3</text>
+                <circle cx="345" cy="150" r="17" fill="#F9E6E3" stroke="#C0392B" stroke-width="3"/><text x="345" y="155" fill="#C0392B">4</text>
+                <circle cx="95" cy="235" r="17" fill="#E2F1E8" stroke="#1E7E46" stroke-width="2.5"/><text x="95" y="240" fill="#1E7E46">5</text>
+                <circle cx="345" cy="235" r="17" fill="#E2F1E8" stroke="#1E7E46" stroke-width="2.5"/><text x="345" y="240" fill="#1E7E46">6</text>
+              </g>
+            </svg>
+            <div class="scrlist">
+              <div><span>Vít #4 — trượt ren</span><span style="color:var(--ng)">0.18 N·m</span></div>
+              <div><span>Ngưỡng OK</span><span>0.35 – 0.50 N·m</span></div>
+              <div><span>Góc siết</span><span>720° / mục tiêu 680±60°</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="ptitle">Đường mô-men theo góc siết — vít #4 (ấn vít trên bản đồ để đổi)</div>
+            <svg viewBox="0 0 880 330" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#fff">
+              <rect x="60" y="60" width="780" height="60" fill="#E2F1E8"/>
+              <text x="846" y="80" font-size="13" fill="#1E7E46" text-anchor="end">vùng OK 0.35–0.50</text>
+              <line x1="60" y1="290" x2="840" y2="290" stroke="#888"/>
+              <line x1="60" y1="30" x2="60" y2="290" stroke="#888"/>
+              <text x="50" y="65" font-size="13" fill="#888" text-anchor="end">0.5</text>
+              <text x="50" y="125" font-size="13" fill="#888" text-anchor="end">0.35</text>
+              <text x="50" y="294" font-size="13" fill="#888" text-anchor="end">0</text>
+              <text x="450" y="318" font-size="13" fill="#888" text-anchor="middle">góc siết (°)</text>
+              <polyline points="60,288 150,284 240,278 330,268 420,250 510,232 560,228 610,232 680,238 750,242 840,244" fill="none" stroke="#C0392B" stroke-width="3"/>
+              <polyline points="60,288 150,282 240,272 330,250 420,210 510,150 580,100 640,84 700,80" fill="none" stroke="#9AA59E" stroke-width="2" stroke-dasharray="6 5"/>
+              <text x="710" y="76" font-size="13" fill="#888">mẫu OK gần nhất</text>
+              <text x="700" y="262" font-size="14" font-weight="700" fill="#C0392B">vít #4: 0.18 N·m — NG</text>
+            </svg>
+            <div class="legend">Đường liền đỏ: vít NG đang chọn · đường đứt xám: đường chuẩn của vít OK gần nhất để so sánh · dải xanh: cửa sổ mô-men đạt</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane" id="p3">
+        <div class="ptitle">Trình tự vị trí làm việc — sản phẩm hiện tại SN2406120892 (đang ở bước 3/6)</div>
+        <div id="posmap">
+          <svg viewBox="0 0 900 460" style="flex:1;border:1px solid var(--line);border-radius:8px;background:#fff">
+            <rect x="120" y="50" width="660" height="370" rx="14" fill="#F4F4F4" stroke="#888" stroke-width="2"/>
+            <rect x="350" y="170" width="200" height="130" rx="8" fill="#E8E8E8" stroke="#AAA"/>
+            <g stroke="#B5B5B5" stroke-width="2" fill="none">
+              <path d="M190 110 L710 110"/><path d="M710 110 L190 235"/><path d="M190 235 L710 235"/><path d="M710 235 L190 360"/><path d="M190 360 L710 360"/>
+            </g>
+            <g font-size="20" font-weight="700" text-anchor="middle">
+              <circle cx="190" cy="110" r="26" fill="#E2F1E8" stroke="#1E7E46" stroke-width="3"/><text x="190" y="117" fill="#1E7E46">1</text>
+              <circle cx="710" cy="110" r="26" fill="#E2F1E8" stroke="#1E7E46" stroke-width="3"/><text x="710" y="117" fill="#1E7E46">2</text>
+              <circle cx="190" cy="235" r="30" fill="#E3EDF8" stroke="#1565C0" stroke-width="4"/><text x="190" y="242" fill="#1565C0">3</text>
+              <circle cx="710" cy="235" r="26" fill="#FFF" stroke="#9A9A9A" stroke-width="2.5"/><text x="710" y="242" fill="#9A9A9A">4</text>
+              <circle cx="190" cy="360" r="26" fill="#FFF" stroke="#9A9A9A" stroke-width="2.5"/><text x="190" y="367" fill="#9A9A9A">5</text>
+              <circle cx="710" cy="360" r="26" fill="#FFF" stroke="#9A9A9A" stroke-width="2.5"/><text x="710" y="367" fill="#9A9A9A">6</text>
+            </g>
+            <text x="190" y="160" font-size="14" fill="#1E7E46" text-anchor="middle">0.41 N·m ✓</text>
+            <text x="710" y="160" font-size="14" fill="#1E7E46" text-anchor="middle">0.40 N·m ✓</text>
+            <text x="190" y="288" font-size="14" fill="#1565C0" text-anchor="middle">đang siết…</text>
+          </svg>
+          <div style="width:260px">
+            <div class="ptitle">Chú giải</div>
+            <div class="scrlist" style="margin-top:0">
+              <div style="border-top:none"><span style="color:var(--ok)">● Xanh</span><span>đã xong, đạt</span></div>
+              <div><span style="color:var(--info)">● Viền xanh dương</span><span>đang làm</span></div>
+              <div><span style="color:var(--ng)">● Đỏ</span><span>lỗi tại vị trí</span></div>
+              <div><span style="color:var(--txt3)">○ Trắng</span><span>chưa tới</span></div>
+            </div>
+            <div class="legend" style="margin-top:14px">Bản đồ vị trí nạp từ recipe (toạ độ + trình tự). Giá trị đo hiện ngay cạnh điểm sau khi xong. Ấn vào điểm để xem đường lực của vị trí đó.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="rail" class="card">
+      <div>
+        <div class="rl">Sản xuất — ca hiện tại <span style="float:right;font-weight:400;color:var(--txt3);font-size:12px">ca 1 · từ 06:00</span></div>
+        <div class="kgrid">
+          <div class="kc">Tổng<b>891</b></div>
+          <div class="kc">OK<b style="color:var(--ok)">884</b></div>
+          <div class="kc">NG<b style="color:var(--ng)">7</b></div>
+          <div class="kc">Tỷ lệ OK<b>99.2%</b></div>
+          <div class="kc">UPH<b>148</b></div>
+          <div class="kc">Cycle<b>24.1 s</b></div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="rl">Thao tác nhanh <span style="float:right;font-weight:400;color:var(--txt3);font-size:12px">theo cấu hình máy</span></div>
+        <div class="qa">
+          <button class="qab on"><span class="qi">💡</span>Đèn máy<small>đang bật</small></button>
+          <button class="qab"><span class="qi">🔕</span>Tắt còi<small>không ACK alarm</small></button>
+          <button class="qab"><span class="qi">🔓</span>Mở cửa an toàn<small>giữ 1 giây</small></button>
+          <button class="qab"><span class="qi">📦</span>Cửa cấp liệu<small>giữ 1 giây</small></button>
+          <button class="qab"><span class="qi">🌀</span>Thổi ion<small>chu kỳ 30 s</small></button>
+          <button class="qab"><span class="qi">🧰</span>Gọi kỹ thuật<small>nháy tower lamp</small></button>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="rl">Trạm &amp; an toàn</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:18px">
+          <div class="kr"><span><span class="sdot s-on"></span>Loader</span><b style="font-weight:500;color:var(--txt2)">Chạy</b></div>
+          <div class="kr"><span><span class="sdot s-on"></span>Trục vít 1</span><b style="font-weight:500;color:var(--txt2)">Chạy</b></div>
+          <div class="kr"><span><span class="sdot s-on"></span>Trục vít 2</span><b style="font-weight:500;color:var(--txt2)">Chạy</b></div>
+          <div class="kr"><span><span class="sdot s-idle"></span>Unloader</span><b style="font-weight:500;color:var(--txt2)">Chờ</b></div>
+          <div class="kr"><span><span class="sdot s-on"></span>Cửa an toàn</span><b style="font-weight:500;color:var(--txt2)">Đóng</b></div>
+          <div class="kr"><span><span class="sdot s-on"></span>E-Stop</span><b style="font-weight:500;color:var(--txt2)">B.thường</b></div>
+        </div>
+      </div>
+      <div class="sec" id="logbox">
+        <div class="rl">Nhật ký <span style="float:right;font-weight:400;color:var(--txt3);font-size:12px">bấm dòng xem đầy đủ · xem tất cả →</span></div>
+        <div class="lg"><span class="meta">10:42:14</span> <span class="lv-i">INFO</span> Vít #6 đạt 0.42 N·m — SN…891 hoàn tất, OK</div>
+        <div class="lg"><span class="meta">10:41:50</span> <span class="lv-e">ERR</span> Vít #4 trượt ren, 0.18 N·m dưới ngưỡng — NG-S04, SN…890</div>
+        <div class="lg"><span class="meta">10:41:02</span> <span class="lv-i">INFO</span> Bắt đầu chu kỳ SN…890, recipe SCR-A12 v1.4</div>
+        <div class="lg"><span class="meta">10:40:11</span> <span class="lv-w">WARN</span> Mô-men vít #2 chạm 0.49 N·m — gần ngưỡng trên</div>
+        <div class="lg"><span class="meta">10:39:26</span> <span class="lv-i">INFO</span> MES xác nhận lô LOT-240612-03, còn 309 sản phẩm</div>
+        <div class="lg"><span class="meta">10:38:40</span> <span class="lv-i">INFO</span> Đồng bộ tham số trục vít 2 từ recipe hoàn tất</div>
+        <div class="lg"><span class="meta">10:37:55</span> <span class="lv-i">INFO</span> CAM2 kiểm tra sau vít OK, chu kỳ 18 ms</div>
+        <div class="lg"><span class="meta">10:37:12</span> <span class="lv-i">INFO</span> Loader cấp phôi khay #12, vị trí 4/20</div>
+        <div class="lg"><span class="meta">10:36:30</span> <span class="lv-w">WARN</span> Chân không đầu hút 2 phục hồi sau retry 1</div>
+        <div class="lg"><span class="meta">10:35:48</span> <span class="lv-i">INFO</span> Heartbeat OPC-UA bình thường, độ trễ 12 ms</div>
+        <div class="lg"><span class="meta">10:35:02</span> <span class="lv-i">INFO</span> Người dùng Admin đăng nhập, role Engineer</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="actions">
+    <button class="btn start" disabled title="Máy đang EXECUTE — không thể Start"><span class="bi">▶</span>Start</button>
+    <button class="btn"><span class="bi">⏸</span>Pause</button>
+    <button class="btn"><span class="bi">⏹</span>Stop</button>
+    <button class="btn" disabled title="Reset chỉ khả dụng từ STOPPED / ABORTED / COMPLETE"><span class="bi">↺</span>Reset</button>
+    <div class="right">
+      <button class="btn"><span class="bi">⏵⏵</span>Dry run</button>
+      <button class="btn"><span class="bi">✋</span>Manual</button>
+    </div>
+  </div>
+
+  <div id="conn">
+    <span class="grp">Thiết bị</span>
+    <span><span class="cdot"></span>PLC</span>
+    <span><span class="cdot"></span>EtherCAT</span>
+    <span><span class="cdot"></span>Driver vít 1·2</span>
+    <span><span class="cdot"></span>CAM 1–2</span>
+    <span><span class="cdot off"></span>CAM 3–4</span>
+    <span class="sep"></span>
+    <span class="grp">Host</span>
+    <span><span class="cdot"></span>MES</span>
+    <span><span class="cdot"></span>OPC-UA</span>
+    <span><span class="cdot"></span>DB</span>
+    <span class="lgd">AM.AutoFrame v2.6.1 · HMI build 2026.05.25 · máy AM-SCR-02-0007</span>
+  </div>
+
+</div></div>
+<p class="note">Mockup tỷ lệ thật 1920×1080, tự co theo bề rộng cửa sổ. Bấm các sub-tab "Sản phẩm / Lực vít / Vị trí làm việc" để chuyển nội dung vùng làm việc.</p>
+
+<script>
+function fit(){
+  var s=document.getElementById('stage'),f=document.getElementById('fit');
+  var w=Math.min(document.body.clientWidth-32,1920);
+  var k=w/1920;
+  s.style.transform='scale('+k+')';
+  f.style.width=w+'px';
+  f.style.height=(1080*k)+'px';
+}
+window.addEventListener('resize',fit);fit();
+
+document.querySelectorAll('.st').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.st').forEach(function(x){x.classList.remove('act')});
+    document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('act')});
+    t.classList.add('act');
+    document.getElementById(t.dataset.p).classList.add('act');
+  });
+});
+</script>
+</body>
+</html>

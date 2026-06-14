@@ -22,7 +22,8 @@
       "PowerShell(dotnet build AM.AutoFrame.sln -v:m -nologo 2>$null)",
       "PowerShell(\\(Get-Content PROJECT_STATUS.md -Encoding UTF8 | Measure-Object -Line\\).Lines; Get-Content PROJECT_STATUS.md -Encoding UTF8 -Tail 30)",
       "Bash(cd \"/c/Users/dinhn/OneDrive/C/VS/AM.AutoFrame\" && echo \"=== PointTable test refs to MotionPoint ===\" && grep -rn \"SetPositions\\\\|new MotionPoint\\\\|Positions =\" AM.Services.Tests/PointTableServiceTests.cs 2>/dev/null | head -20; echo \"=== Architecture tests ===\" && ls AM.Architecture.Tests/ && echo \"---\" && grep -rn \"IAxisDiagnostics\\\\|IMotionController\\\\|Abstractions\" AM.Architecture.Tests/*.cs | head -20)",
-      "Bash(cd \"/c/Users/dinhn/OneDrive/C/VS/AM.AutoFrame\" && grep -rn \"TODO\" AM.Modules.Motion/*.cs AM.Core/Models/AxisSignals.cs AM.Core/Models/AxisFeedback.cs AM.Core.Abstractions/Interfaces/Hardware/IAxisDiagnostics.cs AM.Hardware.Motion/SimulatedMotionController.cs 2>/dev/null)"
+      "Bash(cd \"/c/Users/dinhn/OneDrive/C/VS/AM.AutoFrame\" && grep -rn \"TODO\" AM.Modules.Motion/*.cs AM.Core/Models/AxisSignals.cs AM.Core/Models/AxisFeedback.cs AM.Core.Abstractions/Interfaces/Hardware/IAxisDiagnostics.cs AM.Hardware.Motion/SimulatedMotionController.cs 2>/dev/null)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -match \"AM.Application|autoframe|dotnet\" } | Select-Object ProcessName, Id, SessionId, MainWindowTitle | Format-Table -AutoSize)"
     ]
   },
   "hooks": {

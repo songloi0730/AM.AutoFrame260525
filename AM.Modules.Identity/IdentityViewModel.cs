@@ -109,6 +109,7 @@ public sealed partial class IdentityViewModel : ObservableObject, IDisposable
     private static string LevelLabel(UserLevel level) => level switch
     {
         UserLevel.Operator      => "Operator",
+        UserLevel.LineLead      => "Line Lead",
         UserLevel.Engineer      => "Engineer",
         UserLevel.Administrator => "Administrator",
         UserLevel.SuperUser     => "SuperUser",

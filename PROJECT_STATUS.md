@@ -5,9 +5,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-13
-**Session:** #46 — Màn **điều khiển trục** theo `HMI_Naming_and_Axis_Point_Model` + mockup `hmi_axis_detail`: bảng đèn 8 tín hiệu/trục, servo/home/clear/move từng trục, jog pad + inching, phản hồi servo, bảng điểm Set/Confirm 2-chạm. Thêm interface tuỳ chọn `IAxisDiagnostics` (sim implement) — non-breaking.
-**Commit:** `e8eead2`  ·  (S45: Shell + Home v2)
+**Ngày:** 2026-06-14
+**Session:** #47 — Tích hợp bộ tài liệu HMI mới (Master Index + Manual Operation & Safety + 5 mockup) + **phản biện/adoption tập trung** (`HMI_Master_Index §11`); **mô hình 4 role**: thêm `UserLevel.LineLead` (R1, giữa Operator–Engineer), seed `linelead`. CỐ Ý HOÃN màn Vận hành tay (cần HardwareInputEventBus + guard engine + chốt chính sách §9).
+**Commit:** *(điền sau commit)*  ·  (S46: màn điều khiển trục)
 
 ---
 
@@ -159,7 +159,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 | `MachineState` | Uninitialized, Initializing, Idle, Running, Paused, InitAlarm, RunAlarm, Resetting |
 | `MachineTrigger` | Initialize, InitializeDone, Start, Pause, Resume, Stop, Error, Reset, ResetDone, ResetDoneUninitialized |
 | `HardwareCategory` | General=0, Axis=1, IOController=2, Camera=3, Robot=4, Scanner=5, Instrument=6, MotionCard=7, LightController=8, ModbusTcp=9, SerialPort=10, OpcUaClient=11, EthernetIp=12, TcpDevice=13 |
-| `UserLevel` | Null=-1, Operator=0, Engineer=1, Administrator=2, SuperUser=3 |
+| `UserLevel` | Null=-1, Operator=0, **LineLead=1**, Engineer=2, Administrator=3, SuperUser=4 (4 role vận hành + SuperUser OEM) |
 | `OperationMode` | Normal, DryRun |
 | `AlarmLevel` | Info, Warning, Error, Critical |
 
