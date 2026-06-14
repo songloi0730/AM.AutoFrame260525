@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
-**Session:** #52–54 — Làm lần lượt danh sách checklist: **(52)** Cài đặt kiểu GridMenu (lưới thẻ); **(53)** ẩn tab Vận hành tay với role < LineLead (`ModuleNavigation.minLevel` + rebuild nav khi login/logout); **(54)** thêm **module Vision** (trạng thái camera + Grab/Inspect/Light/Calibrate + kết quả; live-view chờ vision service). Nav: + Vision = 8 tab. R0–R3 per-action vẫn hoãn (guard engine).
-**Commit:** `b81fef9`  ·  (S51: login overlay)
+**Session:** #55 — Sửa 3 bug đăng nhập/phân quyền: **(A)** cross-thread khi `UserChanged` bắn ở thread nền → MainWindow handler `Dispatcher.Invoke` (hết "Lỗi đăng nhập" giả, overlay đóng, nav rebuild, hiện nút Đăng xuất); **(B)** `users.json` cũ (int level từ S47) → envelope `schemaVersion` + Level chuỗi enum → tự re-seed đúng cấp (admin=Administrator, +linelead).
+**Commit:** *(điền sau commit)*  ·  (S52–54: GridMenu/role-gating/Vision)
 
 ---
 

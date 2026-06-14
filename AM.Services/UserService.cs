@@ -5,6 +5,7 @@
 // -------------------------------------------------------
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Enums;
 using AM.Core.Models.EventArgs;
@@ -18,7 +19,15 @@ namespace AM.Services;
 /// </summary>
 public sealed class UserService : IUserService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    // Phiên bản schema store. Tăng khi đổi nghĩa dữ liệu (vd đổi thứ tự enum UserLevel) → file cũ tự re-seed.
+    private const int CurrentSchemaVersion = 2;
+
+    // Level lưu dạng CHUỖI tên enum (JsonStringEnumConverter) — đổi thứ tự enum sau này không phá nghĩa file.
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() },
+    };
 
     private readonly ILogger<UserService> _logger;
     private readonly string _storePath;
@@ -101,21 +110,28 @@ public sealed class UserService : IUserService
 
     private sealed record UserRecord(string Username, string PasswordHash, UserLevel Level);
 
+    /// <summary>Envelope store có version — để migrate khi đổi nghĩa dữ liệu (vd reorder UserLevel).</summary>
+    private sealed record UserStore(int SchemaVersion, List<UserRecord> Users);
+
     private void Load()
     {
         if (File.Exists(_storePath))
         {
             try
             {
-                var loaded = JsonSerializer.Deserialize<List<UserRecord>>(File.ReadAllText(_storePath));
-                if (loaded is { Count: > 0 })
+                var store = JsonSerializer.Deserialize<UserStore>(File.ReadAllText(_storePath), JsonOptions);
+                // File cũ (mảng trần `[...]`, không envelope) → store null hoặc Users null → re-seed.
+                // Schema cũ hơn (vd lưu Level int trước khi reorder enum ở S47) → re-seed cho đúng cấp.
+                if (store is { SchemaVersion: CurrentSchemaVersion, Users.Count: > 0 })
                 {
-                    _users.AddRange(loaded);
-                    _logger.LogInformation("[User] Nạp {Count} user từ {Path}", _users.Count, _storePath);
+                    _users.AddRange(store.Users);
+                    _logger.LogInformation("[User] Nạp {Count} user từ {Path} (schema v{Ver})",
+                        _users.Count, _storePath, store.SchemaVersion);
                     return;
                 }
+                _logger.LogWarning("[User] Store {Path} sai/cũ schema → seed lại mặc định", _storePath);
             }
-#pragma warning disable CA1031 // file user lỗi → seed lại mặc định, không sập app
+#pragma warning disable CA1031 // file user lỗi/định dạng cũ → seed lại mặc định, không sập app
             catch (Exception ex)
 #pragma warning restore CA1031
             {
@@ -136,7 +152,8 @@ public sealed class UserService : IUserService
 
         try
         {
-            File.WriteAllText(_storePath, JsonSerializer.Serialize(_users, JsonOptions));
+            var store = new UserStore(CurrentSchemaVersion, _users);
+            File.WriteAllText(_storePath, JsonSerializer.Serialize(store, JsonOptions));
         }
 #pragma warning disable CA1031 // ghi seed lỗi (vd read-only) — vẫn chạy được với user in-memory
         catch (Exception ex)

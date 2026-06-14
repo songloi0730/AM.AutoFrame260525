@@ -4,6 +4,42 @@
 
 ---
 
+## [Session 55] 2026-06-14 — Sửa 3 bug đăng nhập / phân quyền
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User báo: (1) hiện "Lỗi đăng nhập — xem log" dù đã login; (2) muốn đăng xuất nhanh; (3) admin
+không thấy tab Vận hành tay + header hiện sai "admin · Engineer". Log (`automachine-20260614_003.log:13290`)
+chỉ đúng `InvalidOperationException: calling thread cannot access this object` tại `MainWindow` handler UserChanged.
+
+### 🐞 Nguyên nhân gốc
+- **Cross-thread** (gây #1, #2, #3-nav): `UserService.LoginAsync` dùng `Task.Run(BCrypt.Verify).ConfigureAwait(false)`
+  → `UserChanged?.Invoke` bắn trên thread nền. Handler `MainWindow` (đóng overlay + `BuildNavigation`) đụng UI từ
+  thread nền → ném. Multicast delegate dừng tại đó → `IdentityViewModel.ApplyState` không chạy (overlay kẹt form
+  login, không hiện Đăng xuất); nav không rebuild (mất Vận hành tay dù admin đủ quyền).
+- **Store cũ** (gây #3-cấp): `users.json` lưu `Level` INT từ trước khi reorder enum ở S47 (admin=2). Sau S47:
+  2=Engineer → admin đọc nhầm thành Engineer; không có user `linelead`.
+
+### ✅ Fix A — marshal về UI thread (`MainWindow.xaml.cs`)
+- Bọc handler `UserChanged` trong `Dispatcher.Invoke(...)`. → overlay tự đóng khi login, nav rebuild, panel
+  "đã đăng nhập" + nút Đăng xuất hiện đúng. (#1, #2, #3-nav)
+
+### ✅ Fix B — user store bền vững + tự migrate (`UserService.cs`)
+- `JsonOptions` +`JsonStringEnumConverter` → Level lưu dạng tên enum (reorder sau này không phá nghĩa).
+- Store envelope `{ schemaVersion, users }` (record `UserStore`); `Load()` re-seed nếu file là mảng cũ HOẶC
+  `schemaVersion` < hiện tại. File cũ tự re-seed đúng cấp (admin=Administrator) + thêm `linelead`. Xác nhận runtime:
+  `users.json` re-seed thành envelope v2, Level chuỗi.
+- Test mới (2): `OldArrayFormatStore_ReSeeds_WithCorrectAdminLevel` + `_AddsLineLeadUser`.
+
+### ✅ Fix C — đăng xuất nhanh (#2)
+- User chốt: dùng overlay có nút Đăng xuất (đã có trong `IdentityView`). Sau Fix A, bấm User → panel đã-đăng-nhập +
+  Đăng xuất hoạt động; logout → nav rebuild ẩn lại Vận hành tay.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error**. `dotnet test` → **176 passed** (+2). Runtime: hết exception cross-thread, store re-seed đúng.
+
+---
+
 ## [Session 52–54] 2026-06-14 — Hoàn thiện checklist: Settings GridMenu · role-gating nav · module Vision
 
 **Commit:** S52 `ff3b2e5` · S53 `c13f817` · S54 `b81fef9`

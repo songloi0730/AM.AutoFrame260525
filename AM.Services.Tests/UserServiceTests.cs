@@ -131,4 +131,25 @@ public sealed class UserServiceTests : IDisposable
         var reopened = Create(); // nạp lại từ file (không seed lại)
         (await reopened.LoginAsync("admin", "admin123")).Should().BeTrue();
     }
+
+    [Fact]
+    public async Task OldArrayFormatStore_ReSeeds_WithCorrectAdminLevel()
+    {
+        // Store cũ (mảng trần, Level dạng int — như trước khi đổi schema/enum ở S47): admin Level 2.
+        // Sau khi reorder enum, int 2 = Engineer. Load phải PHÁT HIỆN schema cũ → re-seed đúng cấp.
+        await File.WriteAllTextAsync(_store, "[{\"Username\":\"admin\",\"PasswordHash\":\"x\",\"Level\":2}]");
+
+        var sut = Create();
+        (await sut.LoginAsync("admin", "admin123")).Should().BeTrue("re-seed khôi phục admin đúng mật khẩu");
+        sut.CurrentLevel.Should().Be(UserLevel.Administrator, "admin phải là Administrator, không phải Engineer");
+    }
+
+    [Fact]
+    public async Task OldArrayFormatStore_ReSeeds_AddsLineLeadUser()
+    {
+        await File.WriteAllTextAsync(_store, "[{\"Username\":\"admin\",\"PasswordHash\":\"x\",\"Level\":2}]");
+        var sut = Create();
+        (await sut.LoginAsync("linelead", "linelead123")).Should().BeTrue("re-seed thêm user linelead còn thiếu");
+        sut.CurrentLevel.Should().Be(UserLevel.LineLead);
+    }
 }

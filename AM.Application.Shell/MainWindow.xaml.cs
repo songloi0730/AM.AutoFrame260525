@@ -90,12 +90,14 @@ public partial class MainWindow : Window
         DataContext = _services.GetRequiredService<ShellViewModel>();
 
         // Login: đóng overlay khi đăng nhập + dựng lại nav theo role (ẩn/hiện tab như Vận hành tay).
+        // ⚠ UserChanged có thể bắn trên thread nền (UserService.LoginAsync dùng Task.Run + ConfigureAwait(false)),
+        // nên PHẢI marshal về UI thread trước khi đụng control — nếu không sẽ ném cross-thread.
         _user = _services.GetRequiredService<IUserService>();
-        _user.UserChanged += (_, args) =>
+        _user.UserChanged += (_, args) => Dispatcher.Invoke(() =>
         {
             if (args.User is not null) LoginOverlay.Visibility = Visibility.Collapsed;
             BuildNavigation();
-        };
+        });
 
         // i18n: nav button content bind tới proxy LocalizedStrings (cập nhật live)
         NavPanel.DataContext = _services.GetRequiredService<LocalizedStrings>();
