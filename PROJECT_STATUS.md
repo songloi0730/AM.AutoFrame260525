@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
 **Session:** #55 — Sửa 3 bug đăng nhập/phân quyền: **(A)** cross-thread khi `UserChanged` bắn ở thread nền → MainWindow handler `Dispatcher.Invoke` (hết "Lỗi đăng nhập" giả, overlay đóng, nav rebuild, hiện nút Đăng xuất); **(B)** `users.json` cũ (int level từ S47) → envelope `schemaVersion` + Level chuỗi enum → tự re-seed đúng cấp (admin=Administrator, +linelead).
-**Commit:** *(điền sau commit)*  ·  (S52–54: GridMenu/role-gating/Vision)
+**Commit:** `4212bad`  ·  (S52–54: GridMenu/role-gating/Vision)
 
 ---
 

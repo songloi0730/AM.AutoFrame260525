@@ -6,7 +6,7 @@
 
 ## [Session 55] 2026-06-14 — Sửa 3 bug đăng nhập / phân quyền
 
-**Commit:** *(điền sau)*
+**Commit:** `4212bad`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User báo: (1) hiện "Lỗi đăng nhập — xem log" dù đã login; (2) muốn đăng xuất nhanh; (3) admin
 không thấy tab Vận hành tay + header hiện sai "admin · Engineer". Log (`automachine-20260614_003.log:13290`)
