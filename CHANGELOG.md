@@ -6,7 +6,7 @@
 
 ## [Session 57] 2026-06-14 — Gate Thao tác nhanh (Home) theo risk qua guard engine
 
-**Commit:** *(điền sau)*
+**Commit:** `e74e013`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Tiếp guard engine (S56) — gắn vào QuickActions trên Home (checklist §5).
 

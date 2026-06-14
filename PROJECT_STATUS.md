@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
 **Session:** #57 — Gate **Thao tác nhanh (Home) theo risk** qua guard engine: gán RiskTier (đèn/còi/ion/gọi KT=R0, cửa an toàn/cấp liệu=R1) → IsEnabled + lý do (chưa HAL / cần quyền / máy đang chạy) + audit khi thực thi; cập nhật khi login/logout/đổi state. (Tắt còi đã wired: cần Operator + còi đang kêu.)
-**Commit:** *(điền sau commit)*  ·  (S56: guard engine + Motion)
+**Commit:** `e74e013`  ·  (S56: guard engine + Motion)
 
 ---
 
