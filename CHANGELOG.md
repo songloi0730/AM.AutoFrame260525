@@ -4,6 +4,30 @@
 
 ---
 
+## [Session 50] 2026-06-14 — Gom Chẩn đoán + Kỹ thuật vào "Cài đặt" (AM.Modules.Settings)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User: gom Chẩn đoán + Kỹ thuật vào Cài đặt (checklist: 2 màn này thuộc "Cài đặt", không phải nav chính).
+
+### ✅ Module mới AM.Modules.Settings (project thứ 29)
+- `SettingsView`/`SettingsViewModel`: container gom **Chẩn đoán + Kỹ thuật** làm sub-tab (host `DiagnosticsView` +
+  `EngineeringView`, VM con inject từ DI — mẫu giống Vận hành tay host IoMonitor). `[ModuleNavigation("Nav.Settings",
+  icon:"settings", order:95)]`.
+- Bỏ `[ModuleNavigation]` ở `DiagnosticsView` + `EngineeringView` → không còn tab riêng.
+- `dotnet sln add` + Shell ref + đăng ký `SettingsViewModel` (AddUiViewModels) + icon "settings" (gear E713) + i18n
+  `Nav.Settings` (vi/en/zh).
+- Nav 8 → **7 tab**: Home·Sản xuất·Cảnh báo·Vận hành tay·Recipe·Nhật ký·**Cài đặt**.
+
+### 🔎 Còn thiếu so với checklist (ghi nhận, làm sau)
+- "Cài đặt" theo spec là **GridMenuView** (Phần cứng, Hiệu chuẩn, User, Host GEM/MES, Backup, Giới thiệu) — hiện chỉ
+  2 sub-tab; mở rộng dần. Thiếu tab **Vision** (chưa có module camera).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (29 projects). `dotnet test` → **174 passed**.
+
+---
+
 ## [Session 49] 2026-06-14 — Bỏ nút trùng chức năng (login, I/O) theo HMI_Home_Buttons_Checklist
 
 **Commit:** `036e6c6`

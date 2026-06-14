@@ -5,12 +5,11 @@
 // -------------------------------------------------------
 
 using System.Windows.Controls;
-using AM.Core.Attributes;
 
 namespace AM.Modules.Engineering;
 
-/// <summary>View Engineering/Debug. Logic ở <see cref="EngineeringViewModel"/>.</summary>
-[ModuleNavigation("Nav.Engineering", icon: "engineering", order: 80)]
+/// <summary>View Engineering/Debug. Logic ở <see cref="EngineeringViewModel"/>.
+/// KHÔNG còn tab nav riêng — nhúng làm sub-tab trong "Cài đặt".</summary>
 public partial class EngineeringView : UserControl
 {
     /// <summary>Khởi tạo component XAML.</summary>

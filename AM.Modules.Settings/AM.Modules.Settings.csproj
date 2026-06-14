@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AM.Modules.Settings</RootNamespace>
+    <AssemblyName>AM.Modules.Settings</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <!-- Cài đặt là container gom các màn kỹ thuật (Chẩn đoán, Kỹ thuật) làm sub-tab -->
+  <ItemGroup>
+    <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
+    <ProjectReference Include="..\AM.UI.Localization\AM.UI.Localization.csproj" />
+    <ProjectReference Include="..\AM.Modules.Diagnostics\AM.Modules.Diagnostics.csproj" />
+    <ProjectReference Include="..\AM.Modules.Engineering\AM.Modules.Engineering.csproj" />
+  </ItemGroup>
+
+</Project>

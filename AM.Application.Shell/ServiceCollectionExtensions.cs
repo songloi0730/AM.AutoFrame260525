@@ -141,6 +141,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<EngineeringViewModel>();
         services.AddSingleton<ProductionViewModel>();
         services.AddSingleton<DiagnosticsViewModel>();
+        services.AddSingleton<AM.Modules.Settings.SettingsViewModel>(); // gom Chẩn đoán + Kỹ thuật
         services.AddSingleton<LoggingViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips
         return services;

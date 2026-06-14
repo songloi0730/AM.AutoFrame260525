@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
-**Session:** #49 — Bỏ nút trùng chức năng (checklist "một lệnh một chỗ"): **bỏ tab "Tài khoản"** (login chỉ qua nút User ở header) + **bỏ tab "Giám sát I/O" riêng**, nhúng IoMonitor làm sub-tab trong Vận hành tay. Nav còn 8 tab.
-**Commit:** `036e6c6`  ·  (S48: nav Vận hành tay)
+**Session:** #50 — Gom **Chẩn đoán + Kỹ thuật vào "Cài đặt"** (module mới `AM.Modules.Settings` host 2 sub-tab). Nav còn 7 tab (Home·Sản xuất·Cảnh báo·Vận hành tay·Recipe·Nhật ký·Cài đặt). Đang chờ user chốt: login = trang riêng hay overlay dialog.
+**Commit:** *(điền sau commit)*  ·  (S49: bỏ nút trùng login/IO)
 
 ---
 

@@ -43,6 +43,7 @@ public partial class MainWindow : Window
         ["engineering"] = "E90F", // Repair (engineering/debug)
         ["production"] = "E9D9", // BarChart4 (production stats)
         ["diagnostics"] = "E950", // Health (diagnostics)
+        ["settings"] = "E713", // Settings gear (Cài đặt)
         ["log"] = "E9D5", // List (log viewer)
     };
     private const string DefaultHex = "E700"; // GlobalNavigationButton (fallback)

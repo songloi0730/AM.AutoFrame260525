@@ -61,6 +61,7 @@
     <ProjectReference Include="..\AM.Modules.Engineering\AM.Modules.Engineering.csproj" />
     <ProjectReference Include="..\AM.Modules.Production\AM.Modules.Production.csproj" />
     <ProjectReference Include="..\AM.Modules.Diagnostics\AM.Modules.Diagnostics.csproj" />
+    <ProjectReference Include="..\AM.Modules.Settings\AM.Modules.Settings.csproj" />
     <ProjectReference Include="..\AM.Modules.Logging\AM.Modules.Logging.csproj" />
     <ProjectReference Include="..\AM.WorkStation.Demo\AM.WorkStation.Demo.csproj" />
   </ItemGroup>
