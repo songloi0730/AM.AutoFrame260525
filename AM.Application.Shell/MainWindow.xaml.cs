@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using AM.Application.Shell.Navigation;
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Core.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -55,7 +56,9 @@ public partial class MainWindow : Window
     private readonly Dictionary<Type, UserControl> _viewCache = [];
     private readonly Dictionary<string, (NavigationEntry Entry, Button Button)> _navByView = [];
     private ILocalizationService? _localization;
+    private IUserService? _user;
     private Button? _activeNavButton;
+    private Type? _currentViewType; // view nav đang hiển thị (để giữ tab khi rebuild theo role)
 
     public MainWindow(IServiceProvider services)
     {
@@ -85,10 +88,12 @@ public partial class MainWindow : Window
         // Header/alarm/status bind tới ShellViewModel (resolve trên UI thread để capture context)
         DataContext = _services.GetRequiredService<ShellViewModel>();
 
-        // Đăng nhập thành công → tự đóng overlay login (logout giữ overlay để re-login).
-        _services.GetRequiredService<IUserService>().UserChanged += (_, args) =>
+        // Login: đóng overlay khi đăng nhập + dựng lại nav theo role (ẩn/hiện tab như Vận hành tay).
+        _user = _services.GetRequiredService<IUserService>();
+        _user.UserChanged += (_, args) =>
         {
             if (args.User is not null) LoginOverlay.Visibility = Visibility.Collapsed;
+            BuildNavigation();
         };
 
         // i18n: nav button content bind tới proxy LocalizedStrings (cập nhật live)
@@ -105,8 +110,19 @@ public partial class MainWindow : Window
 
     private void BuildNavigation()
     {
-        var entries = NavigationBuilder.Discover();
-        bool first = true;
+        NavPanel.Children.Clear();
+        _navByView.Clear();
+        _activeNavButton = null;
+
+        // Lọc tab theo role hiện tại (vd Vận hành tay chỉ Line Lead+). Chưa đăng nhập = UserLevel.Null.
+        var level = _user?.CurrentLevel ?? UserLevel.Null;
+        var entries = NavigationBuilder.Discover().Where(e => level >= e.MinLevel).ToList();
+
+        Button? firstButton = null;
+        NavigationEntry? firstEntry = null;
+        Button? keepButton = null;
+        NavigationEntry? keepEntry = null;
+
         foreach (var entry in entries)
         {
             var glyph = new TextBlock
@@ -145,8 +161,15 @@ public partial class MainWindow : Window
             NavPanel.Children.Add(button);
             _navByView[entry.ViewType.Name] = (entry, button);
 
-            if (first) { ShowEntry(entry); SetActiveTab(button); first = false; }
+            firstButton ??= button;
+            firstEntry ??= entry;
+            if (entry.ViewType == _currentViewType) { keepButton = button; keepEntry = entry; }
         }
+
+        // Giữ tab đang xem nếu vẫn còn quyền; nếu không (vd vừa đăng xuất khỏi Vận hành tay) → tab đầu (Home).
+        // keepButton/firstButton luôn được gán cùng entry tương ứng (null-forgiving an toàn).
+        if (keepEntry is not null) { ShowEntry(keepEntry); SetActiveTab(keepButton!); }
+        else if (firstEntry is not null) { ShowEntry(firstEntry); SetActiveTab(firstButton!); }
     }
 
     /// <summary>Điều hướng tới module theo tên View (vd: "ParameterView") — dùng cho nút header.</summary>
@@ -206,6 +229,7 @@ public partial class MainWindow : Window
             _viewCache[entry.ViewType] = view;
         }
         MainContent.Content = view;
+        _currentViewType = entry.ViewType;
     }
 
     /// <summary>Convention: "XxxView" → "XxxViewModel" cùng namespace, resolve từ DI.</summary>

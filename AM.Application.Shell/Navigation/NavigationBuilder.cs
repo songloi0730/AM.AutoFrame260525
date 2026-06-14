@@ -7,15 +7,17 @@
 using System.Reflection;
 using System.Windows.Controls;
 using AM.Core.Attributes;
+using AM.Core.Enums;
 
 namespace AM.Application.Shell.Navigation;
 
-/// <summary>Một mục điều hướng: key i18n + icon + thứ tự + kiểu View.</summary>
+/// <summary>Một mục điều hướng: key i18n + icon + thứ tự + cấp quyền tối thiểu + kiểu View.</summary>
 /// <param name="DisplayKey">Key i18n hiển thị trên menu.</param>
 /// <param name="Icon">Tên icon.</param>
 /// <param name="Order">Thứ tự (nhỏ hơn đứng trước).</param>
+/// <param name="MinLevel">Cấp quyền tối thiểu để thấy tab.</param>
 /// <param name="ViewType">Kiểu UserControl của module.</param>
-internal sealed record NavigationEntry(string DisplayKey, string Icon, int Order, Type ViewType);
+internal sealed record NavigationEntry(string DisplayKey, string Icon, int Order, UserLevel MinLevel, Type ViewType);
 
 /// <summary>
 /// Quét các assembly <c>AM.Modules.*</c> đã nạp, tìm View gắn <see cref="ModuleNavigationAttribute"/>,
@@ -34,7 +36,7 @@ internal static class NavigationBuilder
             {
                 var attr = type.GetCustomAttribute<ModuleNavigationAttribute>();
                 if (attr is not null && typeof(UserControl).IsAssignableFrom(type))
-                    entries.Add(new NavigationEntry(attr.DisplayName, attr.Icon, attr.Order, type));
+                    entries.Add(new NavigationEntry(attr.DisplayName, attr.Icon, attr.Order, attr.MinLevel, type));
             }
         }
 
