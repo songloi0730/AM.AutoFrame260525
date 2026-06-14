@@ -7,7 +7,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
 **Session:** #48 — Đổi nav **"Chuyển động" → "Vận hành tay"**: thêm dải khóa trạng thái (máy chạy→khóa điều chỉnh, `IsAdjustAllowed`) + sub-tab (Điều khiển trục · Bảng điểm · Thao tác trạm · ⚠ Override). 2 sub-tab sau là empty-state (chờ guard engine). MotionViewModel +IMasterController +IUserService.
-**Commit:** *(điền sau commit)*  ·  (S47: 4 role + tài liệu)
+**Commit:** `ff3adec`  ·  (S47: 4 role + tài liệu)
 
 ---
 

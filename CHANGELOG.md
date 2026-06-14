@@ -6,7 +6,7 @@
 
 ## [Session 48] 2026-06-14 — Nav "Chuyển động" → "Vận hành tay" (dải khóa trạng thái + sub-tab)
 
-**Commit:** *(điền sau)*
+**Commit:** `ff3adec`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User chốt lần lượt từng yêu cầu trên giao diện đang chạy. Mục đầu: đổi nav sang "Vận hành tay"
 theo `HMI_Manual_Operation_and_Safety` (gộp Manual+Motion/IO).
