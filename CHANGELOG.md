@@ -4,6 +4,30 @@
 
 ---
 
+## [Session 57] 2026-06-14 — Gate Thao tác nhanh (Home) theo risk qua guard engine
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Tiếp guard engine (S56) — gắn vào QuickActions trên Home (checklist §5).
+
+### ✅ Gate QuickActions theo risk
+- `QuickActionVm` +`RiskTier Risk`. BuildQuickActions gán: đèn/còi/ion/gọi KT = **R0** (Operator); cửa an toàn/
+  cấp liệu = **R1** (LineLead, máy dừng).
+- `DashboardViewModel` +`IGuardEngine`/`IAuditService`/`IUserService`. `RefreshQuickActions()`: IsEnabled =
+  có-HAL && guard.Allowed && điều-kiện-riêng; SubText ưu tiên: "chưa cấu hình HAL" → "cần quyền {role}" /
+  "máy đang chạy" → chú thích. Cập nhật khi UserChanged (login/logout), StateChanged, poll 2s, đổi ngôn ngữ.
+- `QuickAction` command: guard check + audit (OK/DENIED) trước khi gọi HAL. "Tắt còi" (ILightController) audit khi tắt.
+- i18n `Dash.QA.NeedRole`/`MachineBusy` (vi/en/zh).
+
+### 🔎 Hiệu lực hiện tại
+- Chỉ "Tắt còi" có HAL thật → demo rõ: chưa đăng nhập → "cần Operator"; đăng nhập + còi kêu → bấm được + audit.
+- 5 nút còn lại vẫn "chưa cấu hình HAL" (chờ wire IO) — nhưng risk đã gán, gate tự áp khi có HAL.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (30 projects). `dotnet test` → **189 passed** (arch test Dashboard chỉ ref abstraction — xanh).
+
+---
+
 ## [Session 56] 2026-06-14 — Guard engine phân quyền per-action R0–R3
 
 **Commit:** `a1847b0`

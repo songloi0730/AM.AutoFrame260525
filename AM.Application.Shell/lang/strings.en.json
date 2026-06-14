@@ -126,6 +126,8 @@
   "Dash.QA.Ionizer": "Ionizer",
   "Dash.QA.CallTech": "Call tech",
   "Dash.QA.NoHal": "HAL not configured",
+  "Dash.QA.NeedRole": "requires {0}",
+  "Dash.QA.MachineBusy": "machine running",
   "Dash.QA.BuzzerSub": "does not ACK alarm",
   "Dash.QA.BuzzerDone": "Buzzer muted (alarm not ACKed)",
   "Dash.StationSafety": "Stations & safety",

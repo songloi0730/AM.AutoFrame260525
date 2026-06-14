@@ -126,6 +126,8 @@
   "Dash.QA.Ionizer": "Thổi ion",
   "Dash.QA.CallTech": "Gọi kỹ thuật",
   "Dash.QA.NoHal": "chưa cấu hình HAL",
+  "Dash.QA.NeedRole": "cần quyền {0}",
+  "Dash.QA.MachineBusy": "máy đang chạy",
   "Dash.QA.BuzzerSub": "không ACK alarm",
   "Dash.QA.BuzzerDone": "Đã tắt còi (không ACK alarm)",
   "Dash.StationSafety": "Trạm & an toàn",

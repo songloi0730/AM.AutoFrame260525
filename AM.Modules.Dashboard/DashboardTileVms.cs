@@ -69,6 +69,9 @@ public sealed partial class QuickActionVm : ObservableObject
     /// <summary>Id lệnh (CommandParameter — map trong DashboardViewModel).</summary>
     public string Id { get; }
 
+    /// <summary>Mức rủi ro của thao tác (gate qua guard engine: R0=Operator, R1=LineLead...).</summary>
+    public RiskTier Risk { get; init; } = RiskTier.R0;
+
     /// <summary>
     /// Glyph Segoe MDL2 (một màu — adoption §9: không thêm package icon).
     /// Nhận mã hex ASCII trong constructor, convert runtime để source không chứa ký tự PUA.

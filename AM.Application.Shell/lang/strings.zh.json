@@ -126,6 +126,8 @@
   "Dash.QA.Ionizer": "离子风",
   "Dash.QA.CallTech": "呼叫技术员",
   "Dash.QA.NoHal": "未配置 HAL",
+  "Dash.QA.NeedRole": "需要 {0} 权限",
+  "Dash.QA.MachineBusy": "设备运行中",
   "Dash.QA.BuzzerSub": "不确认报警",
   "Dash.QA.BuzzerDone": "已关闭蜂鸣（未确认报警）",
   "Dash.StationSafety": "工位与安全",

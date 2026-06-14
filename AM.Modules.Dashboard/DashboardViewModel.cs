@@ -43,6 +43,9 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IMasterController _masterController;
     private readonly IHardwareManagerService _hardware;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IGuardEngine _guard;
+    private readonly IAuditService _audit;
+    private readonly IUserService _user;
     private readonly ILogger<DashboardViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
@@ -96,18 +99,27 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         IMasterController masterController,
         IHardwareManagerService hardware,
         IServiceScopeFactory scopeFactory,
+        IGuardEngine guard,
+        IAuditService audit,
+        IUserService user,
         ILogger<DashboardViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(alarmService);
         ArgumentNullException.ThrowIfNull(masterController);
         ArgumentNullException.ThrowIfNull(hardware);
         ArgumentNullException.ThrowIfNull(scopeFactory);
+        ArgumentNullException.ThrowIfNull(guard);
+        ArgumentNullException.ThrowIfNull(audit);
+        ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(logger);
 
         _alarmService      = alarmService;
         _masterController  = masterController;
         _hardware          = hardware;
         _scopeFactory      = scopeFactory;
+        _guard             = guard;
+        _audit             = audit;
+        _user              = user;
         _logger            = logger;
         _uiContext         = SynchronizationContext.Current;
 
@@ -149,13 +161,14 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         BuildQuickActions();
         RefreshDevices();
         RefreshSafety();
-        RefreshQuickActionTexts();
+        RefreshQuickActions();
 
         // Subscribe events
         _masterController.StateChanged   += OnStateChanged;
         _masterController.CycleCompleted += OnCycleCompleted;
         _alarmService.AlarmRaised        += OnAlarmRaised;
         _alarmService.AlarmCleared       += OnAlarmCleared;
+        _user.UserChanged                += OnUserChanged; // đăng nhập/đăng xuất → đổi quyền quick action
         Loc.Strings.PropertyChanged      += OnLanguageChanged;
 
         foreach (var alarm in _alarmService.ActiveAlarms)
@@ -170,35 +183,78 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 
     private void BuildQuickActions()
     {
+        // Risk: tiện ích (đèn/còi/ion/gọi KT) = R0 (Operator); cửa an toàn/cấp liệu = R1 (LineLead, máy dừng).
         // Tắt còi — wired ILightController (Momentary). KHÔNG ACK alarm (EEMUA 201).
-        QuickActions.Add(new QuickActionVm("BuzzerOff", "E74F"));
-        // Các nút còn lại: HAL/interlock (HoldToConfirm + audit) chưa có — mờ + lý do (adoption §9)
-        QuickActions.Add(new QuickActionVm("WorkLight", "E706"));
-        QuickActions.Add(new QuickActionVm("SafetyDoor", "E72E"));
-        QuickActions.Add(new QuickActionVm("FeedDoor", "E8B7"));
-        QuickActions.Add(new QuickActionVm("Ionizer", "E945"));
-        QuickActions.Add(new QuickActionVm("CallTech", "E717"));
+        QuickActions.Add(new QuickActionVm("BuzzerOff", "E74F") { Risk = RiskTier.R0 });
+        // Các nút còn lại: HAL/interlock chưa có — mờ + lý do (adoption §9). Cửa = R1, còn lại = R0.
+        QuickActions.Add(new QuickActionVm("WorkLight", "E706") { Risk = RiskTier.R0 });
+        QuickActions.Add(new QuickActionVm("SafetyDoor", "E72E") { Risk = RiskTier.R1 });
+        QuickActions.Add(new QuickActionVm("FeedDoor", "E8B7") { Risk = RiskTier.R1 });
+        QuickActions.Add(new QuickActionVm("Ionizer", "E945") { Risk = RiskTier.R0 });
+        QuickActions.Add(new QuickActionVm("CallTech", "E717") { Risk = RiskTier.R0 });
     }
 
-    private void RefreshQuickActionTexts()
+    // Chỉ "Tắt còi" có HAL thật (ILightController). Còn lại chờ wire HAL (mở rộng danh sách khi có).
+    private bool HasHal(string id) => id == "BuzzerOff" && _light is not null;
+
+    /// <summary>
+    /// Cập nhật nhãn + trạng thái khả dụng + lý do của các quick action: ưu tiên (1) chưa có HAL,
+    /// (2) guard chặn theo role/máy, (3) điều kiện riêng (còi đang kêu). Gate per-action R0–R3.
+    /// </summary>
+    private void RefreshQuickActions()
     {
+        bool buzzerOn = _light?.Current.Buzzer == true;
         foreach (var qa in QuickActions)
         {
             qa.Label = Loc.Strings[$"Dash.QA.{qa.Id}"];
-            qa.SubText = qa.Id == "BuzzerOff"
-                ? Loc.Strings["Dash.QA.BuzzerSub"]
-                : Loc.Strings["Dash.QA.NoHal"];
+
+            bool hasHal = HasHal(qa.Id);
+            var guard = _guard.Evaluate(qa.Risk);
+            bool condition = qa.Id != "BuzzerOff" || buzzerOn; // còi: chỉ khi đang kêu
+
+            qa.IsOn = qa.Id == "BuzzerOff" && buzzerOn;
+            qa.IsEnabled = hasHal && guard.Allowed && condition;
+            qa.SubText = QuickSubText(qa, hasHal, guard);
         }
     }
 
-    /// <summary>Thực thi quick action theo Id (chỉ nút IsEnabled mới gọi được).</summary>
+    // Lý do hiển thị dưới nhãn: ưu tiên chưa-có-HAL → guard chặn (role/máy) → chú thích riêng.
+    private static string QuickSubText(QuickActionVm qa, bool hasHal, GuardResult guard)
+    {
+        if (!hasHal) return Loc.Strings["Dash.QA.NoHal"];
+        if (!guard.Allowed) return QuickGuardSub(guard);
+        if (qa.Id == "BuzzerOff") return Loc.Strings["Dash.QA.BuzzerSub"];
+        return string.Empty;
+    }
+
+    private static string QuickGuardSub(GuardResult r) => r.Block switch
+    {
+        GuardBlock.InsufficientRole => string.Format(CultureInfo.InvariantCulture,
+            Loc.Strings["Dash.QA.NeedRole"], r.RequiredLevel),
+        GuardBlock.MachineBusy => Loc.Strings["Dash.QA.MachineBusy"],
+        _ => Loc.Strings["Dash.QA.NoHal"],
+    };
+
+    /// <summary>Thực thi quick action theo Id — guard (role/máy) + audit trước khi gọi HAL.</summary>
     [RelayCommand]
     private async Task QuickAction(string id)
     {
-        if (id != "BuzzerOff" || _light is null) return;
+        var qa = QuickActions.FirstOrDefault(q => q.Id == id);
+        if (qa is null) return;
+
+        var guard = _guard.Evaluate(qa.Risk);
+        string who = _user.CurrentUser ?? "?";
+        if (!guard.Allowed)
+        {
+            _audit.Record(who, $"QuickAction {id}", allowed: false, QuickGuardSub(guard));
+            return;
+        }
+
+        if (id != "BuzzerOff" || _light is null) return; // HAL khác chưa wire
         try
         {
             await _light.SetAsync(_light.Current with { Buzzer = false }, _cts.Token).ConfigureAwait(false);
+            _audit.Record(who, "QuickAction BuzzerOff", allowed: true);
             RunOnUIThread(() => AddLog("INFO", Loc.Strings["Log.System"], Loc.Strings["Dash.QA.BuzzerDone"]));
         }
         catch (OperationCanceledException) { /* đóng app */ }
@@ -217,6 +273,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         RunOnUIThread(() =>
         {
             MachineState = e.NewState;
+            RefreshQuickActions(); // R1 (cửa) phụ thuộc máy dừng → cập nhật khi đổi state
             AddLog("INFO", Loc.Strings["Log.System"],
                 $"{Loc.Strings["Log.StateTo"]} {GetStateDisplayName(e.NewState)}");
             _logger.LogDebug("[Home] State → {State}", e.NewState);
@@ -295,13 +352,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             if (tile is not null) tile.Connected = d.Device.IsConnected;
         }
 
-        // Tắt còi: chỉ khả dụng khi còi đang kêu (poll trạng thái tower light)
-        var buzzer = QuickActions.FirstOrDefault(q => q.Id == "BuzzerOff");
-        if (buzzer is not null)
-        {
-            buzzer.IsEnabled = _light?.Current.Buzzer == true;
-            buzzer.IsOn = buzzer.IsEnabled;
-        }
+        // Quick action khả dụng phụ thuộc trạng thái còi/máy/role → cập nhật cùng nhịp poll.
+        RefreshQuickActions();
     }
 
     private void RefreshSafety()
@@ -393,8 +445,12 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         {
             foreach (var tile in Stations)
                 tile.StateText = GetStateDisplayName(tile.State);
-            RefreshQuickActionTexts();
+            RefreshQuickActions();
         });
+
+    // Đăng nhập/đăng xuất đổi cấp quyền → cập nhật khả dụng + lý do quick action ngay.
+    private void OnUserChanged(object? sender, UserChangedEventArgs e)
+        => RunOnUIThread(RefreshQuickActions);
 
     // ─── IDisposable ──────────────────────────────────────────────────────────────
 
@@ -410,6 +466,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _masterController.CycleCompleted -= OnCycleCompleted;
         _alarmService.AlarmRaised        -= OnAlarmRaised;
         _alarmService.AlarmCleared       -= OnAlarmCleared;
+        _user.UserChanged                -= OnUserChanged;
         Loc.Strings.PropertyChanged      -= OnLanguageChanged;
         _cts.Cancel();
         _cts.Dispose();

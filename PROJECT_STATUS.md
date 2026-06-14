@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
-**Session:** #56 — **Guard engine phân quyền per-action R0–R3**: `RiskTier` + `IGuardEngine`/`GuardService` (state → role: R0=OP·R1=LL·R2=EN·R3=EN) + `IAuditService` (log [AUDIT]). Gắn vào màn điều khiển trục: jog/servo/teach=R3, move/home/clear/goto=R2 → cần Engineer + máy dừng; dải khóa hiện đúng lý do; mọi thao tác R1+ ghi audit. Hoãn: Supervised Override, thao tác trạm, HardwareInputEventBus.
-**Commit:** `a1847b0`  ·  (S55: fix login bugs)
+**Session:** #57 — Gate **Thao tác nhanh (Home) theo risk** qua guard engine: gán RiskTier (đèn/còi/ion/gọi KT=R0, cửa an toàn/cấp liệu=R1) → IsEnabled + lý do (chưa HAL / cần quyền / máy đang chạy) + audit khi thực thi; cập nhật khi login/logout/đổi state. (Tắt còi đã wired: cần Operator + còi đang kêu.)
+**Commit:** *(điền sau commit)*  ·  (S56: guard engine + Motion)
 
 ---
 
