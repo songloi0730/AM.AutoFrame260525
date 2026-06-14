@@ -114,6 +114,9 @@ internal static class ServiceCollectionExtensions
         // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
         services.AddSingleton<IUserService, UserService>(sp =>
             new UserService(sp.GetRequiredService<ILogger<UserService>>(), "users.json"));
+        // Guard engine: phân quyền per-action R0–R3 (state → role) + audit log
+        services.AddSingleton<IGuardEngine, GuardService>();
+        services.AddSingleton<IAuditService, AuditService>();
 
         // i18n: nạp strings.*.json từ thư mục lang/ cạnh executable; đổi ngôn ngữ runtime
         services.AddSingleton<ILocalizationService>(sp => new JsonLocalizationService(

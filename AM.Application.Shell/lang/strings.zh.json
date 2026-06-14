@@ -20,6 +20,7 @@
   "Nav.ManualOp": "手动操作",
   "Manual.AdjustOk": "✏ 允许调整",
   "Manual.Locked": "🔒 设备运行中 — 仅查看，所有调整已锁定",
+  "Manual.NeedRole": "🔒 需要 {0} 权限才能控制轴（请登录足够权限的账户）",
   "Manual.Tab.Axis": "轴控制",
   "Manual.Tab.Points": "点位表",
   "Manual.Tab.Io": "I/O 监视",

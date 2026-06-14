@@ -20,6 +20,7 @@
   "Nav.ManualOp": "Manual operation",
   "Manual.AdjustOk": "✏ Adjustment allowed",
   "Manual.Locked": "🔒 Machine running — view only, all adjustments locked",
+  "Manual.NeedRole": "🔒 Requires {0} to control axes (log in with a sufficient account)",
   "Manual.Tab.Axis": "Axis control",
   "Manual.Tab.Points": "Point table",
   "Manual.Tab.Io": "I/O monitor",

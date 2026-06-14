@@ -6,8 +6,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-14
-**Session:** #55 — Sửa 3 bug đăng nhập/phân quyền: **(A)** cross-thread khi `UserChanged` bắn ở thread nền → MainWindow handler `Dispatcher.Invoke` (hết "Lỗi đăng nhập" giả, overlay đóng, nav rebuild, hiện nút Đăng xuất); **(B)** `users.json` cũ (int level từ S47) → envelope `schemaVersion` + Level chuỗi enum → tự re-seed đúng cấp (admin=Administrator, +linelead).
-**Commit:** `4212bad`  ·  (S52–54: GridMenu/role-gating/Vision)
+**Session:** #56 — **Guard engine phân quyền per-action R0–R3**: `RiskTier` + `IGuardEngine`/`GuardService` (state → role: R0=OP·R1=LL·R2=EN·R3=EN) + `IAuditService` (log [AUDIT]). Gắn vào màn điều khiển trục: jog/servo/teach=R3, move/home/clear/goto=R2 → cần Engineer + máy dừng; dải khóa hiện đúng lý do; mọi thao tác R1+ ghi audit. Hoãn: Supervised Override, thao tác trạm, HardwareInputEventBus.
+**Commit:** *(điền sau commit)*  ·  (S55: fix login bugs)
 
 ---
 

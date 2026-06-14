@@ -41,6 +41,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private readonly IPointTableService _pointTable;
     private readonly IMasterController _master;
     private readonly IUserService _user;
+    private readonly IGuardEngine _guard;
+    private readonly IAuditService _audit;
     private readonly ILogger<MotionViewModel> _logger;
 
     /// <summary>VM giám sát I/O nhúng làm sub-tab "Giám sát I/O" (sở hữu bởi DI — KHÔNG dispose ở đây).</summary>
@@ -97,6 +99,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     /// <summary>Tạo VM, dựng trục/nhóm + nạp Point Table + bắt đầu poll.</summary>
     public MotionViewModel(IMotionController motion, IPointTableService pointTable,
         IMasterController master, IUserService user, IoMonitorViewModel ioMonitor,
+        IGuardEngine guard, IAuditService audit,
         ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
     {
         ArgumentNullException.ThrowIfNull(motion);
@@ -104,6 +107,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(master);
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(ioMonitor);
+        ArgumentNullException.ThrowIfNull(guard);
+        ArgumentNullException.ThrowIfNull(audit);
         ArgumentNullException.ThrowIfNull(logger);
         _motion = motion;
         _diag = motion as IAxisDiagnostics;
@@ -111,6 +116,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         _master = master;
         _user = user;
         IoMonitor = ioMonitor;
+        _guard = guard;
+        _audit = audit;
         _logger = logger;
         _uiContext = SynchronizationContext.Current;
         _pollMs = pollIntervalMs;
@@ -138,8 +145,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     // ─── Dải khóa trạng thái (§1.3 — máy chạy thì khóa điều chỉnh) ────────────────
 
-    /// <summary>True nếu được phép điều chỉnh: máy KHÔNG đang chạy/khởi tạo/reset.
-    /// (Phân quyền per-action R0–R3 sẽ thêm cùng guard engine — xem Master Index §11C.)</summary>
+    /// <summary>True nếu được phép điều khiển trục: máy KHÔNG đang chạy VÀ role ≥ Engineer (R2).
+    /// Tính qua <see cref="IGuardEngine"/> — gate cả khu Điều khiển trục + Bảng điểm.</summary>
     [ObservableProperty] private bool _isAdjustAllowed = true;
 
     /// <summary>Thông điệp dải khóa.</summary>
@@ -162,15 +169,44 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     private void RefreshLockState()
     {
-        // Máy đang vận hành/chuyển trạng thái → khóa mọi điều chỉnh (chỉ xem).
-        bool machineBusy = _master.State is MachineState.Running
-            or MachineState.Initializing or MachineState.Resetting;
-        IsAdjustAllowed = !machineBusy;
+        // Điều khiển trục = R2 (Engineer + máy không chạy). Guard engine quyết định cho phép + lý do.
+        var r = _guard.Evaluate(RiskTier.R2);
+        IsAdjustAllowed = r.Allowed;
 
         string role = _user.IsLoggedIn ? _user.CurrentLevel.ToString() : Loc.Strings["Shell.Guest"];
-        LockText = IsAdjustAllowed
-            ? $"{Loc.Strings["Manual.AdjustOk"]} — {role}"
-            : Loc.Strings["Manual.Locked"];
+        LockText = r.Block switch
+        {
+            GuardBlock.None => $"{Loc.Strings["Manual.AdjustOk"]} — {role}",
+            GuardBlock.MachineBusy => Loc.Strings["Manual.Locked"],
+            GuardBlock.InsufficientRole => string.Format(CultureInfo.InvariantCulture,
+                Loc.Strings["Manual.NeedRole"], r.RequiredLevel),
+            _ => Loc.Strings["Manual.Locked"],
+        };
+    }
+
+    // Thông điệp lý do bị guard chặn (để hiện StatusMessage khi thao tác bị từ chối).
+    private static string GuardReasonText(GuardResult r) => r.Block switch
+    {
+        GuardBlock.MachineBusy => Loc.Strings["Manual.Locked"],
+        GuardBlock.InsufficientRole => string.Format(CultureInfo.InvariantCulture,
+            Loc.Strings["Manual.NeedRole"], r.RequiredLevel),
+        _ => Loc.Strings["Axis.CtrlError"],
+    };
+
+    // Bọc một thao tác hardware bằng guard + audit (defense-in-depth §9.1, audit §9.6).
+    // Bị chặn → báo lý do + audit DENIED, KHÔNG gọi HAL. Cho phép → audit OK rồi chạy.
+    private async Task RunGuardedAsync(RiskTier risk, string action, Func<Task> body)
+    {
+        var r = _guard.Evaluate(risk);
+        string who = _user.CurrentUser ?? "?";
+        if (!r.Allowed)
+        {
+            StatusMessage = GuardReasonText(r);
+            _audit.Record(who, action, allowed: false, GuardReasonText(r));
+            return;
+        }
+        _audit.Record(who, action, allowed: true);
+        await RunMotionAsync(body).ConfigureAwait(true);
     }
 
     // ─── Nhóm trục ────────────────────────────────────────────────────────────────
@@ -240,7 +276,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         if (axis is null) return Task.CompletedTask;
         SelectAxis(axis);
         double step = CurrentStep * dir;
-        return RunMotionAsync(() => AbsoluteJog
+        return RunGuardedAsync(RiskTier.R3, $"Jog {axis.Name} {(dir > 0 ? "+" : "-")}{CurrentStep}", () => AbsoluteJog
             ? _motion.MoveAbsAsync(axis.Index, axis.Position + step, JogVelocity(axis), _cts.Token)
             : _motion.MoveRelAsync(axis.Index, step, JogVelocity(axis), _cts.Token));
     }
@@ -257,30 +293,34 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private Task ToggleServo(AxisVm? axis)
     {
         if (axis is null || _diag is null) return Task.CompletedTask;
-        return RunMotionAsync(() => _diag.SetServoAsync(axis.Index, !axis.ServoOn, _cts.Token));
+        return RunGuardedAsync(RiskTier.R3, $"Servo {axis.Name} {(!axis.ServoOn ? "ON" : "OFF")}",
+            () => _diag.SetServoAsync(axis.Index, !axis.ServoOn, _cts.Token));
     }
 
     [RelayCommand]
     private Task HomeAxis(AxisVm? axis)
-        => axis is null ? Task.CompletedTask : RunMotionAsync(() => _motion.HomeAxisAsync(axis.Index, _cts.Token));
+        => axis is null ? Task.CompletedTask
+            : RunGuardedAsync(RiskTier.R2, $"Home {axis.Name}", () => _motion.HomeAxisAsync(axis.Index, _cts.Token));
 
     [RelayCommand]
     private Task ClearError(AxisVm? axis)
         => axis is null ? Task.CompletedTask
-            : RunMotionAsync(() => _motion.ClearDriverFaultAsync(axis.Index, _cts.Token));
+            : RunGuardedAsync(RiskTier.R2, $"ClearError {axis.Name}",
+                () => _motion.ClearDriverFaultAsync(axis.Index, _cts.Token));
 
     [RelayCommand]
     private Task MoveAbs(AxisVm? axis)
         => axis is null ? Task.CompletedTask
-            : RunMotionAsync(() => _motion.MoveAbsAsync(axis.Index, axis.MoveTarget, JogVelocity(axis), _cts.Token));
+            : RunGuardedAsync(RiskTier.R2, $"MoveAbs {axis.Name} → {axis.MoveTarget:F3}",
+                () => _motion.MoveAbsAsync(axis.Index, axis.MoveTarget, JogVelocity(axis), _cts.Token));
 
     // ─── Lệnh toàn cục ────────────────────────────────────────────────────────────
 
     [RelayCommand]
-    private Task HomeAll() => RunMotionAsync(() => _motion.HomeAllAxesAsync(_cts.Token));
+    private Task HomeAll() => RunGuardedAsync(RiskTier.R2, "HomeAll", () => _motion.HomeAllAxesAsync(_cts.Token));
 
     [RelayCommand]
-    private Task ClearAllErrors() => RunMotionAsync(async () =>
+    private Task ClearAllErrors() => RunGuardedAsync(RiskTier.R2, "ClearAllErrors", async () =>
     {
         for (int i = 0; i < _motion.AxisCount; i++)
             await _motion.ClearDriverFaultAsync(i, _cts.Token).ConfigureAwait(false);
@@ -329,7 +369,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     {
         var point = SelectedPoint is null ? null : _pointTable.Find(SelectedPoint.Name);
         if (point is null) return Task.CompletedTask;
-        return RunMotionAsync(async () =>
+        return RunGuardedAsync(RiskTier.R2, $"GoTo {SelectionScope}", async () =>
         {
             if (SelectedPointAxis is int ai)
             {
@@ -349,6 +389,16 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private void TeachSelection()
     {
         if (SelectedPoint is null) { StatusMessage = Loc.Strings["Axis.SelectFirst"]; return; }
+
+        // Teach = R3 (ghi đè toạ độ) — guard role + trạng thái máy + audit.
+        var guard = _guard.Evaluate(RiskTier.R3);
+        if (!guard.Allowed)
+        {
+            StatusMessage = GuardReasonText(guard);
+            _audit.Record(_user.CurrentUser ?? "?", $"Teach {SelectionScope}", allowed: false, GuardReasonText(guard));
+            return;
+        }
+
         var existing = _pointTable.Find(SelectedPoint.Name);
         if (existing is null) return;
 
@@ -378,6 +428,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         RefreshPoints();
         StatusMessage = string.Format(CultureInfo.InvariantCulture,
             Loc.Strings["Axis.Teached"], SelectionScope);
+        _audit.Record(_user.CurrentUser ?? "?", $"Teach {SelectionScope}", allowed: true);
     }
 
     /// <summary>Lưu toàn bộ bảng điểm vào recipe (file).</summary>

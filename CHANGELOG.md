@@ -4,6 +4,37 @@
 
 ---
 
+## [Session 56] 2026-06-14 — Guard engine phân quyền per-action R0–R3
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** User chốt: R2 cứng ở Engineer + phạm vi = guard engine core + gắn Motion (hoãn Override). Thực hiện
+mô hình an toàn theo tầng của `HMI_Manual_Operation_and_Safety`.
+
+### ✅ Core engine (AM.Core + Abstractions + Services)
+- `RiskTier { R0, R1, R2, R3 }` + `GuardBlock { None, MachineBusy, InsufficientRole, ConditionNotMet }` (`AM.Core/Enums`).
+- `GuardResult(Allowed, Block, RequiredLevel)` (`AM.Core/Models`).
+- `IGuardEngine`/`GuardService`: `Evaluate(risk)` kiểm **trạng thái máy → role**; map R0=Operator·R1=LineLead·
+  R2=Engineer·R3=Engineer (Force IO=Admin xử riêng). R0 chạy được cả khi máy chạy; R1+ cần máy dừng.
+- `IAuditService`/`AuditService`: ghi `[AUDIT] user/action/result/detail` qua Serilog (§9.6).
+- DI: đăng ký `IGuardEngine`, `IAuditService` (singleton).
+
+### ✅ Gắn vào màn điều khiển trục (`MotionViewModel`)
+- `IsAdjustAllowed` + dải khóa tính qua `_guard.Evaluate(R2)` → LineLead/Operator/chưa-đăng-nhập thấy tab Vận hành
+  tay nhưng "Điều khiển trục" KHÓA kèm lý do ("🔒 Cần quyền Engineer"). Engineer/Admin mở khi máy dừng.
+- Mọi lệnh trục qua `RunGuardedAsync(risk, action, body)` (defense-in-depth §9.1): jog/servo/teach=R3,
+  move/home/clear/goto/homeAll/clearAll=R2 → guard chặn thì báo lý do + audit DENIED, KHÔNG gọi HAL; cho phép thì
+  audit OK rồi chạy. **STOP không gate** (an toàn — luôn dừng được). i18n `Manual.NeedRole` (vi/en/zh).
+- Test mới: `GuardServiceTests` (13) — ma trận role × tier × state.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (30 projects). `dotnet test` → **189 passed** (+13).
+- **Còn hoãn** (Master Index §11C): Supervised Override (2 bước+đếm ngược, §9.1 chưa chốt 1/2 người), thao tác trạm
+  R0–R1 (RecoveryActions config), guard condition phần cứng (`HardwareInputEventBus`), gate QuickActions theo risk,
+  Force IO = Admin tại IoMonitor.
+
+---
+
 ## [Session 55] 2026-06-14 — Sửa 3 bug đăng nhập / phân quyền
 
 **Commit:** `4212bad`
