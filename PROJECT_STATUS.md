@@ -9,9 +9,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-15
-**Session:** #59 — **Tách Force IO thành chế độ riêng (phương án A)** ở Giám sát I/O: HAL `IIoModule` +force/unforce/ReadAllDo (kênh forced thì `WriteDiAsync` kể cả logic máy bị bỏ qua — cắt logic), hiện thực ở Sim + ADAM. UI: **set/reset thường** = Engineer + máy dừng (guard R3, bỏ check Admin — sửa vướng mắc S58); toggle **Chế độ Force** = Administrator + máy dừng; force = chạm-2-bước; badge "F" + bộ đếm "đang FORCE N IO"; tự thoát Force mode khi mất quyền/máy chạy. Mọi thao tác audit.
-**Commit:** `57616bc`  ·  (S58: Force IO=Admin tạm · S57: quick actions risk-gate · S56: guard engine)
+**Ngày:** 2026-06-16
+**Session:** #60 — **Nâng màn Giám sát I/O theo mockup (A+B)**: IOMap mở rộng (`IIoTagMap` +`IoChannelDescriptor`/`IoCylinderDescriptor` + `JsonIoTagMap` schema mảng địa chỉ/tên đa ngữ/rawName/localize + seed `io.map.json`); màn IO **danh sách 2 cột "địa chỉ · tên có nghĩa (+rawName)" + ô lọc**; chỉ báo đủ bộ (Off/On · **Pending** vàng nhấp nháy theo confirmDi · **Forced ô vuông đỏ F**) + nhóm **Xi lanh** suy KẸP/NHẢ/**▲ giữa** từ cặp DI. Set/reset & Force của S59 giữ nguyên.
+**Commit:** `pending`  ·  (S59: Force mode phương án A · S58: Force IO=Admin tạm · S57: quick actions risk-gate)
 
 ---
 
@@ -30,14 +30,14 @@
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, **UserService (login/RBAC, BCrypt)** |
 | AM.Services.Tests | ✅ Hoàn thành | **64 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, **PointTable**) |
 | AM.Infrastructure (i18n) | ✅ Hoàn thành | **JsonAlarmCatalogService** — Alarms.{vi,en,zh}.json (44 mã), dịch tên/remedy theo culture |
-| AM.Hardware.Tests | ✅ Hoàn thành | **34 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety/IoTagMap, SimAxisDiagnostics, **IO force semantics (S59)** |
+| AM.Hardware.Tests | ✅ Hoàn thành | **35 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety, SimAxisDiagnostics, IO force semantics (S59), **IoTagMap schema mảng + descriptor/cylinder (S60)** |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
 | AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2** (S45): work area (thumbnail vision + bảng truy vết SN, dòng NG tô màu) + right rail 560px (KPI ca 8h, quick actions — Tắt còi wired ILightController, trạm & an toàn ISafetyInput event, nhật ký 1 dòng) — spec: `docs/HMI_Dashboard_Spec.md` v2 |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
-| AM.Modules.IoMonitor | ✅ Hoàn thành | DI/DO realtime (poll); **set/reset thường (Engineer, logic kiểm soát) + Chế độ Force riêng (Admin, đóng băng/cắt logic) — chạm-2-bước + badge + bộ đếm + audit** (S59); nav tự sinh từ [ModuleNavigation] |
+| AM.Modules.IoMonitor | ✅ Hoàn thành | **Danh sách "địa chỉ·tên" (IOMap) + ô lọc + chỉ báo Off/On/Pending/Forced + nhóm Xi lanh ▲giữa** (S60); set/reset thường (Engineer) + Chế độ Force riêng (Admin, chạm-2-bước + badge + bộ đếm + audit) (S59); nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Modules.Motion | ✅ Hoàn thành | **Màn điều khiển trục v2** (S46): bảng đèn 8 tín hiệu + servo/home/clear/move từng trục + jog pad/inching + phản hồi servo + bảng điểm Set/Confirm 2-chạm (Tới/Teach/Lưu recipe). Bám `IMotionController` + `IAxisDiagnostics` (tuỳ chọn); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |

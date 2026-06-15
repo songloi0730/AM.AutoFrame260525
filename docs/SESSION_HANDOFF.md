@@ -1,8 +1,8 @@
-# SESSION HANDOFF — mạch HMI v2 + Guard Engine (S44–S59)
+# SESSION HANDOFF — mạch HMI v2 + Guard Engine (S44–S60)
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
-> `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→59) là đủ để bắt tay.
-> Cập nhật: 2026-06-15, sau Session 59 (Force mode IO — phương án A). Commit gần nhất: xem PROJECT_STATUS.
+> `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→60) là đủ để bắt tay.
+> Cập nhật: 2026-06-16, sau Session 60 (IOMap + layout danh sách + trạng thái phong phú). Commit gần nhất: xem PROJECT_STATUS.
 
 ---
 
@@ -138,8 +138,12 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
    - **UI** `IoMonitorViewModel`/`IoMonitorView`: set/reset thường = Engineer + máy dừng (guard R3, KHÔNG đòi Admin);
      toggle **Chế độ Force** = Administrator + máy dừng; force = chạm-2-bước; badge "F" + bộ đếm "đang FORCE N IO";
      tự thoát Force mode khi mất quyền/máy chạy (force HAL vẫn giữ). Test force: `AM.Hardware.Tests/SimulatedDeviceTests`.
-   - **CÒN HOÃN (UX)**: per-output "có hậu quả" cần chạm-xác-nhận cho cả set/reset (hiện chỉ Force xác-nhận); alarm 70xxx
-     "còn IO forced" + chặn rời màn khi còn force (hiện chỉ badge + audit); seed `io.map.json` để hiện tên tag thay DO{n}.
+   - **S60 — IOMap + layout + trạng thái phong phú (A+B)**: `IIoTagMap` +metadata (`IoChannelDescriptor`/`IoCylinderDescriptor`,
+     `Describe*`/`DiChannels`/`DoChannels`/`Cylinders`); `JsonIoTagMap` nhận schema mảng (địa chỉ/tên đa ngữ/rawName/localize,
+     vẫn nhận object cũ) + seed `io.map.json`. Màn IO: danh sách 2 cột "địa chỉ·tên" + ô lọc; chỉ báo Off/On/**Pending** (vàng
+     nhấp nháy theo `confirmDi`)/**Forced (ô vuông đỏ F)** + nhóm **Xi lanh** (▲ giữa). Test: `HalAbstractionTests` schema mảng.
+   - **CÒN HOÃN = increment C**: per-output "có hậu quả" cần chạm-xác-nhận cho cả set/reset (hiện chỉ Force xác-nhận); alarm 70xxx
+     "còn IO forced" + chặn rời màn khi còn force (hiện chỉ badge + audit).
 2. **HardwareInputEventBus + guard condition (tầng 3)**: nền cho thao tác trạm + override. Thêm cơ chế event-push
    các tín hiệu (vị trí Z, cảm biến chân không...) để guard đọc; mở rộng `IGuardEngine.Evaluate(risk, guardKey)`
    + `IGuardContext`. Hiện chỉ có `ISafetyInput.SafetyStateChanged` (E-Stop/Guard/LightCurtain).

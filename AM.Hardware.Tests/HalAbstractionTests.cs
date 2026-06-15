@@ -92,6 +92,46 @@ public sealed class HalAbstractionTests
     }
 
     [Fact]
+    public void TagMap_LoadArraySchema_DescriptorsAndCylinders()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"io.map.{Guid.NewGuid():N}.json");
+        File.WriteAllText(path, """
+        {
+          "Di": [ { "channel": 17, "tag": "DI_Clamp_Ext", "address": "X017", "kind": "sensor",
+                    "name": { "vi": "Kẹp", "en": "Clamp" } },
+                  { "channel": 18, "tag": "DI_Clamp_Ret", "address": "X018" } ],
+          "Do": [ { "channel": 0, "tag": "DO_Vac", "address": "Y000", "confirmDi": 2,
+                    "localize": false, "rawName": "真空阀", "name": { "vi": "Van chân không" } } ],
+          "Cylinders": [ { "extendedDi": 17, "retractedDi": 18, "name": { "vi": "Xi lanh kẹp" } } ]
+        }
+        """);
+        try
+        {
+            var map = JsonIoTagMap.LoadFromFile(path);
+
+            // tag↔kênh vẫn phân giải (logic máy dùng)
+            map.ResolveDi("DI_Clamp_Ext").Should().Be(17);
+            map.ResolveDo("DO_Vac").Should().Be(0);
+
+            // descriptor reverse + metadata
+            map.DiChannels.Should().HaveCount(2);
+            map.DescribeDo(0)!.Address.Should().Be("Y000");
+            map.DescribeDo(0)!.ConfirmDi.Should().Be(2);
+            map.DescribeDi(17)!.ResolveName("en").Should().Be("Clamp");
+            map.DescribeDi(17)!.ResolveName("vi").Should().Be("Kẹp");
+
+            // localize:false → giữ tên gốc bất kể ngôn ngữ
+            map.DescribeDo(0)!.ResolveName("vi").Should().Be("真空阀");
+
+            // cylinder
+            map.Cylinders.Should().ContainSingle();
+            map.Cylinders[0].ExtendedDi.Should().Be(17);
+            map.Cylinders[0].RetractedDi.Should().Be(18);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
     public async Task IoTagExtensions_WriteAndReadByTag()
     {
         var io = new SimulatedIoModule(NullLogger<SimulatedIoModule>.Instance, diCount: 8, doCount: 8);

@@ -4,6 +4,35 @@
 
 ---
 
+## [Session 60] 2026-06-16 — Nâng màn Giám sát I/O theo mockup (IOMap + danh sách + trạng thái phong phú)
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Màn IO mới hiện "DO0/DI3" + lưới nút, cách mockup `hmi_io_states.html` + `HMI_Naming_and_Axis_Point_Model`
+khá xa. Làm increment A (nền IOMap + layout danh sách) + B (trạng thái phong phú + xi lanh).
+
+### ✅ A — IOMap mở rộng + seed + layout danh sách + lọc
+- `IoChannelDescriptor` + `IoCylinderDescriptor` (`AM.Core/Models`); `IIoTagMap` +`DiChannels`/`DoChannels`/`Cylinders`/
+  `DescribeDi`/`DescribeDo` (metadata địa chỉ/tên đa ngữ/rawName/localize/kind/station/confirmDi).
+- `JsonIoTagMap`: nhận **schema mảng mới** (kèm metadata) lẫn **object cũ** (`{Di:{tag:ch}}` — tương thích ngược);
+  seed `AM.Application.Shell/io.map.json` (8 DI + 8 DO + 1 xi lanh, có rawName tiếng Trung minh hoạ).
+- `IoMonitorViewModel` inject `IIoTagMap`; dựng kênh từ descriptor (fallback DI{n}/DO{n} nếu map rỗng); +`FilterText`
+  (lọc address/tên/raw/trạm/tag); tên đổi theo ngôn ngữ (`Loc.Strings.PropertyChanged`).
+- `IoMonitorView`: **danh sách 2 cột** mỗi dòng `indicator · address mono · tên (+ rawName) · hint/Gỡ` + ô lọc.
+
+### ✅ B — Trạng thái phong phú + xi lanh
+- Enum `IoIndicator {Off,On,Pending,Forced}` + `CylinderState {Clamped,Released,Mid}`.
+- Chỉ báo: đèn Off/On · **Pending** (vàng nhấp nháy — DO có `confirmDi` mà giá trị ≠ confirm) · **Forced** (ô vuông đỏ chữ F,
+  thay badge S59) · momentary (kind=button → tooltip). Hint động: "đang ON/OFF · bấm…", "bấm = đóng băng", "đang FORCED · bấm gỡ".
+- Nhóm **Xi lanh** suy từ cặp DI: kẹp ON→KẸP · nhả ON→NHẢ · cả hai off→**▲ giữa** (nghi kẹt). *(Gom nhóm riêng — lệch nhẹ mockup, rõ hơn.)*
+- i18n `Io.Filter*`/`Cylinders`/`Cyl*`/`Hint*` (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning** (30 projects). `dotnet test` → **193 passed** (+1 test JsonIoTagMap schema mảng).
+- App khởi động sạch; `io.map.json` (array) copy ra bin/Debug. CÒN HOÃN = increment C (confirm set/reset có hậu quả + alarm "còn IO forced").
+
+---
+
 ## [Session 59] 2026-06-15 — Tách Force IO thành chế độ riêng (phương án A)
 
 **Commit:** `57616bc`
@@ -316,7 +345,7 @@ chưa phù hợp → sửa tài liệu → sửa code.
 **Commit:** `e8eead2`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** User gửi `HMI_Naming_and_Axis_Point_Model_v1.0` + mockup `hmi_axis_detail_v1_2.html` (tổng hợp
-phần mềm thật Secote/Mesa/Hanmi). Yêu cầu: phản biện điểm bất hợp lý → xây màn điều khiển trục theo mẫu.
+phần mềm điều khiển máy tham khảo). Yêu cầu: phản biện điểm bất hợp lý → xây màn điều khiển trục theo mẫu.
 
 ### ✅ Phản biện + adoption (ghi `docs/HMI_Naming_and_Axis_Point_Model.md §7`)
 - **Lấy**: bảng đèn 8 tín hiệu/trục, Set/Confirm, tên có nghĩa, 2-chạm, jog+inching, nhóm trục, Clear Error riêng.

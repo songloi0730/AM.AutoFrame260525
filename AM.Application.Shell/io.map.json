@@ -1,22 +1,46 @@
 {
-  "_comment": "IO List của máy — tag logic ↔ kênh vật lý. Đổi đấu dây chỉ sửa file này, không sửa code.",
-  "Di": {
-    "PartPresent_A": 0,
-    "VacOk_A": 1,
-    "PartPresent_B": 2,
-    "VacOk_B": 3,
-    "TrayPresent": 4,
-    "HomeSensor_X": 5,
-    "HomeSensor_Z": 6
-  },
-  "Do": {
-    "Vac_A": 0,
-    "Vac_B": 1,
-    "Clamp_A": 2,
-    "Clamp_B": 3,
-    "TowerGreen": 4,
-    "TowerYellow": 5,
-    "TowerRed": 6,
-    "Buzzer": 7
-  }
+  "_comment": "IO List của máy — kênh vật lý ↔ tag logic ↔ địa chỉ/tên. Đổi đấu dây chỉ sửa file này, không sửa code.",
+  "Di": [
+    { "channel": 0, "tag": "DI_Safety_DoorClosed", "address": "X000", "kind": "sensor", "station": "Safety",
+      "localize": true, "rawName": "安全门关闭",
+      "name": { "vi": "Cửa an toàn đóng", "en": "Safety door closed", "zh": "安全门关闭" } },
+    { "channel": 1, "tag": "DI_EStop_Released", "address": "X001", "kind": "sensor", "station": "Safety",
+      "localize": true, "rawName": "急停复位",
+      "name": { "vi": "E-Stop nhả", "en": "E-Stop released", "zh": "急停复位" } },
+    { "channel": 2, "tag": "DI_Vacuum1_Reached", "address": "X002", "kind": "sensor", "station": "AdjPlatform",
+      "localize": true, "rawName": "吸嘴真空1",
+      "name": { "vi": "Chân không đầu hút 1", "en": "Nozzle vacuum 1", "zh": "吸嘴真空1" } },
+    { "channel": 3, "tag": "DI_PartPresent_Loader", "address": "X003", "kind": "sensor", "station": "Loader",
+      "name": { "vi": "Phôi tại loader", "en": "Part present at loader", "zh": "上料处有料" } },
+    { "channel": 4, "tag": "DI_AirPressure_Ok", "address": "X004", "kind": "sensor",
+      "name": { "vi": "Áp khí nén đạt", "en": "Air pressure OK", "zh": "气压到位" } },
+    { "channel": 17, "tag": "DI_ClampCyl_Extended", "address": "X017", "kind": "sensor", "station": "Clamp",
+      "name": { "vi": "Xi lanh kẹp — cảm biến KẸP", "en": "Clamp cyl — clamped sensor", "zh": "夹紧气缸—夹紧" } },
+    { "channel": 18, "tag": "DI_ClampCyl_Retracted", "address": "X018", "kind": "sensor", "station": "Clamp",
+      "name": { "vi": "Xi lanh kẹp — cảm biến NHẢ", "en": "Clamp cyl — released sensor", "zh": "夹紧气缸—松开" } },
+    { "channel": 19, "tag": "DI_Btn_Start", "address": "X019", "kind": "button", "station": "Panel",
+      "name": { "vi": "Nút Start (bàn)", "en": "Start button (panel)", "zh": "启动按钮" } }
+  ],
+  "Do": [
+    { "channel": 0, "tag": "DO_Vacuum1", "address": "Y000", "kind": "actuator", "station": "AdjPlatform", "confirmDi": 2,
+      "name": { "vi": "Van chân không 1", "en": "Vacuum valve 1", "zh": "真空阀1" } },
+    { "channel": 1, "tag": "DO_WorkLight", "address": "Y001", "kind": "actuator",
+      "name": { "vi": "Đèn máy", "en": "Work light", "zh": "工作灯" } },
+    { "channel": 2, "tag": "DO_SafetyDoorLock", "address": "Y002", "kind": "actuator", "station": "Safety",
+      "name": { "vi": "Khóa cửa an toàn", "en": "Safety door lock", "zh": "安全门锁" } },
+    { "channel": 3, "tag": "DO_TowerGreen", "address": "Y003", "kind": "actuator",
+      "name": { "vi": "Tower lamp xanh", "en": "Tower lamp green", "zh": "三色灯绿" } },
+    { "channel": 4, "tag": "DO_TowerAmber", "address": "Y004", "kind": "actuator",
+      "name": { "vi": "Đèn báo vàng", "en": "Tower lamp amber", "zh": "三色灯黄" } },
+    { "channel": 5, "tag": "DO_Ionizer", "address": "Y005", "kind": "actuator",
+      "name": { "vi": "Ionizer", "en": "Ionizer", "zh": "离子风机" } },
+    { "channel": 6, "tag": "DO_Buzzer1", "address": "Y006", "kind": "actuator",
+      "name": { "vi": "Buzzer 1", "en": "Buzzer 1", "zh": "蜂鸣器1" } },
+    { "channel": 7, "tag": "DO_ConveyorLoader", "address": "Y007", "kind": "actuator", "station": "Loader",
+      "name": { "vi": "Băng tải loader", "en": "Loader conveyor", "zh": "上料输送带" } }
+  ],
+  "Cylinders": [
+    { "extendedDi": 17, "retractedDi": 18,
+      "name": { "vi": "Xi lanh kẹp", "en": "Clamp cylinder", "zh": "夹紧气缸" } }
+  ]
 }

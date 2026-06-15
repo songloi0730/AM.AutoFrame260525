@@ -211,7 +211,7 @@ Trục thuộc trạm hay chung: khai `"station": "X"` hoặc `null`. Trạm KH�
 - Override tách khỏi guard thường (không nới guard để chiều ngoại lệ).
 - Layout thích ứng + nhất quán 3 tầng (giải mâu thuẫn thích ứng vs vị trí cố định).
 - IO: địa chỉ vật lý luôn hiện + không dịch; set/reset thường tách khỏi Force mode (phương án A).
-- Tham khảo phần mềm thật (Secote/Mesa, Hanmi): lấy cấu trúc (tên IO 4 lớp, Set/Confirm, bảng đèn 8 tín hiệu, Clear Error/trục), bỏ thẩm mỹ (nút tròn/gradient) và mật độ cao khỏi màn vận hành.
+- Tham khảo phần mềm điều khiển máy công nghiệp: lấy cấu trúc (tên IO 4 lớp, Set/Confirm, bảng đèn 8 tín hiệu, Clear Error/trục), bỏ thẩm mỹ (nút tròn/gradient) và mật độ cao khỏi màn vận hành.
 
 ---
 
@@ -241,7 +241,7 @@ Màn **Vận hành tay** và hệ con là khối lớn, AN TOÀN-TRỌNG YẾU, 
 3. **R2 downgrade về Line Lead** — per-machine, default chưa chốt (§9.2).
 4. ~~**IO Force mode** (phương án A)~~ ✅ **XONG (S59)**: `IIoModule` +`ForceDoAsync`/`UnforceDoAsync`/`IsDoForced`/`ForcedOutputs`/`ReadAllDoAsync` (Sim + ADAM); kênh forced bỏ qua `WriteDiAsync` của logic. IoMonitor: set/reset (Engineer) + Chế độ Force (Admin, chạm-2-bước, badge + bộ đếm + audit). Còn hoãn: per-output confirm cho set/reset, alarm "còn IO forced".
 5. **Adaptive layout 4→20 trục** (flat/tabs/sidebar) — chiến lược render CỦA màn Vận hành tay; build khi dựng màn đó, không build engine trước.
-6. **IO actuatorGroup ("▲ giữa"), address-before-name, localize:false/rawName** — cần IOMap mở rộng (`JsonIoTagMap` có sẵn, chưa có displayName đa ngữ + rawName). Hoãn cùng đợt nâng IoMonitor.
+6. ~~**IO actuatorGroup ("▲ giữa"), address-before-name, localize:false/rawName**~~ ✅ **XONG (S60)**: `JsonIoTagMap` nhận schema mảng (địa chỉ/tên đa ngữ/rawName/localize) + `IoChannelDescriptor`/`IoCylinderDescriptor`; màn IO danh sách "địa chỉ·tên" + ô lọc + xi lanh ▲ giữa + Forced ô vuông + pending. Còn hoãn: confirm chạm-2 cho set/reset có hậu quả + alarm "còn IO forced" (increment C).
 
 > ⇒ **Lượt này KHÔNG build màn Vận hành tay.** Chỉ chốt nền role (đã làm) — nền cho mọi guard/override sau. Còn lại cần (a) chốt §9 với chủ dự án, (b) thêm HardwareInputEventBus + guard engine.
 

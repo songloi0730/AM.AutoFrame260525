@@ -1,7 +1,7 @@
 # HMI_Naming_and_Axis_Point_Model — v1.0
 
 Quy ước đặt tên biến/IO và mô hình dữ liệu trục–điểm cho AM.AutoFrame.
-Tổng hợp từ phân tích phần mềm thật (Secote/Mesa của dự án, Hanmi tham chiếu).
+Tổng hợp từ phân tích phần mềm điều khiển máy công nghiệp tham khảo.
 Đi kèm: mockup `hmi_axis_detail_v1.html`.
 
 ---
@@ -12,16 +12,16 @@ Tổng hợp từ phân tích phần mềm thật (Secote/Mesa của dự án, H
    Tên vật lý cho kỹ thuật viên dò dây (khớp tem nhãn trên máy); tên biến cho lập trình.
 2. **Trục và điểm là hai thực thể tách rời.** Điểm tham chiếu trục (`axisId`), không lưu trong trục.
    Một trục tham gia nhiều điểm; nhét điểm vào trục sẽ khiến sửa một trục đụng toàn bộ điểm.
-3. **Tên có nghĩa làm khóa hiển thị, index/id chỉ nội bộ.** Tránh "Index 37" trần như Hanmi —
-   người đọc phải tra nghĩa. Giữ "SafePoint", "AssemblyPoint" như chính Mesa đã làm.
-4. **Set Pos vs Confirm Pos** (học từ Hanmi): mỗi điplaceholder lưu giá trị *đặt* (mong muốn) và
+3. **Tên có nghĩa làm khóa hiển thị, index/id chỉ nội bộ.** Tránh "Index 37" trần —
+   người đọc phải tra nghĩa. Giữ tên có nghĩa kiểu "SafePoint", "AssemblyPoint".
+4. **Set Pos vs Confirm Pos**: mỗi điểm lưu giá trị *đặt* (mong muốn) và
    *xác nhận* (đã teach thực tế); lệch quá ngưỡng → cảnh báo khi teach/chạy.
 
 ---
 
 ## 2. Đặt tên IO
 
-Cấu trúc tên vật lý — bốn lớp **vị trí vật lý → địa chỉ logic → chức năng** (mở rộng từ quy ước Secote):
+Cấu trúc tên vật lý — bốn lớp **vị trí vật lý → địa chỉ logic → chức năng** (quy ước đặt tên vật lý 4 lớp):
 
 ```
 {Node}.{Slot}.{Channel}_{LogicAddr}_{Function}
@@ -95,12 +95,18 @@ Mô hình (mockup `hmi_io_states.html`):
 > UI `AM.Modules.IoMonitor` (sub-tab Giám sát I/O): set/reset = Engineer + máy dừng (guard R3); toggle **Chế độ Force** =
 > Administrator + máy dừng; force = chạm-2-bước; badge "F" + bộ đếm "đang FORCE N IO"; mọi thao tác audit.
 > Mất quyền/máy chạy khi đang ở Force mode → tự thoát chế độ (force trên HAL vẫn giữ tới khi gỡ thủ công).
+>
+> **✅ S60 — layout + trạng thái phong phú**: IOMap mở rộng (`IIoTagMap` +`IoChannelDescriptor`/`IoCylinderDescriptor` +
+> `Describe*`/`DiChannels`/`DoChannels`/`Cylinders`; `JsonIoTagMap` nhận schema mảng có địa chỉ/tên đa ngữ/rawName/localize +
+> seed `io.map.json`). Màn IO: danh sách 2 cột "địa chỉ · tên có nghĩa (+rawName)" + ô lọc; chỉ báo đủ bộ
+> (Off/On đèn · Pending vàng nhấp nháy theo `confirmDi` · **Forced ô vuông đỏ F**) + nhóm **Xi lanh** suy KẸP/NHẢ/**▲ giữa**
+> từ cặp DI. *(Lệch nhẹ mockup: gom xi lanh thành nhóm riêng thay vì badge trên 1 DI thô — rõ hơn.)*
 
 ---
 
 ## 3. Mô hình dữ liệu Trục
 
-Một trục = định nghĩa phần cứng (tham khảo bảng 轴配置 của Mesa, ảnh 1):
+Một trục = định nghĩa phần cứng (cấu trúc bảng cấu hình trục công nghiệp):
 
 ```json
 { "id": "AX_X_Adjust", "displayName": "Trục X điều chỉnh", "cardType": "PCIeM60", "axisNo": 1,
@@ -114,14 +120,14 @@ Một trục = định nghĩa phần cứng (tham khảo bảng 轴配置 của 
   "homeReturnEnable": false, "slaveAxis": false }
 ```
 
-Tín hiệu trục hiển thị (bảng đèn 8 cột, chuẩn công nghiệp — Mesa ảnh 3):
+Tín hiệu trục hiển thị (bảng đèn 8 cột, chuẩn công nghiệp):
 `Alarm(报警) · +Limit(正限位) · −Limit(负限位) · Origin(原点) · EStop(急停) · Zero(零位) · InPosition(到位) · Servo/Excited(励磁)`.
 
 ---
 
 ## 4. Mô hình dữ liệu Điểm
 
-Điểm = một vị trí có toạ độ trên NHIỀU trục (Mesa ảnh 3, Hanmi ảnh 4):
+Điểm = một vị trí có toạ độ trên NHIỀU trục:
 
 ```json
 { "id": "PT_Screw_AssemblyPoint", "displayName": "Điểm lắp ráp / Assembly Point",
@@ -151,14 +157,14 @@ Bắt buộc có (mockup `hmi_axis_detail_v1.html`):
 
 | Nút | Phạm vi | Ghi chú |
 |-----|---------|---------|
-| Servo ON/OFF | mỗi trục | hàng ngang mỗi trục (Mesa ảnh 3) |
+| Servo ON/OFF | mỗi trục | hàng ngang mỗi trục |
 | Home / 原点 | mỗi trục + tất cả | giữ 1 s; "tất cả" theo thứ tự an toàn |
 | **Clear Error / 清错** | mỗi trục + tất cả | xóa servo alarm RIÊNG, KHÔNG gộp vào Reset máy |
 | Di chuyển tới đích + tốc độ % | mỗi trục | tốc độ giới hạn an toàn |
 | Jog deadman (giữ-để-chạy) | trục đang chọn | watchdog HAL, STOP dừng mọi motion |
 | Inching 3 mức + ô nhập tùy ý | — | tinh/vừa/thô (0.001/0.01/0.1) + ô nhập số cho bước đặc biệt + nút +/− nhích từng nấc. KHÔNG để 5 mức (mắt quét lâu) |
 | Nhóm trục XYZU / Tap | — | chuyển nhóm khi máy >4 trục (máy có 7 trục) |
-| Tương đối / Tuyệt đối | jog mode | Mesa ảnh 3 |
+| Tương đối / Tuyệt đối | jog mode | chuẩn jog công nghiệp |
 | **Chọn ô → Tới / Teach** | bảng điểm | chạm ô toạ độ = chọn 1 trục; chạm tên điểm = chọn cả điểm. CHỌN không chạy ngay; một cặp Tới/Teach duy nhất ở thanh dưới (hiện rõ phạm vi) là cú chạm thứ hai xác nhận. Thay cho 2 nút/điểm — tiết kiệm cả cột, hiển thị được 20–50 điểm |
 | Lưu bảng điểm vào recipe | — | 保存点位 |
 | Dừng chuyển động | toàn cục | khác Stop chu trình máy |
@@ -167,19 +173,19 @@ Bắt buộc có (mockup `hmi_axis_detail_v1.html`):
 
 ---
 
-## 6. Phản biện các pattern trong ảnh (lấy gì, bỏ gì)
+## 6. Quyết định pattern (lấy gì, bỏ gì)
 
-| Pattern trong ảnh | Quyết định |
+| Pattern tham khảo | Quyết định |
 |-------------------|-----------|
-| Tên IO 4 lớp của Secote (`1.17_2-X01_…`) | **Lấy** — rõ vị trí vật lý → logic → chức năng |
-| `X000` trần của Hanmi (ảnh 6) | **Bỏ** — thiếu ngữ cảnh, khó dò |
-| Set/Confirm Pos của Hanmi | **Lấy** — pattern an toàn chống teach sai |
-| Index số trần làm khóa điểm (Hanmi) | **Bỏ** — dùng tên có nghĩa, index chỉ id nội bộ |
-| Bảng đèn 8 tín hiệu/trục (Mesa) | **Lấy** — chuẩn công nghiệp |
-| Clear Error per-axis (Mesa 清错) | **Lấy** — mockup cũ thiếu, đã bổ sung |
-| Update-this-axis (Mesa 更新此轴) | **Lấy** — teach một trục giữ trục khác |
-| Nút tròn + gradient (cả hai) | **Bỏ** — ISA-101, dùng chữ nhật phẳng |
-| Bảng config trục dày đặc (Mesa ảnh 1) | **Lấy cấu trúc, bỏ mật độ** — đây là màn Cài đặt kỹ thuật (Admin), không phải màn vận hành; OK để dày vì ít dùng |
+| Tên IO 4 lớp (`1.17_2-X01_…`) | **Lấy** — rõ vị trí vật lý → logic → chức năng |
+| Địa chỉ trần `X000` (không ngữ cảnh) | **Bỏ** — thiếu ngữ cảnh, khó dò |
+| Set/Confirm Pos | **Lấy** — pattern an toàn chống teach sai |
+| Index số trần làm khóa điểm | **Bỏ** — dùng tên có nghĩa, index chỉ id nội bộ |
+| Bảng đèn 8 tín hiệu/trục | **Lấy** — chuẩn công nghiệp |
+| Clear Error per-axis (清错) | **Lấy** — mockup cũ thiếu, đã bổ sung |
+| Update-this-axis (更新此轴) | **Lấy** — teach một trục giữ trục khác |
+| Nút tròn + gradient | **Bỏ** — ISA-101, dùng chữ nhật phẳng |
+| Bảng config trục dày đặc | **Lấy cấu trúc, bỏ mật độ** — đây là màn Cài đặt kỹ thuật (Admin), không phải màn vận hành; OK để dày vì ít dùng |
 
 ---
 
@@ -221,14 +227,14 @@ Machine
 |--------|-----------|--------|
 | Nhỏ | stationCount ≤ 1, axes ≤ 6 | FLAT — bỏ lớp trạm, danh sách phẳng |
 | Vừa | stationCount ≤ 4 và axes ≤ 12 | HORIZONTAL TABS — nút trạm ngang đầu pane |
-| Lớn | ≥ 5 trạm hoặc > 12 trục | SIDEBAR trái (kiểu Mesa ảnh 1) |
+| Lớn | ≥ 5 trạm hoặc > 12 trục | SIDEBAR trái |
 
 `layoutHint: auto|flat|tabs|sidebar` — mặc định auto, cho ép tay khi cần.
 
 **Trục thuộc trạm hay chung — config quyết định**, không cố định:
 - `"station": "Adjust"` → trục hiện trong nhóm trạm đó.
 - `"station": null` → gom vào nhóm "Trục chung" (gantry phục vụ nhiều trạm).
-- Máy die-bonder kiểu Hanmi (mỗi chuck table có cụm trục riêng) → khai station từng trục, sidebar tự gom. Máy gantry XY dùng chung → khai null.
+- Máy die-bonder (mỗi chuck table có cụm trục riêng) → khai station từng trục, sidebar tự gom. Máy gantry XY dùng chung → khai null.
 
 **Trạm KHÔNG lên thanh nav chính.** Nav phân theo *chức năng* (Home, Vision, Vận hành tay…); trạm là *vị trí vật lý*, thuộc bên trong màn thao tác. Trộn hai trục phân loại vào một thanh gây rối.
 
