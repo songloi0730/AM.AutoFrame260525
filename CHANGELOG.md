@@ -6,7 +6,7 @@
 
 ## [Session 59] 2026-06-15 — Tách Force IO thành chế độ riêng (phương án A)
 
-**Commit:** `pending`
+**Commit:** `57616bc`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Set/reset và Force là HAI việc khác bản chất (set/reset = logic vẫn kiểm soát; Force = đóng băng,
 cắt logic — quên gỡ là tai nạn kinh điển). S58 gộp mọi write-DO thành "Force=Admin" gây vướng: Engineer không

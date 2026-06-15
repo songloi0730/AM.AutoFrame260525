@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-15
 **Session:** #59 — **Tách Force IO thành chế độ riêng (phương án A)** ở Giám sát I/O: HAL `IIoModule` +force/unforce/ReadAllDo (kênh forced thì `WriteDiAsync` kể cả logic máy bị bỏ qua — cắt logic), hiện thực ở Sim + ADAM. UI: **set/reset thường** = Engineer + máy dừng (guard R3, bỏ check Admin — sửa vướng mắc S58); toggle **Chế độ Force** = Administrator + máy dừng; force = chạm-2-bước; badge "F" + bộ đếm "đang FORCE N IO"; tự thoát Force mode khi mất quyền/máy chạy. Mọi thao tác audit.
-**Commit:** `pending`  ·  (S58: Force IO=Admin tạm · S57: quick actions risk-gate · S56: guard engine)
+**Commit:** `57616bc`  ·  (S58: Force IO=Admin tạm · S57: quick actions risk-gate · S56: guard engine)
 
 ---
 
