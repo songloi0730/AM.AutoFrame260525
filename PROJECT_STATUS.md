@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-15
 **Session:** #58 — **Force IO = Admin** ở sub-tab Giám sát I/O: ghi DO = Force IO (R3) qua guard engine (máy phải dừng + role ≥ Engineer) **+ yêu cầu Administrator tại call site**; thêm dải khóa `LockText` + disable nút DO khi không đủ quyền; mọi lần ghi/từ chối đều audit. (Phương án A — chưa mở rộng HAL force/freeze.)
-**Commit:** `pending`  ·  (S57: quick actions risk-gate · S56: guard engine + Motion)
+**Commit:** `23c4034`  ·  (S57: quick actions risk-gate · S56: guard engine + Motion)
 
 ---
 
