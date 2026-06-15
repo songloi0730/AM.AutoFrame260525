@@ -4,6 +4,30 @@
 
 ---
 
+## [Session 58] 2026-06-15 — Force IO = Admin ở sub-tab Giám sát I/O
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Roadmap §6.1 (`SESSION_HANDOFF.md`) — gate ghi DO qua guard engine, phương án A
+(chưa mở rộng HAL force/freeze; trước mắt gate write-DO theo R3 + audit + yêu cầu Administrator).
+
+### ✅ Gate ghi DO theo guard + Admin
+- `IoMonitorViewModel` +`IGuardEngine`/`IAuditService`/`IUserService`. Ghi DO = **Force IO (R3)**:
+  `guard.Evaluate(R3)` (máy phải dừng + role ≥ Engineer) **+ check `CurrentLevel >= Administrator`** tại call site
+  (Force IO = Admin — cao hơn R3, GuardService xử lý riêng tại call site theo thiết kế).
+- `ToggleOutput`: bị chặn → `_audit.Record(...DENIED, lý do)` + return, KHÔNG gọi HAL; cho phép → ghi + `_audit.Record(...OK)`.
+- Dải khóa: +`IsWriteAllowed` (disable nút DO) + `LockText` (giải thích thay vì giấu): máy chạy → "chỉ xem" ·
+  thiếu quyền → "cần Administrator" · đủ → "cho phép ghi — {role}". `RefreshWriteLock()` chạy trong poll loop
+  (tránh bẫy cross-thread UserChanged — không subscribe, poll 300ms tự cập nhật theo state/login).
+- `IoMonitorView.xaml`: +dải khóa Row trên cùng (bind `LockText`) + nút DO `IsEnabled={IsWriteAllowed}`.
+- i18n `Io.ForceOk`/`Io.ForceLockedBusy`/`Io.ForceNeedAdmin` (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 Error** (30 projects). `dotnet test` → **189 passed**.
+- Còn hoãn: "Force mode" thật (force/freeze) cần mở rộng `IIoModule` — roadmap §6.1/§6.2.
+
+---
+
 ## [Session 57] 2026-06-14 — Gate Thao tác nhanh (Home) theo risk qua guard engine
 
 **Commit:** `e74e013`

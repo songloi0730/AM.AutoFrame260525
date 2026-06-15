@@ -157,6 +157,9 @@
 
   "Io.DigitalInputs": "Ngõ vào số",
   "Io.DigitalOutputs": "Ngõ ra số (bấm để đảo)",
+  "Io.ForceOk": "✏ Cho phép ghi ngõ ra (Force IO) — {0}",
+  "Io.ForceLockedBusy": "🔒 Máy đang chạy — ngõ ra chỉ xem, mọi thao tác ghi đã khóa",
+  "Io.ForceNeedAdmin": "🔒 Ghi ngõ ra (Force IO) cần quyền Administrator và máy phải dừng",
 
   "Motion.Velocity": "Vận tốc (mm/s)",
   "Motion.HomeAll": "Home tất cả",

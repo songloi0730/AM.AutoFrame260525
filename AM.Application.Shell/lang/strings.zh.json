@@ -157,6 +157,9 @@
 
   "Io.DigitalInputs": "数字输入",
   "Io.DigitalOutputs": "数字输出（点击切换）",
+  "Io.ForceOk": "✏ 允许写输出（Force IO）— {0}",
+  "Io.ForceLockedBusy": "🔒 设备运行中 — 输出仅供查看，写操作已锁定",
+  "Io.ForceNeedAdmin": "🔒 写输出（Force IO）需要管理员权限且设备已停止",
 
   "Motion.Velocity": "速度 (mm/s)",
   "Motion.HomeAll": "全部回原点",

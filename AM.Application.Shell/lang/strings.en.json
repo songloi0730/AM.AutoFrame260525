@@ -157,6 +157,9 @@
 
   "Io.DigitalInputs": "Digital Inputs",
   "Io.DigitalOutputs": "Digital Outputs (click to toggle)",
+  "Io.ForceOk": "✏ Output write allowed (Force IO) — {0}",
+  "Io.ForceLockedBusy": "🔒 Machine running — outputs are view-only, writes are locked",
+  "Io.ForceNeedAdmin": "🔒 Writing outputs (Force IO) requires Administrator and the machine stopped",
 
   "Motion.Velocity": "Velocity (mm/s)",
   "Motion.HomeAll": "Home All",

@@ -131,10 +131,11 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
 > Tất cả ghi ở `HMI_Master_Index.md §11C`. 2 câu hỏi §9 CẦN CHỦ DỰ ÁN CHỐT trước khi làm Override:
 > (a) Override confirm = 1 người (2-bước+đếm-ngược) hay 2 người (giữ-nút)? (b) R2 — đã chốt CỨNG Engineer (S56).
 
-1. **Force IO = Admin** trong sub-tab Giám sát I/O (gọn, thấy ngay): `IoMonitorViewModel` inject `IGuardEngine`+
-   `IAuditService`; toggle DO gate `Evaluate(R3)` + nếu là "force/đóng băng" thì cần Admin (check `>= Administrator`).
-   Hiện `IIoModule` CHƯA có khái niệm force/freeze (chỉ WriteDO) → "Force mode" thật cần mở rộng HAL; trước mắt
-   gate write-DO theo R3 + audit. (phương án A — xem `hmi_io_states.html` + Master Index §5.)
+1. ~~**Force IO = Admin** trong sub-tab Giám sát I/O~~ ✅ **XONG (S58, phương án A)**: `IoMonitorViewModel`
+   inject `IGuardEngine`+`IAuditService`+`IUserService`; `ToggleOutput` gate `Evaluate(R3)` + check
+   `>= Administrator` tại call site + audit OK/DENIED; dải khóa `LockText` + disable nút DO. **CÒN HOÃN:**
+   "Force mode" THẬT (force/đóng băng từng kênh, khác write-DO thường) cần mở rộng `IIoModule` (hiện chỉ WriteDO)
+   — xem `hmi_io_states.html` + Master Index §5. Khi mở rộng HAL: thêm khái niệm Forced/Frozen + badge trên kênh.
 2. **HardwareInputEventBus + guard condition (tầng 3)**: nền cho thao tác trạm + override. Thêm cơ chế event-push
    các tín hiệu (vị trí Z, cảm biến chân không...) để guard đọc; mở rộng `IGuardEngine.Evaluate(risk, guardKey)`
    + `IGuardContext`. Hiện chỉ có `ISafetyInput.SafetyStateChanged` (E-Stop/Guard/LightCurtain).

@@ -9,9 +9,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-14
-**Session:** #57 — Gate **Thao tác nhanh (Home) theo risk** qua guard engine: gán RiskTier (đèn/còi/ion/gọi KT=R0, cửa an toàn/cấp liệu=R1) → IsEnabled + lý do (chưa HAL / cần quyền / máy đang chạy) + audit khi thực thi; cập nhật khi login/logout/đổi state. (Tắt còi đã wired: cần Operator + còi đang kêu.)
-**Commit:** `e74e013`  ·  (S56: guard engine + Motion)
+**Ngày:** 2026-06-15
+**Session:** #58 — **Force IO = Admin** ở sub-tab Giám sát I/O: ghi DO = Force IO (R3) qua guard engine (máy phải dừng + role ≥ Engineer) **+ yêu cầu Administrator tại call site**; thêm dải khóa `LockText` + disable nút DO khi không đủ quyền; mọi lần ghi/từ chối đều audit. (Phương án A — chưa mở rộng HAL force/freeze.)
+**Commit:** `pending`  ·  (S57: quick actions risk-gate · S56: guard engine + Motion)
 
 ---
 
@@ -37,7 +37,7 @@
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
 | AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2** (S45): work area (thumbnail vision + bảng truy vết SN, dòng NG tô màu) + right rail 560px (KPI ca 8h, quick actions — Tắt còi wired ILightController, trạm & an toàn ISafetyInput event, nhật ký 1 dòng) — spec: `docs/HMI_Dashboard_Spec.md` v2 |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
-| AM.Modules.IoMonitor | ✅ Hoàn thành | **Mới** — DI realtime (poll) + toggle DO; nav tự sinh từ [ModuleNavigation] |
+| AM.Modules.IoMonitor | ✅ Hoàn thành | DI realtime (poll) + toggle DO; **ghi DO = Force IO (R3) qua guard + bắt buộc Administrator + audit** (S58); nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Modules.Motion | ✅ Hoàn thành | **Màn điều khiển trục v2** (S46): bảng đèn 8 tín hiệu + servo/home/clear/move từng trục + jog pad/inching + phản hồi servo + bảng điểm Set/Confirm 2-chạm (Tới/Teach/Lưu recipe). Bám `IMotionController` + `IAxisDiagnostics` (tuỳ chọn); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |

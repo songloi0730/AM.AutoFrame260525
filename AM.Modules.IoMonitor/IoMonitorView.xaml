@@ -15,6 +15,7 @@
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -22,7 +23,14 @@
                    FontSize="18" FontWeight="Bold" Margin="0,0,0,12"
                    Foreground="{DynamicResource Text.HeadingBrush}"/>
 
-        <Grid Grid.Row="1">
+        <!-- Dải khóa Force IO: giải thích khả dụng/lý do thay vì ẩn nút (ghi ngõ ra cần Administrator + máy dừng) -->
+        <Border Grid.Row="1" CornerRadius="4" Padding="10,6" Margin="0,0,0,10"
+                Background="{DynamicResource Panel.BackgroundAltBrush}">
+            <TextBlock Text="{Binding LockText}" FontSize="13" TextWrapping="Wrap"
+                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+        </Border>
+
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -76,6 +84,8 @@
                                             Command="{Binding DataContext.ToggleOutputCommand,
                                                       RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
+                                            IsEnabled="{Binding DataContext.IsWriteAllowed,
+                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             BorderThickness="0"
                                             Background="{Binding Value, Converter={StaticResource IoBrush}}"
                                             Foreground="{DynamicResource Text.PrimaryBrush}"
