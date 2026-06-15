@@ -10,6 +10,8 @@
 
     <UserControl.Resources>
         <conv:BoolToIoBrushConverter x:Key="IoBrush"/>
+        <!-- Nền nhạt cảnh báo cho panel Output khi ở Chế độ Force (đỏ alpha thấp). -->
+        <SolidColorBrush x:Key="Io.ForceBackgroundBrush" Color="#22C0392B"/>
     </UserControl.Resources>
 
     <Grid Margin="16">
@@ -66,13 +68,55 @@
                 </DockPanel>
             </Border>
 
-            <!-- Digital Outputs (toggle) -->
-            <Border Grid.Column="1" Margin="8,0,0,0" CornerRadius="6" Padding="12"
-                    Background="{DynamicResource Panel.BackgroundBrush}">
+            <!-- Digital Outputs: set/reset thường + Chế độ Force (đóng băng) -->
+            <Border Grid.Column="1" Margin="8,0,0,0" CornerRadius="6" Padding="12" BorderThickness="2">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="{DynamicResource Panel.BackgroundBrush}"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <Style.Triggers>
+                            <!-- Chế độ Force: nền + viền cảnh báo (ranh giới hiển nhiên) -->
+                            <DataTrigger Binding="{Binding ForceMode}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource Io.ForceBackgroundBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource Status.AlarmBrush}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="{Binding [Io.DigitalOutputs], Source={x:Static loc:Loc.Strings}}"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,8" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <!-- Thanh đầu bảng: tiêu đề + toggle Chế độ Force (Admin) -->
+                    <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                   Text="{Binding [Io.DigitalOutputs], Source={x:Static loc:Loc.Strings}}"
+                                   FontWeight="SemiBold" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <ToggleButton Grid.Column="1" Padding="12,4" Cursor="Hand"
+                                      Content="{Binding [Io.ForceMode], Source={x:Static loc:Loc.Strings}}"
+                                      IsChecked="{Binding ForceMode}"
+                                      IsEnabled="{Binding IsForceModeAllowed}"
+                                      ToolTip="{Binding [Io.ForceModeHint], Source={x:Static loc:Loc.Strings}}"/>
+                    </Grid>
+
+                    <!-- Bộ đếm "đang FORCE N IO — nhớ gỡ" (hiện khi còn force, bất kể chế độ) -->
+                    <Border DockPanel.Dock="Top" Margin="0,0,0,8" CornerRadius="4" Padding="8,5"
+                            Background="{DynamicResource Status.AlarmBrush}">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ForcedCount}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding ForcedCountText}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource Status.ForegroundBrush}"/>
+                    </Border>
+
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding DigitalOutputs}">
                             <ItemsControl.ItemsPanel>
@@ -80,16 +124,105 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Width="68" Height="48" Margin="4"
-                                            Command="{Binding DataContext.ToggleOutputCommand,
-                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding}"
-                                            IsEnabled="{Binding DataContext.IsWriteAllowed,
-                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            BorderThickness="0"
-                                            Background="{Binding Value, Converter={StaticResource IoBrush}}"
-                                            Foreground="{DynamicResource Text.PrimaryBrush}"
-                                            Content="{Binding Label}"/>
+                                    <Grid Width="76" Height="66" Margin="4">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Nút set/reset (chế độ thường): bấm = bật/tắt, logic vẫn kiểm soát -->
+                                        <Button Grid.Row="0"
+                                                Command="{Binding DataContext.ToggleOutputCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                IsEnabled="{Binding DataContext.IsWriteAllowed,
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                BorderThickness="0"
+                                                Background="{Binding Value, Converter={StaticResource IoBrush}}"
+                                                Foreground="{DynamicResource Text.PrimaryBrush}"
+                                                Content="{Binding Label}">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding DataContext.ForceMode,
+                                                                     RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+
+                                        <!-- Nút force (chế độ Force): chạm-1 arm (amber), chạm-2 đóng băng -->
+                                        <Button Grid.Row="0"
+                                                Command="{Binding DataContext.ForceOutputCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                BorderThickness="0"
+                                                Foreground="{DynamicResource Text.PrimaryBrush}"
+                                                Content="{Binding Label}"
+                                                ToolTip="{Binding [Io.ConfirmFreeze], Source={x:Static loc:Loc.Strings}}">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Setter Property="Background" Value="{Binding Value, Converter={StaticResource IoBrush}}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding DataContext.ForceMode,
+                                                                     RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                        <!-- Đã arm (chờ xác nhận) → nền amber -->
+                                                        <DataTrigger Binding="{Binding IsArmed}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource Button.WarningBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+
+                                        <!-- Badge "F" (kênh đang bị force) — hiện ở mọi chế độ -->
+                                        <Border Grid.Row="0" Width="16" Height="16" CornerRadius="2"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,2,0"
+                                                Background="{DynamicResource Status.AlarmBrush}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsForced}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="F" FontSize="10" FontWeight="Bold"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Status.ForegroundBrush}"/>
+                                        </Border>
+
+                                        <!-- Nút Gỡ (Force mode + đang forced) -->
+                                        <Button Grid.Row="1" Margin="0,2,0,0" Padding="0,1" FontSize="10"
+                                                Command="{Binding DataContext.UnforceOutputCommand,
+                                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Content="{Binding [Io.Unforce], Source={x:Static loc:Loc.Strings}}">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding DataContext.ForceMode,
+                                                                           RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True"/>
+                                                                <Condition Binding="{Binding IsForced}" Value="True"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

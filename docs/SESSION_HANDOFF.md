@@ -1,8 +1,8 @@
-# SESSION HANDOFF — mạch HMI v2 + Guard Engine (S44–S57)
+# SESSION HANDOFF — mạch HMI v2 + Guard Engine (S44–S59)
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
-> `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→57) là đủ để bắt tay.
-> Cập nhật: 2026-06-14, sau Session 57. Commit gần nhất: `19edfa9`.
+> `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→59) là đủ để bắt tay.
+> Cập nhật: 2026-06-15, sau Session 59 (Force mode IO — phương án A). Commit gần nhất: xem PROJECT_STATUS.
 
 ---
 
@@ -131,11 +131,15 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
 > Tất cả ghi ở `HMI_Master_Index.md §11C`. 2 câu hỏi §9 CẦN CHỦ DỰ ÁN CHỐT trước khi làm Override:
 > (a) Override confirm = 1 người (2-bước+đếm-ngược) hay 2 người (giữ-nút)? (b) R2 — đã chốt CỨNG Engineer (S56).
 
-1. ~~**Force IO = Admin** trong sub-tab Giám sát I/O~~ ✅ **XONG (S58, phương án A)**: `IoMonitorViewModel`
-   inject `IGuardEngine`+`IAuditService`+`IUserService`; `ToggleOutput` gate `Evaluate(R3)` + check
-   `>= Administrator` tại call site + audit OK/DENIED; dải khóa `LockText` + disable nút DO. **CÒN HOÃN:**
-   "Force mode" THẬT (force/đóng băng từng kênh, khác write-DO thường) cần mở rộng `IIoModule` (hiện chỉ WriteDO)
-   — xem `hmi_io_states.html` + Master Index §5. Khi mở rộng HAL: thêm khái niệm Forced/Frozen + badge trên kênh.
+1. ~~**Force IO** trong sub-tab Giám sát I/O~~ ✅ **XONG (S58→S59, phương án A — set/reset vs Force mode)**:
+   - S58: gate mọi write-DO theo R3 + Admin (tạm). S59 **tách bạch** theo trao đổi thiết kế:
+   - **HAL**: `IIoModule` +`ForceDoAsync`/`UnforceDoAsync`/`IsDoForced`/`ForcedOutputs`/`ReadAllDoAsync`; kênh forced thì
+     `WriteDiAsync` (kể cả logic máy) **bị bỏ qua** (cắt logic) — hiện thực ở `SimulatedIoModule` + `AdvantechAdamIoModule`.
+   - **UI** `IoMonitorViewModel`/`IoMonitorView`: set/reset thường = Engineer + máy dừng (guard R3, KHÔNG đòi Admin);
+     toggle **Chế độ Force** = Administrator + máy dừng; force = chạm-2-bước; badge "F" + bộ đếm "đang FORCE N IO";
+     tự thoát Force mode khi mất quyền/máy chạy (force HAL vẫn giữ). Test force: `AM.Hardware.Tests/SimulatedDeviceTests`.
+   - **CÒN HOÃN (UX)**: per-output "có hậu quả" cần chạm-xác-nhận cho cả set/reset (hiện chỉ Force xác-nhận); alarm 70xxx
+     "còn IO forced" + chặn rời màn khi còn force (hiện chỉ badge + audit); seed `io.map.json` để hiện tên tag thay DO{n}.
 2. **HardwareInputEventBus + guard condition (tầng 3)**: nền cho thao tác trạm + override. Thêm cơ chế event-push
    các tín hiệu (vị trí Z, cảm biến chân không...) để guard đọc; mở rộng `IGuardEngine.Evaluate(risk, guardKey)`
    + `IGuardContext`. Hiện chỉ có `ISafetyInput.SafetyStateChanged` (E-Stop/Guard/LightCurtain).

@@ -25,6 +25,8 @@ public sealed class SimulatedIoModule : IIoModule
     private readonly ILogger<SimulatedIoModule> _logger;
     private readonly bool[] _diStates;
     private readonly bool[] _doStates;
+    private readonly HashSet<int> _forcedDo = [];
+    private readonly object _forceLock = new();
 
     // CA5394: Random dùng cho giả lập analog value — không phải context bảo mật
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394:Do not use insecure randomness",
@@ -88,6 +90,14 @@ public sealed class SimulatedIoModule : IIoModule
     {
         EnsureConnected();
         ValidateChannel(channel, DigitalOutputCount, "DO");
+
+        // Kênh đang bị force → bỏ qua lệnh ghi của logic (force cắt quyền điều khiển).
+        if (IsDoForced(channel))
+        {
+            _logger.LogDebug("[SimIO] DO[{Channel}] write IGNORED — channel forced", channel);
+            return Task.CompletedTask;
+        }
+
         _doStates[channel] = value;
         _logger.LogDebug("[SimIO] DO[{Channel}] = {Value}", channel, value);
         return Task.CompletedTask;
@@ -101,8 +111,9 @@ public sealed class SimulatedIoModule : IIoModule
         _logger.LogDebug("[SimIO] WriteAndWaitConfirm DO[{Out}]→DI[{In}]={Expected}",
             outputChannel, inputConfirmChannel, expectedValue);
 
-        // Ghi output
-        _doStates[outputChannel] = true;
+        // Ghi output (bỏ qua nếu kênh đang bị force — force cắt quyền điều khiển của logic).
+        if (!IsDoForced(outputChannel))
+            _doStates[outputChannel] = true;
 
         // Giả lập relay delay rồi set confirm input
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -129,6 +140,49 @@ public sealed class SimulatedIoModule : IIoModule
         for (int i = 0; i < Math.Min(DigitalInputCount, 32); i++)
             if (_diStates[i]) mask |= (1u << i);
         return Task.FromResult(mask);
+    }
+
+    /// <inheritdoc/>
+    public Task<uint> ReadAllDoAsync(CancellationToken ct = default)
+    {
+        EnsureConnected();
+        uint mask = 0;
+        for (int i = 0; i < Math.Min(DigitalOutputCount, 32); i++)
+            if (_doStates[i]) mask |= (1u << i);
+        return Task.FromResult(mask);
+    }
+
+    /// <inheritdoc/>
+    public Task ForceDoAsync(int channel, bool value, CancellationToken ct = default)
+    {
+        EnsureConnected();
+        ValidateChannel(channel, DigitalOutputCount, "DO");
+        lock (_forceLock) _forcedDo.Add(channel);
+        _doStates[channel] = value; // đặt giá trị bị đóng băng
+        _logger.LogInformation("[SimIO] DO[{Channel}] FORCED = {Value}", channel, value);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task UnforceDoAsync(int channel, CancellationToken ct = default)
+    {
+        EnsureConnected();
+        ValidateChannel(channel, DigitalOutputCount, "DO");
+        lock (_forceLock) _forcedDo.Remove(channel);
+        _logger.LogInformation("[SimIO] DO[{Channel}] UNFORCED", channel);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public bool IsDoForced(int channel)
+    {
+        lock (_forceLock) return _forcedDo.Contains(channel);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<int> ForcedOutputs
+    {
+        get { lock (_forceLock) return [.. _forcedDo]; }
     }
 
     /// <inheritdoc/>

@@ -239,7 +239,7 @@ Màn **Vận hành tay** và hệ con là khối lớn, AN TOÀN-TRỌNG YẾU, 
 1. **`HardwareInputEventBus`** chưa tồn tại. Hiện chỉ có `ISafetyInput.SafetyStateChanged` (push, đúng nguyên lý) nhưng chỉ cho E-Stop/Guard/LightCurtain, KHÔNG cho guard tuỳ ý (vị trí Z, cảm biến chân không). Guard engine cần mở rộng HAL hoặc thêm bus — infra thật, không giả lập tạm.
 2. **Guard engine + Supervised Override** — cơ chế confirm Override CHƯA chốt (§9.1: 1 người 2-bước+đếm-ngược hay 2 người giữ-nút). KHÔNG build flow an toàn khi chính sách chưa xác nhận (rule "safety-first" + "think-first").
 3. **R2 downgrade về Line Lead** — per-machine, default chưa chốt (§9.2).
-4. **IO Force mode** (phương án A): set/reset thường ĐÃ có (`IIoModule.WriteDO` + IoMonitor toggle). "Force = đóng băng, cắt quyền logic" cần HAL hỗ trợ force/freeze — `IIoModule` chưa expose. Hoãn phần Force.
+4. ~~**IO Force mode** (phương án A)~~ ✅ **XONG (S59)**: `IIoModule` +`ForceDoAsync`/`UnforceDoAsync`/`IsDoForced`/`ForcedOutputs`/`ReadAllDoAsync` (Sim + ADAM); kênh forced bỏ qua `WriteDiAsync` của logic. IoMonitor: set/reset (Engineer) + Chế độ Force (Admin, chạm-2-bước, badge + bộ đếm + audit). Còn hoãn: per-output confirm cho set/reset, alarm "còn IO forced".
 5. **Adaptive layout 4→20 trục** (flat/tabs/sidebar) — chiến lược render CỦA màn Vận hành tay; build khi dựng màn đó, không build engine trước.
 6. **IO actuatorGroup ("▲ giữa"), address-before-name, localize:false/rawName** — cần IOMap mở rộng (`JsonIoTagMap` có sẵn, chưa có displayName đa ngữ + rawName). Hoãn cùng đợt nâng IoMonitor.
 

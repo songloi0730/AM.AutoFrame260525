@@ -28,6 +28,8 @@ public sealed class AdvantechAdamIoModule : IIoModule
     private readonly ILogger<AdvantechAdamIoModule> _logger;
     private readonly byte _slaveId;
     private readonly string _name;
+    private readonly HashSet<int> _forcedDo = [];
+    private readonly object _forceLock = new();
     private bool _disposed;
 
     /// <summary>Tạo driver ADAM I/O.</summary>
@@ -97,6 +99,14 @@ public sealed class AdvantechAdamIoModule : IIoModule
     public async Task WriteDiAsync(int channel, bool value, CancellationToken ct = default)
     {
         ValidateChannel(channel, DigitalOutputCount, "DO");
+
+        // Kênh đang bị force → bỏ qua lệnh ghi của logic (force cắt quyền điều khiển).
+        if (IsDoForced(channel))
+        {
+            _logger.LogDebug("[ADAM] DO[{Ch}] write IGNORED — channel forced", channel);
+            return;
+        }
+
         await _modbus.WriteSingleCoilAsync(_slaveId, (ushort)(DoBase + channel), value, ct).ConfigureAwait(false);
         _logger.LogDebug("[ADAM] DO[{Ch}] = {Val}", channel, value);
     }
@@ -139,6 +149,49 @@ public sealed class AdvantechAdamIoModule : IIoModule
         for (int i = 0; i < bits.Length; i++)
             if (bits[i]) mask |= 1u << i;
         return mask;
+    }
+
+    /// <inheritdoc/>
+    public async Task<uint> ReadAllDoAsync(CancellationToken ct = default)
+    {
+        int count = Math.Min(DigitalOutputCount, 32);
+        bool[] bits = await _modbus.ReadCoilsAsync(
+            _slaveId, DoBase, (ushort)count, ct).ConfigureAwait(false);
+        uint mask = 0;
+        for (int i = 0; i < bits.Length; i++)
+            if (bits[i]) mask |= 1u << i;
+        return mask;
+    }
+
+    /// <inheritdoc/>
+    public async Task ForceDoAsync(int channel, bool value, CancellationToken ct = default)
+    {
+        ValidateChannel(channel, DigitalOutputCount, "DO");
+        lock (_forceLock) _forcedDo.Add(channel);
+        // Ghi thẳng coil giá trị bị đóng băng (không qua WriteDiAsync để khỏi bị chính gate force chặn).
+        await _modbus.WriteSingleCoilAsync(_slaveId, (ushort)(DoBase + channel), value, ct).ConfigureAwait(false);
+        _logger.LogInformation("[ADAM] DO[{Ch}] FORCED = {Val}", channel, value);
+    }
+
+    /// <inheritdoc/>
+    public Task UnforceDoAsync(int channel, CancellationToken ct = default)
+    {
+        ValidateChannel(channel, DigitalOutputCount, "DO");
+        lock (_forceLock) _forcedDo.Remove(channel);
+        _logger.LogInformation("[ADAM] DO[{Ch}] UNFORCED", channel);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public bool IsDoForced(int channel)
+    {
+        lock (_forceLock) return _forcedDo.Contains(channel);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<int> ForcedOutputs
+    {
+        get { lock (_forceLock) return [.. _forcedDo]; }
     }
 
     /// <inheritdoc/>

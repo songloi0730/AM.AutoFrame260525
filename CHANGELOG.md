@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 59] 2026-06-15 — Tách Force IO thành chế độ riêng (phương án A)
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Set/reset và Force là HAI việc khác bản chất (set/reset = logic vẫn kiểm soát; Force = đóng băng,
+cắt logic — quên gỡ là tai nạn kinh điển). S58 gộp mọi write-DO thành "Force=Admin" gây vướng: Engineer không
+set/reset thử được. Phương án A: mỗi dòng = nút set/reset thường (Engineer); Force tách thành chế độ riêng (Admin).
+
+### ✅ HAL — `IIoModule` + 2 implementer
+- Interface +`ReadAllDoAsync` +`ForceDoAsync(ch,val)` +`UnforceDoAsync(ch)` +`IsDoForced(ch)` +`ForcedOutputs`.
+- `SimulatedIoModule` + `AdvantechAdamIoModule` (software-layer, ADAM ghi coil thẳng): kênh đang force thì
+  `WriteDiAsync` (kể cả logic máy qua `WriteDoByTagAsync`) **bị bỏ qua** → đúng nghĩa "force cắt quyền logic".
+  `WriteAndWaitConfirmAsync` cũng tôn trọng force.
+
+### ✅ UI — `IoMonitorViewModel` + `IoMonitorView`
+- **Set/reset thường** (`ToggleOutput`): guard R3 (Engineer + máy dừng), **bỏ check Administrator** → sửa vướng mắc S58.
+- **Chế độ Force** (toggle đầu bảng): `IsForceModeAllowed` = Administrator + máy dừng; nền + viền cảnh báo khi bật.
+- **Force** (`ForceOutput`): chạm-1 arm (amber, tự huỷ 4s) → chạm-2 cùng kênh đóng băng (`ForceDoAsync`). **Gỡ** (`UnforceOutput`).
+- Badge "F" trên kênh forced (mọi chế độ) + bộ đếm `ForcedCountText` "đang FORCE N IO — nhớ gỡ". Poll thêm `ReadAllDoAsync`.
+- Mất quyền/máy chạy khi đang Force mode → tự thoát chế độ (force HAL vẫn giữ tới khi gỡ thủ công). Mọi thao tác audit OK/DENIED.
+- i18n: thay `Io.Force*` cũ bằng `Io.WriteOk/WriteLockedBusy/WriteNeedRole/ForceMode/ForceModeHint/ForceModeNeedAdmin/ForcedCount/ConfirmFreeze/Unforce` (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning** (30 projects). `dotnet test` → **192 passed** (189 + 3 test force HAL).
+- App khởi động sạch (log không exception). CÒN HOÃN: per-output confirm cho set/reset, alarm 70xxx "còn IO forced", seed io.map.json tên tag.
+
+---
+
 ## [Session 58] 2026-06-15 — Force IO = Admin ở sub-tab Giám sát I/O
 
 **Commit:** `23c4034`

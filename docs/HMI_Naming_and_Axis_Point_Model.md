@@ -89,6 +89,13 @@ Mô hình (mockup `hmi_io_states.html`):
 - Ranh giới hiển nhiên: ở chế độ Force thì MỌI cú bấm là force; ở chế độ thường thì MỌI cú bấm là set/reset. Người dùng luôn biết mình đang "bật tạm" hay "đóng băng" — không nhầm.
 - *(Trường phái an-toàn-tối-đa: bỏ luôn set/reset thường, IO chỉ để xem trừ khi vào Force mode. Máy ưu tiên an toàn hơn linh hoạt có thể chọn cấu hình này. Dự án dùng phương án A — có set/reset thường.)*
 
+> **✅ Đã triển khai (S59)** — không còn chỉ là mockup. `IIoModule` có `ForceDoAsync`/`UnforceDoAsync`/`IsDoForced`/
+> `ForcedOutputs`/`ReadAllDoAsync`; kênh bị force thì `WriteDiAsync` (kể cả logic máy qua `WriteDoByTagAsync`)
+> **bị bỏ qua** → đúng nghĩa cắt logic, hiện thực ở cả `SimulatedIoModule` lẫn `AdvantechAdamIoModule` (software-layer).
+> UI `AM.Modules.IoMonitor` (sub-tab Giám sát I/O): set/reset = Engineer + máy dừng (guard R3); toggle **Chế độ Force** =
+> Administrator + máy dừng; force = chạm-2-bước; badge "F" + bộ đếm "đang FORCE N IO"; mọi thao tác audit.
+> Mất quyền/máy chạy khi đang ở Force mode → tự thoát chế độ (force trên HAL vẫn giữ tới khi gỡ thủ công).
+
 ---
 
 ## 3. Mô hình dữ liệu Trục
