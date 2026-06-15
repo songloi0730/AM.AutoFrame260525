@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-16
 **Session:** #60 — **Nâng màn Giám sát I/O theo mockup (A+B)**: IOMap mở rộng (`IIoTagMap` +`IoChannelDescriptor`/`IoCylinderDescriptor` + `JsonIoTagMap` schema mảng địa chỉ/tên đa ngữ/rawName/localize + seed `io.map.json`); màn IO **danh sách 2 cột "địa chỉ · tên có nghĩa (+rawName)" + ô lọc**; chỉ báo đủ bộ (Off/On · **Pending** vàng nhấp nháy theo confirmDi · **Forced ô vuông đỏ F**) + nhóm **Xi lanh** suy KẸP/NHẢ/**▲ giữa** từ cặp DI. Set/reset & Force của S59 giữ nguyên.
-**Commit:** `pending`  ·  (S59: Force mode phương án A · S58: Force IO=Admin tạm · S57: quick actions risk-gate)
+**Commit:** `892ab96`  ·  (S59: Force mode phương án A · S58: Force IO=Admin tạm · S57: quick actions risk-gate)
 
 ---
 

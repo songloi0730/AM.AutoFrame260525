@@ -6,7 +6,7 @@
 
 ## [Session 60] 2026-06-16 — Nâng màn Giám sát I/O theo mockup (IOMap + danh sách + trạng thái phong phú)
 
-**Commit:** `pending`
+**Commit:** `892ab96`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Màn IO mới hiện "DO0/DI3" + lưới nút, cách mockup `hmi_io_states.html` + `HMI_Naming_and_Axis_Point_Model`
 khá xa. Làm increment A (nền IOMap + layout danh sách) + B (trạng thái phong phú + xi lanh).
