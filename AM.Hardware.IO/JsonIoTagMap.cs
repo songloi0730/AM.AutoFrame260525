@@ -152,7 +152,8 @@ public sealed class JsonIoTagMap : IIoTagMap
                 d.RawName,
                 string.IsNullOrWhiteSpace(d.Kind) ? defaultKind : d.Kind,
                 d.Station,
-                d.ConfirmDi))
+                d.ConfirmDi,
+                d.Consequential ?? false))
             .ToList();
 
     private static Dictionary<string, string> ToNameDict(Dictionary<string, string>? name)
@@ -171,7 +172,7 @@ public sealed class JsonIoTagMap : IIoTagMap
         Justification = "Instantiated by System.Text.Json deserialization")]
     private sealed record ChannelDto(
         int Channel, string? Tag, string? Address, Dictionary<string, string>? Name,
-        bool? Localize, string? RawName, string? Kind, string? Station, int? ConfirmDi);
+        bool? Localize, string? RawName, string? Kind, string? Station, int? ConfirmDi, bool? Consequential);
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812",
         Justification = "Instantiated by System.Text.Json deserialization")]

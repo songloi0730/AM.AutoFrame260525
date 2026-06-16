@@ -22,11 +22,11 @@
       "name": { "vi": "Nút Start (bàn)", "en": "Start button (panel)", "zh": "启动按钮" } }
   ],
   "Do": [
-    { "channel": 0, "tag": "DO_Vacuum1", "address": "Y000", "kind": "actuator", "station": "AdjPlatform", "confirmDi": 2,
+    { "channel": 0, "tag": "DO_Vacuum1", "address": "Y000", "kind": "actuator", "station": "AdjPlatform", "confirmDi": 2, "consequential": true,
       "name": { "vi": "Van chân không 1", "en": "Vacuum valve 1", "zh": "真空阀1" } },
     { "channel": 1, "tag": "DO_WorkLight", "address": "Y001", "kind": "actuator",
       "name": { "vi": "Đèn máy", "en": "Work light", "zh": "工作灯" } },
-    { "channel": 2, "tag": "DO_SafetyDoorLock", "address": "Y002", "kind": "actuator", "station": "Safety",
+    { "channel": 2, "tag": "DO_SafetyDoorLock", "address": "Y002", "kind": "actuator", "station": "Safety", "consequential": true,
       "name": { "vi": "Khóa cửa an toàn", "en": "Safety door lock", "zh": "安全门锁" } },
     { "channel": 3, "tag": "DO_TowerGreen", "address": "Y003", "kind": "actuator",
       "name": { "vi": "Tower lamp xanh", "en": "Tower lamp green", "zh": "三色灯绿" } },
@@ -36,7 +36,7 @@
       "name": { "vi": "Ionizer", "en": "Ionizer", "zh": "离子风机" } },
     { "channel": 6, "tag": "DO_Buzzer1", "address": "Y006", "kind": "actuator",
       "name": { "vi": "Buzzer 1", "en": "Buzzer 1", "zh": "蜂鸣器1" } },
-    { "channel": 7, "tag": "DO_ConveyorLoader", "address": "Y007", "kind": "actuator", "station": "Loader",
+    { "channel": 7, "tag": "DO_ConveyorLoader", "address": "Y007", "kind": "actuator", "station": "Loader", "consequential": true,
       "name": { "vi": "Băng tải loader", "en": "Loader conveyor", "zh": "上料输送带" } }
   ],
   "Cylinders": [

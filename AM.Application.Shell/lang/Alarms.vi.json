@@ -49,5 +49,6 @@
   "70001": { "name": "Dừng khẩn cấp", "remedy": "Nhả nút E-Stop và reset an toàn" },
   "70002": { "name": "Cửa an toàn mở", "remedy": "Đóng cửa và xác nhận interlock" },
   "70003": { "name": "Rèm sáng bị che", "remedy": "Loại vật cản khỏi vùng rèm sáng và reset" },
-  "70004": { "name": "Vi phạm interlock", "remedy": "Kiểm tra chuỗi an toàn và xác nhận reset" }
+  "70004": { "name": "Vi phạm interlock", "remedy": "Kiểm tra chuỗi an toàn và xác nhận reset" },
+  "70010": { "name": "Còn ngõ ra bị Force", "remedy": "Vào Giám sát I/O, gỡ Force mọi ngõ ra trước khi chạy máy" }
 }

@@ -71,4 +71,5 @@ public static class AlarmCodes
     public const int SafetyDoorOpen        = 70002;
     public const int SafetyLightCurtain    = 70003;
     public const int SafetyInterlockBreach = 70004;
+    public const int SafetyIoForced        = 70010;  // còn ngõ ra bị Force (đóng băng) — nhớ gỡ trước khi chạy
 }

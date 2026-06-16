@@ -19,6 +19,7 @@ namespace AM.Core.Models;
 /// <param name="Kind">Loại kênh: "sensor" | "button" (momentary) | "actuator" | "cylinder"…</param>
 /// <param name="Station">Trạm sở hữu (tuỳ chọn — để lọc/nhóm).</param>
 /// <param name="ConfirmDi">Kênh DI xác nhận (chỉ DO) — để suy trạng thái "đang chuyển" (pending).</param>
+/// <param name="Consequential">True nếu set/reset có hậu quả vật lý → yêu cầu chạm-xác-nhận 2 bước.</param>
 public sealed record IoChannelDescriptor(
     int Channel,
     string Tag,
@@ -28,7 +29,8 @@ public sealed record IoChannelDescriptor(
     string? RawName,
     string Kind,
     string? Station,
-    int? ConfirmDi)
+    int? ConfirmDi,
+    bool Consequential = false)
 {
     /// <summary>
     /// Tên hiển thị theo mã ngôn ngữ 2 ký tự (vi/en/zh); fallback: vi → bản đầu tiên → <see cref="Tag"/>.

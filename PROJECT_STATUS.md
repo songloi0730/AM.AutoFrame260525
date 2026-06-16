@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-16
-**Session:** #60 — **Nâng màn Giám sát I/O theo mockup (A+B)**: IOMap mở rộng (`IIoTagMap` +`IoChannelDescriptor`/`IoCylinderDescriptor` + `JsonIoTagMap` schema mảng địa chỉ/tên đa ngữ/rawName/localize + seed `io.map.json`); màn IO **danh sách 2 cột "địa chỉ · tên có nghĩa (+rawName)" + ô lọc**; chỉ báo đủ bộ (Off/On · **Pending** vàng nhấp nháy theo confirmDi · **Forced ô vuông đỏ F**) + nhóm **Xi lanh** suy KẸP/NHẢ/**▲ giữa** từ cặp DI. Set/reset & Force của S59 giữ nguyên.
-**Commit:** `892ab96`  ·  (S59: Force mode phương án A · S58: Force IO=Admin tạm · S57: quick actions risk-gate)
+**Session:** #61 — **Giám sát I/O increment C (an toàn)**: (1) set/reset ngõ ra **có hậu quả** (`consequential` trong io.map.json — vacuum/khóa cửa/băng tải) cần **chạm-xác-nhận 2 bước**; (2) alarm `70010` "còn IO forced" (Critical/Safety) raise khi `ForcedCount>0` & clear khi về 0 — **banner toàn app = nhắc gỡ trước khi rời màn/chạy máy**. Hoàn tất roadmap §6.1 (Force IO A+B+C).
+**Commit:** `pending`  ·  (S60: IOMap+layout+trạng thái · S59: Force mode · S58: Force IO=Admin tạm)
 
 ---
 
@@ -37,7 +37,7 @@
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
 | AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2** (S45): work area (thumbnail vision + bảng truy vết SN, dòng NG tô màu) + right rail 560px (KPI ca 8h, quick actions — Tắt còi wired ILightController, trạm & an toàn ISafetyInput event, nhật ký 1 dòng) — spec: `docs/HMI_Dashboard_Spec.md` v2 |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
-| AM.Modules.IoMonitor | ✅ Hoàn thành | **Danh sách "địa chỉ·tên" (IOMap) + ô lọc + chỉ báo Off/On/Pending/Forced + nhóm Xi lanh ▲giữa** (S60); set/reset thường (Engineer) + Chế độ Force riêng (Admin, chạm-2-bước + badge + bộ đếm + audit) (S59); nav tự sinh từ [ModuleNavigation] |
+| AM.Modules.IoMonitor | ✅ Hoàn thành | Danh sách "địa chỉ·tên" (IOMap) + ô lọc + chỉ báo Off/On/Pending/Forced + nhóm Xi lanh ▲giữa (S60); set/reset thường (Engineer; **có hậu quả → chạm-2-bước**) + Chế độ Force (Admin) + **alarm 70010 "còn IO forced"** (S61); nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Modules.Motion | ✅ Hoàn thành | **Màn điều khiển trục v2** (S46): bảng đèn 8 tín hiệu + servo/home/clear/move từng trục + jog pad/inching + phản hồi servo + bảng điểm Set/Confirm 2-chạm (Tới/Teach/Lưu recipe). Bám `IMotionController` + `IAxisDiagnostics` (tuỳ chọn); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |

@@ -2,7 +2,7 @@
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
 > `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→60) là đủ để bắt tay.
-> Cập nhật: 2026-06-16, sau Session 60 (IOMap + layout danh sách + trạng thái phong phú). Commit gần nhất: xem PROJECT_STATUS.
+> Cập nhật: 2026-06-16, sau Session 61 (Giám sát I/O increment C — confirm có hậu quả + alarm forced). Commit gần nhất: xem PROJECT_STATUS.
 
 ---
 
@@ -142,8 +142,9 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
      `Describe*`/`DiChannels`/`DoChannels`/`Cylinders`); `JsonIoTagMap` nhận schema mảng (địa chỉ/tên đa ngữ/rawName/localize,
      vẫn nhận object cũ) + seed `io.map.json`. Màn IO: danh sách 2 cột "địa chỉ·tên" + ô lọc; chỉ báo Off/On/**Pending** (vàng
      nhấp nháy theo `confirmDi`)/**Forced (ô vuông đỏ F)** + nhóm **Xi lanh** (▲ giữa). Test: `HalAbstractionTests` schema mảng.
-   - **CÒN HOÃN = increment C**: per-output "có hậu quả" cần chạm-xác-nhận cho cả set/reset (hiện chỉ Force xác-nhận); alarm 70xxx
-     "còn IO forced" + chặn rời màn khi còn force (hiện chỉ badge + audit).
+   - **S61 — increment C (an toàn) ✅ XONG**: (C1) set/reset ngõ ra `consequential` (cờ trong io.map.json) cần **chạm-2-bước**
+     (dùng chung `Arm`/`IsArmed`); (C2) `AlarmCodes.SafetyIoForced=70010` raise khi `ForcedCount>0`, clear khi 0 — banner
+     toàn app làm "nhắc gỡ" (không hook navigation). → **roadmap §6.1 (Force IO) trọn vẹn A+B+C.**
 2. **HardwareInputEventBus + guard condition (tầng 3)**: nền cho thao tác trạm + override. Thêm cơ chế event-push
    các tín hiệu (vị trí Z, cảm biến chân không...) để guard đọc; mở rộng `IGuardEngine.Evaluate(risk, guardKey)`
    + `IGuardContext`. Hiện chỉ có `ISafetyInput.SafetyStateChanged` (E-Stop/Guard/LightCurtain).

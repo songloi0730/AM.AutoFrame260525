@@ -49,5 +49,6 @@
   "70001": { "name": "Emergency stop", "remedy": "Release E-Stop and reset safety" },
   "70002": { "name": "Safety door open", "remedy": "Close door and confirm interlock" },
   "70003": { "name": "Light curtain broken", "remedy": "Clear obstruction from light curtain and reset" },
-  "70004": { "name": "Interlock breach", "remedy": "Check safety chain and confirm reset" }
+  "70004": { "name": "Interlock breach", "remedy": "Check safety chain and confirm reset" },
+  "70010": { "name": "Outputs still forced", "remedy": "Open I/O Monitor and release all forced outputs before running" }
 }

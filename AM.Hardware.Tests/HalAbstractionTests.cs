@@ -100,7 +100,7 @@ public sealed class HalAbstractionTests
           "Di": [ { "channel": 17, "tag": "DI_Clamp_Ext", "address": "X017", "kind": "sensor",
                     "name": { "vi": "Kẹp", "en": "Clamp" } },
                   { "channel": 18, "tag": "DI_Clamp_Ret", "address": "X018" } ],
-          "Do": [ { "channel": 0, "tag": "DO_Vac", "address": "Y000", "confirmDi": 2,
+          "Do": [ { "channel": 0, "tag": "DO_Vac", "address": "Y000", "confirmDi": 2, "consequential": true,
                     "localize": false, "rawName": "真空阀", "name": { "vi": "Van chân không" } } ],
           "Cylinders": [ { "extendedDi": 17, "retractedDi": 18, "name": { "vi": "Xi lanh kẹp" } } ]
         }
@@ -117,6 +117,8 @@ public sealed class HalAbstractionTests
             map.DiChannels.Should().HaveCount(2);
             map.DescribeDo(0)!.Address.Should().Be("Y000");
             map.DescribeDo(0)!.ConfirmDi.Should().Be(2);
+            map.DescribeDo(0)!.Consequential.Should().BeTrue();
+            map.DescribeDi(18)!.Consequential.Should().BeFalse(); // mặc định false khi không khai
             map.DescribeDi(17)!.ResolveName("en").Should().Be("Clamp");
             map.DescribeDi(17)!.ResolveName("vi").Should().Be("Kẹp");
 

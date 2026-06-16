@@ -4,6 +4,30 @@
 
 ---
 
+## [Session 61] 2026-06-16 — Giám sát I/O increment C (an toàn): confirm set/reset có hậu quả + alarm "còn IO forced"
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Phần an toàn còn hoãn của roadmap §6.1 — bổ sung lớp xác nhận cho set/reset có hậu quả và cảnh báo
+khi còn ngõ ra bị force.
+
+### ✅ C1 — Chạm-xác-nhận 2 bước cho set/reset có hậu quả
+- `IoChannelDescriptor` +`Consequential` (mặc định false); `JsonIoTagMap` ChannelDto +`consequential`; seed `io.map.json`
+  gắn cờ `consequential:true` cho Van chân không (Y000), Khóa cửa an toàn (Y002), Băng tải (Y007).
+- `IoMonitorViewModel.ToggleOutput`: kênh `Consequential` → chạm-1 arm (tự huỷ 4s), chạm-2 cùng kênh mới ghi
+  (dùng chung cơ chế `Arm`/`IsArmed` với Force). Kênh thường vẫn 1 chạm. Hint `Io.ConfirmSet` ("Chạm lần nữa để xác nhận").
+
+### ✅ C2 — Alarm "còn IO forced" (banner toàn app = nhắc gỡ)
+- `AlarmCodes.SafetyIoForced = 70010` (dải 70xxx → tự Critical/Safety/ResetRequired qua `AlarmPolicy`) + catalog vi/en/zh.
+- `IoMonitorViewModel` inject `IAlarmService`: `ForcedCount` 0→>0 raise (message = bộ đếm), >0→0 clear. Banner persistent
+  hiển thị ở mọi màn → chính là "nhắc gỡ trước khi rời màn/chạy máy" (không cần hook navigation mong manh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning**. `dotnet test` → **193 passed** (test schema mảng bổ sung assert `Consequential`).
+- App khởi động sạch. Hoàn tất roadmap §6.1 (Force IO A+B+C).
+
+---
+
 ## [Session 60] 2026-06-16 — Nâng màn Giám sát I/O theo mockup (IOMap + danh sách + trạng thái phong phú)
 
 **Commit:** `892ab96`

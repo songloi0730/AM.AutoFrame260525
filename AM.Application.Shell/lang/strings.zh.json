@@ -165,6 +165,7 @@
   "Io.ForceModeNeedAdmin": "🔒 强制模式（冻结输出）需要管理员权限且设备已停止",
   "Io.ForcedCount": "⚠ 已强制 {0} 个输出 — 离开本界面前请解除",
   "Io.ConfirmFreeze": "再次点击以冻结（强制）",
+  "Io.ConfirmSet": "再次点击确认置位/复位",
   "Io.Unforce": "解除",
   "Io.FilterHint": "按地址 / 名称 / 工位过滤（如 X017 或 真空）",
   "Io.Cylinders": "气缸（由两端传感器推断）",

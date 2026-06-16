@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Core.Constants;
 using AM.Core.Enums;
 using AM.Core.Models;
 using AM.UI.Localization;
@@ -44,6 +45,9 @@ public sealed partial class IoChannelVm : ObservableObject
     /// <summary>Kênh DI xác nhận (chỉ DO) — để suy trạng thái pending.</summary>
     public int? ConfirmDi { get; }
 
+    /// <summary>True nếu set/reset có hậu quả vật lý → cần chạm-xác-nhận 2 bước.</summary>
+    public bool Consequential { get; }
+
     /// <summary>True nếu kênh là nút nhấn momentary.</summary>
     public bool IsButton => string.Equals(Kind, "button", StringComparison.OrdinalIgnoreCase);
 
@@ -63,6 +67,7 @@ public sealed partial class IoChannelVm : ObservableObject
         Station = desc?.Station;
         Tag = desc?.Tag ?? string.Empty;
         ConfirmDi = desc?.ConfirmDi;
+        Consequential = desc?.Consequential ?? false;
         RefreshName(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
     }
 
@@ -130,6 +135,7 @@ public sealed partial class IoMonitorViewModel : ObservableObject, IDisposable
     private readonly IGuardEngine _guard;
     private readonly IAuditService _audit;
     private readonly IUserService _user;
+    private readonly IAlarmService _alarm;
     private readonly ILogger<IoMonitorViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
@@ -137,6 +143,7 @@ public sealed partial class IoMonitorViewModel : ObservableObject, IDisposable
     private readonly List<IoChannelVm> _allDi = [];
     private readonly List<IoChannelVm> _allDo = [];
     private bool _suppressForceModeChange;
+    private bool _forcedAlarmRaised;
     private bool _disposed;
 
     /// <summary>Digital Input đã lọc (hiển thị).</summary>
@@ -168,19 +175,21 @@ public sealed partial class IoMonitorViewModel : ObservableObject, IDisposable
 
     /// <summary>Tạo VM + dựng kênh từ IOMap + bắt đầu poll nền.</summary>
     public IoMonitorViewModel(IIoModule io, IIoTagMap map, IGuardEngine guard, IAuditService audit,
-        IUserService user, ILogger<IoMonitorViewModel> logger, int pollIntervalMs = 300)
+        IUserService user, IAlarmService alarm, ILogger<IoMonitorViewModel> logger, int pollIntervalMs = 300)
     {
         ArgumentNullException.ThrowIfNull(io);
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(guard);
         ArgumentNullException.ThrowIfNull(audit);
         ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(alarm);
         ArgumentNullException.ThrowIfNull(logger);
         _io = io;
         _map = map;
         _guard = guard;
         _audit = audit;
         _user = user;
+        _alarm = alarm;
         _logger = logger;
         _uiContext = SynchronizationContext.Current;
         _pollMs = pollIntervalMs;
@@ -245,6 +254,14 @@ public sealed partial class IoMonitorViewModel : ObservableObject, IDisposable
             _audit.Record(who, action, allowed: false, WriteDeniedReason(guard));
             return;
         }
+
+        // Ngõ ra có hậu quả: chạm-1 arm (chờ xác nhận), chạm-2 cùng kênh mới ghi.
+        if (channel.Consequential && !channel.IsArmed)
+        {
+            Arm(channel);
+            return;
+        }
+        channel.IsArmed = false;
         if (!_io.IsConnected) return;
 
         try
@@ -298,7 +315,7 @@ public sealed partial class IoMonitorViewModel : ObservableObject, IDisposable
 
         if (!channel.IsArmed)
         {
-            ArmForce(channel);
+            Arm(channel);
             return;
         }
         channel.IsArmed = false;
@@ -354,7 +371,8 @@ public sealed partial class IoMonitorViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void ArmForce(IoChannelVm channel)
+    // Chạm-1 (arm): bật chờ xác nhận cho 1 kênh (huỷ arm các kênh khác), tự huỷ sau ArmTimeoutMs.
+    private void Arm(IoChannelVm channel)
     {
         DisarmAll();
         channel.IsArmed = true;
@@ -470,7 +488,54 @@ public sealed partial class IoMonitorViewModel : ObservableObject, IDisposable
             cyl.State = ComputeCylinderState(Bit(diMask, cyl.ExtendedDi), Bit(diMask, cyl.RetractedDi));
 
         ForcedCount = forced.Count;
+        UpdateForcedAlarm(forced.Count);
         RefreshLockState();
+    }
+
+    // Còn ngõ ra bị force → raise alarm an toàn (banner toàn app = nhắc gỡ); hết force → clear.
+    private void UpdateForcedAlarm(int count)
+    {
+        if (count > 0 && !_forcedAlarmRaised)
+        {
+            _forcedAlarmRaised = true;
+            _ = RaiseForcedAlarmAsync(count);
+        }
+        else if (count == 0 && _forcedAlarmRaised)
+        {
+            _forcedAlarmRaised = false;
+            _ = ClearForcedAlarmAsync();
+        }
+    }
+
+    private async Task RaiseForcedAlarmAsync(int count)
+    {
+        try
+        {
+            string msg = string.Format(CultureInfo.InvariantCulture, Loc.Strings["Io.ForcedCount"], count);
+            await _alarm.RaiseAsync(AlarmCodes.SafetyIoForced, "IO", msg, _cts.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { /* đóng app */ }
+#pragma warning disable CA1031 // không để lỗi alarm làm sập poll/UI, chỉ log
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "[IoMonitor] Raise forced alarm failed");
+        }
+    }
+
+    private async Task ClearForcedAlarmAsync()
+    {
+        try
+        {
+            await _alarm.ClearAsync(AlarmCodes.SafetyIoForced, _cts.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { /* đóng app */ }
+#pragma warning disable CA1031 // không để lỗi alarm làm sập poll/UI, chỉ log
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "[IoMonitor] Clear forced alarm failed");
+        }
     }
 
     // Trạng thái DO: forced > pending (giá trị ≠ confirm DI) > on/off.

@@ -165,6 +165,7 @@
   "Io.ForceModeNeedAdmin": "🔒 Chế độ Force (đóng băng ngõ ra) cần quyền Administrator và máy phải dừng",
   "Io.ForcedCount": "⚠ Đang FORCE {0} ngõ ra — nhớ gỡ trước khi rời màn",
   "Io.ConfirmFreeze": "Chạm lần nữa để ĐÓNG BĂNG (Force)",
+  "Io.ConfirmSet": "Chạm lần nữa để xác nhận set/reset",
   "Io.Unforce": "Gỡ",
   "Io.FilterHint": "Lọc theo địa chỉ / tên / trạm (vd: X017 hoặc 真空)",
   "Io.Cylinders": "Xi lanh (suy từ cặp cảm biến)",

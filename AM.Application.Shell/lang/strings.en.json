@@ -165,6 +165,7 @@
   "Io.ForceModeNeedAdmin": "🔒 Force Mode (freezing outputs) requires Administrator and the machine stopped",
   "Io.ForcedCount": "⚠ {0} output(s) FORCED — release before leaving this screen",
   "Io.ConfirmFreeze": "Tap again to FREEZE (Force)",
+  "Io.ConfirmSet": "Tap again to confirm set/reset",
   "Io.Unforce": "Release",
   "Io.FilterHint": "Filter by address / name / station (e.g. X017 or 真空)",
   "Io.Cylinders": "Cylinders (derived from sensor pairs)",
