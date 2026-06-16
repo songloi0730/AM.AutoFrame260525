@@ -6,7 +6,7 @@
 
 ## [Session 61] 2026-06-16 — Giám sát I/O increment C (an toàn): confirm set/reset có hậu quả + alarm "còn IO forced"
 
-**Commit:** `pending`
+**Commit:** `3a776ef`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Phần an toàn còn hoãn của roadmap §6.1 — bổ sung lớp xác nhận cho set/reset có hậu quả và cảnh báo
 khi còn ngõ ra bị force.

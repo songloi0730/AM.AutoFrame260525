@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-16
 **Session:** #61 — **Giám sát I/O increment C (an toàn)**: (1) set/reset ngõ ra **có hậu quả** (`consequential` trong io.map.json — vacuum/khóa cửa/băng tải) cần **chạm-xác-nhận 2 bước**; (2) alarm `70010` "còn IO forced" (Critical/Safety) raise khi `ForcedCount>0` & clear khi về 0 — **banner toàn app = nhắc gỡ trước khi rời màn/chạy máy**. Hoàn tất roadmap §6.1 (Force IO A+B+C).
-**Commit:** `pending`  ·  (S60: IOMap+layout+trạng thái · S59: Force mode · S58: Force IO=Admin tạm)
+**Commit:** `3a776ef`  ·  (S60: IOMap+layout+trạng thái · S59: Force mode · S58: Force IO=Admin tạm)
 
 ---
 
