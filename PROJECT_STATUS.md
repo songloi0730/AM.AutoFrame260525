@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-18
 **Session:** #66 — **§6.6 Settings: Quản lý người dùng**: `IUserService`/`UserService` +CRUD (`GetUsers`/Create/Delete/ResetPwd/SetLevel, bất biến last-admin/không-xoá-self) + `UserAdminViewModel`/`UserAdminView` (PasswordBox code-behind) trong Settings — liệt kê/thêm/đổi quyền/xoá/reset, gate Administrator + audit; thẻ "Người dùng" bật. ADR `docs/design-notes/0005`. (Hoãn Hiệu chuẩn/Host/Sao lưu/Phần cứng.)
-**Commit:** `pending`  ·  (S65: QuickActions HAL + hold-to-confirm · S64: Supervised Override · S63: RecoveryActions)
+**Commit:** `66461b5`  ·  (S65: QuickActions HAL + hold-to-confirm · S64: Supervised Override · S63: RecoveryActions)
 
 ---
 

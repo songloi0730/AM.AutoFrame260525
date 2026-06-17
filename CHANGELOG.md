@@ -6,7 +6,7 @@
 
 ## [Session 66] 2026-06-18 — §6.6 Settings: Quản lý người dùng (thẻ "Người dùng")
 
-**Commit:** `pending`
+**Commit:** `66461b5`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Có login/RBAC nhưng chưa có UI quản lý user (seed cứng). Chốt phạm vi **chỉ thẻ Người dùng**; mô hình
 **Approach A** (mở rộng IUserService CRUD). Xem `docs/design-notes/0005`.
