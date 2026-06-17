@@ -896,18 +896,77 @@
                 <iomon:IoMonitorView DataContext="{Binding IoMonitor}"/>
             </Border>
 
-            <!-- ══ PANE 3: Thao tác trạm (R0–R1) — chờ guard engine ══ -->
-            <Border Style="{StaticResource Card}" VerticalAlignment="Top"
-                    Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=3}">
-                <StackPanel Margin="8,16" HorizontalAlignment="Center">
-                    <TextBlock Text="&#xE90F;" FontFamily="Segoe MDL2 Assets" FontSize="32"
-                               HorizontalAlignment="Center" Margin="0,0,0,10"
-                               Foreground="{DynamicResource Text.PlaceholderBrush}"/>
-                    <TextBlock Text="{Binding [Manual.Station.Pending], Source={x:Static loc:Loc.Strings}}"
-                               MaxWidth="640" TextWrapping="Wrap" TextAlignment="Center" FontSize="13"
-                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+            <!-- ══ PANE 3: Thao tác trạm (RecoveryActions R1) — guard tầng 3 + audit ══ -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=3}">
+                <StackPanel DataContext="{Binding StationOps}">
+                    <!-- Empty-state khi máy chưa khai thao tác nào -->
+                    <Border VerticalAlignment="Top">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasActions}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel Margin="8,16" HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE90F;" FontFamily="Segoe MDL2 Assets" FontSize="32"
+                                       HorizontalAlignment="Center" Margin="0,0,0,10"
+                                       Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                            <TextBlock Text="{Binding [Manual.Station.Pending], Source={x:Static loc:Loc.Strings}}"
+                                       MaxWidth="640" TextWrapping="Wrap" TextAlignment="Center" FontSize="13"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Danh sách thao tác phục hồi (mờ + lý do khi bị guard chặn) -->
+                    <ItemsControl ItemsSource="{Binding Actions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Margin="0,3" Padding="12,10" HorizontalContentAlignment="Stretch"
+                                        Command="{Binding DataContext.ExecuteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding IsEnabled}" Cursor="Hand">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding IconHex}" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="20" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <TextBlock Text="{Binding SubText}" FontSize="12"
+                                                       Foreground="{DynamicResource Text.SecondaryBrush}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SubText}" Value="">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Border Grid.Column="2" CornerRadius="3" Padding="7,2" VerticalAlignment="Center"
+                                                Background="{DynamicResource Status.WarningBrush}">
+                                            <TextBlock Text="{Binding RiskLabel}" FontSize="11" FontWeight="Bold"
+                                                       Foreground="{DynamicResource Status.ForegroundBrush}"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
-            </Border>
+            </ScrollViewer>
 
             <!-- ══ PANE 4: Override có giám sát — chờ chốt §9 + guard engine ══ -->
             <Border Style="{StaticResource Card}" VerticalAlignment="Top"

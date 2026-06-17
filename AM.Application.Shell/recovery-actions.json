@@ -1,0 +1,17 @@
+{
+  "_comment": "Thao tác trạm (RecoveryActions R1) — metadata khai báo; handler HAL đăng ký theo id trong Bootstrapper. Xem docs/design-notes/0002.",
+  "Actions": [
+    {
+      "id": "ConveyorToggle", "labelKey": "Recovery.ConveyorToggle", "icon": "E896", "risk": "R1",
+      "guard": { "anyOf": [ [ { "key": "Safety.AllSafe", "expected": true } ] ], "blockKey": "Recovery.Block.SafetyNotOk" }
+    },
+    {
+      "id": "VacuumRelease", "labelKey": "Recovery.VacuumRelease", "icon": "E945", "risk": "R1",
+      "guard": { "anyOf": [ [ { "key": "Safety.AllSafe", "expected": true } ] ], "blockKey": "Recovery.Block.SafetyNotOk" }
+    },
+    {
+      "id": "ClampRelease", "labelKey": "Recovery.ClampRelease", "icon": "E8B7", "risk": "R1",
+      "guard": { "anyOf": [ [ { "key": "Safety.AllSafe", "expected": true } ] ], "blockKey": "Recovery.Block.SafetyNotOk" }
+    }
+  ]
+}

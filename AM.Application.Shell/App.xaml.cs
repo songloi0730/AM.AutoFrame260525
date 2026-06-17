@@ -5,8 +5,10 @@
 // -------------------------------------------------------
 
 using AM.Application.Shell.Configuration;
+using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Services;
+using AM.Hardware.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -75,6 +77,10 @@ public partial class App
             // 4b'''. Đẩy trạng thái an toàn lên HardwareInputEventBus cho guard tầng 3 (điều kiện phần cứng)
             _serviceProvider.GetRequiredService<AM.Services.SafetySignalPublisher>().Start();
 
+            // 4b''''. Đăng ký handler thao tác trạm máy Demo (Approach C — composition root biết máy cụ thể).
+            //         ClampRelease CỐ TÌNH không đăng ký → minh hoạ UI "chưa cấu hình HAL" của mô hình hybrid.
+            RegisterDemoRecoveryActions(_serviceProvider);
+
             // 4c. Khôi phục ngôn ngữ đã lưu (i18n §7.4) + lưu lại khi đổi
             RestoreAndPersistLanguage(_serviceProvider);
 
@@ -103,6 +109,29 @@ public partial class App
     }
 
     private const string LanguageKey = "ui.culture";
+
+    /// <summary>
+    /// Đăng ký handler thao tác trạm của máy Demo (Approach C — docs/design-notes/0002): map id → lệnh HAL thật qua IIoModule.
+    /// ClampRelease cố tình KHÔNG đăng ký để minh hoạ UI "chưa cấu hình HAL".
+    /// </summary>
+    private static void RegisterDemoRecoveryActions(IServiceProvider sp)
+    {
+        var registry = sp.GetRequiredService<IRecoveryActionRegistry>();
+        var io = sp.GetRequiredService<IIoModule>();
+        var tagMap = sp.GetRequiredService<IIoTagMap>();
+
+        // Băng tải xả: đảo trạng thái DO băng tải.
+        registry.Register("ConveyorToggle", async ct =>
+        {
+            uint doMask = await io.ReadAllDoAsync(ct).ConfigureAwait(false);
+            int ch = tagMap.ResolveDo("DO_ConveyorLoader");
+            await io.WriteDoByTagAsync(tagMap, "DO_ConveyorLoader", (doMask & (1u << ch)) == 0, ct).ConfigureAwait(false);
+        });
+
+        // Nhả khí âm: tắt van chân không (nhả liệu khi phục hồi).
+        registry.Register("VacuumRelease",
+            ct => io.WriteDoByTagAsync(tagMap, "DO_Vacuum1", false, ct));
+    }
 
     /// <summary>Khôi phục ngôn ngữ đã lưu trong parameters.json; lưu lại mỗi lần đổi (i18n §7.4).</summary>
     private static void RestoreAndPersistLanguage(IServiceProvider sp)

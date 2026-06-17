@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 63] 2026-06-17 — Design-notes infra + §6.3 Thao tác trạm (RecoveryActions, Approach C)
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án yêu cầu (1) hạ tầng lưu kế hoạch + các phương án để dạy tư duy thiết kế, (2) thực hiện §6.3.
+
+### ✅ Hạ tầng "design notes"
+- `docs/design-notes/` + `README.md` (quy ước ADR); `0001-am-autoframe-design-decisions.md` (giải thích 12 lựa chọn kiến trúc
+  lớn: 3 tầng, interface-first, ISA-88, sim parity, attribute UI, guard 3 tầng, event-push bus, i18n, Force mode, config-driven,
+  build cứng, naming — mỗi mục *quyết định/phương án khác/lý do/đánh đổi*); `0002-station-recovery-actions.md` (3 phương án §6.3).
+- `CLAUDE.md` +mục "Design notes" (quy ước: nhiều cách → giới thiệu phương án + đánh đổi; lưu plan vào design-notes). Memory đã ghi.
+
+### ✅ §6.3 Thao tác trạm (Approach C — hybrid)
+- `RecoveryActionDef` (Core) + `IRecoveryActionProvider`/`IRecoveryActionRegistry` (Abstractions) +
+  `JsonRecoveryActionProvider`/`RecoveryActionRegistry` (Services): metadata khai trong `recovery-actions.json`
+  (id/labelKey/icon/risk/guard→signal keys/blockKey), handler HAL đăng ký theo id lúc bootstrap.
+- `StationOpsViewModel` + `RecoveryActionVm` (Motion): gate qua `guard.Evaluate(risk, GuardCondition)` (tiêu thụ guard tầng 3 +
+  bus §S62) + audit OK/DENIED; refresh khi SignalChanged/StateChanged/UserChanged/đổi ngôn ngữ. PANE 3 MotionView: danh sách nút
+  có icon/label/chip risk/lý-do (mờ + giải thích khi bị chặn).
+- Demo wiring: 3 action (ConveyorToggle, VacuumRelease có handler; **ClampRelease cố tình không** → minh hoạ UI "chưa cấu hình HAL");
+  guard dùng `Safety.AllSafe` (live từ §S62). i18n `Recovery.*` + `Manual.Station.*` (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning**. `dotnet test` → **211 passed** (+4: registry ×2, provider ×2). App khởi động sạch.
+- Nợ kỹ thuật có chủ đích (ghi 0002): QuickActions + RecoveryActions là 2 lớp song song; tương lai trích `GuardedActionVm` dùng chung.
+
+---
+
 ## [Session 62] 2026-06-16 — §6.2 HardwareInputEventBus + Guard tầng 3 (hạ tầng)
 
 **Commit:** `cfba162`

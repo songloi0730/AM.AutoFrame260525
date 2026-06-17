@@ -23,6 +23,16 @@
 
 ---
 
+## ⚡ BẮT BUỘC — Design notes (lưu tư duy thiết kế)
+
+Khi một tác vụ có **nhiều cách giải quyết**, KHÔNG chỉ đưa 1 cách: **giới thiệu các phương án + sơ lược đặc điểm/đánh đổi**
+để chủ dự án cân nhắc. Với task lớn (>30 phút / an toàn / kiến trúc), **lưu plan + các phương án đã cân nhắc** vào
+`docs/design-notes/NNNN-tieu-de.md` theo ADR-style (Bối cảnh → Phương án A/B/C + đánh đổi → Phương án chọn → Lý do → Hệ quả).
+Đọc `docs/design-notes/README.md` để biết quy ước; `docs/design-notes/0001-am-autoframe-design-decisions.md` là doc tổng
+giải thích các lựa chọn kiến trúc lớn. Mục đích: người khác đọc hiểu *vì sao*, không chỉ *cái gì*.
+
+---
+
 ## ⚡ BẮT BUỘC — Cuối mỗi session (trước khi kết thúc):
 
 ```

@@ -2,7 +2,8 @@
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
 > `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→60) là đủ để bắt tay.
-> Cập nhật: 2026-06-16, sau Session 62 (HardwareInputEventBus + guard tầng 3). Commit gần nhất: xem PROJECT_STATUS.
+> Cập nhật: 2026-06-17, sau Session 63 (Design-notes + §6.3 Thao tác trạm). Commit gần nhất: xem PROJECT_STATUS.
+> 📒 **Tư duy thiết kế** giờ ghi ở `docs/design-notes/` (0001 = giải thích các lựa chọn lớn; ADR mỗi tính năng).
 
 ---
 
@@ -152,8 +153,11 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
    Test: `HardwareSignalBusTests`, `SafetySignalPublisherTests`, `GuardServiceTests` (tầng-3). **CÒN HOÃN**: chưa gắn vào nút UI
    (để §6.3/§6.4); chưa có tín hiệu số/DSL (numeric → tín hiệu bool dẫn xuất do HAL publish); mới wire nguồn Safety.* —
    IO/trục publish thêm khi §6.3 cần (vd `Z1.AtWorkHeight`, `Vac.Ok`).
-3. **Thao tác trạm R1** (sub-tab "Thao tác trạm" đang empty-state): cần `RecoveryActions` config (id/risk/halCommand/
-   guard/blockReason/audit) + HAL (vacuum/cylinder/conveyor). Dùng chung kiểu `GuardedAction` với QuickActions.
+3. ~~**Thao tác trạm R1**~~ ✅ **XONG (S63, Approach C hybrid — `docs/design-notes/0002`)**: `RecoveryActionDef` +
+   `IRecoveryActionProvider`/`IRecoveryActionRegistry` (metadata `recovery-actions.json` + handler theo id); `StationOpsViewModel`
+   gate qua guard tầng 3 + audit; PANE 3 MotionView danh sách thao tác. Demo: ConveyorToggle/VacuumRelease (ClampRelease cố tình
+   thiếu HAL để minh hoạ). **CÒN HOÃN**: trích `GuardedActionVm` dùng chung với QuickActions (nợ kỹ thuật); publish tín hiệu máy-riêng
+   (Vac.Ok…) cho guard phong phú hơn.
 4. **Supervised Override** (sub-tab "⚠ Override" empty-state): luồng 2-bước + đếm ngược (mặc định 1 người),
    Engineer+, chỉ STOPPED, audit nặng + lý do. CHỜ chốt §9(a).
 5. **QuickActions HAL** (5/6 nút "chưa cấu hình HAL") + **hold-to-confirm 1s** cho cửa (R1): cần wire IO thật.

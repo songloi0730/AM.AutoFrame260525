@@ -9,9 +9,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-16
-**Session:** #62 — **§6.2 HardwareInputEventBus + Guard tầng 3 (hạ tầng)**: `IHardwareSignalBus` (event-push, thread-safe) + `SafetySignalPublisher` (ISafetyInput→bus); `GuardCondition` (mô hình boolean OR/AND) + `IGuardEngine.Evaluate(risk, condition?)` nối tầng 3 (state→role→condition, fail-safe). Phạm vi hạ tầng thuần — chưa gắn nút UI (để §6.3/§6.4). 13 test guard cũ không đổi.
-**Commit:** `cfba162`  ·  (S61: IO increment C · S60: IOMap+layout · S59: Force mode)
+**Ngày:** 2026-06-17
+**Session:** #63 — **Design-notes infra + §6.3 Thao tác trạm (RecoveryActions, Approach C hybrid)**: `docs/design-notes/` (README + 0001 giải thích 12 lựa chọn kiến trúc + 0002 ADR §6.3) + CLAUDE.md rule. §6.3: `RecoveryActionDef`/provider/registry (config metadata + handler theo id) + `StationOpsViewModel` gate qua guard tầng 3 (tiêu thụ §S62) + audit; PANE 3 MotionView danh sách thao tác. Demo: ConveyorToggle/VacuumRelease (ClampRelease cố tình thiếu HAL để minh hoạ).
+**Commit:** `pending`  ·  (S62: HardwareInputEventBus+guard tầng 3 · S61: IO increment C · S60: IOMap+layout)
 
 ---
 
@@ -28,7 +28,7 @@
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule (+**force/unforce/ReadAllDo** — kênh forced bỏ qua write của logic, S59) + SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, UserService, **GuardService (3 tầng: state→role→condition), HardwareSignalBus + SafetySignalPublisher (event-push)** |
-| AM.Services.Tests | ✅ Hoàn thành | **109 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, PointTable, **Guard 3 tầng + SignalBus + SafetyPublisher**) |
+| AM.Services.Tests | ✅ Hoàn thành | **113 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, PointTable, Guard 3 tầng, SignalBus, SafetyPublisher, **RecoveryActions provider+registry**) |
 | AM.Infrastructure (i18n) | ✅ Hoàn thành | **JsonAlarmCatalogService** — Alarms.{vi,en,zh}.json (44 mã), dịch tên/remedy theo culture |
 | AM.Hardware.Tests | ✅ Hoàn thành | **35 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety, SimAxisDiagnostics, IO force semantics (S59), **IoTagMap schema mảng + descriptor/cylinder (S60)** |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
@@ -39,7 +39,7 @@
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | Danh sách "địa chỉ·tên" (IOMap) + ô lọc + chỉ báo Off/On/Pending/Forced + nhóm Xi lanh ▲giữa (S60); set/reset thường (Engineer; **có hậu quả → chạm-2-bước**) + Chế độ Force (Admin) + **alarm 70010 "còn IO forced"** (S61); nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
-| AM.Modules.Motion | ✅ Hoàn thành | **Màn điều khiển trục v2** (S46): bảng đèn 8 tín hiệu + servo/home/clear/move từng trục + jog pad/inching + phản hồi servo + bảng điểm Set/Confirm 2-chạm (Tới/Teach/Lưu recipe). Bám `IMotionController` + `IAxisDiagnostics` (tuỳ chọn); nav order 40 |
+| AM.Modules.Motion | ✅ Hoàn thành | **Màn điều khiển trục v2** (S46): bảng đèn 8 tín hiệu + servo/home/clear/move từng trục + jog pad/inching + phản hồi servo + bảng điểm Set/Confirm 2-chạm (Tới/Teach/Lưu recipe) + **Thao tác trạm (RecoveryActions guard tầng 3, S63)**. Bám `IMotionController` + `IAxisDiagnostics` (tuỳ chọn); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |
 | AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + HardwareFactory + **Shell v2 — 7 vùng Persistent Frame** (S45): header badge AUTO/LOCAL/state + heartbeat, nav tab ngang, alarm banner 1-alarm + ACK 40px + chip "+N", action bar trắng icon-trên (Pause/Resume 1 nút, Dry run), connection bar Thiết bị│Host + version |
 | AM.UI.Localization | ✅ Hoàn thành | Proxy i18n dùng chung `Loc.Strings` (module bind `{x:Static loc:Loc.Strings}`) |

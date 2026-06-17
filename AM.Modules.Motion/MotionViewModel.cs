@@ -47,6 +47,9 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     /// <summary>VM giám sát I/O nhúng làm sub-tab "Giám sát I/O" (sở hữu bởi DI — KHÔNG dispose ở đây).</summary>
     public IoMonitorViewModel IoMonitor { get; }
+
+    /// <summary>VM thao tác trạm nhúng làm sub-tab "Thao tác trạm" (sở hữu bởi DI — KHÔNG dispose ở đây).</summary>
+    public StationOpsViewModel StationOps { get; }
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
     private readonly int _pollMs;
@@ -99,7 +102,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     /// <summary>Tạo VM, dựng trục/nhóm + nạp Point Table + bắt đầu poll.</summary>
     public MotionViewModel(IMotionController motion, IPointTableService pointTable,
         IMasterController master, IUserService user, IoMonitorViewModel ioMonitor,
-        IGuardEngine guard, IAuditService audit,
+        StationOpsViewModel stationOps, IGuardEngine guard, IAuditService audit,
         ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
     {
         ArgumentNullException.ThrowIfNull(motion);
@@ -107,6 +110,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(master);
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(ioMonitor);
+        ArgumentNullException.ThrowIfNull(stationOps);
         ArgumentNullException.ThrowIfNull(guard);
         ArgumentNullException.ThrowIfNull(audit);
         ArgumentNullException.ThrowIfNull(logger);
@@ -116,6 +120,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         _master = master;
         _user = user;
         IoMonitor = ioMonitor;
+        StationOps = stationOps;
         _guard = guard;
         _audit = audit;
         _logger = logger;

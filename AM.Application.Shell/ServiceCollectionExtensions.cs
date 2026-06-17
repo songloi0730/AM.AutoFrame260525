@@ -122,6 +122,12 @@ internal static class ServiceCollectionExtensions
         // Adapter đẩy trạng thái an toàn lên bus (Start() lúc khởi động trong App.xaml.cs)
         services.AddSingleton<SafetySignalPublisher>();
 
+        // Thao tác trạm (RecoveryActions, Approach C): metadata từ config + sổ handler theo id (đăng ký lúc bootstrap)
+        services.AddSingleton<IRecoveryActionRegistry, RecoveryActionRegistry>();
+        services.AddSingleton<IRecoveryActionProvider>(sp => JsonRecoveryActionProvider.LoadFromFile(
+            Path.Combine(AppContext.BaseDirectory, "recovery-actions.json"),
+            sp.GetRequiredService<ILogger<JsonRecoveryActionProvider>>()));
+
         // i18n: nạp strings.*.json từ thư mục lang/ cạnh executable; đổi ngôn ngữ runtime
         services.AddSingleton<ILocalizationService>(sp => new JsonLocalizationService(
             sp.GetRequiredService<ILogger<JsonLocalizationService>>(),
@@ -143,6 +149,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<AM.Modules.Vision.VisionViewModel>();
         services.AddSingleton<AlarmListViewModel>();
         services.AddSingleton<IoMonitorViewModel>();
+        services.AddSingleton<AM.Modules.Motion.StationOpsViewModel>();
         services.AddSingleton<IdentityViewModel>();
         services.AddSingleton<MotionViewModel>();
         services.AddSingleton<ParameterViewModel>();
