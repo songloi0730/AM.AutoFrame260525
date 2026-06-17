@@ -6,7 +6,7 @@
 
 ## [Session 64] 2026-06-17 — §6.4 Supervised Override (xác nhận 1 người: 2 bước + đếm ngược)
 
-**Commit:** `pending`
+**Commit:** `3c5d1ca`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chốt §9(a): xác nhận = **1 người (2 bước + đếm ngược)**, không giữ-nút-2s. Mô hình = **Approach A**
 (model+config riêng, dùng chung registry). Xem `docs/design-notes/0003`.

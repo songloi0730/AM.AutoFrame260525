@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-17
 **Session:** #64 — **§6.4 Supervised Override (xác nhận 1 người: 2 bước + đếm ngược)**: `OverrideActionDef`/provider + `OverrideViewModel` (Motion) — nút luôn hiện, Engineer+ & STOPPED (vượt tầng 3 có chủ đích), card xác nhận inline đếm-ngược + bắt buộc lý do + audit nặng; handler dùng chung registry §6.3; PANE 4 MotionView. ADR `docs/design-notes/0003`. Chốt §9a = 1 người.
-**Commit:** `pending`  ·  (S63: design-notes + §6.3 RecoveryActions · S62: guard tầng 3 · S61: IO increment C)
+**Commit:** `3c5d1ca`  ·  (S63: design-notes + §6.3 RecoveryActions · S62: guard tầng 3 · S61: IO increment C)
 
 ---
 
