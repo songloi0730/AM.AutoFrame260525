@@ -6,7 +6,7 @@
 
 ## [Session 63] 2026-06-17 — Design-notes infra + §6.3 Thao tác trạm (RecoveryActions, Approach C)
 
-**Commit:** `pending`
+**Commit:** `6c6e501`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án yêu cầu (1) hạ tầng lưu kế hoạch + các phương án để dạy tư duy thiết kế, (2) thực hiện §6.3.
 

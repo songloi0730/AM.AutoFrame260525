@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-17
 **Session:** #63 — **Design-notes infra + §6.3 Thao tác trạm (RecoveryActions, Approach C hybrid)**: `docs/design-notes/` (README + 0001 giải thích 12 lựa chọn kiến trúc + 0002 ADR §6.3) + CLAUDE.md rule. §6.3: `RecoveryActionDef`/provider/registry (config metadata + handler theo id) + `StationOpsViewModel` gate qua guard tầng 3 (tiêu thụ §S62) + audit; PANE 3 MotionView danh sách thao tác. Demo: ConveyorToggle/VacuumRelease (ClampRelease cố tình thiếu HAL để minh hoạ).
-**Commit:** `pending`  ·  (S62: HardwareInputEventBus+guard tầng 3 · S61: IO increment C · S60: IOMap+layout)
+**Commit:** `6c6e501`  ·  (S62: HardwareInputEventBus+guard tầng 3 · S61: IO increment C · S60: IOMap+layout)
 
 ---
 
