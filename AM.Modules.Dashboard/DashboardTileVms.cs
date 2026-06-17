@@ -72,6 +72,9 @@ public sealed partial class QuickActionVm : ObservableObject
     /// <summary>Mức rủi ro của thao tác (gate qua guard engine: R0=Operator, R1=LineLead...).</summary>
     public RiskTier Risk { get; init; } = RiskTier.R0;
 
+    /// <summary>Thời gian giữ-để-xác-nhận (ms): R1+ = 1000 (giữ 1s); R0 = 0 (bấm thường).</summary>
+    public int HoldMs => Risk >= RiskTier.R1 ? 1000 : 0;
+
     /// <summary>
     /// Glyph Segoe MDL2 (một màu — adoption §9: không thêm package icon).
     /// Nhận mã hex ASCII trong constructor, convert runtime để source không chứa ký tự PUA.

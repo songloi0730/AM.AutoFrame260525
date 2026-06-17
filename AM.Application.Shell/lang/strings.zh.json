@@ -144,6 +144,8 @@
   "Dash.QA.MachineBusy": "设备运行中",
   "Dash.QA.BuzzerSub": "不确认报警",
   "Dash.QA.BuzzerDone": "已关闭蜂鸣（未确认报警）",
+  "Dash.QA.Hold": "按住 1 秒确认",
+  "Dash.QA.CallTechDone": "已呼叫技术员",
   "Dash.StationSafety": "工位与安全",
   "Dash.OpLog": "日志",
   "Dash.LogHint": "完整见日志页",

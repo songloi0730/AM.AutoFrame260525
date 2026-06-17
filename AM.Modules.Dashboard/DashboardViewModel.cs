@@ -46,12 +46,24 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IGuardEngine _guard;
     private readonly IAuditService _audit;
     private readonly IUserService _user;
+    private readonly IIoModule _io;
+    private readonly IIoTagMap _ioMap;
     private readonly ILogger<DashboardViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
     private readonly ISafetyInput? _safety;
     private readonly ILightController? _light;
+    private uint _lastDoMask;   // ảnh DO gần nhất (poll) để hiện IsOn quick action
     private bool _disposed;
+
+    // Quick action id → tag DO (io.map). BuzzerOff dùng ILightController; CallTech là thông báo (không IO).
+    private static readonly Dictionary<string, string> DoTagById = new(StringComparer.Ordinal)
+    {
+        ["WorkLight"]  = "DO_WorkLight",
+        ["Ionizer"]    = "DO_Ionizer",
+        ["SafetyDoor"] = "DO_SafetyDoorLock",
+        ["FeedDoor"]   = "DO_FeedDoor",
+    };
 
     // ─── Observable properties ────────────────────────────────────────────────────
 
@@ -102,6 +114,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         IGuardEngine guard,
         IAuditService audit,
         IUserService user,
+        IIoModule io,
+        IIoTagMap ioMap,
         ILogger<DashboardViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(alarmService);
@@ -111,6 +125,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(guard);
         ArgumentNullException.ThrowIfNull(audit);
         ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(io);
+        ArgumentNullException.ThrowIfNull(ioMap);
         ArgumentNullException.ThrowIfNull(logger);
 
         _alarmService      = alarmService;
@@ -120,6 +136,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _guard             = guard;
         _audit             = audit;
         _user              = user;
+        _io                = io;
+        _ioMap             = ioMap;
         _logger            = logger;
         _uiContext         = SynchronizationContext.Current;
 
@@ -194,8 +212,21 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         QuickActions.Add(new QuickActionVm("CallTech", "E717") { Risk = RiskTier.R0 });
     }
 
-    // Chỉ "Tắt còi" có HAL thật (ILightController). Còn lại chờ wire HAL (mở rộng danh sách khi có).
-    private bool HasHal(string id) => id == "BuzzerOff" && _light is not null;
+    // HAL của từng quick action: BuzzerOff (ILightController) · WorkLight/Ionizer/cửa (DO theo io.map) · CallTech (thông báo).
+    private bool HasHal(string id)
+    {
+        if (id == "BuzzerOff") return _light is not null;
+        if (id == "CallTech") return true;
+        return DoTagById.TryGetValue(id, out var tag) && _ioMap.ContainsDo(tag);
+    }
+
+    // Trạng thái bật của DO theo tag (từ ảnh poll gần nhất).
+    private bool DoOn(string tag)
+    {
+        if (!_ioMap.ContainsDo(tag)) return false;
+        int ch = _ioMap.ResolveDo(tag);
+        return ch is >= 0 and < 32 && (_lastDoMask & (1u << ch)) != 0;
+    }
 
     /// <summary>
     /// Cập nhật nhãn + trạng thái khả dụng + lý do của các quick action: ưu tiên (1) chưa có HAL,
@@ -212,7 +243,9 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             var guard = _guard.Evaluate(qa.Risk);
             bool condition = qa.Id != "BuzzerOff" || buzzerOn; // còi: chỉ khi đang kêu
 
-            qa.IsOn = qa.Id == "BuzzerOff" && buzzerOn;
+            qa.IsOn = qa.Id == "BuzzerOff"
+                ? buzzerOn
+                : DoTagById.TryGetValue(qa.Id, out var tag) && DoOn(tag);
             qa.IsEnabled = hasHal && guard.Allowed && condition;
             qa.SubText = QuickSubText(qa, hasHal, guard);
         }
@@ -224,6 +257,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         if (!hasHal) return Loc.Strings["Dash.QA.NoHal"];
         if (!guard.Allowed) return QuickGuardSub(guard);
         if (qa.Id == "BuzzerOff") return Loc.Strings["Dash.QA.BuzzerSub"];
+        if (qa.Risk >= RiskTier.R1) return Loc.Strings["Dash.QA.Hold"]; // cửa R1: giữ 1s để xác nhận
         return string.Empty;
     }
 
@@ -250,12 +284,11 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             return;
         }
 
-        if (id != "BuzzerOff" || _light is null) return; // HAL khác chưa wire
+        if (!HasHal(id)) return; // chưa cấu hình HAL (UI đã chặn)
         try
         {
-            await _light.SetAsync(_light.Current with { Buzzer = false }, _cts.Token).ConfigureAwait(false);
-            _audit.Record(who, "QuickAction BuzzerOff", allowed: true);
-            RunOnUIThread(() => AddLog("INFO", Loc.Strings["Log.System"], Loc.Strings["Dash.QA.BuzzerDone"]));
+            await DispatchQuickActionAsync(id).ConfigureAwait(false);
+            _audit.Record(who, $"QuickAction {id}", allowed: true);
         }
         catch (OperationCanceledException) { /* đóng app */ }
 #pragma warning disable CA1031 // UI: lỗi HAL không được làm sập Home, chỉ log
@@ -263,6 +296,30 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 #pragma warning restore CA1031
         {
             _logger.LogError(ex, "[Home] Quick action {Id} thất bại", id);
+        }
+    }
+
+    // Gọi HAL theo id: tắt còi (light) · gọi KT (thông báo) · còn lại toggle DO theo tag (đọc DO → đảo).
+    private async Task DispatchQuickActionAsync(string id)
+    {
+        if (id == "BuzzerOff")
+        {
+            if (_light is null) return;
+            await _light.SetAsync(_light.Current with { Buzzer = false }, _cts.Token).ConfigureAwait(false);
+            RunOnUIThread(() => AddLog("INFO", Loc.Strings["Log.System"], Loc.Strings["Dash.QA.BuzzerDone"]));
+            return;
+        }
+        if (id == "CallTech")
+        {
+            RunOnUIThread(() => AddLog("WARN", Loc.Strings["Log.System"], Loc.Strings["Dash.QA.CallTechDone"]));
+            return;
+        }
+        if (DoTagById.TryGetValue(id, out var tag) && _ioMap.ContainsDo(tag))
+        {
+            int ch = _ioMap.ResolveDo(tag);
+            uint mask = await _io.ReadAllDoAsync(_cts.Token).ConfigureAwait(false);
+            bool current = ch is >= 0 and < 32 && (mask & (1u << ch)) != 0;
+            await _io.WriteDiAsync(ch, !current, _cts.Token).ConfigureAwait(false);
         }
     }
 
@@ -334,6 +391,14 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         {
             while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
             {
+                if (_io.IsConnected)
+                {
+                    try { _lastDoMask = await _io.ReadAllDoAsync(ct).ConfigureAwait(false); }
+                    catch (OperationCanceledException) { throw; }
+#pragma warning disable CA1031 // poll: lỗi đọc DO không làm sập loop, giữ ảnh cũ
+                    catch (Exception ex) { _logger.LogDebug(ex, "[Home] Read DO failed"); }
+#pragma warning restore CA1031
+                }
                 RunOnUIThread(RefreshDevices);
                 tick++;
                 if (tick % 5 == 0) // KPI + bảng sản phẩm mỗi 10s (ISA-101 update rate cho counter)

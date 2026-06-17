@@ -144,6 +144,8 @@
   "Dash.QA.MachineBusy": "máy đang chạy",
   "Dash.QA.BuzzerSub": "không ACK alarm",
   "Dash.QA.BuzzerDone": "Đã tắt còi (không ACK alarm)",
+  "Dash.QA.Hold": "giữ 1s để xác nhận",
+  "Dash.QA.CallTechDone": "Đã gọi kỹ thuật",
   "Dash.StationSafety": "Trạm & an toàn",
   "Dash.OpLog": "Nhật ký",
   "Dash.LogHint": "đầy đủ ở tab Nhật ký",

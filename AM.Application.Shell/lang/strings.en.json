@@ -144,6 +144,8 @@
   "Dash.QA.MachineBusy": "machine running",
   "Dash.QA.BuzzerSub": "does not ACK alarm",
   "Dash.QA.BuzzerDone": "Buzzer muted (alarm not ACKed)",
+  "Dash.QA.Hold": "hold 1s to confirm",
+  "Dash.QA.CallTechDone": "Technician called",
   "Dash.StationSafety": "Stations & safety",
   "Dash.OpLog": "Log",
   "Dash.LogHint": "full list in Log tab",

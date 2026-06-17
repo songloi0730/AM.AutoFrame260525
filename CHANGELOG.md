@@ -4,6 +4,29 @@
 
 ---
 
+## [Session 65] 2026-06-18 — §6.5 QuickActions HAL + hold-to-confirm 1s (cửa R1)
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** 5/6 nút Thao tác nhanh mờ "chưa cấu hình HAL". Wire HAL thật + giữ-1s cho cửa R1. Chốt **Approach A**
+(Dashboard inject IIoModule, wire trực tiếp) + hold-to-confirm **chỉ R1**. Xem `docs/design-notes/0004`.
+
+### ✅ Wire HAL
+- `DashboardViewModel` inject `IIoModule`+`IIoTagMap` (Abstractions — KHÔNG ref AM.Hardware.IO; dùng `ResolveDo/ContainsDo`
+  + `WriteDiAsync`). `HasHal` mở rộng cho cả 6 nút: BuzzerOff (light), WorkLight/Ionizer/SafetyDoor/FeedDoor (DO theo io.map),
+  CallTech (thông báo). `DispatchQuickActionAsync` toggle DO (đọc `ReadAllDoAsync` → đảo) / tắt còi / op-log; `IsOn` poll DO 2s.
+- io.map +`DO_FeedDoor` (Y008).
+
+### ✅ Hold-to-confirm 1s
+- `QuickActionVm.HoldMs = Risk>=R1 ? 1000 : 0`. `HoldToConfirm` attached behavior (Dashboard): R1 phải GIỮ đủ 1s mới chạy
+  Command (nhả/rời sớm → huỷ); R0 bấm thường. Gắn `dash:HoldToConfirm.DurationMs="{Binding HoldMs}"` lên QuickButton.
+- i18n `Dash.QA.Hold`/`CallTechDone` (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning**. `dotnet test` → **213 passed** (Architecture test xanh: Dashboard chỉ ref Abstractions). App khởi động sạch.
+
+---
+
 ## [Session 64] 2026-06-17 — §6.4 Supervised Override (xác nhận 1 người: 2 bước + đếm ngược)
 
 **Commit:** `3c5d1ca`

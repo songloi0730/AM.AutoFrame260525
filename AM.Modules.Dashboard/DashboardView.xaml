@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:AM.Modules.Dashboard.Converters"
+             xmlns:dash="clr-namespace:AM.Modules.Dashboard"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
@@ -330,6 +331,7 @@
                                 <Button Style="{StaticResource QuickButton}"
                                         IsEnabled="{Binding IsEnabled}"
                                         ToolTip="{Binding SubText}"
+                                        dash:HoldToConfirm.DurationMs="{Binding HoldMs}"
                                         Command="{Binding DataContext.QuickActionCommand,
                                                   RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding Id}">

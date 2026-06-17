@@ -9,9 +9,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-17
-**Session:** #64 — **§6.4 Supervised Override (xác nhận 1 người: 2 bước + đếm ngược)**: `OverrideActionDef`/provider + `OverrideViewModel` (Motion) — nút luôn hiện, Engineer+ & STOPPED (vượt tầng 3 có chủ đích), card xác nhận inline đếm-ngược + bắt buộc lý do + audit nặng; handler dùng chung registry §6.3; PANE 4 MotionView. ADR `docs/design-notes/0003`. Chốt §9a = 1 người.
-**Commit:** `3c5d1ca`  ·  (S63: design-notes + §6.3 RecoveryActions · S62: guard tầng 3 · S61: IO increment C)
+**Ngày:** 2026-06-18
+**Session:** #65 — **§6.5 QuickActions HAL + hold-to-confirm 1s (cửa R1)**: `DashboardViewModel` inject IIoModule+IIoTagMap (Abstractions); 6 nút Thao tác nhanh đều có HAL (đèn/ion/cửa toggle DO theo io.map, còi=light, gọi KT=thông báo) + IsOn poll DO; `HoldToConfirm` attached behavior (R1 giữ 1s mới chạy). io.map +DO_FeedDoor. ADR `docs/design-notes/0004`.
+**Commit:** `pending`  ·  (S64: Supervised Override · S63: design-notes + RecoveryActions · S62: guard tầng 3)
 
 ---
 
@@ -35,7 +35,7 @@
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
-| AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2** (S45): work area (thumbnail vision + bảng truy vết SN, dòng NG tô màu) + right rail 560px (KPI ca 8h, quick actions — Tắt còi wired ILightController, trạm & an toàn ISafetyInput event, nhật ký 1 dòng) — spec: `docs/HMI_Dashboard_Spec.md` v2 |
+| AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2** (S45): work area (thumbnail vision + bảng truy vết SN, dòng NG tô màu) + right rail 560px (KPI ca 8h, **quick actions đủ HAL: đèn/ion/cửa toggle DO + còi + gọi KT, hold-to-confirm 1s cho cửa R1 — S65**, trạm & an toàn ISafetyInput event, nhật ký 1 dòng) — spec: `docs/HMI_Dashboard_Spec.md` v2 |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | Danh sách "địa chỉ·tên" (IOMap) + ô lọc + chỉ báo Off/On/Pending/Forced + nhóm Xi lanh ▲giữa (S60); set/reset thường (Engineer; **có hậu quả → chạm-2-bước**) + Chế độ Force (Admin) + **alarm 70010 "còn IO forced"** (S61); nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |

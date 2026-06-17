@@ -2,7 +2,7 @@
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
 > `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→60) là đủ để bắt tay.
-> Cập nhật: 2026-06-17, sau Session 64 (§6.4 Supervised Override — 1 người). Commit gần nhất: xem PROJECT_STATUS.
+> Cập nhật: 2026-06-18, sau Session 65 (§6.5 QuickActions HAL + hold-to-confirm). Commit gần nhất: xem PROJECT_STATUS.
 > 📒 **Tư duy thiết kế** giờ ghi ở `docs/design-notes/` (0001 = giải thích các lựa chọn lớn; ADR mỗi tính năng).
 
 ---
@@ -162,8 +162,9 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
    `OverrideViewModel` (Motion) — nút luôn hiện, Engineer+ & STOPPED (vượt tầng 3 có chủ đích), card xác nhận inline
    2-bước+đếm-ngược + bắt buộc lý do + audit nặng; handler dùng chung registry §6.3; PANE 4 MotionView. Demo: VacuumReleaseOverride.
    **CÒN HOÃN**: nhả servo Z (override riêng, cần HAL servo-release); hợp nhất `GuardedActionVm` (nợ kỹ thuật).
-5. **QuickActions HAL** (5/6 nút "chưa cấu hình HAL") + **hold-to-confirm 1s** cho cửa (R1): cần wire IO thật.
-   Cập nhật `DashboardViewModel.HasHal()` khi có HAL.
+5. ~~**QuickActions HAL** + **hold-to-confirm 1s** cho cửa (R1)~~ ✅ **XONG (S65 — `docs/design-notes/0004`)**: Dashboard inject
+   IIoModule+IIoTagMap (Abstractions, `ResolveDo`/`WriteDiAsync`); 6 nút đều có HAL (đèn/ion/cửa toggle DO + còi + gọi KT) + IsOn
+   poll DO; `HoldToConfirm` attached behavior (R1 giữ 1s). io.map +DO_FeedDoor. **Còn hoãn**: trích `HoldToConfirm`→AM.UI.Controls + hợp nhất `GuardedActionVm`.
 6. **Cài đặt GridMenu mở rộng**: thẻ Phần cứng/Hiệu chuẩn/Người dùng/Host(GEM-MES-OPC)/Sao lưu đang placeholder
    (`SettingsView.xaml`).
 7. **Vision live-view**: sim `GrabImageAsync` trả `Array.Empty<byte>()` → vùng ảnh placeholder. Cần vision service

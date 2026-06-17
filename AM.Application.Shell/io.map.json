@@ -37,7 +37,9 @@
     { "channel": 6, "tag": "DO_Buzzer1", "address": "Y006", "kind": "actuator",
       "name": { "vi": "Buzzer 1", "en": "Buzzer 1", "zh": "蜂鸣器1" } },
     { "channel": 7, "tag": "DO_ConveyorLoader", "address": "Y007", "kind": "actuator", "station": "Loader", "consequential": true,
-      "name": { "vi": "Băng tải loader", "en": "Loader conveyor", "zh": "上料输送带" } }
+      "name": { "vi": "Băng tải loader", "en": "Loader conveyor", "zh": "上料输送带" } },
+    { "channel": 8, "tag": "DO_FeedDoor", "address": "Y008", "kind": "actuator", "station": "Loader", "consequential": true,
+      "name": { "vi": "Cửa cấp liệu", "en": "Feed door", "zh": "上料门" } }
   ],
   "Cylinders": [
     { "extendedDi": 17, "retractedDi": 18,
