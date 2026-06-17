@@ -4,6 +4,31 @@
 
 ---
 
+## [Session 62] 2026-06-16 — §6.2 HardwareInputEventBus + Guard tầng 3 (hạ tầng)
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Guard engine mới có tầng 1 (state) + tầng 2 (role); tầng 3 (điều kiện phần cứng) là hook. Xây nền
+event-push tín hiệu + nối tầng 3 — nền cho thao tác trạm (§6.3) và Supervised Override (§6.4). Chốt: mô hình
+điều kiện **boolean** (không DSL), **phạm vi hạ tầng thuần + test** (chưa gắn nút UI).
+
+### ✅ Bus tín hiệu (event-push)
+- `IHardwareSignalBus` (Abstractions) + `HardwareSignalBus` (Services): `GetSignal`/`Publish`/`Snapshot` + `SignalChanged`
+  (thread-safe; chỉ phát event khi giá trị đổi — không polling). `SignalChangedEventArgs` + hằng `SignalKeys` (Safety.*).
+- Adapter `SafetySignalPublisher`: `ISafetyInput` → bus (snapshot ban đầu + theo dõi `SafetyStateChanged`); `Start()` lúc khởi động (App.xaml.cs).
+
+### ✅ Guard tầng 3
+- `GuardCondition` (dữ liệu thuần: OR của nhóm AND `SignalRequirement`) + factory `RequireAll`/`RequireAny` + `BlockReason`.
+- `IGuardEngine.Evaluate(risk, GuardCondition? = null)` — tham số optional → **mọi call site + 13 test cũ không đổi**.
+  `GuardService` +`IHardwareSignalBus?` (optional): thứ tự **state → role → condition**; chưa thoả → `ConditionNotMet` + Reason.
+  Không bus / tín hiệu thiếu → coi như chưa đạt (fail-safe). `GuardResult` +`Reason`.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning**. `dotnet test` → **207 passed** (+14: guard tầng-3 ×7, bus ×5, publisher ×2). App khởi động sạch.
+- Chưa gắn guard condition vào nút UI nào — để §6.3/§6.4 tiêu thụ.
+
+---
+
 ## [Session 61] 2026-06-16 — Giám sát I/O increment C (an toàn): confirm set/reset có hậu quả + alarm "còn IO forced"
 
 **Commit:** `3a776ef`

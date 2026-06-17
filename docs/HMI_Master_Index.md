@@ -236,7 +236,7 @@ Trục thuộc trạm hay chung: khai `"station": "X"` hoặc `null`. Trạm KH�
 
 ### C. Hoãn có chủ đích (cần hạ tầng / xác nhận — KHÔNG làm nửa vời)
 Màn **Vận hành tay** và hệ con là khối lớn, AN TOÀN-TRỌNG YẾU, phụ thuộc nhiều thứ chưa có:
-1. **`HardwareInputEventBus`** chưa tồn tại. Hiện chỉ có `ISafetyInput.SafetyStateChanged` (push, đúng nguyên lý) nhưng chỉ cho E-Stop/Guard/LightCurtain, KHÔNG cho guard tuỳ ý (vị trí Z, cảm biến chân không). Guard engine cần mở rộng HAL hoặc thêm bus — infra thật, không giả lập tạm.
+1. ~~**`HardwareInputEventBus`**~~ ✅ **XONG (S62)**: `IHardwareSignalBus` (event-push, thread-safe) + `SafetySignalPublisher` nối `ISafetyInput`→bus; `GuardCondition` (mô hình boolean) + `IGuardEngine.Evaluate(risk, condition?)` nối guard tầng 3. Mới wire nguồn Safety.* — IO/trục (vị trí Z, chân không) publish thêm khi §6.3 cần. Numeric → tín hiệu bool dẫn xuất do HAL publish (chưa làm DSL).
 2. **Guard engine + Supervised Override** — cơ chế confirm Override CHƯA chốt (§9.1: 1 người 2-bước+đếm-ngược hay 2 người giữ-nút). KHÔNG build flow an toàn khi chính sách chưa xác nhận (rule "safety-first" + "think-first").
 3. **R2 downgrade về Line Lead** — per-machine, default chưa chốt (§9.2).
 4. ~~**IO Force mode** (phương án A)~~ ✅ **XONG (S59)**: `IIoModule` +`ForceDoAsync`/`UnforceDoAsync`/`IsDoForced`/`ForcedOutputs`/`ReadAllDoAsync` (Sim + ADAM); kênh forced bỏ qua `WriteDiAsync` của logic. IoMonitor: set/reset (Engineer) + Chế độ Force (Admin, chạm-2-bước, badge + bộ đếm + audit). Còn hoãn: per-output confirm cho set/reset, alarm "còn IO forced".

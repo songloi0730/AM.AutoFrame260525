@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-16
-**Session:** #61 — **Giám sát I/O increment C (an toàn)**: (1) set/reset ngõ ra **có hậu quả** (`consequential` trong io.map.json — vacuum/khóa cửa/băng tải) cần **chạm-xác-nhận 2 bước**; (2) alarm `70010` "còn IO forced" (Critical/Safety) raise khi `ForcedCount>0` & clear khi về 0 — **banner toàn app = nhắc gỡ trước khi rời màn/chạy máy**. Hoàn tất roadmap §6.1 (Force IO A+B+C).
-**Commit:** `3a776ef`  ·  (S60: IOMap+layout+trạng thái · S59: Force mode · S58: Force IO=Admin tạm)
+**Session:** #62 — **§6.2 HardwareInputEventBus + Guard tầng 3 (hạ tầng)**: `IHardwareSignalBus` (event-push, thread-safe) + `SafetySignalPublisher` (ISafetyInput→bus); `GuardCondition` (mô hình boolean OR/AND) + `IGuardEngine.Evaluate(risk, condition?)` nối tầng 3 (state→role→condition, fail-safe). Phạm vi hạ tầng thuần — chưa gắn nút UI (để §6.3/§6.4). 13 test guard cũ không đổi.
+**Commit:** `pending`  ·  (S61: IO increment C · S60: IOMap+layout · S59: Force mode)
 
 ---
 
@@ -27,8 +27,8 @@
 | AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice + **SimulatedVisionProcessor (IVisionProcessor)** |
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule (+**force/unforce/ReadAllDo** — kênh forced bỏ qua write của logic, S59) + SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
-| AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, **UserService (login/RBAC, BCrypt)** |
-| AM.Services.Tests | ✅ Hoàn thành | **64 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, **PointTable**) |
+| AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, UserService, **GuardService (3 tầng: state→role→condition), HardwareSignalBus + SafetySignalPublisher (event-push)** |
+| AM.Services.Tests | ✅ Hoàn thành | **109 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, PointTable, **Guard 3 tầng + SignalBus + SafetyPublisher**) |
 | AM.Infrastructure (i18n) | ✅ Hoàn thành | **JsonAlarmCatalogService** — Alarms.{vi,en,zh}.json (44 mã), dịch tên/remedy theo culture |
 | AM.Hardware.Tests | ✅ Hoàn thành | **35 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety, SimAxisDiagnostics, IO force semantics (S59), **IoTagMap schema mảng + descriptor/cylinder (S60)** |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |

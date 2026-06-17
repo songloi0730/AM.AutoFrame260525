@@ -2,7 +2,7 @@
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
 > `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→60) là đủ để bắt tay.
-> Cập nhật: 2026-06-16, sau Session 61 (Giám sát I/O increment C — confirm có hậu quả + alarm forced). Commit gần nhất: xem PROJECT_STATUS.
+> Cập nhật: 2026-06-16, sau Session 62 (HardwareInputEventBus + guard tầng 3). Commit gần nhất: xem PROJECT_STATUS.
 
 ---
 
@@ -145,9 +145,13 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
    - **S61 — increment C (an toàn) ✅ XONG**: (C1) set/reset ngõ ra `consequential` (cờ trong io.map.json) cần **chạm-2-bước**
      (dùng chung `Arm`/`IsArmed`); (C2) `AlarmCodes.SafetyIoForced=70010` raise khi `ForcedCount>0`, clear khi 0 — banner
      toàn app làm "nhắc gỡ" (không hook navigation). → **roadmap §6.1 (Force IO) trọn vẹn A+B+C.**
-2. **HardwareInputEventBus + guard condition (tầng 3)**: nền cho thao tác trạm + override. Thêm cơ chế event-push
-   các tín hiệu (vị trí Z, cảm biến chân không...) để guard đọc; mở rộng `IGuardEngine.Evaluate(risk, guardKey)`
-   + `IGuardContext`. Hiện chỉ có `ISafetyInput.SafetyStateChanged` (E-Stop/Guard/LightCurtain).
+2. ~~**HardwareInputEventBus + guard condition (tầng 3)**~~ ✅ **XONG (S62)**: `IHardwareSignalBus` (event-push,
+   `GetSignal`/`Publish`/`Snapshot`/`SignalChanged`) + `SafetySignalPublisher` (ISafetyInput→bus, `.Start()` ở App.xaml.cs).
+   `GuardCondition` (mô hình **boolean** OR-của-AND `SignalRequirement`, `RequireAll`/`RequireAny`, `BlockReason`) +
+   `IGuardEngine.Evaluate(risk, GuardCondition?=null)` nối tầng 3 (state→role→condition, fail-safe khi thiếu bus/tín hiệu).
+   Test: `HardwareSignalBusTests`, `SafetySignalPublisherTests`, `GuardServiceTests` (tầng-3). **CÒN HOÃN**: chưa gắn vào nút UI
+   (để §6.3/§6.4); chưa có tín hiệu số/DSL (numeric → tín hiệu bool dẫn xuất do HAL publish); mới wire nguồn Safety.* —
+   IO/trục publish thêm khi §6.3 cần (vd `Z1.AtWorkHeight`, `Vac.Ok`).
 3. **Thao tác trạm R1** (sub-tab "Thao tác trạm" đang empty-state): cần `RecoveryActions` config (id/risk/halCommand/
    guard/blockReason/audit) + HAL (vacuum/cylinder/conveyor). Dùng chung kiểu `GuardedAction` với QuickActions.
 4. **Supervised Override** (sub-tab "⚠ Override" empty-state): luồng 2-bước + đếm ngược (mặc định 1 người),

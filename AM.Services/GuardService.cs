@@ -4,6 +4,7 @@
 // Purpose: Engine phân quyền per-action R0–R3 — trạng thái máy → role (guard condition để mở rộng).
 // -------------------------------------------------------
 
+using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Abstractions.Interfaces.Machine;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Enums;
@@ -21,14 +22,18 @@ public sealed class GuardService : IGuardEngine
 {
     private readonly IUserService _user;
     private readonly IMasterController _master;
+    private readonly IHardwareSignalBus? _signals;
 
-    /// <summary>Tạo guard engine từ phiên đăng nhập + bộ điều phối máy.</summary>
-    public GuardService(IUserService user, IMasterController master)
+    /// <summary>
+    /// Tạo guard engine từ phiên đăng nhập + bộ điều phối máy + (tuỳ chọn) bus tín hiệu phần cứng cho tầng 3.
+    /// </summary>
+    public GuardService(IUserService user, IMasterController master, IHardwareSignalBus? signals = null)
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(master);
         _user = user;
         _master = master;
+        _signals = signals;
     }
 
     /// <inheritdoc/>
@@ -42,7 +47,7 @@ public sealed class GuardService : IGuardEngine
     };
 
     /// <inheritdoc/>
-    public GuardResult Evaluate(RiskTier risk)
+    public GuardResult Evaluate(RiskTier risk, GuardCondition? condition = null)
     {
         var min = MinLevelFor(risk);
 
@@ -54,11 +59,26 @@ public sealed class GuardService : IGuardEngine
         if (_user.CurrentLevel < min)
             return new GuardResult(false, GuardBlock.InsufficientRole, min);
 
-        // Tầng 3 (guard condition phần cứng) — mở rộng sau; hiện cho phép.
+        // Tầng 3 — điều kiện phần cứng (đọc HardwareInputEventBus); chưa thoả → chặn + blockReason.
+        if (condition is not null && !IsConditionSatisfied(condition))
+            return new GuardResult(false, GuardBlock.ConditionNotMet, min, condition.BlockReason);
+
         return new GuardResult(true, GuardBlock.None, min);
     }
 
     // Máy "bận" = đang chạy hoặc đang chuyển trạng thái (không cho điều chỉnh).
     private bool IsMachineBusy() => _master.State
         is MachineState.Running or MachineState.Initializing or MachineState.Resetting;
+
+    // Thoả khi CÓ ÍT NHẤT một nhóm mà MỌI yêu cầu khớp bus. Không có bus → coi như chưa đạt (fail-safe).
+    // AnyOf rỗng → luôn thoả (điều kiện trống).
+    private bool IsConditionSatisfied(GuardCondition condition)
+    {
+        if (condition.AnyOf.Count == 0) return true;
+        if (_signals is null) return false;
+        return condition.AnyOf.Any(GroupSatisfied);
+    }
+
+    private bool GroupSatisfied(IReadOnlyList<SignalRequirement> group)
+        => group.All(req => _signals!.GetSignal(req.Key) == req.Expected);
 }

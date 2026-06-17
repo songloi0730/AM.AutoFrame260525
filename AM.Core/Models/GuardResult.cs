@@ -16,7 +16,8 @@ namespace AM.Core.Models;
 /// <param name="Allowed">True nếu được phép thực hiện.</param>
 /// <param name="Block">Lý do chặn (None nếu cho phép).</param>
 /// <param name="RequiredLevel">Cấp quyền tối thiểu cho mức rủi ro của thao tác.</param>
-public sealed record GuardResult(bool Allowed, GuardBlock Block, UserLevel RequiredLevel)
+/// <param name="Reason">Lý do chi tiết (vd blockReason của guard tầng 3) — null nếu không có/được phép.</param>
+public sealed record GuardResult(bool Allowed, GuardBlock Block, UserLevel RequiredLevel, string? Reason = null)
 {
     /// <summary>Kết quả cho phép (không chặn).</summary>
     public static GuardResult Ok { get; } = new(true, GuardBlock.None, UserLevel.Operator);

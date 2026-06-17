@@ -21,10 +21,12 @@ public interface IGuardEngine
     UserLevel MinLevelFor(RiskTier risk);
 
     /// <summary>
-    /// Đánh giá thao tác ở mức rủi ro cho trước với trạng thái máy + role hiện tại.
-    /// R0 (tiện ích) chạy được cả khi máy đang chạy; R1+ cần máy dừng.
+    /// Đánh giá thao tác theo mô hình 3 tầng: <b>trạng thái máy → role → điều kiện phần cứng</b>.
+    /// R0 (tiện ích) chạy được cả khi máy đang chạy; R1+ cần máy dừng. Nếu truyền
+    /// <paramref name="condition"/> thì kiểm thêm tầng 3 (đọc <c>IHardwareSignalBus</c>); chưa thoả → <c>ConditionNotMet</c>.
     /// </summary>
     /// <param name="risk">Mức rủi ro của thao tác.</param>
+    /// <param name="condition">Điều kiện phần cứng tầng 3 (tuỳ chọn; null = bỏ qua tầng 3).</param>
     /// <returns>Kết quả cho phép/chặn + lý do.</returns>
-    GuardResult Evaluate(RiskTier risk);
+    GuardResult Evaluate(RiskTier risk, GuardCondition? condition = null);
 }
