@@ -6,7 +6,7 @@
 
 ## [Session 62] 2026-06-16 — §6.2 HardwareInputEventBus + Guard tầng 3 (hạ tầng)
 
-**Commit:** `pending`
+**Commit:** `cfba162`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Guard engine mới có tầng 1 (state) + tầng 2 (role); tầng 3 (điều kiện phần cứng) là hook. Xây nền
 event-push tín hiệu + nối tầng 3 — nền cho thao tác trạm (§6.3) và Supervised Override (§6.4). Chốt: mô hình

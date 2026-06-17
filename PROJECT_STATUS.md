@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-16
 **Session:** #62 — **§6.2 HardwareInputEventBus + Guard tầng 3 (hạ tầng)**: `IHardwareSignalBus` (event-push, thread-safe) + `SafetySignalPublisher` (ISafetyInput→bus); `GuardCondition` (mô hình boolean OR/AND) + `IGuardEngine.Evaluate(risk, condition?)` nối tầng 3 (state→role→condition, fail-safe). Phạm vi hạ tầng thuần — chưa gắn nút UI (để §6.3/§6.4). 13 test guard cũ không đổi.
-**Commit:** `pending`  ·  (S61: IO increment C · S60: IOMap+layout · S59: Force mode)
+**Commit:** `cfba162`  ·  (S61: IO increment C · S60: IOMap+layout · S59: Force mode)
 
 ---
 
