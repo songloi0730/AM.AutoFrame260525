@@ -127,6 +127,10 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IRecoveryActionProvider>(sp => JsonRecoveryActionProvider.LoadFromFile(
             Path.Combine(AppContext.BaseDirectory, "recovery-actions.json"),
             sp.GetRequiredService<ILogger<JsonRecoveryActionProvider>>()));
+        // Supervised Override (§6.4): metadata riêng, dùng chung registry handler
+        services.AddSingleton<IOverrideActionProvider>(sp => JsonOverrideActionProvider.LoadFromFile(
+            Path.Combine(AppContext.BaseDirectory, "override-actions.json"),
+            sp.GetRequiredService<ILogger<JsonOverrideActionProvider>>()));
 
         // i18n: nạp strings.*.json từ thư mục lang/ cạnh executable; đổi ngôn ngữ runtime
         services.AddSingleton<ILocalizationService>(sp => new JsonLocalizationService(
@@ -150,6 +154,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<AlarmListViewModel>();
         services.AddSingleton<IoMonitorViewModel>();
         services.AddSingleton<AM.Modules.Motion.StationOpsViewModel>();
+        services.AddSingleton<AM.Modules.Motion.OverrideViewModel>();
         services.AddSingleton<IdentityViewModel>();
         services.AddSingleton<MotionViewModel>();
         services.AddSingleton<ParameterViewModel>();

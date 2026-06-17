@@ -80,4 +80,39 @@ public sealed class RecoveryActionsTests
             .LoadFromFile(Path.Combine(Path.GetTempPath(), $"nope.{Guid.NewGuid():N}.json"),
                 NullLogger<JsonRecoveryActionProvider>.Instance)
             .Actions.Should().BeEmpty();
+
+    // ─── Supervised Override provider (§6.4) ─────────────────────────────────────
+
+    [Fact]
+    public void OverrideProvider_ParsesActions_DefaultCountdown()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"override.{Guid.NewGuid():N}.json");
+        File.WriteAllText(path, """
+        {
+          "Actions": [
+            { "id":"VacuumReleaseOverride", "labelKey":"Override.VacuumReleaseOverride", "icon":"E945",
+              "warningKey":"Override.VacuumReleaseOverride.Warn", "overridesGuard":"VacuumOff.guard", "countdownSec":5 },
+            { "id":"NoCountdown", "labelKey":"X", "warningKey":"W" }
+          ]
+        }
+        """);
+        try
+        {
+            var p = JsonOverrideActionProvider.LoadFromFile(path, NullLogger<JsonOverrideActionProvider>.Instance);
+            p.Actions.Should().HaveCount(2);
+            p.Actions[0].Id.Should().Be("VacuumReleaseOverride");
+            p.Actions[0].WarningKey.Should().Be("Override.VacuumReleaseOverride.Warn");
+            p.Actions[0].OverridesGuardKey.Should().Be("VacuumOff.guard");
+            p.Actions[0].CountdownSeconds.Should().Be(5);
+            p.Actions[1].CountdownSeconds.Should().Be(3, "thiếu countdownSec → mặc định 3");
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void OverrideProvider_MissingFile_ReturnsEmpty()
+        => JsonOverrideActionProvider
+            .LoadFromFile(Path.Combine(Path.GetTempPath(), $"nope.{Guid.NewGuid():N}.json"),
+                NullLogger<JsonOverrideActionProvider>.Instance)
+            .Actions.Should().BeEmpty();
 }

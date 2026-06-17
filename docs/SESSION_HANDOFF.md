@@ -2,7 +2,7 @@
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
 > `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→60) là đủ để bắt tay.
-> Cập nhật: 2026-06-17, sau Session 63 (Design-notes + §6.3 Thao tác trạm). Commit gần nhất: xem PROJECT_STATUS.
+> Cập nhật: 2026-06-17, sau Session 64 (§6.4 Supervised Override — 1 người). Commit gần nhất: xem PROJECT_STATUS.
 > 📒 **Tư duy thiết kế** giờ ghi ở `docs/design-notes/` (0001 = giải thích các lựa chọn lớn; ADR mỗi tính năng).
 
 ---
@@ -129,8 +129,8 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
 
 ## 6. ROADMAP — phần còn HOÃN (ưu tiên giảm dần)
 
-> Tất cả ghi ở `HMI_Master_Index.md §11C`. 2 câu hỏi §9 CẦN CHỦ DỰ ÁN CHỐT trước khi làm Override:
-> (a) Override confirm = 1 người (2-bước+đếm-ngược) hay 2 người (giữ-nút)? (b) R2 — đã chốt CỨNG Engineer (S56).
+> Tất cả ghi ở `HMI_Master_Index.md §11C`. §9 đã chốt: (a) Override confirm = **1 người (2-bước+đếm-ngược)** — XONG S64;
+> (b) R2 — đã chốt CỨNG Engineer (S56).
 
 1. ~~**Force IO** trong sub-tab Giám sát I/O~~ ✅ **XONG (S58→S59, phương án A — set/reset vs Force mode)**:
    - S58: gate mọi write-DO theo R3 + Admin (tạm). S59 **tách bạch** theo trao đổi thiết kế:
@@ -158,8 +158,10 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
    gate qua guard tầng 3 + audit; PANE 3 MotionView danh sách thao tác. Demo: ConveyorToggle/VacuumRelease (ClampRelease cố tình
    thiếu HAL để minh hoạ). **CÒN HOÃN**: trích `GuardedActionVm` dùng chung với QuickActions (nợ kỹ thuật); publish tín hiệu máy-riêng
    (Vac.Ok…) cho guard phong phú hơn.
-4. **Supervised Override** (sub-tab "⚠ Override" empty-state): luồng 2-bước + đếm ngược (mặc định 1 người),
-   Engineer+, chỉ STOPPED, audit nặng + lý do. CHỜ chốt §9(a).
+4. ~~**Supervised Override**~~ ✅ **XONG (S64, §9a=1 người — `docs/design-notes/0003`)**: `OverrideActionDef`/provider +
+   `OverrideViewModel` (Motion) — nút luôn hiện, Engineer+ & STOPPED (vượt tầng 3 có chủ đích), card xác nhận inline
+   2-bước+đếm-ngược + bắt buộc lý do + audit nặng; handler dùng chung registry §6.3; PANE 4 MotionView. Demo: VacuumReleaseOverride.
+   **CÒN HOÃN**: nhả servo Z (override riêng, cần HAL servo-release); hợp nhất `GuardedActionVm` (nợ kỹ thuật).
 5. **QuickActions HAL** (5/6 nút "chưa cấu hình HAL") + **hold-to-confirm 1s** cho cửa (R1): cần wire IO thật.
    Cập nhật `DashboardViewModel.HasHal()` khi có HAL.
 6. **Cài đặt GridMenu mở rộng**: thẻ Phần cứng/Hiệu chuẩn/Người dùng/Host(GEM-MES-OPC)/Sao lưu đang placeholder

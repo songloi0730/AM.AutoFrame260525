@@ -1,0 +1,9 @@
+{
+  "_comment": "Supervised Override (§5) — thao tác VƯỢT guard có kiểm soát; xác nhận 1 người (2 bước + đếm ngược) + lý do + audit nặng. Handler đăng ký theo id (dùng chung IRecoveryActionRegistry). Xem docs/design-notes/0003.",
+  "Actions": [
+    {
+      "id": "VacuumReleaseOverride", "labelKey": "Override.VacuumReleaseOverride", "icon": "E945",
+      "warningKey": "Override.VacuumReleaseOverride.Warn", "overridesGuard": "VacuumOff.guard", "countdownSec": 3
+    }
+  ]
+}

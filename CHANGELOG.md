@@ -4,6 +4,31 @@
 
 ---
 
+## [Session 64] 2026-06-17 — §6.4 Supervised Override (xác nhận 1 người: 2 bước + đếm ngược)
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chốt §9(a): xác nhận = **1 người (2 bước + đếm ngược)**, không giữ-nút-2s. Mô hình = **Approach A**
+(model+config riêng, dùng chung registry). Xem `docs/design-notes/0003`.
+
+### ✅ Model + config + provider
+- `OverrideActionDef` (Core: Id/LabelKey/Icon/WarningKey/OverridesGuardKey/CountdownSeconds=3) +
+  `IOverrideActionProvider`/`JsonOverrideActionProvider` (Services, fail-safe rỗng) + seed `override-actions.json`.
+  Handler HAL **dùng chung `IRecoveryActionRegistry`** (id duy nhất toàn cục).
+
+### ✅ Luồng xác nhận 1 người
+- `OverrideViewModel` + `OverrideActionVm` (Motion, embed vào MotionVM): nút **luôn hiện**; gating = Engineer+ & máy STOPPED
+  (`guard.Evaluate(R3)` KHÔNG kèm điều kiện — cố ý vượt tầng 3). Luồng: chạm-1 mở card → **đếm ngược** (PeriodicTimer 1s,
+  marshal UI) → "Xác nhận" chỉ bật khi **đếm về 0 VÀ đã nhập lý do** → **audit nặng** (`overrides=… reason=…` + LogWarning) +
+  chạy HAL; Huỷ/mất quyền/máy chạy → tự đóng + audit. PANE 4 MotionView: list + card xác nhận inline (cảnh báo đỏ + ô lý do).
+- Demo: `VacuumReleaseOverride` (nhả khí âm vượt guard). i18n `Override.*` (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning**. `dotnet test` → **213 passed** (+2 override provider). App khởi động sạch.
+- Hoãn: nhả servo Z (override riêng, cần HAL servo-release); hợp nhất `GuardedActionVm` (nợ kỹ thuật, 0002/0003).
+
+---
+
 ## [Session 63] 2026-06-17 — Design-notes infra + §6.3 Thao tác trạm (RecoveryActions, Approach C)
 
 **Commit:** `6c6e501`

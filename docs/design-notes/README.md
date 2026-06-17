@@ -23,3 +23,4 @@ không chỉ ghi *làm gì*, mà ghi **các phương án đã cân nhắc + đá
 |---|---------|----------|
 | [0001](0001-am-autoframe-design-decisions.md) | Các lựa chọn thiết kế tổng thể | Giải thích mọi quyết định kiến trúc lớn của AM.AutoFrame (living doc) |
 | [0002](0002-station-recovery-actions.md) | Thao tác trạm (RecoveryActions) | §6.3 — 3 phương án mô hình hoá action + vì sao chọn Hybrid |
+| [0003](0003-supervised-override.md) | Supervised Override | §6.4 — xác nhận 1 người (2 bước+đếm ngược) + model riêng dùng chung registry |

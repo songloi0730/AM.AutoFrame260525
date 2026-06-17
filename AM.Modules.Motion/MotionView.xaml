@@ -968,18 +968,100 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- ══ PANE 4: Override có giám sát — chờ chốt §9 + guard engine ══ -->
-            <Border Style="{StaticResource Card}" VerticalAlignment="Top"
-                    Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=4}">
-                <StackPanel Margin="8,16" HorizontalAlignment="Center">
-                    <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="32"
-                               HorizontalAlignment="Center" Margin="0,0,0,10"
-                               Foreground="{StaticResource Status.AlarmBrush}"/>
-                    <TextBlock Text="{Binding [Manual.Override.Pending], Source={x:Static loc:Loc.Strings}}"
-                               MaxWidth="640" TextWrapping="Wrap" TextAlignment="Center" FontSize="13"
-                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+            <!-- ══ PANE 4: Supervised Override — vượt guard, xác nhận 1 người (2 bước + đếm ngược) ══ -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=4}">
+                <StackPanel DataContext="{Binding Override}">
+                    <!-- Empty-state khi máy chưa khai override -->
+                    <Border VerticalAlignment="Top">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasActions}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel Margin="8,16" HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" FontSize="32"
+                                       HorizontalAlignment="Center" Margin="0,0,0,10"
+                                       Foreground="{StaticResource Status.AlarmBrush}"/>
+                            <TextBlock Text="{Binding [Manual.Override.Pending], Source={x:Static loc:Loc.Strings}}"
+                                       MaxWidth="640" TextWrapping="Wrap" TextAlignment="Center" FontSize="13"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Danh sách override (LUÔN hiện; mờ + lý do khi chưa đủ quyền/máy chạy) -->
+                    <ItemsControl ItemsSource="{Binding Actions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Margin="0,3" Padding="12,10" HorizontalContentAlignment="Stretch"
+                                        Command="{Binding DataContext.StartConfirmCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding IsEnabled}" Cursor="Hand">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding IconHex}" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="20" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                   Foreground="{DynamicResource Status.AlarmBrush}"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <TextBlock Text="{Binding SubText}" FontSize="12"
+                                                       Foreground="{DynamicResource Text.SecondaryBrush}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding SubText}" Value="">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Border Grid.Column="2" CornerRadius="3" Padding="7,2" VerticalAlignment="Center"
+                                                Background="{DynamicResource Status.AlarmBrush}">
+                                            <TextBlock Text="OVERRIDE" FontSize="10" FontWeight="Bold"
+                                                       Foreground="{DynamicResource Status.ForegroundBrush}"/>
+                                        </Border>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Card xác nhận 1 người: cảnh báo + lý do (bắt buộc) + đếm ngược -->
+                    <Border CornerRadius="6" Padding="16" Margin="0,10,0,0" BorderThickness="2"
+                            BorderBrush="{DynamicResource Status.AlarmBrush}" Background="#1FC0392B"
+                            Visibility="{Binding IsConfirming, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding WarningText}" TextWrapping="Wrap" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Status.AlarmBrush}" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding [Override.Reason], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="12" Foreground="{DynamicResource Text.SecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding ReasonText, UpdateSourceTrigger=PropertyChanged}"
+                                     MinHeight="48" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,12"
+                                     VerticalContentAlignment="Top"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="{Binding [Override.Cancel], Source={x:Static loc:Loc.Strings}}"
+                                        Command="{Binding CancelCommand}" Padding="16,6" Margin="0,0,10,0" Cursor="Hand"/>
+                                <Button Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}"
+                                        IsEnabled="{Binding CanConfirm}" Padding="16,6" Cursor="Hand"
+                                        Background="{DynamicResource Status.AlarmBrush}"
+                                        Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </Border>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </UserControl>

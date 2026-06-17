@@ -50,6 +50,9 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     /// <summary>VM thao tác trạm nhúng làm sub-tab "Thao tác trạm" (sở hữu bởi DI — KHÔNG dispose ở đây).</summary>
     public StationOpsViewModel StationOps { get; }
+
+    /// <summary>VM Supervised Override nhúng làm sub-tab "⚠ Override" (sở hữu bởi DI — KHÔNG dispose ở đây).</summary>
+    public OverrideViewModel Override { get; }
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
     private readonly int _pollMs;
@@ -102,7 +105,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     /// <summary>Tạo VM, dựng trục/nhóm + nạp Point Table + bắt đầu poll.</summary>
     public MotionViewModel(IMotionController motion, IPointTableService pointTable,
         IMasterController master, IUserService user, IoMonitorViewModel ioMonitor,
-        StationOpsViewModel stationOps, IGuardEngine guard, IAuditService audit,
+        StationOpsViewModel stationOps, OverrideViewModel overrideVm, IGuardEngine guard, IAuditService audit,
         ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
     {
         ArgumentNullException.ThrowIfNull(motion);
@@ -111,6 +114,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(ioMonitor);
         ArgumentNullException.ThrowIfNull(stationOps);
+        ArgumentNullException.ThrowIfNull(overrideVm);
         ArgumentNullException.ThrowIfNull(guard);
         ArgumentNullException.ThrowIfNull(audit);
         ArgumentNullException.ThrowIfNull(logger);
@@ -121,6 +125,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         _user = user;
         IoMonitor = ioMonitor;
         StationOps = stationOps;
+        Override = overrideVm;
         _guard = guard;
         _audit = audit;
         _logger = logger;

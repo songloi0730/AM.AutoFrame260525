@@ -131,6 +131,10 @@ public partial class App
         // Nhả khí âm: tắt van chân không (nhả liệu khi phục hồi).
         registry.Register("VacuumRelease",
             ct => io.WriteDoByTagAsync(tagMap, "DO_Vacuum1", false, ct));
+
+        // Supervised Override (§6.4): nhả khí âm VƯỢT guard (id dùng chung sổ registry).
+        registry.Register("VacuumReleaseOverride",
+            ct => io.WriteDoByTagAsync(tagMap, "DO_Vacuum1", false, ct));
     }
 
     /// <summary>Khôi phục ngôn ngữ đã lưu trong parameters.json; lưu lại mỗi lần đổi (i18n §7.4).</summary>
