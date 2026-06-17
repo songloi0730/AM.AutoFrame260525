@@ -28,6 +28,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>VM màn Kỹ thuật (nhúng khi mở thẻ).</summary>
     public EngineeringViewModel Engineering { get; }
 
+    /// <summary>VM quản trị người dùng (nhúng khi mở thẻ "Người dùng").</summary>
+    public UserAdminViewModel Users { get; }
+
     /// <summary>Thông tin "Giới thiệu" (phiên bản app + .NET) — không localize từng dòng.</summary>
     public string AboutText { get; }
 
@@ -42,15 +45,19 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool ShowDiagnostics => Section == "diagnostics";
     public bool ShowEngineering => Section == "engineering";
+    public bool ShowUsers       => Section == "users";
     public bool ShowAbout       => Section == "about";
 
     /// <summary>Tạo VM Cài đặt với các VM con đã đăng ký DI.</summary>
-    public SettingsViewModel(DiagnosticsViewModel diagnostics, EngineeringViewModel engineering)
+    public SettingsViewModel(DiagnosticsViewModel diagnostics, EngineeringViewModel engineering,
+        UserAdminViewModel users)
     {
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(engineering);
+        ArgumentNullException.ThrowIfNull(users);
         Diagnostics = diagnostics;
         Engineering = engineering;
+        Users = users;
 
         var asm = Assembly.GetExecutingAssembly().GetName();
         var ver = asm.Version?.ToString(3) ?? "0.0.0";
@@ -72,6 +79,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(IsDetail));
         OnPropertyChanged(nameof(ShowDiagnostics));
         OnPropertyChanged(nameof(ShowEngineering));
+        OnPropertyChanged(nameof(ShowUsers));
         OnPropertyChanged(nameof(ShowAbout));
     }
 }

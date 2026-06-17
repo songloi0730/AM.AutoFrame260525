@@ -152,4 +152,76 @@ public sealed class UserServiceTests : IDisposable
         (await sut.LoginAsync("linelead", "linelead123")).Should().BeTrue("re-seed thêm user linelead còn thiếu");
         sut.CurrentLevel.Should().Be(UserLevel.LineLead);
     }
+
+    // ─── Quản trị tài khoản (§6.6) ───────────────────────────────────────────────
+
+    [Fact]
+    public void GetUsers_ReturnsSeeded_WithoutHash()
+    {
+        var users = Create().GetUsers();
+        users.Should().HaveCount(4);
+        users.Should().Contain(u => u.Username == "admin" && u.Level == UserLevel.Administrator);
+        // UserAccount chỉ có Username + Level — không có thuộc tính hash (kiểm bằng kiểu)
+        users[0].GetType().GetProperty("PasswordHash").Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateUser_ThenLoginWithNewPassword_Succeeds()
+    {
+        var sut = Create();
+        (await sut.CreateUserAsync("tester", "pass123", UserLevel.Engineer)).Should().BeTrue();
+        (await sut.CreateUserAsync("tester", "other", UserLevel.Operator)).Should().BeFalse("trùng tên");
+
+        var reopened = Create(); // nạp lại từ file → persisted
+        (await reopened.LoginAsync("tester", "pass123")).Should().BeTrue();
+        reopened.CurrentLevel.Should().Be(UserLevel.Engineer);
+    }
+
+    [Fact]
+    public async Task ResetPassword_OldFails_NewWorks()
+    {
+        var sut = Create();
+        (await sut.ResetPasswordAsync("operator", "newpass")).Should().BeTrue();
+        (await sut.LoginAsync("operator", "operator123")).Should().BeFalse("mật khẩu cũ không còn dùng được");
+        (await sut.LoginAsync("operator", "newpass")).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SetLevel_ChangesLevel()
+    {
+        var sut = Create();
+        (await sut.SetLevelAsync("operator", UserLevel.Engineer)).Should().BeTrue();
+        (await sut.LoginAsync("operator", "operator123")).Should().BeTrue();
+        sut.CurrentLevel.Should().Be(UserLevel.Engineer);
+    }
+
+    [Fact]
+    public async Task DeleteUser_Normal_Succeeds_LastAdminBlocked()
+    {
+        var sut = Create();
+        (await sut.DeleteUserAsync("operator")).Should().BeTrue();
+        sut.GetUsers().Should().NotContain(u => u.Username == "operator");
+
+        // admin là Administrator DUY NHẤT trong seed → không xoá được
+        (await sut.DeleteUserAsync("admin")).Should().BeFalse("không xoá Administrator cuối cùng");
+        sut.GetUsers().Should().Contain(u => u.Username == "admin");
+    }
+
+    [Fact]
+    public async Task DeleteUser_LoggedIn_Blocked()
+    {
+        var sut = Create();
+        await sut.CreateUserAsync("admin2", "pass123", UserLevel.Administrator); // có 2 admin → qua được last-admin guard
+        await sut.LoginAsync("admin2", "pass123");
+        (await sut.DeleteUserAsync("admin2")).Should().BeFalse("không xoá user đang đăng nhập");
+    }
+
+    [Fact]
+    public async Task SetLevel_DemoteLastAdmin_Blocked()
+    {
+        var sut = Create();
+        (await sut.SetLevelAsync("admin", UserLevel.Engineer)).Should().BeFalse("không hạ quyền Administrator cuối cùng");
+        (await sut.LoginAsync("admin", "admin123")).Should().BeTrue();
+        sut.CurrentLevel.Should().Be(UserLevel.Administrator);
+    }
 }

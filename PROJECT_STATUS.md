@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-18
-**Session:** #65 — **§6.5 QuickActions HAL + hold-to-confirm 1s (cửa R1)**: `DashboardViewModel` inject IIoModule+IIoTagMap (Abstractions); 6 nút Thao tác nhanh đều có HAL (đèn/ion/cửa toggle DO theo io.map, còi=light, gọi KT=thông báo) + IsOn poll DO; `HoldToConfirm` attached behavior (R1 giữ 1s mới chạy). io.map +DO_FeedDoor. ADR `docs/design-notes/0004`.
-**Commit:** `f0fb1aa`  ·  (S64: Supervised Override · S63: design-notes + RecoveryActions · S62: guard tầng 3)
+**Session:** #66 — **§6.6 Settings: Quản lý người dùng**: `IUserService`/`UserService` +CRUD (`GetUsers`/Create/Delete/ResetPwd/SetLevel, bất biến last-admin/không-xoá-self) + `UserAdminViewModel`/`UserAdminView` (PasswordBox code-behind) trong Settings — liệt kê/thêm/đổi quyền/xoá/reset, gate Administrator + audit; thẻ "Người dùng" bật. ADR `docs/design-notes/0005`. (Hoãn Hiệu chuẩn/Host/Sao lưu/Phần cứng.)
+**Commit:** `pending`  ·  (S65: QuickActions HAL + hold-to-confirm · S64: Supervised Override · S63: RecoveryActions)
 
 ---
 
@@ -28,7 +28,7 @@
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule (+**force/unforce/ReadAllDo** — kênh forced bỏ qua write của logic, S59) + SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, UserService, **GuardService (3 tầng: state→role→condition), HardwareSignalBus + SafetySignalPublisher (event-push)** |
-| AM.Services.Tests | ✅ Hoàn thành | **115 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService, PointTable, Guard 3 tầng, SignalBus, SafetyPublisher, RecoveryActions, **Override provider**) |
+| AM.Services.Tests | ✅ Hoàn thành | **122 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService +**CRUD/last-admin**, PointTable, Guard 3 tầng, SignalBus, SafetyPublisher, RecoveryActions, Override provider) |
 | AM.Infrastructure (i18n) | ✅ Hoàn thành | **JsonAlarmCatalogService** — Alarms.{vi,en,zh}.json (44 mã), dịch tên/remedy theo culture |
 | AM.Hardware.Tests | ✅ Hoàn thành | **35 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety, SimAxisDiagnostics, IO force semantics (S59), **IoTagMap schema mảng + descriptor/cylinder (S60)** |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |

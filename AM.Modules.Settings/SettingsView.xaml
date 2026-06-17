@@ -6,6 +6,7 @@
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              xmlns:diag="clr-namespace:AM.Modules.Diagnostics;assembly=AM.Modules.Diagnostics"
              xmlns:eng="clr-namespace:AM.Modules.Engineering;assembly=AM.Modules.Engineering"
+             xmlns:local="clr-namespace:AM.Modules.Settings"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -108,11 +109,11 @@
                             <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
-                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE77B;"
+                            Command="{Binding OpenCommand}" CommandParameter="users">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Users], Source={x:Static loc:Loc.Strings}}"/>
-                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.UsersDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
@@ -146,6 +147,8 @@
                                       Visibility="{Binding ShowDiagnostics, Converter={StaticResource BoolToVis}}"/>
                 <eng:EngineeringView DataContext="{Binding Engineering}"
                                      Visibility="{Binding ShowEngineering, Converter={StaticResource BoolToVis}}"/>
+                <local:UserAdminView DataContext="{Binding Users}"
+                                     Visibility="{Binding ShowUsers, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"

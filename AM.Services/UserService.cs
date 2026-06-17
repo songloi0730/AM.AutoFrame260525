@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Enums;
+using AM.Core.Models;
 using AM.Core.Models.EventArgs;
 using Microsoft.Extensions.Logging;
 
@@ -106,6 +107,116 @@ public sealed class UserService : IUserService
     /// <inheritdoc/>
     public bool HasPermission(UserLevel required) => CurrentLevel >= required;
 
+    // ─── Quản trị tài khoản ──────────────────────────────────────────────────────
+
+    /// <inheritdoc/>
+    public IReadOnlyList<UserAccount> GetUsers()
+    {
+        lock (_lock)
+            return _users.Select(u => new UserAccount(u.Username, u.Level)).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> CreateUserAsync(string username, string password, UserLevel level,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password)) return false;
+        lock (_lock)
+        {
+            if (Exists(username)) return false;
+        }
+        string hash = await Task.Run(() => Hash(password), ct).ConfigureAwait(false);
+        lock (_lock)
+        {
+            if (Exists(username)) return false; // re-check sau await
+            _users.Add(new UserRecord(username.Trim(), hash, level));
+            Save();
+        }
+        _logger.LogInformation("[User] Tạo tài khoản {User} ({Level})", username, level);
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> DeleteUserAsync(string username, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_lock)
+        {
+            int i = _users.FindIndex(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+            if (i < 0) return Task.FromResult(false);
+            var u = _users[i];
+            if (string.Equals(u.Username, _currentUser, StringComparison.OrdinalIgnoreCase))
+                return Task.FromResult(false); // không xoá user đang đăng nhập
+            if (u.Level == UserLevel.Administrator && AdminCount() <= 1)
+                return Task.FromResult(false); // không xoá Administrator cuối cùng
+            _users.RemoveAt(i);
+            Save();
+        }
+        _logger.LogInformation("[User] Xoá tài khoản {User}", username);
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> ResetPasswordAsync(string username, string newPassword, CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(newPassword)) return false;
+        lock (_lock)
+        {
+            if (!Exists(username)) return false;
+        }
+        string hash = await Task.Run(() => Hash(newPassword), ct).ConfigureAwait(false);
+        lock (_lock)
+        {
+            int i = _users.FindIndex(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+            if (i < 0) return false;
+            _users[i] = _users[i] with { PasswordHash = hash };
+            Save();
+        }
+        _logger.LogInformation("[User] Đặt lại mật khẩu {User}", username);
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> SetLevelAsync(string username, UserLevel level, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_lock)
+        {
+            int i = _users.FindIndex(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+            if (i < 0) return Task.FromResult(false);
+            var u = _users[i];
+            if (u.Level == UserLevel.Administrator && level < UserLevel.Administrator && AdminCount() <= 1)
+                return Task.FromResult(false); // không hạ quyền Administrator cuối cùng
+            _users[i] = u with { Level = level };
+            Save();
+        }
+        _logger.LogInformation("[User] Đổi quyền {User} → {Level}", username, level);
+        return Task.FromResult(true);
+    }
+
+    // Đếm số Administrator (gọi trong _lock).
+    private int AdminCount() => _users.Count(u => u.Level == UserLevel.Administrator);
+
+    // True nếu đã có username (gọi trong _lock).
+    private bool Exists(string username)
+        => _users.Exists(u => string.Equals(u.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    // Ghi store ra file (gọi trong _lock).
+    private void Save()
+    {
+        try
+        {
+            var store = new UserStore(CurrentSchemaVersion, _users);
+            File.WriteAllText(_storePath, JsonSerializer.Serialize(store, JsonOptions));
+        }
+#pragma warning disable CA1031 // ghi store lỗi (vd read-only) — giữ thay đổi in-memory, chỉ log
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogWarning(ex, "[User] Không ghi được {Path}", _storePath);
+        }
+    }
+
     // ─── User store (JSON) ─────────────────────────────────────────────────────
 
     private sealed record UserRecord(string Username, string PasswordHash, UserLevel Level);
@@ -150,17 +261,7 @@ public sealed class UserService : IUserService
         _users.Add(new UserRecord("engineer",  Hash("engineer123"),  UserLevel.Engineer));
         _users.Add(new UserRecord("admin",     Hash("admin123"),     UserLevel.Administrator));
 
-        try
-        {
-            var store = new UserStore(CurrentSchemaVersion, _users);
-            File.WriteAllText(_storePath, JsonSerializer.Serialize(store, JsonOptions));
-        }
-#pragma warning disable CA1031 // ghi seed lỗi (vd read-only) — vẫn chạy được với user in-memory
-        catch (Exception ex)
-#pragma warning restore CA1031
-        {
-            _logger.LogWarning(ex, "[User] Không ghi được {Path} — dùng user mặc định in-memory", _storePath);
-        }
+        Save();
         _logger.LogWarning("[User] Đã seed user mặc định (operator/engineer/admin) — ĐỔI MẬT KHẨU trước khi sản xuất!");
     }
 

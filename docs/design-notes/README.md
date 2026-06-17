@@ -25,3 +25,4 @@ không chỉ ghi *làm gì*, mà ghi **các phương án đã cân nhắc + đá
 | [0002](0002-station-recovery-actions.md) | Thao tác trạm (RecoveryActions) | §6.3 — 3 phương án mô hình hoá action + vì sao chọn Hybrid |
 | [0003](0003-supervised-override.md) | Supervised Override | §6.4 — xác nhận 1 người (2 bước+đếm ngược) + model riêng dùng chung registry |
 | [0004](0004-quickactions-hal-hold-confirm.md) | QuickActions HAL + hold-to-confirm | §6.5 — wire DO trực tiếp + giữ-1s cho cửa R1 |
+| [0005](0005-user-management.md) | Quản lý người dùng | §6.6 — mở rộng IUserService CRUD + bất biến last-admin |

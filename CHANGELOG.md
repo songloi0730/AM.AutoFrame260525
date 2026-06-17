@@ -4,6 +4,29 @@
 
 ---
 
+## [Session 66] 2026-06-18 — §6.6 Settings: Quản lý người dùng (thẻ "Người dùng")
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Có login/RBAC nhưng chưa có UI quản lý user (seed cứng). Chốt phạm vi **chỉ thẻ Người dùng**; mô hình
+**Approach A** (mở rộng IUserService CRUD). Xem `docs/design-notes/0005`.
+
+### ✅ Service CRUD (IUserService + UserService)
+- +`GetUsers` (UserAccount, không lộ hash) · `CreateUserAsync` · `DeleteUserAsync` · `ResetPasswordAsync` · `SetLevelAsync`;
+  `Save()` rút từ SeedDefaults (DRY); hash `Task.Run(BCrypt)` ngoài UI. **Bất biến an toàn TRONG service**: không xoá Admin
+  cuối cùng / không hạ quyền Admin cuối / không xoá user đang đăng nhập.
+
+### ✅ UI quản trị (Settings → Người dùng)
+- `UserAdminViewModel` + `UserRowVm` + `UserAdminView` (PasswordBox + code-behind, không bind plaintext) trong AM.Modules.Settings;
+  liệt kê/thêm/đổi quyền/xoá/reset mật khẩu; gate Administrator (`CanManage`) + audit OK/DENIED mọi mutation; không đủ quyền →
+  khối "cần Administrator". Thẻ "Người dùng" bật trong GridMenu (`SettingsViewModel.ShowUsers`). i18n `UserAdmin.*` + `Set.UsersDesc` (vi/en/zh).
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning**. `dotnet test` → **220 passed** (+7 user CRUD: create/duplicate/reset/setlevel/delete/last-admin/logged-in). App khởi động sạch.
+- Hoãn các thẻ Settings khác (Hiệu chuẩn/Host/Sao lưu/Phần cứng).
+
+---
+
 ## [Session 65] 2026-06-18 — §6.5 QuickActions HAL + hold-to-confirm 1s (cửa R1)
 
 **Commit:** `f0fb1aa`
