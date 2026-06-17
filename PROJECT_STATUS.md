@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-18
 **Session:** #65 — **§6.5 QuickActions HAL + hold-to-confirm 1s (cửa R1)**: `DashboardViewModel` inject IIoModule+IIoTagMap (Abstractions); 6 nút Thao tác nhanh đều có HAL (đèn/ion/cửa toggle DO theo io.map, còi=light, gọi KT=thông báo) + IsOn poll DO; `HoldToConfirm` attached behavior (R1 giữ 1s mới chạy). io.map +DO_FeedDoor. ADR `docs/design-notes/0004`.
-**Commit:** `pending`  ·  (S64: Supervised Override · S63: design-notes + RecoveryActions · S62: guard tầng 3)
+**Commit:** `f0fb1aa`  ·  (S64: Supervised Override · S63: design-notes + RecoveryActions · S62: guard tầng 3)
 
 ---
 

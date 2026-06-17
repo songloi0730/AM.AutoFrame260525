@@ -6,7 +6,7 @@
 
 ## [Session 65] 2026-06-18 — §6.5 QuickActions HAL + hold-to-confirm 1s (cửa R1)
 
-**Commit:** `pending`
+**Commit:** `f0fb1aa`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** 5/6 nút Thao tác nhanh mờ "chưa cấu hình HAL". Wire HAL thật + giữ-1s cho cửa R1. Chốt **Approach A**
 (Dashboard inject IIoModule, wire trực tiếp) + hold-to-confirm **chỉ R1**. Xem `docs/design-notes/0004`.
