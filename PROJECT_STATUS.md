@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-18
 **Session:** #67 — **§6.7 Vision live-view**: `ICameraDevice` +`GrabFrameAsync`→`FrameData`; `SimulatedCameraDevice` sinh frame Bgr24 640×480 (gradient + thanh chạy); `VisionViewModel` +LiveFrame/IsLive/ToggleLive/live loop (giữ R-UI — chỉ model); `FrameToImageSourceConverter` (View) dựng BitmapSource; VisionView `<Image>` + nút Live. ADR `docs/design-notes/0006`.
-**Commit:** `pending`  ·  (S66: Quản lý người dùng · S65: QuickActions HAL · S64: Supervised Override)
+**Commit:** `ca240dc`  ·  (S66: Quản lý người dùng · S65: QuickActions HAL · S64: Supervised Override)
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 67] 2026-06-18 — §6.7 Vision live-view (sim trả frame → BitmapSource)
 
-**Commit:** `pending`
+**Commit:** `ca240dc`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Vùng ảnh Vision là placeholder (sim trả `Array.Empty`). Cho sim sinh frame thật + live-view. Quyết định:
 converter ở **tầng View** (giữ R-UI — VM không kéo System.Windows); pattern tổng hợp động; toggle Start/Stop. ADR `docs/design-notes/0006`.
