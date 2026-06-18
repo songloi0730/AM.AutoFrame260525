@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 68] 2026-06-18 — Vision UI V1 (camera toolbar + sub-tab Kết quả/Lịch sử/Công cụ) + fix Settings + ADR 0007
+
+**Commit:** `TBD`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án đưa 2 tài liệu tham khảo (mockup `hmi_vision_station_v1_1.html` + skeleton SECPC_Vision Cognex/WinForms) để phản biện + thiết kế phần Vision. Phát hiện thêm bug màn Cài đặt: bấm nút → các sub-view chồng đè nhau.
+
+### ✅ Thêm mới
+- `docs/design-notes/0007-vision-module-design.md` — ADR: phản biện 2 tài liệu (mockup va tầng trình bày, SECPC va tầng kiến trúc), chốt layering 4 tầng, adoption lấy/bỏ, mô hình VisionRecipe, mở rộng ILightController, roadmap V1–V5.
+- `AM.Modules.Vision/VisionResultRow.cs` — model dòng lịch sử kết quả inspect (time/OK-NG/score).
+
+### 🔧 Sửa đổi
+- `AM.Modules.Vision/VisionView.xaml` — camera toolbar (Lớp phủ/Đóng băng/Zoom −,+,Fit) trên ảnh (+ZoomFactor ScaleTransform, crosshair theo OverlayOn); cột phải đổi thành sub-tab **Kết quả / Lịch sử / Công cụ** (light theme, nút ≥44–48px). Tab Công cụ gate Engineer (giải thích thay vì giấu — placeholder VisionTeachView V3).
+- `AM.Modules.Vision/VisionViewModel.cs` — +RecentResults (ObservableCollection cap 50, NG đỏ) · +OverlayOn/IsFrozen/ZoomFactor/ZoomText · +ActiveTab/ShowResult/ShowHistory/ShowTool · +CanEditTool (gate qua IUserService.UserChanged, marshal UI) · commands SelectTab/ToggleOverlay/ToggleFreeze/Zoom In·Out·Fit; live-loop bỏ qua grab khi IsFrozen; ctor +IUserService (DI tự inject); Dispose hủy UserChanged.
+- `AM.Application.Shell/lang/strings.{vi,en,zh}.json` — +11 key Vision (TabResult/TabHistory/TabTool/Overlay/Freeze/Fit/ColResult/ColScore/HistoryEmpty/ToolEngineerOnly/ToolPending).
+- `docs/design-notes/README.md` — index +0007.
+
+### 🐛 Bugs đã fix
+- **Màn Cài đặt — sub-view chồng nhau**: `SettingsView.xaml` mỗi sub-view set cả `DataContext={Binding Xxx}` lẫn `Visibility={Binding ShowXxx}` trên cùng element → Visibility resolve theo VM con (không có ShowXxx) → binding fail → mặc định Visible → 3 view (Chẩn đoán/Kỹ thuật/Người dùng) hiện đè nhau. Fix: Visibility bind `DataContext.ShowXxx` qua `RelativeSource AncestorType=UserControl`.
+
+### 🔧 Quyết định kiến trúc
+1. **Vision logic ở tầng nào** → tách 4 tầng (không monolith như SECPC): Hardware.Vision (bọc SDK → FrameData/VisionResult) · Modules.Vision (UI) · WorkStation Steps (flow máy) · Services (lưu ảnh/MES). Module Vision = capability camera + teach + hiển thị, KHÔNG ôm flow/IO/PLC.
+2. **Mockup HTML**: giữ bố cục ảnh+tab; bỏ chrome/tab-theo-trạm/dark/animation/kích thước desktop (Persistent Frame đã ở Shell). **SECPC**: học năng lực + recipe/light/calib/lưu ảnh; bỏ singleton/Cognex-rò/Thread-Stopwatch/INI-CSV/WinForms.
+
+### 🧪 Build
+- `AM.Modules.Vision` + `AM.Application.Shell` (toàn deps): **0 warning · 0 error** (verify qua OutDir tạm — app đang chạy khóa bin). 3 file i18n JSON hợp lệ. WPF chưa nghiệm thu trực quan trong Cowork.
+
+---
+
 ## [Session 67] 2026-06-18 — §6.7 Vision live-view (sim trả frame → BitmapSource)
 
 **Commit:** `ca240dc`

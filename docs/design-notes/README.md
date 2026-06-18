@@ -27,3 +27,4 @@ không chỉ ghi *làm gì*, mà ghi **các phương án đã cân nhắc + đá
 | [0004](0004-quickactions-hal-hold-confirm.md) | QuickActions HAL + hold-to-confirm | §6.5 — wire DO trực tiếp + giữ-1s cho cửa R1 |
 | [0005](0005-user-management.md) | Quản lý người dùng | §6.6 — mở rộng IUserService CRUD + bất biến last-admin |
 | [0006](0006-vision-live-view.md) | Vision live-view | §6.7 — sim sinh frame + converter FrameData→BitmapSource (giữ R-UI) |
+| [0007](0007-vision-module-design.md) | Thiết kế module Vision | Phản biện mockup HTML + SECPC(Cognex) → layering 4 tầng, adoption lấy/bỏ, Vision recipe model, mở rộng ILightController + roadmap V1–V5 |

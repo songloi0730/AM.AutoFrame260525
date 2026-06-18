@@ -4,10 +4,14 @@
 // Purpose: Màn Vision — trạng thái camera + Grab/Inspect/Light/Calibrate + kết quả inspect.
 // -------------------------------------------------------
 
+using System.Collections.ObjectModel;
 using System.Globalization;
 using AM.Core.Abstractions.Interfaces.Hardware;
+using AM.Core.Abstractions.Interfaces.Services;
+using AM.Core.Enums;
 using AM.Core.Exceptions;
 using AM.Core.Models;
+using AM.Core.Models.EventArgs;
 using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,8 +28,10 @@ namespace AM.Modules.Vision;
 public sealed partial class VisionViewModel : ObservableObject, IDisposable
 {
     private const string DefaultJob = "Default";
+    private const int MaxHistory = 50;
 
     private readonly ICameraDevice _camera;
+    private readonly IUserService _userService;
     private readonly ILogger<VisionViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
@@ -62,15 +68,59 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
 
     partial void OnLiveFrameChanged(FrameData? value) => OnPropertyChanged(nameof(HasNoFrame));
 
+    /// <summary>Lịch sử kết quả inspect gần đây (mới nhất ở đầu, giữ tối đa <see cref="MaxHistory"/> dòng).</summary>
+    public ObservableCollection<VisionResultRow> RecentResults { get; } = [];
+
+    /// <summary>Sub-tab phải đang mở: "result" | "history" | "tool".</summary>
+    [ObservableProperty] private string _activeTab = "result";
+
+    /// <summary>True khi tab Kết quả đang mở.</summary>
+    public bool ShowResult => ActiveTab == "result";
+
+    /// <summary>True khi tab Lịch sử đang mở.</summary>
+    public bool ShowHistory => ActiveTab == "history";
+
+    /// <summary>True khi tab Công cụ đang mở.</summary>
+    public bool ShowTool => ActiveTab == "tool";
+
+    partial void OnActiveTabChanged(string value)
+    {
+        OnPropertyChanged(nameof(ShowResult));
+        OnPropertyChanged(nameof(ShowHistory));
+        OnPropertyChanged(nameof(ShowTool));
+    }
+
+    /// <summary>True khi hiện lớp phủ (crosshair/ROI) trên ảnh.</summary>
+    [ObservableProperty] private bool _overlayOn = true;
+
+    /// <summary>True khi đóng băng ảnh — live loop ngừng cập nhật frame (giữ frame cuối).</summary>
+    [ObservableProperty] private bool _isFrozen;
+
+    /// <summary>Hệ số phóng to ảnh (1.0 = 100%).</summary>
+    [ObservableProperty] private double _zoomFactor = 1.0;
+
+    /// <summary>Nhãn phần trăm phóng to (vd "100%").</summary>
+    public string ZoomText => string.Create(CultureInfo.InvariantCulture, $"{ZoomFactor * 100:F0}%");
+
+    partial void OnZoomFactorChanged(double value) => OnPropertyChanged(nameof(ZoomText));
+
+    /// <summary>True khi user ≥ Engineer (cho phép chỉnh công cụ vision ở tab Công cụ).</summary>
+    [ObservableProperty] private bool _canEditTool;
+
     /// <summary>Tạo VM, bắt đầu poll trạng thái kết nối.</summary>
-    public VisionViewModel(ICameraDevice camera, ILogger<VisionViewModel> logger, int pollIntervalMs = 1000)
+    public VisionViewModel(ICameraDevice camera, IUserService userService,
+        ILogger<VisionViewModel> logger, int pollIntervalMs = 1000)
     {
         ArgumentNullException.ThrowIfNull(camera);
+        ArgumentNullException.ThrowIfNull(userService);
         ArgumentNullException.ThrowIfNull(logger);
         _camera = camera;
+        _userService = userService;
         _logger = logger;
         _uiContext = SynchronizationContext.Current;
         IsConnected = camera.IsConnected;
+        CanEditTool = userService.HasPermission(UserLevel.Engineer);
+        _userService.UserChanged += OnUserChanged;
         _ = Task.Run(() => PollLoopAsync(pollIntervalMs, _cts.Token));
     }
 
@@ -94,6 +144,30 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
         if (IsLive && !_liveRunning) _ = LiveLoopAsync(_cts.Token);
     }
 
+    /// <summary>Chọn sub-tab phải ("result"/"history"/"tool").</summary>
+    [RelayCommand]
+    private void SelectTab(string? id) => ActiveTab = id ?? "result";
+
+    /// <summary>Bật/tắt lớp phủ overlay trên ảnh.</summary>
+    [RelayCommand]
+    private void ToggleOverlay() => OverlayOn = !OverlayOn;
+
+    /// <summary>Đóng băng / bỏ đóng băng ảnh (live loop ngừng cập nhật).</summary>
+    [RelayCommand]
+    private void ToggleFreeze() => IsFrozen = !IsFrozen;
+
+    /// <summary>Phóng to ảnh (bước 0.25×, tối đa 4.0×).</summary>
+    [RelayCommand]
+    private void ZoomIn() => ZoomFactor = Math.Min(ZoomFactor + 0.25, 4.0);
+
+    /// <summary>Thu nhỏ ảnh (bước 0.25×, tối thiểu 0.25×).</summary>
+    [RelayCommand]
+    private void ZoomOut() => ZoomFactor = Math.Max(ZoomFactor - 0.25, 0.25);
+
+    /// <summary>Đưa phóng to về 100%.</summary>
+    [RelayCommand]
+    private void ZoomFit() => ZoomFactor = 1.0;
+
     private async Task LiveLoopAsync(CancellationToken ct)
     {
         _liveRunning = true;
@@ -102,7 +176,7 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
             using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
             while (IsLive && await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
             {
-                if (!_camera.IsConnected) continue;
+                if (!_camera.IsConnected || IsFrozen) continue;
                 try
                 {
                     var frame = await _camera.GrabFrameAsync(ct).ConfigureAwait(false);
@@ -150,7 +224,13 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
         JobText = string.IsNullOrEmpty(r.JobName) ? DefaultJob : r.JobName;
         TimeText = r.Timestamp.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
         StatusMessage = string.Empty;
+
+        RecentResults.Insert(0, new VisionResultRow(TimeText, ResultText, ScoreText, r.IsPassed));
+        while (RecentResults.Count > MaxHistory) RecentResults.RemoveAt(RecentResults.Count - 1);
     }
+
+    private void OnUserChanged(object? sender, UserChangedEventArgs e)
+        => RunOnUIThread(() => CanEditTool = _userService.HasPermission(UserLevel.Engineer));
 
     private async Task PollLoopAsync(int intervalMs, CancellationToken ct)
     {
@@ -196,6 +276,7 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        _userService.UserChanged -= OnUserChanged;
         _cts.Cancel();
         _cts.Dispose();
     }

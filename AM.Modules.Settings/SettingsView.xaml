@@ -143,12 +143,14 @@
                     BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
                     Foreground="{DynamicResource Text.PrimaryBrush}"/>
             <Grid>
+                <!-- DataContext của mỗi view trỏ vào VM con → Visibility PHẢI resolve theo
+                     DataContext của SettingsView (UserControl gốc), không theo VM con. -->
                 <diag:DiagnosticsView DataContext="{Binding Diagnostics}"
-                                      Visibility="{Binding ShowDiagnostics, Converter={StaticResource BoolToVis}}"/>
+                                      Visibility="{Binding DataContext.ShowDiagnostics, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <eng:EngineeringView DataContext="{Binding Engineering}"
-                                     Visibility="{Binding ShowEngineering, Converter={StaticResource BoolToVis}}"/>
+                                     Visibility="{Binding DataContext.ShowEngineering, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <local:UserAdminView DataContext="{Binding Users}"
-                                     Visibility="{Binding ShowUsers, Converter={StaticResource BoolToVis}}"/>
+                                     Visibility="{Binding DataContext.ShowUsers, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"

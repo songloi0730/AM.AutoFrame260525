@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-18
-**Session:** #67 — **§6.7 Vision live-view**: `ICameraDevice` +`GrabFrameAsync`→`FrameData`; `SimulatedCameraDevice` sinh frame Bgr24 640×480 (gradient + thanh chạy); `VisionViewModel` +LiveFrame/IsLive/ToggleLive/live loop (giữ R-UI — chỉ model); `FrameToImageSourceConverter` (View) dựng BitmapSource; VisionView `<Image>` + nút Live. ADR `docs/design-notes/0006`.
-**Commit:** `ca240dc`  ·  (S66: Quản lý người dùng · S65: QuickActions HAL · S64: Supervised Override)
+**Session:** #68 — **Vision UI V1 + fix Settings**: VisionView +camera toolbar (Lớp phủ/Đóng băng/Zoom·Fit) + cột phải thành sub-tab **Kết quả/Lịch sử/Công cụ** (lịch sử inspect ≤50 NG-đỏ; Công cụ gate Engineer = placeholder VisionTeachView V3); fix màn Cài đặt sub-view chồng nhau (Visibility bind RelativeSource theo SettingsView). ADR `docs/design-notes/0007` (phản biện mockup HTML + SECPC Cognex → layering 4 tầng + roadmap V1–V5).
+**Commit:** `TBD`  ·  (S67: Vision live-view · S66: Quản lý người dùng · S65: QuickActions HAL)
 
 ---
 
@@ -52,7 +52,7 @@
 | AM.Modules.Production | ✅ Hoàn thành | **Mới** — KPI UPH/yield/cycle-time (IProductionService), tự refresh khi CycleCompleted; nav order 15 |
 | AM.Modules.Diagnostics | ✅ Hoàn thành | **Mới** — device health + system info + Reconnect All; nav order 70 |
 | AM.Modules.Logging | ✅ Hoàn thành | **Mới** — tail file Serilog + lọc level/search + mở thư mục; nav order 75 |
-| AM.Modules.Vision | ✅ Hoàn thành | Live-view (FrameData→BitmapSource qua converter, toggle Live) + Grab/Inspect/Light/Calibrate + kết quả (S67) |
+| AM.Modules.Vision | ✅ Hoàn thành | **V1 (S68)**: camera toolbar (Lớp phủ/Đóng băng/Zoom·Fit) + sub-tab **Kết quả·Lịch sử·Công cụ** (lịch sử inspect ≤50 NG-đỏ; Công cụ gate Engineer = placeholder VisionTeachView V3) · live-view + Grab/Inspect/Light/Calibrate (S67). Roadmap V2–V5 ở ADR `docs/design-notes/0007` |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---

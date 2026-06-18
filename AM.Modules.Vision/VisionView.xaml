@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
-    <!-- Vision: vùng ảnh live-view (FrameData→BitmapSource) + điều khiển + kết quả inspect -->
+    <!-- Vision: ảnh live-view + camera toolbar (overlay/freeze/zoom) | phải: sub-tab Kết quả/Lịch sử/Công cụ -->
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:FrameToImageSourceConverter x:Key="FrameToImg"/>
@@ -36,16 +36,70 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
         </Style>
+
+        <!-- Nút camera toolbar (overlay/freeze/zoom) — phẳng ISA-101 -->
+        <Style x:Key="CamToolBtn" TargetType="Button">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="MinWidth" Value="44"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="4" Padding="12,0"
+                                Background="{TemplateBinding Background}"
+                                TextElement.Foreground="{TemplateBinding Foreground}"
+                                BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Nút sub-tab phải -->
+        <Style x:Key="SubTabBase" TargetType="Button">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="4,4,0,0" Padding="16,0"
+                                Background="{TemplateBinding Background}"
+                                TextElement.Foreground="{TemplateBinding Foreground}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="16,12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="12"/>
-            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="360"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ── Trái: tiêu đề + vùng ảnh ─────────────────────────────────────── -->
+        <!-- ── Trái: tiêu đề + camera toolbar + vùng ảnh ─────────────────────── -->
         <DockPanel Grid.Column="0">
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                 <TextBlock Text="{Binding [Nav.Vision], Source={x:Static loc:Loc.Strings}}"
@@ -69,13 +123,63 @@
                 </StackPanel>
             </DockPanel>
 
-            <!-- Vùng ảnh: live-view (FrameData→BitmapSource) + crosshair overlay; placeholder khi chưa có frame -->
+            <!-- Camera toolbar: lớp phủ · đóng băng · zoom -->
+            <Border DockPanel.Dock="Top" Margin="0,0,0,8" Padding="8,6" CornerRadius="6"
+                    Background="{DynamicResource Panel.BackgroundBrush}"
+                    BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding ToggleOverlayCommand}"
+                            Content="{Binding [Vision.Overlay], Source={x:Static loc:Loc.Strings}}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource CamToolBtn}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding OverlayOn}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource Info.BackgroundBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding ToggleFreezeCommand}"
+                            Content="{Binding [Vision.Freeze], Source={x:Static loc:Loc.Strings}}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource CamToolBtn}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFrozen}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Rectangle Width="1" Margin="4,4" Fill="{DynamicResource Separator.BackgroundBrush}"/>
+
+                    <Button Style="{StaticResource CamToolBtn}" Command="{Binding ZoomOutCommand}" Content="&#x2212;"/>
+                    <TextBlock Text="{Binding ZoomText}" VerticalAlignment="Center" MinWidth="48"
+                               TextAlignment="Center" FontFamily="Consolas"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <Button Style="{StaticResource CamToolBtn}" Command="{Binding ZoomInCommand}" Content="+"/>
+                    <Button Style="{StaticResource CamToolBtn}" Command="{Binding ZoomFitCommand}"
+                            Content="{Binding [Vision.Fit], Source={x:Static loc:Loc.Strings}}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Vùng ảnh: live-view (FrameData→BitmapSource) + zoom + crosshair overlay; placeholder khi chưa có frame -->
             <Border CornerRadius="8" ClipToBounds="True" Background="{StaticResource Vision.PreviewBrush}">
                 <Grid>
                     <Image Source="{Binding LiveFrame, Converter={StaticResource FrameToImg}}"
-                           Stretch="Uniform" Margin="4" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                    <Line X1="0" Y1="0" X2="3000" Y2="0" Stroke="#66444444" StrokeThickness="1" VerticalAlignment="Center"/>
-                    <Line X1="0" Y1="0" X2="0" Y2="3000" Stroke="#66444444" StrokeThickness="1" HorizontalAlignment="Center"/>
+                           Stretch="Uniform" Margin="4" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                        <Image.LayoutTransform>
+                            <ScaleTransform ScaleX="{Binding ZoomFactor}" ScaleY="{Binding ZoomFactor}"/>
+                        </Image.LayoutTransform>
+                    </Image>
+                    <Grid Visibility="{Binding OverlayOn, Converter={StaticResource BoolToVis}}">
+                        <Line X1="0" Y1="0" X2="3000" Y2="0" Stroke="#66444444" StrokeThickness="1" VerticalAlignment="Center"/>
+                        <Line X1="0" Y1="0" X2="0" Y2="3000" Stroke="#66444444" StrokeThickness="1" HorizontalAlignment="Center"/>
+                    </Grid>
                     <TextBlock Text="{Binding [Vision.NoFrame], Source={x:Static loc:Loc.Strings}}"
                                HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"
                                Visibility="{Binding HasNoFrame, Converter={StaticResource BoolToVis}}"
@@ -84,9 +188,11 @@
             </Border>
         </DockPanel>
 
-        <!-- ── Phải: điều khiển + kết quả ───────────────────────────────────── -->
-        <StackPanel Grid.Column="2">
-            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+        <!-- ── Phải: điều khiển camera + sub-tab (Kết quả / Lịch sử / Công cụ) ── -->
+        <DockPanel Grid.Column="2">
+
+            <!-- Điều khiển camera (luôn hiện) -->
+            <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Style="{StaticResource Title}"
                                Text="{Binding [Vision.Controls], Source={x:Static loc:Loc.Strings}}"/>
@@ -131,64 +237,214 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource Title}"
-                               Text="{Binding [Vision.LastResult], Source={x:Static loc:Loc.Strings}}"/>
-
-                    <!-- PASS/NG lớn -->
-                    <Border CornerRadius="6" Padding="12,8" Margin="0,0,0,10" HorizontalAlignment="Left"
-                            Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Background" Value="{StaticResource Ng.BackgroundBrush}"/>
+            <!-- Sub-tab bar -->
+            <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1"
+                    BorderBrush="{DynamicResource Border.DefaultBrush}" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding SelectTabCommand}" CommandParameter="result"
+                            Content="{Binding [Vision.TabResult], Source={x:Static loc:Loc.Strings}}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource SubTabBase}">
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ResultPassed}" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource Ok.BackgroundBrush}"/>
+                                    <DataTrigger Binding="{Binding ActiveTab}" Value="result">
+                                        <Setter Property="Background" Value="{StaticResource Panel.BackgroundAltBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </Border.Style>
-                        <TextBlock Text="{Binding ResultText}" FontSize="22" FontWeight="Bold">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource Text.ErrorBrush}"/>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding SelectTabCommand}" CommandParameter="history"
+                            Content="{Binding [Vision.TabHistory], Source={x:Static loc:Loc.Strings}}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource SubTabBase}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ActiveTab}" Value="history">
+                                        <Setter Property="Background" Value="{StaticResource Panel.BackgroundAltBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding SelectTabCommand}" CommandParameter="tool"
+                            Content="{Binding [Vision.TabTool], Source={x:Static loc:Loc.Strings}}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource SubTabBase}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ActiveTab}" Value="tool">
+                                        <Setter Property="Background" Value="{StaticResource Panel.BackgroundAltBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Nội dung sub-tab -->
+            <Grid>
+                <!-- KẾT QUẢ -->
+                <Border Style="{StaticResource Card}"
+                        Visibility="{Binding ShowResult, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Title}"
+                                   Text="{Binding [Vision.LastResult], Source={x:Static loc:Loc.Strings}}"/>
+                        <Border CornerRadius="6" Padding="12,8" Margin="0,0,0,10" HorizontalAlignment="Left"
+                                Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{StaticResource Ng.BackgroundBrush}"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding ResultPassed}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource Text.SuccessBrush}"/>
+                                            <Setter Property="Background" Value="{StaticResource Ok.BackgroundBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding ResultText}" FontSize="22" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource Text.ErrorBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ResultPassed}" Value="True">
+                                                <Setter Property="Foreground" Value="{StaticResource Text.SuccessBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+
+                        <Grid Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Score" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ScoreText}" Margin="0,2" FontFamily="Consolas" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="X / Y / θ" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OffsetText}" Margin="0,2" FontFamily="Consolas" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Job" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding JobText}" Margin="0,2" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TimeText}" Margin="0,2" FontFamily="Consolas" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                        </Grid>
+
+                        <TextBlock Text="{Binding [Vision.NoResult], Source={x:Static loc:Loc.Strings}}"
+                                   FontSize="12" Foreground="{DynamicResource Text.PlaceholderBrush}"
+                                   Visibility="{Binding HasNoResult, Converter={StaticResource BoolToVis}}"/>
+
+                        <TextBlock Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap"
+                                   Foreground="{StaticResource Status.AlarmBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- LỊCH SỬ -->
+                <Border Style="{StaticResource Card}"
+                        Visibility="{Binding ShowHistory, Converter={StaticResource BoolToVis}}">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Margin="8,0,8,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="64"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11" Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding [Vision.ColResult], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11" Margin="0,0,16,0" Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding [Vision.ColScore], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11" TextAlignment="Right" Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                        </Grid>
+                        <TextBlock DockPanel.Dock="Top" Margin="8,8,0,0" FontSize="12"
+                                   Text="{Binding [Vision.HistoryEmpty], Source={x:Static loc:Loc.Strings}}"
+                                   Foreground="{DynamicResource Text.PlaceholderBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RecentResults.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                    </Border>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding RecentResults}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="8,7" Margin="0,0,0,2" CornerRadius="4">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsPassed}" Value="False">
+                                                            <Setter Property="Background" Value="{StaticResource Row.NgBackgroundBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="64"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding TimeText}" FontFamily="Consolas"
+                                                           VerticalAlignment="Center" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding ResultText}" FontWeight="Bold" Margin="0,0,16,0"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{StaticResource Text.ErrorBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsPassed}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource Text.SuccessBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <TextBlock Grid.Column="2" Text="{Binding ScoreText}" FontFamily="Consolas" TextAlignment="Right"
+                                                           VerticalAlignment="Center" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
 
-                    <Grid Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Score" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ScoreText}" Margin="0,2" FontFamily="Consolas" Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="X / Y / θ" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OffsetText}" Margin="0,2" FontFamily="Consolas" Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Job" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding JobText}" Margin="0,2" Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Margin="0,2,12,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TimeText}" Margin="0,2" FontFamily="Consolas" Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                    </Grid>
-
-                    <TextBlock Text="{Binding [Vision.NoResult], Source={x:Static loc:Loc.Strings}}"
-                               FontSize="12" Foreground="{DynamicResource Text.PlaceholderBrush}"
-                               Visibility="{Binding HasNoResult, Converter={StaticResource BoolToVis}}"/>
-
-                    <TextBlock Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap"
-                               Foreground="{StaticResource Status.AlarmBrush}"/>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+                <!-- CÔNG CỤ (gate Engineer) -->
+                <Border Style="{StaticResource Card}"
+                        Visibility="{Binding ShowTool, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Title}"
+                                   Text="{Binding [Vision.TabTool], Source={x:Static loc:Loc.Strings}}"/>
+                        <!-- Chưa đủ quyền: giải thích thay vì giấu -->
+                        <TextBlock Text="{Binding [Vision.ToolEngineerOnly], Source={x:Static loc:Loc.Strings}}"
+                                   TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Status.WarningBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanEditTool}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <!-- Đủ quyền: placeholder cho V3 -->
+                        <TextBlock Text="{Binding [Vision.ToolPending], Source={x:Static loc:Loc.Strings}}"
+                                   TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Text.PlaceholderBrush}"
+                                   Visibility="{Binding CanEditTool, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </DockPanel>
     </Grid>
 </UserControl>
