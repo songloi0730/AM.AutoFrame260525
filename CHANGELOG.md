@@ -6,7 +6,7 @@
 
 ## [Session 68] 2026-06-18 — Vision UI V1 (camera toolbar + sub-tab Kết quả/Lịch sử/Công cụ) + fix Settings + ADR 0007
 
-**Commit:** `TBD`
+**Commit:** `4c01041`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án đưa 2 tài liệu tham khảo (mockup `hmi_vision_station_v1_1.html` + skeleton SECPC_Vision Cognex/WinForms) để phản biện + thiết kế phần Vision. Phát hiện thêm bug màn Cài đặt: bấm nút → các sub-view chồng đè nhau.
 

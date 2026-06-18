@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-18
 **Session:** #68 — **Vision UI V1 + fix Settings**: VisionView +camera toolbar (Lớp phủ/Đóng băng/Zoom·Fit) + cột phải thành sub-tab **Kết quả/Lịch sử/Công cụ** (lịch sử inspect ≤50 NG-đỏ; Công cụ gate Engineer = placeholder VisionTeachView V3); fix màn Cài đặt sub-view chồng nhau (Visibility bind RelativeSource theo SettingsView). ADR `docs/design-notes/0007` (phản biện mockup HTML + SECPC Cognex → layering 4 tầng + roadmap V1–V5).
-**Commit:** `TBD`  ·  (S67: Vision live-view · S66: Quản lý người dùng · S65: QuickActions HAL)
+**Commit:** `4c01041`  ·  (S67: Vision live-view · S66: Quản lý người dùng · S65: QuickActions HAL)
 
 ---
 
