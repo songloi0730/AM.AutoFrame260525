@@ -2,7 +2,7 @@
 
 > **Mục đích:** tài liệu bàn giao để session MỚI tiếp tục mà không mất ngữ cảnh. Đọc file này +
 > `PROJECT_STATUS.md` + `CHANGELOG.md` (mục Session 44→60) là đủ để bắt tay.
-> Cập nhật: 2026-06-18, sau Session 66 (§6.6 Settings — Quản lý người dùng). Commit gần nhất: xem PROJECT_STATUS.
+> Cập nhật: 2026-06-18, sau Session 67 (§6.7 Vision live-view). Commit gần nhất: xem PROJECT_STATUS.
 > 📒 **Tư duy thiết kế** giờ ghi ở `docs/design-notes/` (0001 = giải thích các lựa chọn lớn; ADR mỗi tính năng).
 
 ---
@@ -168,8 +168,10 @@ Shell csproj `ProjectReference` → đăng ký VM ở `ServiceCollectionExtensio
 6. **Cài đặt GridMenu mở rộng**: ~~Người dùng~~ ✅ **XONG (S66 — `docs/design-notes/0005`)**: CRUD user qua `IUserService`
    + `UserAdminView` (Administrator, bất biến last-admin, audit). **CÒN placeholder**: Phần cứng (trùng Chẩn đoán) / Hiệu chuẩn
    (cần routine vision/trục thật) / Host GEM-MES-OPC (tích hợp stub) / Sao lưu (copy DB+config — feasible, làm sau).
-7. **Vision live-view**: sim `GrabImageAsync` trả `Array.Empty<byte>()` → vùng ảnh placeholder. Cần vision service
-   trả frame thật (`FrameData`→`BitmapSource`).
+7. ~~**Vision live-view**~~ ✅ **XONG (S67 — `docs/design-notes/0006`)**: `ICameraDevice.GrabFrameAsync`→`FrameData`;
+   `SimulatedCameraDevice` sinh frame Bgr24 640×480 (gradient+thanh chạy); `VisionViewModel` LiveFrame/IsLive/ToggleLive (giữ
+   R-UI — chỉ model); `FrameToImageSourceConverter` (View) dựng BitmapSource; VisionView `<Image>` + nút Live. **Còn hoãn**:
+   overlay kết quả vision (offset/box) lên ảnh; camera thật chỉ cần implement GrabFrameAsync.
 8. **Nhỏ/UX**: tên trục có nghĩa (AX_0→AX_X_Adjust qua `IAxisMap`) · seed `points.json` demo (bảng điểm rỗng) ·
    `UiScale` theo machine config · LOCAL/REMOTE + popup GEM · tiến độ lô header (MES) · heartbeat đổi amber khi
    mất cập nhật >3s · billboard mode.

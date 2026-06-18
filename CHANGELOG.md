@@ -4,6 +4,29 @@
 
 ---
 
+## [Session 67] 2026-06-18 — §6.7 Vision live-view (sim trả frame → BitmapSource)
+
+**Commit:** `pending`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Vùng ảnh Vision là placeholder (sim trả `Array.Empty`). Cho sim sinh frame thật + live-view. Quyết định:
+converter ở **tầng View** (giữ R-UI — VM không kéo System.Windows); pattern tổng hợp động; toggle Start/Stop. ADR `docs/design-notes/0006`.
+
+### ✅ HAL
+- `ICameraDevice` +`GrabFrameAsync` → `FrameData` (giữ `GrabImageAsync` byte[] cho call site cũ).
+- `SimulatedCameraDevice`: sinh frame **Bgr24 640×480** (gradient + thanh dọc chạy theo `Environment.TickCount` + thập tâm —
+  không Random); `GrabImageAsync` trả `frame.Pixels` (hết rỗng).
+
+### ✅ UI live-view
+- `VisionViewModel` (giữ R-UI, chỉ `FrameData`): +`LiveFrame`/`IsLive`/`HasNoFrame` + `ToggleLive` + `LiveLoopAsync` (poll ~10fps,
+  marshal UI); `Grab` cũng set LiveFrame.
+- `FrameToImageSourceConverter` (View): `FrameData`→`BitmapSource` (map PixelFormat→PixelFormats, `Create`+`Freeze`; format lạ→null).
+- `VisionView`: `<Image>` bind LiveFrame qua converter + crosshair overlay + placeholder khi `HasNoFrame`; nút **Live** (toggle). i18n `Vision.Live/StopLive/NoFrame`.
+
+### 🔍 Kết quả
+- `dotnet build` → **0 error / 0 warning**. `dotnet test` → **221 passed** (+1 SimCamera GrabFrame). Architecture test xanh (VM giữ R-UI). App khởi động sạch.
+
+---
+
 ## [Session 66] 2026-06-18 — §6.6 Settings: Quản lý người dùng (thẻ "Người dùng")
 
 **Commit:** `66461b5`

@@ -16,6 +16,24 @@ namespace AM.Hardware.Tests;
 
 public sealed class HalAbstractionTests
 {
+    // ─── SimulatedCameraDevice live-view (§6.7) ──────────────────────────────
+
+    [Fact]
+    public async Task SimCamera_GrabFrame_ReturnsBgr24Frame()
+    {
+        var cam = new SimulatedCameraDevice(NullLogger<SimulatedCameraDevice>.Instance);
+        await cam.ConnectAsync();
+
+        var frame = await cam.GrabFrameAsync();
+        frame.Width.Should().Be(640);
+        frame.Height.Should().Be(480);
+        frame.Format.Should().Be(AM.Core.Enums.PixelFormat.Bgr24);
+        frame.Pixels.Length.Should().Be(640 * 480 * 3);
+
+        // GrabImageAsync giờ trả pixel thật (không còn rỗng)
+        (await cam.GrabImageAsync()).Length.Should().Be(640 * 480 * 3);
+    }
+
     // ─── SimulatedVisionProcessor ────────────────────────────────────────────
 
     [Fact]

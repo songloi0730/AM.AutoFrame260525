@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-18
-**Session:** #66 — **§6.6 Settings: Quản lý người dùng**: `IUserService`/`UserService` +CRUD (`GetUsers`/Create/Delete/ResetPwd/SetLevel, bất biến last-admin/không-xoá-self) + `UserAdminViewModel`/`UserAdminView` (PasswordBox code-behind) trong Settings — liệt kê/thêm/đổi quyền/xoá/reset, gate Administrator + audit; thẻ "Người dùng" bật. ADR `docs/design-notes/0005`. (Hoãn Hiệu chuẩn/Host/Sao lưu/Phần cứng.)
-**Commit:** `66461b5`  ·  (S65: QuickActions HAL + hold-to-confirm · S64: Supervised Override · S63: RecoveryActions)
+**Session:** #67 — **§6.7 Vision live-view**: `ICameraDevice` +`GrabFrameAsync`→`FrameData`; `SimulatedCameraDevice` sinh frame Bgr24 640×480 (gradient + thanh chạy); `VisionViewModel` +LiveFrame/IsLive/ToggleLive/live loop (giữ R-UI — chỉ model); `FrameToImageSourceConverter` (View) dựng BitmapSource; VisionView `<Image>` + nút Live. ADR `docs/design-notes/0006`.
+**Commit:** `pending`  ·  (S66: Quản lý người dùng · S65: QuickActions HAL · S64: Supervised Override)
 
 ---
 
@@ -24,13 +24,13 @@
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
 | AM.Hardware.Motion | ✅ Hoàn thành | Sim (+**IAxisDiagnostics**: 8 tín hiệu/servo/phản hồi) + **GtsMotionController (固高, P/Invoke)** + **AdvantechMotionController (P/Invoke)** |
-| AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice + **SimulatedVisionProcessor (IVisionProcessor)** |
+| AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice (+**GrabFrameAsync sinh frame Bgr24 live, S67**) + SimulatedVisionProcessor (IVisionProcessor) |
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule (+**force/unforce/ReadAllDo** — kênh forced bỏ qua write của logic, S59) + SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |
 | AM.Services | ✅ Hoàn thành | Alarm, Recipe, Parameter, HardwareManager, StationSync, Watchdog, Production, UserService, **GuardService (3 tầng: state→role→condition), HardwareSignalBus + SafetySignalPublisher (event-push)** |
 | AM.Services.Tests | ✅ Hoàn thành | **122 tests** (Alarm, Recipe, StationSync, HardwareManager, Watchdog, Production, UserService +**CRUD/last-admin**, PointTable, Guard 3 tầng, SignalBus, SafetyPublisher, RecoveryActions, Override provider) |
 | AM.Infrastructure (i18n) | ✅ Hoàn thành | **JsonAlarmCatalogService** — Alarms.{vi,en,zh}.json (44 mã), dịch tên/remedy theo culture |
-| AM.Hardware.Tests | ✅ Hoàn thành | **35 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety, SimAxisDiagnostics, IO force semantics (S59), **IoTagMap schema mảng + descriptor/cylinder (S60)** |
+| AM.Hardware.Tests | ✅ Hoàn thành | **36 tests**: Modbus MBAP, Inovance/ADAM, Robot+Scanner loopback, SimVision/SimSafety, SimAxisDiagnostics, IO force semantics, IoTagMap schema mảng, **SimCamera GrabFrame live-view (S67)** |
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
@@ -52,7 +52,7 @@
 | AM.Modules.Production | ✅ Hoàn thành | **Mới** — KPI UPH/yield/cycle-time (IProductionService), tự refresh khi CycleCompleted; nav order 15 |
 | AM.Modules.Diagnostics | ✅ Hoàn thành | **Mới** — device health + system info + Reconnect All; nav order 70 |
 | AM.Modules.Logging | ✅ Hoàn thành | **Mới** — tail file Serilog + lọc level/search + mở thư mục; nav order 75 |
-| AM.Modules.* (còn lại) | ❌ Chưa có | Vision (live camera) |
+| AM.Modules.Vision | ✅ Hoàn thành | Live-view (FrameData→BitmapSource qua converter, toggle Live) + Grab/Inspect/Light/Calibrate + kết quả (S67) |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---

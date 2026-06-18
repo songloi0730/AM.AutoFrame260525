@@ -7,7 +7,9 @@
 
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Constants;
+using AM.Core.Enums;
 using AM.Core.Exceptions;
+using AM.Core.Models;
 using Microsoft.Extensions.Logging;
 
 namespace AM.Hardware.Vision;
@@ -23,6 +25,8 @@ public sealed class SimulatedCameraDevice : ICameraDevice
     private const int GrabTimeoutMs    = 5_000;
     private const int InspectDelayMs   = 300; // Giả lập thời gian xử lý ảnh
     private const string StationName   = "SIMULATED_CAMERA";
+    private const int FrameWidth       = 640;
+    private const int FrameHeight      = 480;
 
     // ─── Private fields ─────────────────────────────────────────────────────────
     private readonly ILogger<SimulatedCameraDevice> _logger;
@@ -122,10 +126,47 @@ public sealed class SimulatedCameraDevice : ICameraDevice
     /// <inheritdoc/>
     public async Task<byte[]> GrabImageAsync(CancellationToken ct = default)
     {
+        var frame = await GrabFrameAsync(ct).ConfigureAwait(false);
+        return frame.Pixels;
+    }
+
+    /// <inheritdoc/>
+    public async Task<FrameData> GrabFrameAsync(CancellationToken ct = default)
+    {
         EnsureConnected();
-        await Task.Delay(100, ct).ConfigureAwait(false);
-        // Trả về array rỗng — simulator không có ảnh thật
-        return Array.Empty<byte>();
+        await Task.Delay(40, ct).ConfigureAwait(false); // ~25fps trần
+        return RenderSyntheticFrame();
+    }
+
+    // Frame tổng hợp Bgr24: nền gradient + thanh dọc chạy theo thời gian + dấu thập tâm.
+    // Dùng Environment.TickCount (không Random → tránh CA5394, và để thanh chạy mượt theo thời gian thực).
+    private static FrameData RenderSyntheticFrame()
+    {
+        const int stride = FrameWidth * 3;
+        var px = new byte[FrameHeight * stride];
+        int barX = (int)((uint)Environment.TickCount / 8 % FrameWidth); // vị trí thanh chạy
+        int cx = FrameWidth / 2, cy = FrameHeight / 2;
+
+        for (int y = 0; y < FrameHeight; y++)
+        {
+            int row = y * stride;
+            byte g = (byte)(y * 255 / FrameHeight); // gradient dọc
+            for (int x = 0; x < FrameWidth; x++)
+            {
+                int i = row + x * 3;
+                bool bar = x >= barX && x < barX + 6;                 // thanh dọc chạy (sáng)
+                bool cross = Math.Abs(x - cx) <= 1 || Math.Abs(y - cy) <= 1; // thập tâm
+                if (bar) { px[i] = 80; px[i + 1] = 220; px[i + 2] = 80; }    // BGR xanh lá
+                else if (cross) { px[i] = 60; px[i + 1] = 60; px[i + 2] = 60; }
+                else { px[i] = (byte)(x * 255 / FrameWidth); px[i + 1] = g; px[i + 2] = 40; } // gradient
+            }
+        }
+
+        return new FrameData
+        {
+            Pixels = px, Width = FrameWidth, Height = FrameHeight,
+            Format = PixelFormat.Bgr24, Timestamp = DateTime.UtcNow,
+        };
     }
 
     /// <inheritdoc/>

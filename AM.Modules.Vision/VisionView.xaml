@@ -4,12 +4,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             xmlns:conv="clr-namespace:AM.Modules.Vision.Converters"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
-    <!-- Vision: vùng ảnh (placeholder — sim chưa trả frame) + điều khiển + kết quả inspect -->
+    <!-- Vision: vùng ảnh live-view (FrameData→BitmapSource) + điều khiển + kết quả inspect -->
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:FrameToImageSourceConverter x:Key="FrameToImg"/>
 
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="CornerRadius" Value="8"/>
@@ -67,13 +69,16 @@
                 </StackPanel>
             </DockPanel>
 
-            <!-- Vùng ảnh tối + crosshair; placeholder vì sim chưa trả frame -->
-            <Border CornerRadius="8" Background="{StaticResource Vision.PreviewBrush}">
+            <!-- Vùng ảnh: live-view (FrameData→BitmapSource) + crosshair overlay; placeholder khi chưa có frame -->
+            <Border CornerRadius="8" ClipToBounds="True" Background="{StaticResource Vision.PreviewBrush}">
                 <Grid>
-                    <Line X1="0" Y1="0" X2="3000" Y2="0" Stroke="#FF444444" StrokeThickness="1" VerticalAlignment="Center"/>
-                    <Line X1="0" Y1="0" X2="0" Y2="3000" Stroke="#FF444444" StrokeThickness="1" HorizontalAlignment="Center"/>
+                    <Image Source="{Binding LiveFrame, Converter={StaticResource FrameToImg}}"
+                           Stretch="Uniform" Margin="4" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                    <Line X1="0" Y1="0" X2="3000" Y2="0" Stroke="#66444444" StrokeThickness="1" VerticalAlignment="Center"/>
+                    <Line X1="0" Y1="0" X2="0" Y2="3000" Stroke="#66444444" StrokeThickness="1" HorizontalAlignment="Center"/>
                     <TextBlock Text="{Binding [Vision.NoFrame], Source={x:Static loc:Loc.Strings}}"
                                HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"
+                               Visibility="{Binding HasNoFrame, Converter={StaticResource BoolToVis}}"
                                Foreground="{StaticResource Vision.PreviewTextBrush}"/>
                 </Grid>
             </Border>
@@ -87,6 +92,20 @@
                                Text="{Binding [Vision.Controls], Source={x:Static loc:Loc.Strings}}"/>
                     <Button Style="{StaticResource CtrlBtn}" Command="{Binding GrabCommand}"
                             Content="{Binding [Vision.Grab], Source={x:Static loc:Loc.Strings}}"/>
+                    <Button Command="{Binding ToggleLiveCommand}"
+                            Content="{Binding [Vision.Live], Source={x:Static loc:Loc.Strings}}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource CtrlBtn}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLive}" Value="True">
+                                        <Setter Property="Content" Value="{Binding [Vision.StopLive], Source={x:Static loc:Loc.Strings}}"/>
+                                        <Setter Property="BorderBrush" Value="{StaticResource Status.NormalBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <Button Style="{StaticResource CtrlBtn}" Command="{Binding InspectCommand}"
                             BorderBrush="{StaticResource Status.InfoBrush}"
                             Foreground="{StaticResource Status.InfoBrush}"

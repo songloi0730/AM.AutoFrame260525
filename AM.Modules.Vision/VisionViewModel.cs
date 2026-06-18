@@ -7,6 +7,7 @@
 using System.Globalization;
 using AM.Core.Abstractions.Interfaces.Hardware;
 using AM.Core.Exceptions;
+using AM.Core.Models;
 using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -28,6 +29,7 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
     private readonly ILogger<VisionViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
+    private bool _liveRunning;
     private bool _disposed;
 
     /// <summary>Tên camera.</summary>
@@ -49,6 +51,17 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _timeText = "—";
     [ObservableProperty] private string _statusMessage = string.Empty;
 
+    /// <summary>Khung ảnh hiện tại (model thuần — View tự dựng BitmapSource qua converter, giữ R-UI).</summary>
+    [ObservableProperty] private FrameData? _liveFrame;
+
+    /// <summary>True khi đang chạy live-view (poll frame liên tục).</summary>
+    [ObservableProperty] private bool _isLive;
+
+    /// <summary>True khi chưa có frame (hiện placeholder).</summary>
+    public bool HasNoFrame => LiveFrame is null;
+
+    partial void OnLiveFrameChanged(FrameData? value) => OnPropertyChanged(nameof(HasNoFrame));
+
     /// <summary>Tạo VM, bắt đầu poll trạng thái kết nối.</summary>
     public VisionViewModel(ICameraDevice camera, ILogger<VisionViewModel> logger, int pollIntervalMs = 1000)
     {
@@ -64,10 +77,46 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private Task Grab() => RunSafeAsync(async () =>
     {
-        var bytes = await _camera.GrabImageAsync(_cts.Token).ConfigureAwait(false);
-        RunOnUIThread(() => StatusMessage = string.Format(CultureInfo.InvariantCulture,
-            Loc.Strings["Vision.Grabbed"], bytes.Length));
+        var frame = await _camera.GrabFrameAsync(_cts.Token).ConfigureAwait(false);
+        RunOnUIThread(() =>
+        {
+            LiveFrame = frame;
+            StatusMessage = string.Format(CultureInfo.InvariantCulture,
+                Loc.Strings["Vision.Grabbed"], frame.Pixels.Length);
+        });
     });
+
+    /// <summary>Bật/tắt live-view (poll frame ~10fps khi bật).</summary>
+    [RelayCommand]
+    private void ToggleLive()
+    {
+        IsLive = !IsLive;
+        if (IsLive && !_liveRunning) _ = LiveLoopAsync(_cts.Token);
+    }
+
+    private async Task LiveLoopAsync(CancellationToken ct)
+    {
+        _liveRunning = true;
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+            while (IsLive && await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                if (!_camera.IsConnected) continue;
+                try
+                {
+                    var frame = await _camera.GrabFrameAsync(ct).ConfigureAwait(false);
+                    RunOnUIThread(() => LiveFrame = frame);
+                }
+                catch (OperationCanceledException) { throw; }
+#pragma warning disable CA1031 // live loop: lỗi grab không làm sập loop, chỉ log
+                catch (Exception ex) { _logger.LogDebug(ex, "[Vision] live grab failed"); }
+#pragma warning restore CA1031
+            }
+        }
+        catch (OperationCanceledException) { /* dừng bình thường khi Dispose */ }
+        finally { _liveRunning = false; }
+    }
 
     [RelayCommand]
     private Task Inspect() => RunSafeAsync(async () =>
