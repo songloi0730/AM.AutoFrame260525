@@ -65,6 +65,9 @@ public sealed class SimulatedVisionProcessor : IVisionProcessor
         await Task.Delay(30, ct).ConfigureAwait(false);
 
         bool pass = _random.NextDouble() < _passRate;
+        double edge = pass ? 5.0 + (_random.NextDouble() * 0.4 - 0.2)   // 4.8–5.2 (∈ 4.5–5.5)
+                           : 5.70 + _random.NextDouble() * 0.30;         // 5.70–6.00 (vượt trên)
+        var checks = new[] { VisionMeasurement.Check("EdgeWidth", Math.Round(edge, 3), "mm", 4.5, 5.5) };
         var result = new VisionResult
         {
             IsPassed = pass,
@@ -73,7 +76,8 @@ public sealed class SimulatedVisionProcessor : IVisionProcessor
             Y = _random.NextDouble() * frame.Height,
             AngleDeg = (_random.NextDouble() * 4) - 2,
             JobName = Name,
-            Measurements = new Dictionary<string, object> { ["edgeWidth"] = _random.NextDouble() * 10 }
+            Checks = checks,
+            Measurements = new Dictionary<string, object> { ["edgeWidth"] = Math.Round(edge, 3) }
         };
         LastResult = result;
         _logger.LogDebug("[SimVision] Result pass={Pass} score={Score:F2}", pass, result.Score);

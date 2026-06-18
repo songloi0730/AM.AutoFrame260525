@@ -4,6 +4,33 @@
 
 ---
 
+## [Session 69] 2026-06-19 — Vision UI V2 (số đo có cấu trúc + stats ca + trend) + hợp đồng VisionResult.Checks
+
+**Commit:** `TBD`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Tiếp ADR `docs/design-notes/0007` (roadmap V2) + tài liệu 8 lớp vision. Nâng "hợp đồng" `VisionResult` mang số đo có cấu trúc (Lớp 4 giá trị + Lớp 6 tolerance) — driver/UI/MES đọc chung, không lộ type SDK.
+
+### ✅ Thêm mới
+- `AM.Core.Abstractions/Interfaces/Hardware/VisionMeasurement.cs` — record trung lập `(Name, Value, Unit, LowLimit?, HighLimit?, Passed)` + factory `Check()` tự tính `Passed`.
+- `AM.Modules.Vision/MeasurementRow.cs` — model dòng đo đã format (ValueText/LimitText/Passed) + `From(VisionMeasurement)`.
+
+### 🔧 Sửa đổi
+- `AM.Core.Abstractions/Interfaces/Hardware/VisionResult.cs` — +`IReadOnlyList<VisionMeasurement> Checks` (giữ `Measurements` dict cũ).
+- `AM.Hardware.Vision/SimulatedCameraDevice.cs` — `InspectAsync` sinh 3 phép đo Width/Height/Brightness có limit; khi FAIL đẩy Width vượt giới hạn (verdict-từng-phép-đo giải thích NG).
+- `AM.Hardware.Vision/SimulatedVisionProcessor.cs` — `RunJobAsync` +1 phép đo EdgeWidth có limit.
+- `AM.Modules.Vision/VisionViewModel.cs` — +`ObservableCollection<MeasurementRow> Checks` · running counters `TotalCount/PassCount/FailCount` + `YieldText` · lệnh `ResetStats` · `ApplyResult` map Checks + tăng counters.
+- `AM.Modules.Vision/VisionView.xaml` — tab Kết quả: lưới phép đo (viền trái OK xanh/NG đỏ, value tô màu) + 4 thẻ stats (Total/OK/NG/Yield) + nút Đặt lại + dải trend pass/fail (ScrollViewer ngang, mới→cũ); bọc ScrollViewer dọc.
+- `AM.Application.Shell/lang/strings.{vi,en,zh}.json` — +8 key Vision (Measurements/SessionStats/ResetStats/StatTotal/StatPass/StatFail/StatYield/Trend).
+
+### 🧪 Test & Build
+- `AM.Hardware.Tests` +2: SimCamera Inspect pass → mọi Check trong giới hạn; fail → ít nhất 1 Check ngoài giới hạn. **38 passed** (36→38).
+- Shell + Modules.Vision compile **0 warning · 0 error** (verify OutDir tạm — app khóa bin). 3 JSON i18n hợp lệ.
+
+### 🔧 Quyết định kiến trúc
+1. **`VisionResult.Checks` = hợp đồng số đo trung lập** (Lớp 4 giá trị + Lớp 6 tolerance) — formatting để ở module (`MeasurementRow`), Core giữ trung lập. SPC/Cpk + xuất báo cáo hoãn sau V5.
+
+---
+
 ## [Session 68] 2026-06-18 — Vision UI V1 (camera toolbar + sub-tab Kết quả/Lịch sử/Công cụ) + fix Settings + ADR 0007
 
 **Commit:** `4c01041`

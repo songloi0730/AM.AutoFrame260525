@@ -105,15 +105,29 @@ public sealed class SimulatedCameraDevice : ICameraDevice
             ? 0.85 + _random.NextDouble() * 0.15  // 0.85–1.00
             : 0.10 + _random.NextDouble() * 0.30;  // 0.10–0.40
 
+        // Số đo có cấu trúc (limit + verdict) — coherent với pass/fail: khi FAIL đẩy Width ra ngoài giới hạn.
+        double width  = passed ? 10.0 + (_random.NextDouble() * 0.30 - 0.15)   // 9.85–10.15 (∈ 9.8–10.2)
+                               : 10.30 + _random.NextDouble() * 0.15;           // 10.30–10.45 (vượt trên)
+        double height = 5.0 + (_random.NextDouble() * 0.16 - 0.08);            // 4.92–5.08 (∈ 4.9–5.1)
+        double bright = 160 + _random.NextDouble() * 40;                        // 160–200 (∈ giới hạn)
+
+        var checks = new[]
+        {
+            VisionMeasurement.Check("Width",      Math.Round(width, 3),  "mm",  9.8, 10.2),
+            VisionMeasurement.Check("Height",     Math.Round(height, 3), "mm",  4.9, 5.1),
+            VisionMeasurement.Check("Brightness", Math.Round(bright, 0), "adu", 160, 200),
+        };
+
         var result = new VisionResult
         {
             IsPassed  = passed,
             Score     = Math.Round(score, 3),
             JobName   = jobName,
+            Checks    = checks,
             Measurements = new Dictionary<string, object>
             {
-                { "width_mm",  Math.Round(10.0 + _random.NextDouble() * 0.2, 3) },
-                { "height_mm", Math.Round(5.0  + _random.NextDouble() * 0.1, 3) }
+                { "width_mm",  Math.Round(width, 3) },
+                { "height_mm", Math.Round(height, 3) }
             }
         };
 

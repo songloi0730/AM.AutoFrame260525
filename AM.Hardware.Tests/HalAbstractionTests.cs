@@ -50,6 +50,35 @@ public sealed class HalAbstractionTests
         vp.LastResult.Should().BeSameAs(result);
     }
 
+    // ─── VisionResult.Checks — số đo có cấu trúc + verdict (V2) ───────────────
+
+    [Fact]
+    public async Task SimCamera_Inspect_Pass_AllChecksWithinLimits()
+    {
+        var cam = new SimulatedCameraDevice(NullLogger<SimulatedCameraDevice>.Instance, passRate: 1.0);
+        await cam.ConnectAsync();
+
+        var r = await cam.InspectAsync("Default");
+        r.IsPassed.Should().BeTrue();
+        r.Checks.Should().NotBeEmpty();
+        r.Checks.Should().OnlyContain(c => c.Passed);
+        // Mỗi phép đo phải nằm trong giới hạn đã khai (nếu có).
+        r.Checks.Should().OnlyContain(c =>
+            (c.LowLimit == null || c.Value >= c.LowLimit)
+            && (c.HighLimit == null || c.Value <= c.HighLimit));
+    }
+
+    [Fact]
+    public async Task SimCamera_Inspect_Fail_HasAtLeastOneFailingCheck()
+    {
+        var cam = new SimulatedCameraDevice(NullLogger<SimulatedCameraDevice>.Instance, passRate: 0.0);
+        await cam.ConnectAsync();
+
+        var r = await cam.InspectAsync("Default");
+        r.IsPassed.Should().BeFalse();
+        r.Checks.Should().Contain(c => !c.Passed);
+    }
+
     // ─── SimulatedSafetyInput ────────────────────────────────────────────────
 
     [Fact]

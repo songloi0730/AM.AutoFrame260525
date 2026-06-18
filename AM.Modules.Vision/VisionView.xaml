@@ -335,6 +335,135 @@
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TimeText}" Margin="0,2" FontFamily="Consolas" Foreground="{DynamicResource Text.PrimaryBrush}"/>
                         </Grid>
 
+                        <!-- Phép đo (L4 giá trị + L6 tolerance) -->
+                        <TextBlock Style="{StaticResource Title}" Margin="0,14,0,6"
+                                   Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}"
+                                   Text="{Binding [Vision.Measurements], Source={x:Static loc:Loc.Strings}}"/>
+                        <ItemsControl ItemsSource="{Binding Checks}"
+                                      Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,4" Padding="8,6" CornerRadius="4" BorderThickness="3,0,0,0"
+                                            Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="BorderBrush" Value="{StaticResource Status.AlarmBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Passed}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource Status.NormalBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                                <TextBlock Text="{Binding LimitText}" FontSize="11" FontFamily="Consolas"
+                                                           Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding ValueText}" FontWeight="Bold"
+                                                       FontFamily="Consolas" FontSize="15" VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{StaticResource Text.ErrorBrush}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Passed}" Value="True">
+                                                                <Setter Property="Foreground" Value="{StaticResource Text.SuccessBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Thống kê ca -->
+                        <Grid Margin="0,14,0,6" Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Style="{StaticResource Title}" Margin="0" VerticalAlignment="Center"
+                                       Text="{Binding [Vision.SessionStats], Source={x:Static loc:Loc.Strings}}"/>
+                            <Button Grid.Column="1" Command="{Binding ResetStatsCommand}" Cursor="Hand" FontSize="11" Padding="10,3"
+                                    Content="{Binding [Vision.ResetStats], Source={x:Static loc:Loc.Strings}}"
+                                    Background="Transparent" BorderThickness="1"
+                                    BorderBrush="{DynamicResource Border.DefaultBrush}"
+                                    Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        </Grid>
+                        <UniformGrid Columns="4" Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                            <Border Padding="6,8" Margin="0,0,4,0" CornerRadius="4" BorderThickness="1"
+                                    Background="{DynamicResource Panel.BackgroundAltBrush}" BorderBrush="{DynamicResource Border.DefaultBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding [Vision.StatTotal], Source={x:Static loc:Loc.Strings}}" FontSize="10"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                                    <TextBlock Text="{Binding TotalCount}" FontSize="18" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Padding="6,8" Margin="0,0,4,0" CornerRadius="4" BorderThickness="1"
+                                    Background="{DynamicResource Panel.BackgroundAltBrush}" BorderBrush="{DynamicResource Border.DefaultBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding [Vision.StatPass], Source={x:Static loc:Loc.Strings}}" FontSize="10"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                                    <TextBlock Text="{Binding PassCount}" FontSize="18" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Foreground="{StaticResource Text.SuccessBrush}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Padding="6,8" Margin="0,0,4,0" CornerRadius="4" BorderThickness="1"
+                                    Background="{DynamicResource Panel.BackgroundAltBrush}" BorderBrush="{DynamicResource Border.DefaultBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding [Vision.StatFail], Source={x:Static loc:Loc.Strings}}" FontSize="10"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                                    <TextBlock Text="{Binding FailCount}" FontSize="18" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Foreground="{StaticResource Text.ErrorBrush}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Padding="6,8" CornerRadius="4" BorderThickness="1"
+                                    Background="{DynamicResource Panel.BackgroundAltBrush}" BorderBrush="{DynamicResource Border.DefaultBrush}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding [Vision.StatYield], Source={x:Static loc:Loc.Strings}}" FontSize="10"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                                    <TextBlock Text="{Binding YieldText}" FontSize="18" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Xu hướng pass/fail (mới → cũ) -->
+                        <TextBlock Style="{StaticResource Title}" Margin="0,14,0,6"
+                                   Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}"
+                                   Text="{Binding [Vision.Trend], Source={x:Static loc:Loc.Strings}}"/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                                      Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}">
+                            <ItemsControl ItemsSource="{Binding RecentResults}" Height="32">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Width="7" Height="28" Margin="0,0,1,0" CornerRadius="2" VerticalAlignment="Bottom">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{StaticResource Vision.FailBrush}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsPassed}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource Vision.PassBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
                         <TextBlock Text="{Binding [Vision.NoResult], Source={x:Static loc:Loc.Strings}}"
                                    FontSize="12" Foreground="{DynamicResource Text.PlaceholderBrush}"
                                    Visibility="{Binding HasNoResult, Converter={StaticResource BoolToVis}}"/>

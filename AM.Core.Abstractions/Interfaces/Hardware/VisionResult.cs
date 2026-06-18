@@ -33,8 +33,14 @@ public sealed class VisionResult
     /// <summary>Tên job/tool đã chạy.</summary>
     public string JobName { get; init; } = string.Empty;
 
-    /// <summary>Các số đo bổ sung (tên → giá trị).</summary>
+    /// <summary>Các số đo bổ sung dạng tự do (tên → giá trị) — giữ cho call site cũ.</summary>
     public Dictionary<string, object> Measurements { get; init; } = new();
+
+    /// <summary>
+    /// Các phép đo có cấu trúc (tên + giá trị + giới hạn + đạt/không) — dùng cho bảng kết quả/MES.
+    /// Rỗng nếu job không xuất số đo. Trả tham chiếu trực tiếp (không phải bản sao).
+    /// </summary>
+    public IReadOnlyList<VisionMeasurement> Checks { get; init; } = [];
 
     /// <summary>Thời điểm có kết quả (UTC).</summary>
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;

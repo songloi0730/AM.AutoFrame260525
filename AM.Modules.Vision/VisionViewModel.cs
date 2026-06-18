@@ -71,6 +71,22 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
     /// <summary>Lịch sử kết quả inspect gần đây (mới nhất ở đầu, giữ tối đa <see cref="MaxHistory"/> dòng).</summary>
     public ObservableCollection<VisionResultRow> RecentResults { get; } = [];
 
+    /// <summary>Các phép đo của kết quả hiện tại (đã format) — bảng kết quả tab Kết quả.</summary>
+    public ObservableCollection<MeasurementRow> Checks { get; } = [];
+
+    // ─── Thống kê ca (running counters — không bị cắt như RecentResults) ───
+    [ObservableProperty] private int _totalCount;
+    [ObservableProperty] private int _passCount;
+    [ObservableProperty] private int _failCount;
+
+    /// <summary>Tỉ lệ đạt (Pass/Total) dạng "%"; "—" khi chưa có lần nào.</summary>
+    public string YieldText => TotalCount == 0
+        ? "—"
+        : string.Create(CultureInfo.InvariantCulture, $"{(double)PassCount / TotalCount * 100:F1}%");
+
+    partial void OnTotalCountChanged(int value) => OnPropertyChanged(nameof(YieldText));
+    partial void OnPassCountChanged(int value) => OnPropertyChanged(nameof(YieldText));
+
     /// <summary>Sub-tab phải đang mở: "result" | "history" | "tool".</summary>
     [ObservableProperty] private string _activeTab = "result";
 
@@ -168,6 +184,23 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ZoomFit() => ZoomFactor = 1.0;
 
+    /// <summary>Xoá thống kê ca + lịch sử + kết quả hiện tại (đếm lại từ đầu).</summary>
+    [RelayCommand]
+    private void ResetStats()
+    {
+        TotalCount = 0;
+        PassCount = 0;
+        FailCount = 0;
+        RecentResults.Clear();
+        Checks.Clear();
+        HasResult = false;
+        ResultText = "—";
+        ScoreText = "—";
+        OffsetText = "—";
+        JobText = "—";
+        TimeText = "—";
+    }
+
     private async Task LiveLoopAsync(CancellationToken ct)
     {
         _liveRunning = true;
@@ -224,6 +257,12 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
         JobText = string.IsNullOrEmpty(r.JobName) ? DefaultJob : r.JobName;
         TimeText = r.Timestamp.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
         StatusMessage = string.Empty;
+
+        Checks.Clear();
+        foreach (var m in r.Checks) Checks.Add(MeasurementRow.From(m));
+
+        TotalCount++;
+        if (r.IsPassed) PassCount++; else FailCount++;
 
         RecentResults.Insert(0, new VisionResultRow(TimeText, ResultText, ScoreText, r.IsPassed));
         while (RecentResults.Count > MaxHistory) RecentResults.RemoveAt(RecentResults.Count - 1);

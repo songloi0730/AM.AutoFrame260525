@@ -9,9 +9,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-18
-**Session:** #68 — **Vision UI V1 + fix Settings**: VisionView +camera toolbar (Lớp phủ/Đóng băng/Zoom·Fit) + cột phải thành sub-tab **Kết quả/Lịch sử/Công cụ** (lịch sử inspect ≤50 NG-đỏ; Công cụ gate Engineer = placeholder VisionTeachView V3); fix màn Cài đặt sub-view chồng nhau (Visibility bind RelativeSource theo SettingsView). ADR `docs/design-notes/0007` (phản biện mockup HTML + SECPC Cognex → layering 4 tầng + roadmap V1–V5).
-**Commit:** `4c01041`  ·  (S67: Vision live-view · S66: Quản lý người dùng · S65: QuickActions HAL)
+**Ngày:** 2026-06-19
+**Session:** #69 — **Vision UI V2**: nâng hợp đồng `VisionResult` +`Checks` (record `VisionMeasurement` trung lập: value/limit/verdict); tab Kết quả thêm lưới phép đo (OK xanh/NG đỏ) + stats ca (Total/OK/NG/Yield) + nút Đặt lại + dải trend; sim Camera/Processor sinh số đo có limit. Test +2 (38 passed).
+**Commit:** `TBD`  ·  (S68: Vision V1 + fix Settings `4c01041` · S67: Vision live-view · S66: Quản lý người dùng)
 
 ---
 
@@ -52,7 +52,7 @@
 | AM.Modules.Production | ✅ Hoàn thành | **Mới** — KPI UPH/yield/cycle-time (IProductionService), tự refresh khi CycleCompleted; nav order 15 |
 | AM.Modules.Diagnostics | ✅ Hoàn thành | **Mới** — device health + system info + Reconnect All; nav order 70 |
 | AM.Modules.Logging | ✅ Hoàn thành | **Mới** — tail file Serilog + lọc level/search + mở thư mục; nav order 75 |
-| AM.Modules.Vision | ✅ Hoàn thành | **V1 (S68)**: camera toolbar (Lớp phủ/Đóng băng/Zoom·Fit) + sub-tab **Kết quả·Lịch sử·Công cụ** (lịch sử inspect ≤50 NG-đỏ; Công cụ gate Engineer = placeholder VisionTeachView V3) · live-view + Grab/Inspect/Light/Calibrate (S67). Roadmap V2–V5 ở ADR `docs/design-notes/0007` |
+| AM.Modules.Vision | ✅ Hoàn thành | **V1–V2 (S68–69)**: camera toolbar (Lớp phủ/Đóng băng/Zoom·Fit) + sub-tab **Kết quả·Lịch sử·Công cụ**; tab Kết quả có **lưới phép đo** (`VisionResult.Checks`: value/limit/OK-NG) + **stats ca** (Total/OK/NG/Yield) + trend + Đặt lại; Công cụ gate Engineer (placeholder VisionTeachView V3) · live-view + Grab/Inspect/Light/Calibrate (S67). Roadmap V3–V5 ở ADR `docs/design-notes/0007` |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---
