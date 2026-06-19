@@ -127,12 +127,36 @@ trước grab (SECPC LightData; khớp field "Strobe sync / Trigger delay" của
   `VisionResult` thật. **Done = chạy Shell→tab Vision: ảnh sống, Inspect ra verdict, không vi phạm Persistent Frame.**
 - **V2 — Result/Log tab đầy đủ:** verdict + đo từng ROI (cần `VisionResult` mang measurements) + stats ca + bảng NG.
   (Có thể cần mở rộng `VisionResult` thêm `Measurements[]`.)
-- **V3 — VisionTeachView (tab Tool, gate Engineer):** camera settings + ROI editor (Adorner overlay) + threshold +
-  output config + calib px→mm + lịch sử offset. Save → `VisionRecipe`.
+- **V3 — VisionTeachView (tab Tool, gate Engineer) ✅ Session 70:** ROI editor (Canvas + `Thumb` kéo/đổi cỡ) +
+  ngưỡng từng ROI + calib px→mm (form + lịch sử). Save → **`VisionTeachConfig` JSON nhẹ** (KHÔNG `VisionRecipe` —
+  xem "Quyết định V3" bên dưới). *Hoãn:* camera settings + output config (chưa cần khi chưa có engine).
 - **V4 — `ILightController` per-channel** (Quyết định 5) + `SimulatedLightController` + test.
 - **V5 — `VisionRecipe` model** (Quyết định 4) + validate attribute-driven + test.
 
 Mỗi bước: 0 warning (TreatWarningsAsErrors), test xanh, theo workflow `am-commit.sh` + điền hash.
+
+---
+
+## Quyết định V3 (Session 70) — đã hiện thực
+
+Build với 3 fork đã chốt cùng chủ dự án (giới thiệu phương án + đánh đổi trước khi chọn):
+
+| Fork | Chọn | Vì sao (đánh đổi) |
+|---|---|---|
+| **Lưu cấu hình** | `VisionTeachConfig` JSON nhẹ qua `IVisionTeachStore` (trong module) | "Save → VisionRecipe" của roadmap chỉ khả thi khi V5 có `VisionRecipe:RecipeBase`. Chọn model trung lập nhẹ (ROI + ngưỡng + calib) → Save có nghĩa ngay + test round-trip được; **hoãn** ràng RecipeBase. *Bỏ:* kéo V5 lên (nặng, ràng trước khi có engine) · chỉ-bộ-nhớ (mất khi đổi tab). |
+| **Sửa ROI** | Kéo-thả/đổi cỡ trên ảnh (Canvas + `Thumb`) | Đúng tinh thần "ROI editor" + cảm ứng. `Thumb` nằm trong `Viewbox` Uniform → **delta đã ở không gian pixel ảnh** (1 đơn vị Canvas = 1 px), không cần chia scale. *Bỏ:* chỉ-nhập-số (kém trực quan). |
+| **Hiệu chuẩn** | Form (mm thật + khoảng pixel → mm/px) + lịch sử | Đơn giản, không phụ thuộc thao tác vẽ. Tách `CalibrationMath` thuần để unit-test. *Bỏ:* vẽ đường trên ảnh (nhiều việc, để sau). |
+
+**Chốt thêm / hệ quả:**
+- **Nơi đặt model + store:** trong `AM.Modules.Vision` (cohesive, "ở trong module Vision"). **V5** sẽ promote model
+  trung lập này lên Core khi `VisionRecipe` chính thức (gói/tham chiếu `VisionTeachConfig`).
+- **KHÔNG thêm method hợp đồng phần cứng** — `ICameraDevice`/`IVisionProcessor` giữ nguyên; V3 là *authoring*,
+  engine vẫn hoãn (Quyết định 1). ROI/ngưỡng khớp hình dạng `VisionMeasurement` đã có.
+- **Bố cục:** `VisionTeachView` là UserControl **phủ toàn vùng làm việc** khi Engineer mở tab Công cụ (ẩn bố cục
+  thường qua `MainAreaVisible`); nút ✕ quay về tab Kết quả. Operator vào tab Công cụ chỉ thấy thông báo cần Engineer.
+- **Gate Engineer 2 lớp:** overlay chỉ hiện khi `CanEditTool` (View) + mọi lệnh ghi kiểm tra `EnsureEngineer` (VM).
+- **Test:** project mới `AM.Modules.Vision.Tests` — round-trip `VisionTeachStore` (xác nhận STJ round-trip
+  `IReadOnlyList<T>{get;init;}`) + `CalibrationMath`. Đặt ở module để giữ cohesive (không đụng Core/Services).
 
 ---
 

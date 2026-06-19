@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-19
-**Session:** #69 — **Vision UI V2**: nâng hợp đồng `VisionResult` +`Checks` (record `VisionMeasurement` trung lập: value/limit/verdict); tab Kết quả thêm lưới phép đo (OK xanh/NG đỏ) + stats ca (Total/OK/NG/Yield) + nút Đặt lại + dải trend; sim Camera/Processor sinh số đo có limit. Test +2 (38 passed).
-**Commit:** `6cdfeb4`  ·  (S68: Vision V1 + fix Settings `4c01041` · S67: Vision live-view · S66: Quản lý người dùng)
+**Session:** #70 — **Vision UI V3 (VisionTeachView)**: tab Công cụ (gate Engineer) phủ toàn vùng làm việc — chụp ảnh tham chiếu + ROI editor (Canvas/`Thumb` kéo·đổi cỡ) + ngưỡng từng ROI + hiệu chuẩn px→mm (form + lịch sử) + Lưu/Nạp JSON (`VisionTeachConfig` / `IVisionTeachStore`, đặt trong module). Project test mới `AM.Modules.Vision.Tests` (10: store round-trip + calib math). **233 test pass**, production 0 warning.
+**Commit:** `(điền sau S70)`  ·  (S69: Vision V2 `6cdfeb4` · S68: Vision V1 `4c01041` · S67: Vision live-view)
 
 ---
 
@@ -19,7 +19,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **24 projects** (CPM), 0 warning, **143 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
+| Solution structure | ✅ Hoàn thành | **25 projects** (CPM), production 0 warning, **233 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
@@ -52,7 +52,8 @@
 | AM.Modules.Production | ✅ Hoàn thành | **Mới** — KPI UPH/yield/cycle-time (IProductionService), tự refresh khi CycleCompleted; nav order 15 |
 | AM.Modules.Diagnostics | ✅ Hoàn thành | **Mới** — device health + system info + Reconnect All; nav order 70 |
 | AM.Modules.Logging | ✅ Hoàn thành | **Mới** — tail file Serilog + lọc level/search + mở thư mục; nav order 75 |
-| AM.Modules.Vision | ✅ Hoàn thành | **V1–V2 (S68–69)**: camera toolbar (Lớp phủ/Đóng băng/Zoom·Fit) + sub-tab **Kết quả·Lịch sử·Công cụ**; tab Kết quả có **lưới phép đo** (`VisionResult.Checks`: value/limit/OK-NG) + **stats ca** (Total/OK/NG/Yield) + trend + Đặt lại; Công cụ gate Engineer (placeholder VisionTeachView V3) · live-view + Grab/Inspect/Light/Calibrate (S67). Roadmap V3–V5 ở ADR `docs/design-notes/0007` |
+| AM.Modules.Vision | ✅ Hoàn thành | **V1–V2 (S68–69)**: camera toolbar + sub-tab **Kết quả·Lịch sử·Công cụ**; tab Kết quả có **lưới phép đo** (`VisionResult.Checks`) + **stats ca** + trend; live-view + Grab/Inspect/Light/Calibrate (S67). **V3 (S70)**: tab Công cụ = **VisionTeachView** (gate Engineer, phủ toàn vùng) — chụp ảnh tham chiếu + ROI editor (Canvas/`Thumb`) + ngưỡng + calib px→mm (form+lịch sử) + Lưu/Nạp JSON (`VisionTeachConfig`/`IVisionTeachStore`). Roadmap V4–V5 (ILightController per-channel · VisionRecipe) ở ADR `docs/design-notes/0007` |
+| AM.Modules.Vision.Tests | ✅ Hoàn thành | **Mới (S70)** — 10 test: `VisionTeachStore` round-trip JSON (ROI+calib) + thiếu file→rỗng + per-camera; `CalibrationMath` mm/px |
 | CI/CD + README | ✅ Hoàn thành | `.github/workflows/ci.yml` (windows, build+test) + README.md |
 
 ---
@@ -217,5 +218,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 *(Không có bug nào đang mở)*
 
 ### TODO tiếp theo
-- [ ] AM.Modules.Vision — live camera view (UI module cuối còn thiếu)
+- [ ] Vision V4 — `ILightController` per-channel + `SimulatedLightController` + test (ADR 0007 Quyết định 5)
+- [ ] Vision V5 — `VisionRecipe` model (promote `VisionTeachConfig` lên Core) + validate attribute-driven + test
+- [ ] (Nợ test, ngoài phạm vi V3) S6966/CA2007 trong AM.Services.Tests + AM.Infrastructure.Tests (pre-existing)
 - [ ] Dựng 1 máy reference để nghiệm thu nền framework (đề xuất từ S43)

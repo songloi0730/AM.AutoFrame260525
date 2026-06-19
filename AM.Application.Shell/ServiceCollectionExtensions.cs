@@ -150,6 +150,10 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddUiViewModels(this IServiceCollection services)
     {
         services.AddSingleton<DashboardViewModel>();
+        services.AddSingleton<AM.Modules.Vision.Teach.IVisionTeachStore>(sp =>
+            new AM.Modules.Vision.Teach.VisionTeachStore(
+                sp.GetRequiredService<ILogger<AM.Modules.Vision.Teach.VisionTeachStore>>(), "vision-teach"));
+        services.AddSingleton<AM.Modules.Vision.VisionTeachViewModel>();
         services.AddSingleton<AM.Modules.Vision.VisionViewModel>();
         services.AddSingleton<AlarmListViewModel>();
         services.AddSingleton<IoMonitorViewModel>();

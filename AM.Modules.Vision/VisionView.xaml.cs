@@ -18,5 +18,12 @@ public partial class VisionView : UserControl
     public VisionView()
     {
         InitializeComponent();
+        TeachPanel.CloseRequested += OnTeachClosed;
+    }
+
+    // Bấm ✕ trong VisionTeachView → rời tab Công cụ, về Kết quả.
+    private void OnTeachClosed(object? sender, System.EventArgs e)
+    {
+        if (DataContext is VisionViewModel vm) vm.ActiveTab = "result";
     }
 }

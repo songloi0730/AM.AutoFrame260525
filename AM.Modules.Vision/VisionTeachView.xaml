@@ -1,0 +1,318 @@
+<UserControl x:Class="AM.Modules.Vision.VisionTeachView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             xmlns:conv="clr-namespace:AM.Modules.Vision.Converters"
+             mc:Ignorable="d"
+             Background="{DynamicResource Screen.BackgroundBrush}">
+
+    <!-- VisionTeachView: dạy vision (ROI + ngưỡng + hiệu chuẩn px→mm). Phủ toàn vùng làm việc khi Engineer mở tab Công cụ. -->
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:FrameToImageSourceConverter x:Key="FrameToImg"/>
+
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Background" Value="{DynamicResource Panel.BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style x:Key="Title" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,6,0,2"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+        </Style>
+        <Style x:Key="FieldInput" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style x:Key="TeachBtn" TargetType="Button">
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="{DynamicResource Card.BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="16,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ── Header: tiêu đề + camera + nút đóng ───────────────────────────── -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,10">
+            <Button DockPanel.Dock="Right" x:Name="CloseButton" Click="Close_Click"
+                    Width="44" Height="44" Cursor="Hand" FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE711;" FontSize="14" Background="Transparent" BorderThickness="1"
+                    BorderBrush="{DynamicResource Border.DefaultBrush}"
+                    Foreground="{DynamicResource Text.SecondaryBrush}"
+                    ToolTip="{Binding [Vision.TeachClose], Source={x:Static loc:Loc.Strings}}"/>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0,0,12,0">
+                <Ellipse Width="10" Height="10" Margin="0,0,6,0" VerticalAlignment="Center"
+                         Fill="{DynamicResource Status.InfoBrush}"/>
+                <TextBlock Text="{Binding DeviceName}" VerticalAlignment="Center" FontWeight="SemiBold"
+                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding [Vision.TeachTitle], Source={x:Static loc:Loc.Strings}}"
+                       FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Text.HeadingBrush}"/>
+        </DockPanel>
+
+        <!-- ── Body: ảnh + canvas ROI (trái) | điều khiển (phải) ─────────────── -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="380"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Trái: ảnh tham chiếu + Canvas ROI (1 đơn vị Canvas = 1 pixel ảnh nhờ Viewbox) -->
+            <Border Grid.Column="0" CornerRadius="8" ClipToBounds="True"
+                    Background="{DynamicResource Vision.PreviewBrush}">
+                <Grid>
+                    <Viewbox Stretch="Uniform" Margin="6"
+                             Visibility="{Binding HasReference, Converter={StaticResource BoolToVis}}">
+                        <Grid Width="{Binding ReferenceFrame.Width}" Height="{Binding ReferenceFrame.Height}">
+                            <Image Source="{Binding ReferenceFrame, Converter={StaticResource FrameToImg}}"
+                                   Stretch="Fill" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                            <ItemsControl ItemsSource="{Binding Rois}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                        <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Width="{Binding W}" Height="{Binding H}">
+                                            <!-- Thân ROI = thumb di chuyển (nền mờ để bắt chạm) -->
+                                            <Thumb DragDelta="RoiMove_DragDelta" PreviewMouseLeftButtonDown="Roi_Select"
+                                                   Cursor="SizeAll">
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Rectangle Fill="#22000000" StrokeThickness="2">
+                                                            <Rectangle.Style>
+                                                                <Style TargetType="Rectangle">
+                                                                    <Setter Property="Stroke" Value="{DynamicResource Status.InfoBrush}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                            <Setter Property="Stroke" Value="{DynamicResource Status.NormalBrush}"/>
+                                                                            <Setter Property="StrokeThickness" Value="3"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Rectangle.Style>
+                                                        </Rectangle>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                            <!-- Nhãn tên ROI -->
+                                            <Border Background="#AA000000" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                    Padding="4,1" CornerRadius="2" Margin="1">
+                                                <TextBlock Text="{Binding Name}" FontSize="12" Foreground="White"/>
+                                            </Border>
+                                            <!-- Tay nắm đổi cỡ góc dưới-phải -->
+                                            <Thumb Width="18" Height="18" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                   DragDelta="RoiResize_DragDelta" Cursor="SizeNWSE">
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Rectangle Fill="{DynamicResource Status.InfoBrush}" RadiusX="2" RadiusY="2"/>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Viewbox>
+                    <TextBlock Text="{Binding [Vision.TeachCapturePrompt], Source={x:Static loc:Loc.Strings}}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"
+                               Visibility="{Binding HasNoReference, Converter={StaticResource BoolToVis}}"
+                               Foreground="{DynamicResource Vision.PreviewTextBrush}"/>
+                </Grid>
+            </Border>
+
+            <!-- Phải: điều khiển dạy -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <!-- Chụp + ROI -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <Button Style="{StaticResource TeachBtn}" Command="{Binding CaptureCommand}" Margin="0,0,0,10"
+                                    BorderBrush="{DynamicResource Status.InfoBrush}" Foreground="{DynamicResource Status.InfoBrush}"
+                                    Content="{Binding [Vision.Capture], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource Title}" Margin="0,0,0,6"
+                                       Text="{Binding [Vision.RoiListTitle], Source={x:Static loc:Loc.Strings}}"/>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Style="{StaticResource TeachBtn}" Command="{Binding AddRoiCommand}"
+                                        IsEnabled="{Binding CanEdit}"
+                                        Content="{Binding [Vision.AddRoi], Source={x:Static loc:Loc.Strings}}"/>
+                                <Button Grid.Column="2" Style="{StaticResource TeachBtn}" Command="{Binding DeleteRoiCommand}"
+                                        IsEnabled="{Binding HasSelectedRoi}"
+                                        Content="{Binding [Vision.DeleteRoi], Source={x:Static loc:Loc.Strings}}"/>
+                            </Grid>
+                            <ListBox ItemsSource="{Binding Rois}" SelectedItem="{Binding SelectedRoi}"
+                                     MaxHeight="140" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <TextBlock Grid.Column="1" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Text.PlaceholderBrush}">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0:0}×{1:0}">
+                                                        <Binding Path="W"/><Binding Path="H"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock Text="{Binding [Vision.RoiEmpty], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="12" Foreground="{DynamicResource Text.PlaceholderBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Rois.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Ngưỡng ROI đang chọn -->
+                    <Border Style="{StaticResource Card}"
+                            Visibility="{Binding HasSelectedRoi, Converter={StaticResource BoolToVis}}">
+                        <StackPanel DataContext="{Binding SelectedRoi}">
+                            <TextBlock Style="{StaticResource Title}"
+                                       Text="{Binding [Vision.RoiEditorTitle], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource FieldLabel}"
+                                       Text="{Binding [Vision.RoiName], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox Style="{StaticResource FieldInput}" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Style="{StaticResource FieldLabel}"
+                                       Text="{Binding [Vision.Unit], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox Style="{StaticResource FieldInput}" Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Style="{StaticResource FieldLabel}"
+                                               Text="{Binding [Vision.LowLimit], Source={x:Static loc:Loc.Strings}}"/>
+                                    <TextBox Style="{StaticResource FieldInput}"
+                                             Text="{Binding LowLimit, TargetNullValue='', UpdateSourceTrigger=LostFocus}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource FieldLabel}"
+                                               Text="{Binding [Vision.HighLimit], Source={x:Static loc:Loc.Strings}}"/>
+                                    <TextBox Style="{StaticResource FieldInput}"
+                                             Text="{Binding HighLimit, TargetNullValue='', UpdateSourceTrigger=LostFocus}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Hiệu chuẩn px→mm -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource Title}"
+                                       Text="{Binding [Vision.Calibration], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource FieldLabel}"
+                                       Text="{Binding [Vision.KnownDistanceMm], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox Style="{StaticResource FieldInput}"
+                                     Text="{Binding KnownMm, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Style="{StaticResource FieldLabel}"
+                                       Text="{Binding [Vision.PixelDistance], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox Style="{StaticResource FieldInput}"
+                                     Text="{Binding PixelDistance, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Button Style="{StaticResource TeachBtn}" Margin="0,10,0,0" Command="{Binding ApplyCalibrationCommand}"
+                                    IsEnabled="{Binding CanEdit}"
+                                    Content="{Binding [Vision.ApplyCalib], Source={x:Static loc:Loc.Strings}}"/>
+                            <Grid Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                           Text="{Binding [Vision.CurrentScale], Source={x:Static loc:Loc.Strings}}"
+                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding MmPerPixelText}" FontFamily="Consolas" FontWeight="Bold"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                            </Grid>
+                            <TextBlock Style="{StaticResource Title}" Margin="0,12,0,6"
+                                       Text="{Binding [Vision.CalibHistory], Source={x:Static loc:Loc.Strings}}"/>
+                            <ItemsControl ItemsSource="{Binding CalibHistory}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Text.PlaceholderBrush}"
+                                                       Text="{Binding Timestamp, StringFormat='HH:mm:ss'}"/>
+                                            <TextBlock Grid.Column="1" FontFamily="Consolas" FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource Text.SecondaryBrush}"
+                                                       Text="{Binding MmPerPixel, StringFormat='{}{0:0.#####} mm/px'}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Lưu / Nạp + trạng thái -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Style="{StaticResource TeachBtn}" Command="{Binding SaveCommand}"
+                                        IsEnabled="{Binding CanEdit}"
+                                        BorderBrush="{DynamicResource Status.NormalBrush}" Foreground="{DynamicResource Status.NormalBrush}"
+                                        Content="{Binding [Vision.SaveTeach], Source={x:Static loc:Loc.Strings}}"/>
+                                <Button Grid.Column="2" Style="{StaticResource TeachBtn}" Command="{Binding ReloadCommand}"
+                                        Content="{Binding [Vision.ReloadTeach], Source={x:Static loc:Loc.Strings}}"/>
+                            </Grid>
+                            <TextBlock Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource Status.InfoBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

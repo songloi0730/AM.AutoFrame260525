@@ -104,7 +104,18 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(ShowResult));
         OnPropertyChanged(nameof(ShowHistory));
         OnPropertyChanged(nameof(ShowTool));
+        OnPropertyChanged(nameof(ShowTeach));
+        OnPropertyChanged(nameof(MainAreaVisible));
     }
+
+    /// <summary>VM của trình dạy vision (tab Công cụ) — DI cấp, hiển thị khi Engineer mở tab Công cụ.</summary>
+    public VisionTeachViewModel Teach { get; }
+
+    /// <summary>True khi đang ở chế độ dạy vision (tab Công cụ + đủ quyền Engineer) — phủ toàn vùng làm việc.</summary>
+    public bool ShowTeach => ActiveTab == "tool" && CanEditTool;
+
+    /// <summary>True khi hiện bố cục thường (ảnh + cột phải); ẩn khi đang dạy vision.</summary>
+    public bool MainAreaVisible => !ShowTeach;
 
     /// <summary>True khi hiện lớp phủ (crosshair/ROI) trên ảnh.</summary>
     [ObservableProperty] private bool _overlayOn = true;
@@ -123,15 +134,23 @@ public sealed partial class VisionViewModel : ObservableObject, IDisposable
     /// <summary>True khi user ≥ Engineer (cho phép chỉnh công cụ vision ở tab Công cụ).</summary>
     [ObservableProperty] private bool _canEditTool;
 
+    partial void OnCanEditToolChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowTeach));
+        OnPropertyChanged(nameof(MainAreaVisible));
+    }
+
     /// <summary>Tạo VM, bắt đầu poll trạng thái kết nối.</summary>
     public VisionViewModel(ICameraDevice camera, IUserService userService,
-        ILogger<VisionViewModel> logger, int pollIntervalMs = 1000)
+        VisionTeachViewModel teach, ILogger<VisionViewModel> logger, int pollIntervalMs = 1000)
     {
         ArgumentNullException.ThrowIfNull(camera);
         ArgumentNullException.ThrowIfNull(userService);
+        ArgumentNullException.ThrowIfNull(teach);
         ArgumentNullException.ThrowIfNull(logger);
         _camera = camera;
         _userService = userService;
+        Teach = teach;
         _logger = logger;
         _uiContext = SynchronizationContext.Current;
         IsConnected = camera.IsConnected;

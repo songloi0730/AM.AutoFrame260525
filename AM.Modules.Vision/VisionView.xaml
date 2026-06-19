@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              xmlns:conv="clr-namespace:AM.Modules.Vision.Converters"
+             xmlns:local="clr-namespace:AM.Modules.Vision"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -100,7 +101,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- ── Trái: tiêu đề + camera toolbar + vùng ảnh ─────────────────────── -->
-        <DockPanel Grid.Column="0">
+        <DockPanel Grid.Column="0" Visibility="{Binding MainAreaVisible, Converter={StaticResource BoolToVis}}">
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                 <TextBlock Text="{Binding [Nav.Vision], Source={x:Static loc:Loc.Strings}}"
                            FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
@@ -189,7 +190,7 @@
         </DockPanel>
 
         <!-- ── Phải: điều khiển camera + sub-tab (Kết quả / Lịch sử / Công cụ) ── -->
-        <DockPanel Grid.Column="2">
+        <DockPanel Grid.Column="2" Visibility="{Binding MainAreaVisible, Converter={StaticResource BoolToVis}}">
 
             <!-- Điều khiển camera (luôn hiện) -->
             <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,12">
@@ -547,33 +548,22 @@
                     </DockPanel>
                 </Border>
 
-                <!-- CÔNG CỤ (gate Engineer) -->
+                <!-- CÔNG CỤ — chỉ hiện cho user CHƯA đủ quyền; Engineer thấy VisionTeachView phủ toàn vùng -->
                 <Border Style="{StaticResource Card}"
                         Visibility="{Binding ShowTool, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource Title}"
                                    Text="{Binding [Vision.TabTool], Source={x:Static loc:Loc.Strings}}"/>
-                        <!-- Chưa đủ quyền: giải thích thay vì giấu -->
                         <TextBlock Text="{Binding [Vision.ToolEngineerOnly], Source={x:Static loc:Loc.Strings}}"
-                                   TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Status.WarningBrush}">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CanEditTool}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <!-- Đủ quyền: placeholder cho V3 -->
-                        <TextBlock Text="{Binding [Vision.ToolPending], Source={x:Static loc:Loc.Strings}}"
-                                   TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Text.PlaceholderBrush}"
-                                   Visibility="{Binding CanEditTool, Converter={StaticResource BoolToVis}}"/>
+                                   TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Status.WarningBrush}"/>
                     </StackPanel>
                 </Border>
             </Grid>
         </DockPanel>
+
+        <!-- Overlay: VisionTeachView phủ toàn vùng làm việc khi Engineer mở tab Công cụ (ShowTeach) -->
+        <local:VisionTeachView x:Name="TeachPanel" Grid.ColumnSpan="3"
+                               DataContext="{Binding Teach}"
+                               Visibility="{Binding ShowTeach, Converter={StaticResource BoolToVis}}"/>
     </Grid>
 </UserControl>

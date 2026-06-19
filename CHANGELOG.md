@@ -4,6 +4,39 @@
 
 ---
 
+## [Session 70] 2026-06-19 — Vision UI V3 (VisionTeachView: ROI editor + ngưỡng + hiệu chuẩn px→mm, gate Engineer)
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Tiếp ADR `docs/design-notes/0007` (roadmap V3). Tab Công cụ từ placeholder → trình *dạy* vision thật. Phát hiện then chốt: hợp đồng phần cứng không có API ROI/threshold/calib + `VisionRecipe` mà roadmap ghi "Save →" thuộc V5 chưa có. Chốt 3 fork với chủ dự án: lưu JSON nhẹ (không kéo VisionRecipe/V5 lên) · ROI kéo-thả trên ảnh · hiệu chuẩn form+lịch sử.
+
+### ✅ Thêm mới
+- `AM.Modules.Vision/Teach/` — model JSON nhẹ: `VisionTeachConfig` (CameraId + Rois + Calibration), `VisionRoi` (X/Y/W/H px + Unit + Low/High = bản authoring của `VisionMeasurement`), `CalibrationData` + `CalibrationEntry`, `CalibrationMath` (mm/px thuần, test được), `IVisionTeachStore` + `VisionTeachStore` (JSON một file/camera; static JsonOptions CA1869, SemaphoreSlim, IDisposable).
+- `AM.Modules.Vision/VisionTeachViewModel.cs` — VM dạy (R-UI, không System.Windows): ReferenceFrame, Rois, SelectedRoi, calib (KnownMm/PixelDistance/MmPerPixel/CalibHistory), CanEdit; lệnh Capture/AddRoi/DeleteRoi/ApplyCalibration/Save/Reload — lệnh ghi gate Engineer (`EnsureEngineer`).
+- `AM.Modules.Vision/VisionRoiVm.cs` — ROI observable (kéo/đổi cỡ + sửa ngưỡng + IsSelected) + map ↔ `VisionRoi`.
+- `AM.Modules.Vision/VisionTeachView.xaml` (+`.xaml.cs`) — UserControl phủ toàn vùng: ảnh tham chiếu + Canvas ROI (`Viewbox` Uniform → 1 đơn vị Canvas = 1 px; `Thumb` kéo/đổi cỡ) | cột phải: Chụp/Add/Delete + editor ngưỡng ROI + form hiệu chuẩn + lịch sử + Lưu/Nạp; nút ✕ phát `CloseRequested`.
+- `AM.Modules.Vision.Tests/` — **project test mới**: `VisionTeachStoreTests` (round-trip ROI+calib · thiếu file→rỗng · không lẫn camera) + `CalibrationMathTests`. **10 test**.
+
+### 🔧 Sửa đổi
+- `AM.Modules.Vision/VisionViewModel.cs` — +`Teach` (VisionTeachViewModel qua DI), +`ShowTeach`/`MainAreaVisible` (tab Công cụ + Engineer → phủ vùng); notify khi đổi `ActiveTab`/`CanEditTool`.
+- `AM.Modules.Vision/VisionView.xaml` — ẩn bố cục thường khi dạy (`MainAreaVisible`) + overlay `VisionTeachView` (ColumnSpan 3, hiện theo `ShowTeach`); placeholder tab Công cụ rút gọn còn thông báo cần Engineer (Engineer thấy overlay).
+- `AM.Modules.Vision/VisionView.xaml.cs` — wire `TeachPanel.CloseRequested` → `ActiveTab="result"`.
+- `AM.Application.Shell/ServiceCollectionExtensions.cs` — DI: `IVisionTeachStore`→`VisionTeachStore("vision-teach")` + `VisionTeachViewModel` (singleton).
+- `AM.Application.Shell/lang/strings.{vi,en,zh}.json` — +24 key Vision teach; bỏ `Vision.ToolPending`. 312 key/ngôn ngữ, đồng bộ.
+- `AM.AutoFrame.sln` — +`AM.Modules.Vision.Tests`.
+
+### 🔧 Quyết định kiến trúc (chi tiết: ADR 0007 "Quyết định V3")
+1. **Save → `VisionTeachConfig` JSON nhẹ** (KHÔNG kéo `VisionRecipe:RecipeBase`/V5 lên) — Save có nghĩa ngay + test round-trip; model+store đặt trong module, V5 promote lên Core sau.
+2. **ROI editor = Canvas + `Thumb` trong `Viewbox`** → drag delta đã ở không gian pixel ảnh (không chia scale). **KHÔNG thêm method hợp đồng phần cứng** — authoring thuần, engine vẫn hoãn.
+3. **VisionTeachView phủ toàn vùng** + ✕ đóng; gate Engineer 2 lớp (overlay theo `CanEditTool` + lệnh ghi `EnsureEngineer`).
+
+### 🧪 Test & Build
+- `AM.Modules.Vision.Tests` +10 (round-trip xác nhận STJ deserialize `IReadOnlyList<T> { get; init; }` OK). **Tổng 233 pass** (Vision 10 · Architecture 6 · Infrastructure 57 · Services 122 · Hardware 38).
+- Production **0 warning · 0 error** (TreatWarningsAsErrors + AnalysisMode=All). 3 JSON i18n hợp lệ, đồng bộ key. WPF chưa nghiệm thu trực quan trong Cowork.
+- *(Còn 7 warning pre-existing S6966/CA2007 trong AM.Services.Tests + AM.Infrastructure.Tests — không thuộc V3.)*
+
+---
+
 ## [Session 69] 2026-06-19 — Vision UI V2 (số đo có cấu trúc + stats ca + trend) + hợp đồng VisionResult.Checks
 
 **Commit:** `6cdfeb4`
