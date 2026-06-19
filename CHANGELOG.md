@@ -4,6 +4,27 @@
 
 ---
 
+## [Session 71] 2026-06-20 — Dọn 7 warning pre-existing ở 2 test project (khôi phục chuẩn 0 warning toàn solution)
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Session 70 ghi nhận "còn 7 warning pre-existing S6966/CA2007 trong AM.Services.Tests + AM.Infrastructure.Tests — không thuộc V3" (xem CHANGELOG S70 §Test & Build). Chuẩn dự án là **0 warning toàn solution**; build vẫn pass do test project đặt `TreatWarningsAsErrors=false`, nhưng vẫn phát 7 warning. Phiên này dọn nốt.
+
+### 🔧 Sửa đổi
+- `AM.Services.Tests/AM.Services.Tests.csproj` — `<NoWarn>` thêm `CA2007;S6966` (trước chỉ có `CS0067`).
+- `AM.Infrastructure.Tests/AM.Infrastructure.Tests.csproj` — `<NoWarn>` thêm `S6966` (đã sẵn `CA2007` → không lặp).
+
+### 🔧 Quyết định (Option B — NoWarn, không sửa code)
+- **Theo convention test project sẵn có**: `AM.Hardware.Tests` đã NoWarn `CA2007;CA1707;xUnit1031;S108` và build sạch.
+- **4/7 warning là false-positive S6966 trên Moq `Mock<T>.Raise`**: Sonar gợi ý `RaiseAsync`, nhưng `CycleCompleted`/`AlarmRaised` là event `EventHandler<T>` **đồng bộ** (convention CA1003) — `RaiseAsync` dành cho handler `Func<…,Task>`, đổi sang sẽ sai ngữ nghĩa + vỡ test. ⇒ S6966 **buộc** phải NoWarn dù theo hướng nào.
+- 3/7 còn lại (`CA2007` ×2 + `S6966` trên `cts.Cancel()`) tuy sửa được dễ, nhưng `CA2007` đã được 2 test project khác NoWarn ⇒ chọn **một** chiến lược nhất quán thay vì trộn hai cách.
+
+### 🧪 Test & Build
+- `dotnet build AM.AutoFrame.sln --no-incremental`: **0 warning · 0 error** toàn solution.
+- `dotnet test AM.AutoFrame.sln`: **233 pass** (Vision 10 · Architecture 6 · Hardware 38 · Infrastructure 57 · Services 122), 0 fail. Không đổi hành vi — chỉ thêm metadata suppress.
+
+---
+
 ## [Session 70] 2026-06-19 — Vision UI V3 (VisionTeachView: ROI editor + ngưỡng + hiệu chuẩn px→mm, gate Engineer)
 
 **Commit:** `cce281e`

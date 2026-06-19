@@ -8,7 +8,7 @@
     <IsTestProject>true</IsTestProject>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <AnalysisMode>None</AnalysisMode>
-    <NoWarn>$(NoWarn);CA2007;CA1707;xUnit1031;S108;CS0067;S3878</NoWarn>
+    <NoWarn>$(NoWarn);CA2007;CA1707;xUnit1031;S108;CS0067;S3878;S6966</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

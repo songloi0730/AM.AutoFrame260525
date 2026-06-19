@@ -9,7 +9,7 @@
     <!-- Relax analyzer rules cho test project — tests có thể dùng patterns khác code production -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <AnalysisMode>None</AnalysisMode>
-    <NoWarn>$(NoWarn);CS0067</NoWarn>
+    <NoWarn>$(NoWarn);CS0067;CA2007;S6966</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
