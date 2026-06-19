@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-19
 **Session:** #70 — **Vision UI V3 (VisionTeachView)**: tab Công cụ (gate Engineer) phủ toàn vùng làm việc — chụp ảnh tham chiếu + ROI editor (Canvas/`Thumb` kéo·đổi cỡ) + ngưỡng từng ROI + hiệu chuẩn px→mm (form + lịch sử) + Lưu/Nạp JSON (`VisionTeachConfig` / `IVisionTeachStore`, đặt trong module). Project test mới `AM.Modules.Vision.Tests` (10: store round-trip + calib math). **233 test pass**, production 0 warning.
-**Commit:** `(điền sau S70)`  ·  (S69: Vision V2 `6cdfeb4` · S68: Vision V1 `4c01041` · S67: Vision live-view)
+**Commit:** `cce281e`  ·  (S69: Vision V2 `6cdfeb4` · S68: Vision V1 `4c01041` · S67: Vision live-view)
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 70] 2026-06-19 — Vision UI V3 (VisionTeachView: ROI editor + ngưỡng + hiệu chuẩn px→mm, gate Engineer)
 
-**Commit:** `(điền sau)`
+**Commit:** `cce281e`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Tiếp ADR `docs/design-notes/0007` (roadmap V3). Tab Công cụ từ placeholder → trình *dạy* vision thật. Phát hiện then chốt: hợp đồng phần cứng không có API ROI/threshold/calib + `VisionRecipe` mà roadmap ghi "Save →" thuộc V5 chưa có. Chốt 3 fork với chủ dự án: lưu JSON nhẹ (không kéo VisionRecipe/V5 lên) · ROI kéo-thả trên ảnh · hiệu chuẩn form+lịch sử.
 
