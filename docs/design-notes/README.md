@@ -28,3 +28,4 @@ không chỉ ghi *làm gì*, mà ghi **các phương án đã cân nhắc + đá
 | [0005](0005-user-management.md) | Quản lý người dùng | §6.6 — mở rộng IUserService CRUD + bất biến last-admin |
 | [0006](0006-vision-live-view.md) | Vision live-view | §6.7 — sim sinh frame + converter FrameData→BitmapSource (giữ R-UI) |
 | [0007](0007-vision-module-design.md) | Thiết kế module Vision | Phản biện mockup HTML + SECPC(Cognex) → layering 4 tầng, adoption lấy/bỏ, Vision recipe model, mở rộng ILightController + roadmap V1–V5 |
+| [0008](0008-vision-process-separation.md) | Tách process Vision (VisionPro FW4.8 + IPC) | VisionPro 9.x = .NET Framework; `.vpp`/CogSerializer crash native trên net9 (6 spike) → chạy VisionPro trong process **FW4.8 riêng**, trả `VisionResult` qua IPC; main net9 sạch Cognex |

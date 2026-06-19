@@ -47,6 +47,11 @@ libs/**/*.pdb
 !libs/**/.placeholder
 !libs/**/README.md
 
+# VisionPro SDK install copy (licensed — TOÀN BỘ ~680 file, không chỉ .dll: Templates/help/config…).
+# Developer tự copy từ máy cài VisionPro. Xem docs/design-notes/0008-vision-process-separation.md
+libs/Vision/Cognex/x64/
+libs/Vision/Cognex/x86/
+
 # Runtime data stores sinh tự động (không commit — app seed/tạo lúc chạy)
 /parameters.json
 /users.json
