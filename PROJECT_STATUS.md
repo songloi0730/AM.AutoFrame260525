@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-20
-**Session:** #71 — **Dọn 7 warning pre-existing**: NoWarn `S6966`/`CA2007` ở `AM.Services.Tests` + `AM.Infrastructure.Tests` (theo convention `AM.Hardware.Tests`) → **toàn solution 0 warning** (trước chỉ production 0 warning). 4/7 là false-positive S6966 trên Moq `Raise` (`RaiseAsync` sai ngữ nghĩa cho event đồng bộ). **233 test vẫn pass.**
-**Commit:** `(điền sau)`  ·  (S70: Vision V3 `cce281e` · S69: Vision V2 `6cdfeb4` · S68: Vision V1 `4c01041`)
+**Session:** #72 — **ADR 0008: tách process Vision**. 6 spike chứng minh VisionPro 9.x (.NET Framework) nạp + native chạy in-process net9 NHƯNG `.vpp`/CogSerializer **crash native** (SEHException, BinaryFormatter đã gỡ) → chốt chạy VisionPro trong **process FW4.8 riêng**, trả `VisionResult` qua IPC; main net9 + module **sạch Cognex**. +gitignore toàn bộ `libs/Vision/Cognex` (licensed ~680 file). Việc tiếp: spike host net48 nạp `.vpp` thật + hợp đồng IPC.
+**Commit:** `b50e22b`  ·  (S71: dọn warning `e736919` · S70: Vision V3 `cce281e` · S69: Vision V2 `6cdfeb4`)
 
 ---
 

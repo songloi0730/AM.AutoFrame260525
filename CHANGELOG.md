@@ -4,9 +4,31 @@
 
 ---
 
+## [Session 72] 2026-06-20 — ADR 0008: tách process Vision (VisionPro FW4.8 + IPC) — net9 không reference Cognex
+
+**Commit:** `b50e22b`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chốt dùng VisionPro (ADR 0007). Bản cài 9.x (.NET Framework 4.x) đặt ở `libs/Vision/Cognex/x64/ReferencedAssemblies`. Chạy 6 spike (app net9 throwaway) để xác định có tích hợp in-process được không.
+
+### 🔬 Phát hiện thực nghiệm
+- Managed `Cognex.VisionPro.*` **nạp được** trong net9 (KHÔNG mixed-mode như lo ban đầu; pure-IL x64) + **native interop chạy** (cấp `CogImage8Grey`) khi trỏ native path vào `x64/bin` + resolve managed từ `ReferencedAssemblies`.
+- **Nạp `.vpp` (`CogSerializer`) thất bại**: BinaryFormatter (net9 đã gỡ) → shim `System.Runtime.Serialization.Formatters`+cờ được → thiếu `System.Drawing.Common` → thêm được → **SEHException native** (STA không cứu). `.vpp` là cốt lõi QuickBuild ⇒ in-process net9 **không khả thi/không an toàn** (R01).
+
+### ✅ Thêm mới
+- `docs/design-notes/0008-vision-process-separation.md` — ADR: chạy VisionPro trong **process .NET Framework 4.8 riêng** (headless host + QuickBuild authoring, nâng WinForms khi cần), trả `VisionResult` + `correlationId` qua **IPC**; main net9 + mọi module **không reference Cognex**. Gồm hợp đồng ranh giới (payload/trigger/camera/vòng đời/transport) + hệ quả (`VisionProProcessor : IVisionProcessor` là IPC client; project `AM.Vision.VisionProHost` net48).
+
+### 🔧 Sửa đổi
+- `.gitignore` — ignore `libs/Vision/Cognex/x64|x86/` (toàn bộ ~680 file SDK có license; trước chỉ ignore `*.dll` nên ~525 file non-DLL còn lọt).
+- `docs/design-notes/README.md` — index +0008.
+
+### ⏭️ Việc tiếp
+- Spike host **net48** nạp `.vpp` thật (round-trip CogSerializer mà net9 fail) để chốt FW4.8 chạy; thiết kế hợp đồng IPC chi tiết + alarm 20xxx; `VisionProProcessor` IPC client. (V3 ROI editor bị thay bằng editor VisionPro; V1/V2 tái dùng làm UI hiển thị kết quả IPC.)
+
+---
+
 ## [Session 71] 2026-06-20 — Dọn 7 warning pre-existing ở 2 test project (khôi phục chuẩn 0 warning toàn solution)
 
-**Commit:** `(điền sau)`
+**Commit:** `e736919`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Session 70 ghi nhận "còn 7 warning pre-existing S6966/CA2007 trong AM.Services.Tests + AM.Infrastructure.Tests — không thuộc V3" (xem CHANGELOG S70 §Test & Build). Chuẩn dự án là **0 warning toàn solution**; build vẫn pass do test project đặt `TreatWarningsAsErrors=false`, nhưng vẫn phát 7 warning. Phiên này dọn nốt.
 
