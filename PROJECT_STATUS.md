@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-06-19
 **Session:** #69 — **Vision UI V2**: nâng hợp đồng `VisionResult` +`Checks` (record `VisionMeasurement` trung lập: value/limit/verdict); tab Kết quả thêm lưới phép đo (OK xanh/NG đỏ) + stats ca (Total/OK/NG/Yield) + nút Đặt lại + dải trend; sim Camera/Processor sinh số đo có limit. Test +2 (38 passed).
-**Commit:** `TBD`  ·  (S68: Vision V1 + fix Settings `4c01041` · S67: Vision live-view · S66: Quản lý người dùng)
+**Commit:** `6cdfeb4`  ·  (S68: Vision V1 + fix Settings `4c01041` · S67: Vision live-view · S66: Quản lý người dùng)
 
 ---
 

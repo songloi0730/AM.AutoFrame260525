@@ -6,7 +6,7 @@
 
 ## [Session 69] 2026-06-19 — Vision UI V2 (số đo có cấu trúc + stats ca + trend) + hợp đồng VisionResult.Checks
 
-**Commit:** `TBD`
+**Commit:** `6cdfeb4`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Tiếp ADR `docs/design-notes/0007` (roadmap V2) + tài liệu 8 lớp vision. Nâng "hợp đồng" `VisionResult` mang số đo có cấu trúc (Lớp 4 giá trị + Lớp 6 tolerance) — driver/UI/MES đọc chung, không lộ type SDK.
 
