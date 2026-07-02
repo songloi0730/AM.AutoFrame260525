@@ -6,7 +6,7 @@
 
 ## [Session 74] 2026-07-02 — Home v2.1: card "Kết quả gần nhất", empty state, KPI màu-khi-có-nghĩa, quick actions gọn (phản biện ISA-101)
 
-**Commit:** *(điền sau)*
+**Commit:** `970f078`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Nhận phản biện 7 điểm cho vùng nội dung Dashboard theo tiêu chí ISA-101 Level 1 ("liếc 3 giây") kèm wireframe. Đánh giá từng điểm, áp 6.5/7, từ chối 1. Chi tiết: **ADR `docs/design-notes/0010-home-content-tinh-chinh-isa101.md`**.
 

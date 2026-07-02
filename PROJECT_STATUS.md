@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-02
 **Session:** #74 — **Home v2.1** (ADR 0010): đánh giá phản biện ISA-101 7 điểm cho nội dung Dashboard → áp: card "Kết quả gần nhất" thay dải camera (KQ OK/NG lớn + SN/cycle/recipe, chấm trạng thái camera thay chữ xanh), bảng sản phẩm empty state + KQ chip màu + counter gộp lên header, KPI số 26px + màu chỉ khi >0 + "—"/ms→s, quick actions bỏ dòng "cần quyền" (tooltip + icon khoá + nhóm tiện ích/rủi ro + Andon viền amber), `Safety.OK` viết đủ, nhật ký empty state, divider tách Reset ở action bar. Từ chối: thu rail 560→420 (giữ spec v2). Việc tiếp: sync template v3 + Dashboard spec v2.1.
-**Commit:** *(điền sau)*  ·  (S73: Shell v3 `991f34b` · S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919`)
+**Commit:** `970f078`  ·  (S73: Shell v3 `991f34b` · S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919`)
 
 ---
 
