@@ -9,9 +9,9 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-06-20
-**Session:** #72 — **ADR 0008: tách process Vision**. 6 spike chứng minh VisionPro 9.x (.NET Framework) nạp + native chạy in-process net9 NHƯNG `.vpp`/CogSerializer **crash native** (SEHException, BinaryFormatter đã gỡ) → chốt chạy VisionPro trong **process FW4.8 riêng**, trả `VisionResult` qua IPC; main net9 + module **sạch Cognex**. +gitignore toàn bộ `libs/Vision/Cognex` (licensed ~680 file). Việc tiếp: spike host net48 nạp `.vpp` thật + hợp đồng IPC.
-**Commit:** `b50e22b`  ·  (S71: dọn warning `e736919` · S70: Vision V3 `cce281e` · S69: Vision V2 `6cdfeb4`)
+**Ngày:** 2026-07-02
+**Session:** #73 — **Shell v3** (ADR 0009): đánh giá + tích hợp đề xuất gộp 7 vùng → 4 vùng: header+nav 56px (tab RadioButton), alarm banner co giãn 36→52, connection bar → chip "Thiết bị n/m · Host n/m" + popup 2 cột trên action bar 76px. Chrome dọc 284→168px (~+116px content @1080p). 4 hiệu chỉnh so với đề xuất: kiosk config-driven `AutoMachine:KioskMode` + Ctrl+Shift+F11 (Engineer+), lệnh máy 64px (Master Index §2.9), fix bug double-toggle Popup, ScrollViewer popup. Việc tiếp: sync template HMI lên v3.
+**Commit:** *(điền sau)*  ·  (S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919` · S70: Vision V3 `cce281e`)
 
 ---
 
@@ -41,7 +41,7 @@
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
 | AM.Modules.Motion | ✅ Hoàn thành | **Màn điều khiển trục v2** (S46): bảng đèn 8 tín hiệu + servo/home/clear/move từng trục + jog pad/inching + phản hồi servo + bảng điểm Set/Confirm 2-chạm + **Thao tác trạm (RecoveryActions, S63) + Supervised Override (xác nhận 1 người, S64)**. Bám `IMotionController` + `IAxisDiagnostics` (tuỳ chọn); nav order 40 |
 | AM.Modules.Parameter | ✅ Hoàn thành | **Mới** — recipe editor attribute-driven ([ParamView] reflection); Save gate Engineer; nav order 50 |
-| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + HardwareFactory + **Shell v2 — 7 vùng Persistent Frame** (S45): header badge AUTO/LOCAL/state + heartbeat, nav tab ngang, alarm banner 1-alarm + ACK 40px + chip "+N", action bar trắng icon-trên (Pause/Resume 1 nút, Dry run), connection bar Thiết bị│Host + version |
+| AM.Application.Shell | ✅ Hoàn thành | Bootstrapper + HardwareFactory + **Shell v3 — 4 vùng Persistent Frame** (S73, ADR 0009): header+nav gộp 56px (chip AUTO/LOCAL/state + tab RadioButton), alarm banner co giãn 36→52 + ACK 40px + chip "+N", action bar 76px (lệnh máy 64px + Dry run + chip kết nối n/m + popup Thiết bị│Host), kiosk config-driven (Ctrl+Shift+F11 Engineer+) |
 | AM.UI.Localization | ✅ Hoàn thành | Proxy i18n dùng chung `Loc.Strings` (module bind `{x:Static loc:Loc.Strings}`) |
 | .claude/ (AI config) | ✅ Hoàn thành | rules(2) + commands(9) + skills(8) + hooks(4) |
 | PROJECT_STATUS.md + CHANGELOG.md | ✅ Hoàn thành | Tracking system, auto-commit workflow |
@@ -218,6 +218,8 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 *(Không có bug nào đang mở)*
 
 ### TODO tiếp theo
+- [ ] Sync `HMI_UI_Architecture_Template` + Master Index §3 lên **v3** — Shell đã đổi 7 vùng → 4 vùng (ADR 0009), tài liệu đang mô tả bố cục cũ
+- [ ] Màn Cài đặt: thêm nút vào/thoát kiosk (hiện chỉ có Ctrl+Shift+F11 Engineer+)
 - [ ] Vision V4 — `ILightController` per-channel + `SimulatedLightController` + test (ADR 0007 Quyết định 5)
 - [ ] Vision V5 — `VisionRecipe` model (promote `VisionTeachConfig` lên Core) + validate attribute-driven + test
 - [ ] (Nợ test, ngoài phạm vi V3) S6966/CA2007 trong AM.Services.Tests + AM.Infrastructure.Tests (pre-existing)

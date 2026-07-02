@@ -14,11 +14,17 @@
         Background="{DynamicResource Screen.BackgroundBrush}">
 
     <!--
-    Shell v2 — HMI_UI_Architecture_Template_v2 (7 vùng Persistent Frame):
-    1 Header 64 (badge AUTO/LOCAL/state + heartbeat) → 2 Nav tabs 48 → 3 Alarm banner 48
-    (1 alarm ưu tiên cao nhất chưa ACK + ACK 40px + chip +N) → 4 Content → 6 Action bar 84
-    (nút trắng phẳng, icon trên + nhãn dưới, chỉ Start viền nhấn) → 7 Connection bar 40
-    (Thiết bị│Host + version). Lệnh máy KHÔNG ở nửa trên màn hình.
+    Shell v3 — 4 vùng Persistent Frame (gộp từ 7 vùng v2, tối ưu 1920×1080; ADR 0009):
+    1 Header+Nav gộp 56  (logo · chip AUTO/LOCAL/state · tab điều hướng · recipe · clock+heartbeat · ngôn ngữ · user)
+    2 Alarm banner co giãn: 36 khi sạch → 52 khi có alarm chưa ACK (nút ACK vẫn ≥40px — spec §1.8)
+    3 Content *
+    4 Action bar 76 gộp connection: nút lệnh máy 64px (Master Index §2.9 — lệnh chính ≥64) nằm ngang trái
+      · Dry run/Manual 48px · chip "Thiết bị n/m · Host n/m" + popup chi tiết phải
+    Ngân sách chrome: 56+36+76 = 168px → nội dung ~912px (~84%) ở 1080p (v2 là 284px chrome).
+
+    Kiosk KHÔNG hardcode: bật qua appsettings AutoMachine:KioskMode (IPC sản xuất);
+    Ctrl+Shift+F11 (Engineer+) vào/thoát kiosk lúc chạy — xem MainWindow.xaml.cs.
+    Lệnh máy KHÔNG ở nửa trên màn hình (SEMI E95 — vùng điều khiển cố định ở đáy).
     -->
 
     <Window.Resources>
@@ -26,17 +32,17 @@
         <conv:ConnectionToBrushConverter x:Key="ConnBrush"/>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <!-- Badge header (chip 30px — viền + chữ màu trạng thái trên nền trắng, yên tĩnh) -->
-        <Style x:Key="HeaderBadge" TargetType="Border">
-            <Setter Property="Height" Value="30"/>
+        <!-- Chip trạng thái header (26px — viền + chữ màu trạng thái trên nền trắng, yên tĩnh) -->
+        <Style x:Key="StateChip" TargetType="Border">
+            <Setter Property="Height" Value="26"/>
             <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="Background" Value="{DynamicResource Panel.BackgroundAltBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Nút header (ngôn ngữ / user) — 44px, viền, nền trắng -->
+        <!-- Nút header (recipe / user) — 44px (adoption v2: min touch trong header 56px) -->
         <Style x:Key="HeaderButton" TargetType="Button">
             <Setter Property="Height" Value="44"/>
             <Setter Property="Padding" Value="12,0"/>
@@ -65,10 +71,48 @@
             </Setter>
         </Style>
 
-        <!-- Nút action bar v2 — trắng phẳng 64px, icon 1 màu trên + nhãn dưới, mờ khi khoá -->
+        <!-- Tab điều hướng — RadioButton cao hết header (56px), gạch chân 3px khi chọn.
+             Code-behind tạo tab từ [ModuleNavigation]: FindResource("NavTabButton") —
+             GroupName trong style cho hành vi loại trừ lẫn nhau. KHÔNG set Foreground
+             trên nội dung tab (icon/label kế thừa từ trigger của template). -->
+        <Style x:Key="NavTabButton" TargetType="RadioButton">
+            <Setter Property="GroupName" Value="NavTabs"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid Background="Transparent">
+                            <ContentPresenter x:Name="Cp" HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                            <Rectangle x:Name="Indicator" Height="3" VerticalAlignment="Bottom"
+                                       Fill="{DynamicResource Status.InfoBrush}" Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="{DynamicResource Text.HeadingBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Nút action bar v3 — nằm ngang (icon trái + nhãn phải), mờ khi khoá.
+             48px cho nút phụ (Dry run/Manual); lệnh máy dùng MachineActionButton 64px. -->
         <Style x:Key="ActionButton" TargetType="Button">
-            <Setter Property="Height" Value="64"/>
-            <Setter Property="MinWidth" Value="104"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="MinWidth" Value="108"/>
+            <Setter Property="Padding" Value="16,0"/>
             <Setter Property="Background" Value="{DynamicResource Panel.BackgroundAltBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -81,7 +125,7 @@
                         <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8">
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -98,78 +142,143 @@
             </Setter>
         </Style>
 
-        <!-- Icon MDL2 trong nút action -->
+        <!-- Lệnh máy (Init/Start/Pause/Stop/Reset) — 64px theo Master Index §2.9: lệnh chính ≥64px -->
+        <Style x:Key="MachineActionButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Height" Value="64"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Padding" Value="20,0"/>
+        </Style>
+
+        <!-- Icon MDL2 nằm ngang trong nút action -->
         <Style x:Key="ActionIcon" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,0,3"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,9,0"/>
         </Style>
         <Style x:Key="ActionLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+
+        <!-- Chip kết nối (ToggleButton mở popup chi tiết) — 44px touch -->
+        <Style x:Key="ConnChip" TargetType="ToggleButton">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Background" Value="{DynamicResource Panel.BackgroundAltBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource Panel.BackgroundHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush"
+                                        Value="{DynamicResource Status.InfoBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Một dòng kết nối trong popup — dùng chung cho Thiết bị và Host -->
+        <DataTemplate x:Key="ConnItemTemplate">
+            <StackPanel Orientation="Horizontal" Margin="0,3" VerticalAlignment="Center">
+                <TextBlock FontSize="12" Margin="0,0,7,0" VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text" Value="✕"/>
+                            <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Connected}" Value="True">
+                                    <Setter Property="Text" Value="●"/>
+                                    <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Text="{Binding Name}" FontSize="14" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="64"/>   <!-- 1 Header -->
-            <RowDefinition Height="48"/>   <!-- 2 Nav tabs -->
-            <RowDefinition Height="48"/>   <!-- 3 Alarm banner (48 để ACK đạt 40px — spec §1.8) -->
-            <RowDefinition Height="*"/>    <!-- 4+5 Content -->
-            <RowDefinition Height="84"/>   <!-- 6 Action bar -->
-            <RowDefinition Height="40"/>   <!-- 7 Connection bar -->
+            <RowDefinition Height="56"/>   <!-- 1 Header + Nav gộp -->
+            <RowDefinition Height="Auto"/> <!-- 2 Alarm banner co giãn 36→52 -->
+            <RowDefinition Height="*"/>    <!-- 3 Content -->
+            <RowDefinition Height="76"/>   <!-- 4 Action bar + connection -->
         </Grid.RowDefinitions>
 
-        <!-- ═══ 1 HEADER ═════════════════════════════════════════════════════════ -->
+        <!-- ═══ 1 HEADER + NAV — một hàng 56px ═══════════════════════════════════ -->
         <Border Grid.Row="0" Background="{DynamicResource Header.BackgroundBrush}"
                 BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Border.DefaultBrush}">
-            <Grid Margin="20,0">
+            <Grid Margin="16,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/> <!-- Logo + chip trạng thái -->
+                    <ColumnDefinition Width="*"/>    <!-- Tab điều hướng -->
+                    <ColumnDefinition Width="Auto"/> <!-- Recipe · clock · ngôn ngữ · user -->
                 </Grid.ColumnDefinitions>
 
-                <!-- Trái: logo + tên máy + badge AUTO/DRY · LOCAL · state -->
+                <!-- Trái: logo + chip AUTO/DRY · LOCAL · state (nhận diện máy trong 1 lượt nhìn) -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Width="36" Height="36" CornerRadius="8"
-                            Background="{DynamicResource Info.BackgroundBrush}">
+                    <Border Width="34" Height="34" CornerRadius="8"
+                            Background="{DynamicResource Info.BackgroundBrush}"
+                            ToolTip="{StaticResource Shell.Title}">
                         <TextBlock Text="AM" FontWeight="SemiBold" FontSize="14"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{DynamicResource Status.InfoBrush}"/>
                     </Border>
-                    <TextBlock Text="{StaticResource Shell.Title}" FontWeight="SemiBold" FontSize="18"
-                               Margin="12,0,0,0" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Text.HeadingBrush}"/>
 
-                    <!-- Badge chế độ AUTO/DRY -->
-                    <Border Style="{StaticResource HeaderBadge}" Margin="20,0,0,0"
+                    <!-- Chip chế độ AUTO/DRY -->
+                    <Border Style="{StaticResource StateChip}" Margin="14,0,0,0"
                             BorderBrush="{StaticResource Status.InfoBrush}">
-                        <TextBlock Text="{Binding ModeText}" FontWeight="Bold" FontSize="14"
+                        <TextBlock Text="{Binding ModeText}" FontWeight="Bold" FontSize="13"
                                    VerticalAlignment="Center"
                                    Foreground="{StaticResource Status.InfoBrush}"/>
                     </Border>
 
-                    <!-- Badge LOCAL (GEM control state — REMOTE khi có SECS/GEM, TODO) -->
-                    <Border Style="{StaticResource HeaderBadge}" Margin="8,0,0,0"
+                    <!-- Chip LOCAL (GEM control state — REMOTE khi có SECS/GEM, TODO) -->
+                    <Border Style="{StaticResource StateChip}" Margin="6,0,0,0"
                             BorderBrush="{DynamicResource Border.DefaultBrush}"
                             ToolTip="{Binding [Shell.LocalTip], Source={x:Static loc:Loc.Strings}}">
                         <TextBlock Text="{Binding [Shell.Local], Source={x:Static loc:Loc.Strings}}"
-                                   FontWeight="Bold" FontSize="14" VerticalAlignment="Center"
+                                   FontWeight="Bold" FontSize="13" VerticalAlignment="Center"
                                    Foreground="{DynamicResource Text.SecondaryBrush}"/>
                     </Border>
 
-                    <!-- Badge trạng thái máy (ISA-88) -->
-                    <Border Style="{StaticResource HeaderBadge}" Margin="8,0,0,0"
+                    <!-- Chip trạng thái máy (ISA-88) -->
+                    <Border Style="{StaticResource StateChip}" Margin="6,0,0,0"
                             BorderBrush="{Binding MachineState, Converter={StaticResource StateBrush}}">
-                        <TextBlock Text="{Binding StateText}" FontWeight="Bold" FontSize="14"
+                        <TextBlock Text="{Binding StateText}" FontWeight="Bold" FontSize="13"
                                    VerticalAlignment="Center"
                                    Foreground="{Binding MachineState, Converter={StaticResource StateBrush}}"/>
                     </Border>
                 </StackPanel>
 
+                <!-- Giữa: tab tự sinh từ [ModuleNavigation] — style NavTabButton (RadioButton).
+                     ScrollViewer + panning đề phòng thêm module hoặc màn 1366×768 không đủ ngang. -->
+                <ScrollViewer Grid.Column="1" Margin="18,0,0,0" PanningMode="HorizontalOnly"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <StackPanel x:Name="NavPanel" Orientation="Horizontal"/>
+                </ScrollViewer>
+
                 <!-- Phải: recipe + clock + heartbeat + ngôn ngữ + user -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Style="{StaticResource HeaderButton}" Click="RecipeButton_Click"
                             ToolTip="{Binding [Shell.RecipeTip], Source={x:Static loc:Loc.Strings}}">
                         <StackPanel Orientation="Horizontal">
@@ -181,10 +290,12 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- Clock MinWidth cố định để giây nhảy không làm xô layout -->
                     <StackPanel Orientation="Horizontal" Margin="14,0" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding ClockText}" FontSize="14" VerticalAlignment="Center"
+                        <TextBlock Text="{Binding ClockText}" FontSize="14" MinWidth="126"
+                                   TextAlignment="Right" VerticalAlignment="Center"
                                    Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <!-- Heartbeat 1Hz — ngừng nháy = UI treo (template v2 §3.1) -->
+                        <!-- Heartbeat 1Hz — ngừng nháy = UI treo (template v3 §3.1) -->
                         <Ellipse Width="9" Height="9" Margin="7,0,0,0" VerticalAlignment="Center"
                                  Fill="{StaticResource Status.NormalBrush}"
                                  ToolTip="{Binding [Shell.HeartbeatTip], Source={x:Static loc:Loc.Strings}}">
@@ -207,10 +318,10 @@
                             Background="{DynamicResource Panel.BackgroundAltBrush}"
                             BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                            <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="15"
                                        VerticalAlignment="Center" Margin="0,0,8,0"
                                        Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                            <ComboBox x:Name="LanguageCombo" Width="92" Height="30" VerticalAlignment="Center"
+                            <ComboBox x:Name="LanguageCombo" Width="88" Height="28" VerticalAlignment="Center"
                                       BorderThickness="0" Background="Transparent"
                                       SelectionChanged="LanguageCombo_SelectionChanged"
                                       ToolTip="{Binding [Common.Language], Source={x:Static loc:Loc.Strings}}"/>
@@ -221,9 +332,9 @@
                     <Button Style="{StaticResource HeaderButton}" Click="UserButton_Click"
                             ToolTip="{Binding [Shell.UserTip], Source={x:Static loc:Loc.Strings}}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="30" Height="30" CornerRadius="15"
+                            <Border Width="28" Height="28" CornerRadius="14"
                                     Background="{DynamicResource Info.BackgroundBrush}">
-                                <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="13"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
                                            Foreground="{DynamicResource Status.InfoBrush}"/>
                             </Border>
@@ -235,35 +346,26 @@
             </Grid>
         </Border>
 
-        <!-- ═══ 2 NAV TABS — ngang, tự sinh từ [ModuleNavigation] ════════════════ -->
-        <Border Grid.Row="1" Background="{DynamicResource NavBar.BackgroundBrush}"
-                BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Border.DefaultBrush}">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                <StackPanel x:Name="NavPanel" Orientation="Horizontal" Margin="14,0"/>
-            </ScrollViewer>
-        </Border>
-
-        <!-- ═══ 3 ALARM BANNER — 1 alarm ưu tiên cao nhất chưa ACK (EEMUA 201) ═══ -->
-        <Border Grid.Row="2" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Border.DefaultBrush}">
+        <!-- ═══ 2 ALARM BANNER — co giãn: 36 sạch → 52 khi có alarm (ACK vẫn 40px) ═
+             EEMUA 201: chỉ hiện 1 alarm ưu tiên cao nhất chưa ACK + chip "+N khác". -->
+        <Border Grid.Row="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Border.DefaultBrush}">
             <Border.Style>
                 <Style TargetType="Border">
+                    <Setter Property="Height" Value="36"/>
                     <Setter Property="Background" Value="{DynamicResource Notice.OkBrush}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding HasUnackedAlarm}" Value="True">
+                            <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsBannerError}" Value="True">
+                            <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Ng.BackgroundBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Border.Style>
             <DockPanel Margin="20,0">
-                <!-- Phải: ghi chú điều hướng -->
-                <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="13"
-                           Foreground="{DynamicResource Text.PlaceholderBrush}"
-                           Text="{Binding [Shell.AlarmNote], Source={x:Static loc:Loc.Strings}}"/>
-
                 <!-- Glyph trạng thái: ✓ sạch / ⚠ có alarm -->
                 <TextBlock VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold" FontSize="15">
                     <TextBlock.Style>
@@ -284,9 +386,9 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <!-- Nút ACK (≥40px — spec §1.8 thắng mockup 32px) -->
+                <!-- Nút ACK (≥40px — spec §1.8) — chỉ hiện khi có alarm, banner lúc đó cao 52 -->
                 <Button DockPanel.Dock="Right" VerticalAlignment="Center" Height="40" Padding="22,0"
-                        Margin="12,0" FontWeight="Bold" FontSize="14" Cursor="Hand"
+                        Margin="12,0,0,0" FontWeight="Bold" FontSize="14" Cursor="Hand"
                         Content="{Binding [Alarm.Ack], Source={x:Static loc:Loc.Strings}}"
                         Command="{Binding AcknowledgeAlarmCommand}"
                         Visibility="{Binding HasUnackedAlarm, Converter={StaticResource BoolToVis}}"
@@ -295,8 +397,8 @@
                         Foreground="{StaticResource Warn.TextBrush}"/>
 
                 <!-- Chip "+N cảnh báo khác" -->
-                <Border DockPanel.Dock="Right" VerticalAlignment="Center" CornerRadius="14"
-                        Padding="12,4" Background="{DynamicResource Panel.BackgroundAltBrush}"
+                <Border DockPanel.Dock="Right" VerticalAlignment="Center" CornerRadius="13"
+                        Padding="12,3" Background="{DynamicResource Panel.BackgroundAltBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
                         Visibility="{Binding HasExtraAlarms, Converter={StaticResource BoolToVis}}">
                     <TextBlock FontSize="13" Foreground="{DynamicResource Text.SecondaryBrush}">
@@ -304,6 +406,22 @@
                         <Run Text="{Binding [Shell.MoreAlarms], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
                     </TextBlock>
                 </Border>
+
+                <!-- Ghi chú điều hướng chỉ hiện khi banner sạch — khi có alarm nhường chỗ cho nội dung alarm -->
+                <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="13"
+                           Margin="12,0,0,0"
+                           Foreground="{DynamicResource Text.PlaceholderBrush}"
+                           Text="{Binding [Shell.AlarmNote], Source={x:Static loc:Loc.Strings}}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasUnackedAlarm}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
 
                 <TextBlock Text="{Binding BannerText}" VerticalAlignment="Center" FontWeight="SemiBold"
                            FontSize="14" TextTrimming="CharacterEllipsis">
@@ -324,21 +442,19 @@
             </DockPanel>
         </Border>
 
-        <!-- ═══ 4+5 CONTENT (Home tự chia work area + right rail) ════════════════ -->
-        <Border Grid.Row="3" Background="{DynamicResource Screen.BackgroundBrush}">
+        <!-- ═══ 3 CONTENT (Home tự chia work area + right rail) ══════════════════ -->
+        <Border Grid.Row="2" Background="{DynamicResource Screen.BackgroundBrush}">
             <ContentControl x:Name="MainContent" Margin="8,0"/>
         </Border>
 
-        <!-- ═══ LOGIN OVERLAY — khung đăng nhập nổi giữa vùng content (SEMI E95: ═══
-             chỉ phủ Grid.Row=3 nên KHÔNG che alarm bar/nav/action bar). Bấm nền mờ → đóng. -->
-        <Border x:Name="LoginOverlay" Grid.Row="3" Visibility="Collapsed"
+        <!-- ═══ LOGIN OVERLAY — chỉ phủ vùng content (SEMI E95: không che alarm/nav/action) ═══ -->
+        <Border x:Name="LoginOverlay" Grid.Row="2" Visibility="Collapsed"
                 Background="#66000000" MouseLeftButtonDown="LoginBackdrop_MouseDown">
             <Border Width="400" CornerRadius="10" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Background="{DynamicResource Panel.BackgroundBrush}"
                     BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
                     MouseLeftButtonDown="LoginCard_MouseDown">
                 <DockPanel>
-                    <!-- Thanh tiêu đề card + nút đóng -->
                     <Grid DockPanel.Dock="Top" Background="{DynamicResource Header.BackgroundBrush}">
                         <TextBlock Text="{Binding [Id.Login], Source={x:Static loc:Loc.Strings}}"
                                    Margin="18,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"
@@ -353,8 +469,8 @@
             </Border>
         </Border>
 
-        <!-- ═══ 6 ACTION BAR — nút trắng phẳng, icon trên + nhãn dưới ═══════════ -->
-        <Border Grid.Row="4" Background="{DynamicResource Header.BackgroundBrush}"
+        <!-- ═══ 4 ACTION BAR 76px — lệnh máy 64px trái · Dry run/Manual 48px · chip kết nối phải ═══ -->
+        <Border Grid.Row="3" Background="{DynamicResource Header.BackgroundBrush}"
                 BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.DefaultBrush}">
             <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
@@ -364,10 +480,10 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Init (ISA-88: Uninitialized → Initializing; PackML không có — adoption §9) -->
-                    <Button Style="{StaticResource ActionButton}" Margin="0,0,12,0"
+                    <Button Style="{StaticResource MachineActionButton}" Margin="0,0,10,0"
                             Command="{Binding InitializeCommand}"
                             ToolTip="{Binding [Shell.InitTip], Source={x:Static loc:Loc.Strings}}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE7E8;"/>
                             <TextBlock Style="{StaticResource ActionLabel}"
                                        Text="{Binding [Dash.Btn.Init], Source={x:Static loc:Loc.Strings}}"/>
@@ -375,12 +491,12 @@
                     </Button>
 
                     <!-- Start — nút duy nhất có viền nhấn -->
-                    <Button Style="{StaticResource ActionButton}" Margin="0,0,12,0"
+                    <Button Style="{StaticResource MachineActionButton}" Margin="0,0,10,0"
                             BorderBrush="{StaticResource Status.NormalBrush}"
                             Foreground="{StaticResource Status.NormalBrush}" FontWeight="Bold"
                             Command="{Binding StartCommand}"
                             ToolTip="{Binding [Shell.StartTip], Source={x:Static loc:Loc.Strings}}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE768;"/>
                             <TextBlock Style="{StaticResource ActionLabel}" FontWeight="Bold"
                                        Text="{Binding [Dash.Btn.Start], Source={x:Static loc:Loc.Strings}}"/>
@@ -388,27 +504,27 @@
                     </Button>
 
                     <!-- Pause/Resume — một nút, nhãn tự đổi -->
-                    <Button Style="{StaticResource ActionButton}" Margin="0,0,12,0"
+                    <Button Style="{StaticResource MachineActionButton}" Margin="0,0,10,0"
                             Command="{Binding PauseResumeCommand}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE769;"/>
                             <TextBlock Style="{StaticResource ActionLabel}" Text="{Binding PauseResumeText}"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource ActionButton}" Margin="0,0,12,0"
+                    <Button Style="{StaticResource MachineActionButton}" Margin="0,0,10,0"
                             Command="{Binding StopCommand}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE71A;"/>
                             <TextBlock Style="{StaticResource ActionLabel}"
                                        Text="{Binding [Dash.Btn.Stop], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource ActionButton}"
+                    <Button Style="{StaticResource MachineActionButton}"
                             Command="{Binding ResetCommand}"
                             ToolTip="{Binding [Shell.ResetTip], Source={x:Static loc:Loc.Strings}}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE72C;"/>
                             <TextBlock Style="{StaticResource ActionLabel}"
                                        Text="{Binding [Dash.Btn.Reset], Source={x:Static loc:Loc.Strings}}"/>
@@ -417,103 +533,100 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource ActionButton}" Margin="0,0,12,0"
+                    <Button Style="{StaticResource ActionButton}" Margin="0,0,10,0"
                             Command="{Binding ToggleDryRunCommand}"
                             ToolTip="{Binding [Shell.DryRunTip], Source={x:Static loc:Loc.Strings}}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE72A;"/>
                             <TextBlock Style="{StaticResource ActionLabel}"
                                        Text="{Binding [Shell.DryRun], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
                     <!-- Manual: ManualControlView overlay chưa build (adoption §9) — mờ + lý do, không ẩn -->
-                    <Button Style="{StaticResource ActionButton}" IsEnabled="False"
+                    <Button Style="{StaticResource ActionButton}" IsEnabled="False" Margin="0,0,16,0"
                             ToolTip="{Binding [Shell.ManualTip], Source={x:Static loc:Loc.Strings}}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE7C9;"/>
                             <TextBlock Style="{StaticResource ActionLabel}"
                                        Text="{Binding [Shell.Manual], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
+
+                    <Border Width="1" Height="28" Background="{DynamicResource Border.DefaultBrush}"
+                            Margin="0,0,16,0"/>
+
+                    <!-- Chip kết nối tổng hợp — thay connection bar 40px cũ (v2).
+                         VM: DeviceOnlineText "14/15", HostOnlineText "2/2", AllConnectionsOk. -->
+                    <ToggleButton x:Name="ConnChipButton" Style="{StaticResource ConnChip}"
+                                  Checked="ConnChip_Checked"
+                                  ToolTip="{Binding [Shell.ConnLegend], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontSize="12" Margin="0,0,7,0" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="✕"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AllConnectionsOk}" Value="True">
+                                                <Setter Property="Text" Value="●"/>
+                                                <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock FontSize="14" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource Text.PrimaryBrush}">
+                                <Run Text="{Binding [Shell.Devices], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                                <Run Text="{Binding DeviceOnlineText, Mode=OneWay}" FontWeight="SemiBold"/>
+                                <Run Text=" · "/>
+                                <Run Text="{Binding [Shell.Hosts], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                                <Run Text="{Binding HostOnlineText, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </ToggleButton>
+
+                    <!-- Popup chi tiết kết nối — mở phía trên chip, tự đóng khi bấm ra ngoài.
+                         Guard chống double-toggle (đóng rồi mở lại ngay) xử lý ở code-behind. -->
+                    <Popup x:Name="ConnPopup"
+                           PlacementTarget="{Binding ElementName=ConnChipButton}" Placement="Top"
+                           IsOpen="{Binding IsChecked, ElementName=ConnChipButton, Mode=TwoWay}"
+                           StaysOpen="False" AllowsTransparency="True" VerticalOffset="-8">
+                        <Border CornerRadius="10" Padding="18,14" MinWidth="420"
+                                Background="{DynamicResource Panel.BackgroundBrush}"
+                                BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <ScrollViewer MaxHeight="460" VerticalScrollBarVisibility="Auto">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="24"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding [Shell.Devices], Source={x:Static loc:Loc.Strings}}"
+                                                       FontWeight="SemiBold" FontSize="14" Margin="0,0,0,6"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <ItemsControl ItemsSource="{Binding DeviceConnections}"
+                                                          ItemTemplate="{StaticResource ConnItemTemplate}"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="{Binding [Shell.Hosts], Source={x:Static loc:Loc.Strings}}"
+                                                       FontWeight="SemiBold" FontSize="14" Margin="0,0,0,6"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <ItemsControl ItemsSource="{Binding HostConnections}"
+                                                          ItemTemplate="{StaticResource ConnItemTemplate}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </ScrollViewer>
+                                <Border Height="1" Background="{DynamicResource Border.DefaultBrush}" Margin="0,12,0,8"/>
+                                <TextBlock Text="{Binding VersionText}" FontSize="13"
+                                           Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                 </StackPanel>
             </Grid>
-        </Border>
-
-        <!-- ═══ 7 CONNECTION BAR — Thiết bị│Host + version (ưu tiên thấp nhất) ═══ -->
-        <Border Grid.Row="5" Background="{DynamicResource StatusBar.BackgroundBrush}"
-                BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.DefaultBrush}"
-                ToolTip="{Binding [Shell.ConnLegend], Source={x:Static loc:Loc.Strings}}">
-            <DockPanel Margin="20,0">
-                <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="13"
-                           Foreground="{DynamicResource Text.PlaceholderBrush}"
-                           Text="{Binding VersionText}"/>
-
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding [Shell.Devices], Source={x:Static loc:Loc.Strings}}"
-                               FontSize="14" FontWeight="SemiBold" Margin="0,0,14,0" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                    <ItemsControl ItemsSource="{Binding DeviceConnections}" VerticalAlignment="Center">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
-                                    <TextBlock FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="✕"/>
-                                                <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Connected}" Value="True">
-                                                        <Setter Property="Text" Value="●"/>
-                                                        <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding Name}" FontSize="14" VerticalAlignment="Center"
-                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <Border Width="1" Height="16" Background="{DynamicResource Border.DefaultBrush}" Margin="0,0,16,0"/>
-
-                    <TextBlock Text="{Binding [Shell.Hosts], Source={x:Static loc:Loc.Strings}}"
-                               FontSize="14" FontWeight="SemiBold" Margin="0,0,14,0" VerticalAlignment="Center"
-                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                    <ItemsControl ItemsSource="{Binding HostConnections}" VerticalAlignment="Center">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
-                                    <TextBlock FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="✕"/>
-                                                <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Connected}" Value="True">
-                                                        <Setter Property="Text" Value="●"/>
-                                                        <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding Name}" FontSize="14" VerticalAlignment="Center"
-                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </DockPanel>
         </Border>
     </Grid>
 </Window>

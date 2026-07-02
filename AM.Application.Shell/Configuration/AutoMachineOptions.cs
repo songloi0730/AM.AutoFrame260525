@@ -20,6 +20,12 @@ internal sealed class AutoMachineOptions
     /// <summary>True = chạy bằng driver mô phỏng; false = phần cứng thật.</summary>
     public bool UseSimulation { get; set; } = true;
 
+    /// <summary>
+    /// True = shell chạy kiosk toàn màn hình (WindowStyle=None, che taskbar) — bật trên IPC sản xuất.
+    /// Mặc định false để dev/bảo trì không bị nhốt. Lúc chạy: Ctrl+Shift+F11 (Engineer+) vào/thoát kiosk.
+    /// </summary>
+    public bool KioskMode { get; set; }
+
     /// <summary>Đường dẫn file database SQLite.</summary>
     public string DatabasePath { get; set; } = "automachine.db";
 

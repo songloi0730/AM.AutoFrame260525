@@ -1,9 +1,10 @@
 // -------------------------------------------------------
 // File:    ShellViewModel.cs
 // Project: AM.Application.Shell
-// Purpose: VM cho Shell v2 (HMI_UI_Architecture_Template_v2) — header badge AUTO/LOCAL/state
-//          + heartbeat, alarm banner multi-alarm (1 alarm ưu tiên cao nhất chưa ACK),
-//          action bar (Start/Pause-Resume/Stop/Reset/DryRun), connection bar Thiết bị│Host.
+// Purpose: VM cho Shell v3 (ADR 0009) — header chip AUTO/LOCAL/state + heartbeat,
+//          alarm banner multi-alarm (1 alarm ưu tiên cao nhất chưa ACK),
+//          action bar (Start/Pause-Resume/Stop/Reset/DryRun) + chip kết nối
+//          "Thiết bị n/m · Host n/m" với popup chi tiết Thiết bị│Host.
 // -------------------------------------------------------
 
 using System.Collections.ObjectModel;
@@ -34,10 +35,10 @@ internal sealed partial class ConnectionChipVm : ObservableObject
 }
 
 /// <summary>
-/// ViewModel của Shell v2: header (badge AUTO/DRY · LOCAL · state ISA-88, recipe, clock+heartbeat,
+/// ViewModel của Shell v3: header (chip AUTO/DRY · LOCAL · state ISA-88, recipe, clock+heartbeat,
 /// user), alarm banner theo quy tắc multi-alarm (EEMUA 201 — duy nhất alarm ưu tiên cao nhất chưa
-/// ACK + đếm "+N khác"), action bar dưới (lệnh toàn cục, Pause/Resume một nút), connection bar
-/// 2 nhóm Thiết bị│Host + chuỗi phiên bản.
+/// ACK + đếm "+N khác"), action bar dưới (lệnh toàn cục, Pause/Resume một nút) + chip kết nối
+/// tổng hợp "Thiết bị n/m · Host n/m" mở popup chi tiết 2 cột + chuỗi phiên bản.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812",
     Justification = "Khởi tạo qua DI (AddSingleton) + set làm DataContext của MainWindow")]
@@ -75,7 +76,12 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [ObservableProperty] private int _extraAlarmCount;
     [ObservableProperty] private bool _hasExtraAlarms;
 
-    /// <summary>Chuỗi phiên bản thường trực ở connection bar (audit/support).</summary>
+    // Chip kết nối tổng hợp trên action bar (v3) — popup mới liệt kê chi tiết
+    [ObservableProperty] private string _deviceOnlineText = "0/0";
+    [ObservableProperty] private string _hostOnlineText = "0/0";
+    [ObservableProperty] private bool _allConnectionsOk;
+
+    /// <summary>Chuỗi phiên bản thường trực ở footer popup kết nối (audit/support).</summary>
     public string VersionText { get; }
 
     /// <summary>Chip nhóm Thiết bị (PLC, motion, camera, IO...).</summary>
@@ -111,6 +117,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
             else DeviceConnections.Add(chip);
         }
         HostConnections.Add(new ConnectionChipVm("DB") { Connected = true }); // EF SQLite local
+        RefreshConnectionSummary();
 
         RefreshState();
         RefreshRecipe();
@@ -191,6 +198,17 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
                     ?? HostConnections.FirstOrDefault(c => c.Name == d.Name);
             if (chip is not null) chip.Connected = d.Device.IsConnected;
         }
+        RefreshConnectionSummary();
+    }
+
+    /// <summary>Tổng hợp "n online / m tổng" cho chip kết nối — gọi sau mỗi lần cập nhật chips.</summary>
+    private void RefreshConnectionSummary()
+    {
+        int devOk = DeviceConnections.Count(c => c.Connected);
+        int hostOk = HostConnections.Count(c => c.Connected);
+        DeviceOnlineText = $"{devOk}/{DeviceConnections.Count}";
+        HostOnlineText = $"{hostOk}/{HostConnections.Count}";
+        AllConnectionsOk = devOk == DeviceConnections.Count && hostOk == HostConnections.Count;
     }
 
     private void RefreshState()

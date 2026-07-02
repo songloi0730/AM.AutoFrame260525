@@ -4,6 +4,40 @@
 
 ---
 
+## [Session 73] 2026-07-02 — Shell v3: gộp header+nav 56px, alarm banner co giãn, chip kết nối + popup, kiosk config-driven
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án nhận đề xuất Shell v3 (MainWindow.xaml từ phiên thiết kế ngoài) — gộp 7 vùng v2 còn 4 vùng để tăng diện tích content ở 1080p. Nhiệm vụ: đánh giá + tích hợp có hiệu chỉnh. Chi tiết đánh giá/phương án: **ADR `docs/design-notes/0009-shell-v3-header-nav-gop.md`**.
+
+### ✅ Nhận từ đề xuất
+- Header + nav gộp 1 hàng 56px: logo (tooltip tên máy) · chip AUTO/LOCAL/state 26px · tab điều hướng RadioButton (gạch chân 3px khi chọn, ScrollViewer + panning ngang) · recipe/clock(MinWidth chống xô)/heartbeat/ngôn ngữ/user.
+- Alarm banner `Height=Auto` co giãn 36→52px qua DataTrigger — sạch tốn 36px, có alarm nút ACK vẫn ≥40px (spec §1.8); ghi chú điều hướng tự ẩn khi có alarm.
+- Connection bar 40px bỏ hẳn → chip "● Thiết bị n/m · Host n/m" trên action bar + Popup 2 cột (1 `ConnItemTemplate` dùng chung, version ở footer).
+
+### 🔧 Hiệu chỉnh so với đề xuất (4 điểm — xem ADR 0009)
+1. **Kiosk KHÔNG hardcode XAML**: config `AutoMachine:KioskMode` (mặc định false — dev không bị nhốt); `Ctrl+Shift+F11` (gate Engineer+, audit log) vào/thoát kiosk lúc chạy vì màn Cài đặt chưa build.
+2. **Touch sizing theo Master Index §2.9**: lệnh máy 48→**64px** (`MachineActionButton`, action bar 64→76px); HeaderButton/ConnChip 40→44px. Chrome dọc v2 284px → v3 **168px** (~+116px content).
+3. **Fix bug ToggleButton+Popup `StaysOpen=False`** (bấm chip lần 2 popup mở lại ngay): guard timestamp `Popup.Closed` + `ConnChip_Checked` 250ms.
+4. Popup bọc ScrollViewer `MaxHeight=460` đề phòng máy nhiều thiết bị.
+
+### 🔧 Sửa đổi
+- `AM.Application.Shell/MainWindow.xaml` — Shell v3 4 vùng (56 / Auto 36→52 / * / 76); LoginOverlay theo content row mới (Grid.Row=2).
+- `AM.Application.Shell/MainWindow.xaml.cs` — nav `Button`→`RadioButton` (style `NavTabButton`, không set Foreground thủ công — kế thừa trigger; giữ logic keep-tab-khi-rebuild-theo-role); `ApplyKioskMode` + `OnPreviewKeyDown` (Ctrl+Shift+F11); guard popup.
+- `AM.Application.Shell/ShellViewModel.cs` — +`DeviceOnlineText`/`HostOnlineText`/`AllConnectionsOk` (`RefreshConnectionSummary` trong ctor + tick 1s cùng chỗ cập nhật chip).
+- `AM.Application.Shell/Configuration/AutoMachineOptions.cs` + `appsettings.json` — +`KioskMode` (default false).
+- `docs/design-notes/0009-shell-v3-header-nav-gop.md` — ADR mới (+index README).
+
+### 🧪 Test & Build
+- `dotnet build AM.Application.Shell`: **0 warning · 0 error**. Smoke test: app chạy 10s không crash, log "AutoMachine Shell started successfully".
+- Không key i18n mới (tái dùng toàn bộ `Shell.*` của v2).
+
+### ⏭️ Việc tiếp
+- Sync `HMI_UI_Architecture_Template` lên v3 + Master Index §3 (đang mô tả 7 vùng — Shell thực tế đã 4 vùng).
+- Khi build màn Cài đặt: thêm nút vào/thoát kiosk (giữ phím tắt làm lối thoát dự phòng).
+
+---
+
 ## [Session 72] 2026-06-20 — ADR 0008: tách process Vision (VisionPro FW4.8 + IPC) — net9 không reference Cognex
 
 **Commit:** `b50e22b`

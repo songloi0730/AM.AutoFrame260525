@@ -25,7 +25,8 @@
       "Bash(cd \"/c/Users/dinhn/OneDrive/C/VS/AM.AutoFrame\" && grep -rn \"TODO\" AM.Modules.Motion/*.cs AM.Core/Models/AxisSignals.cs AM.Core/Models/AxisFeedback.cs AM.Core.Abstractions/Interfaces/Hardware/IAxisDiagnostics.cs AM.Hardware.Motion/SimulatedMotionController.cs 2>/dev/null)",
       "PowerShell(Get-Process | Where-Object { $_.ProcessName -match \"AM.Application|autoframe|dotnet\" } | Select-Object ProcessName, Id, SessionId, MainWindowTitle | Format-Table -AutoSize)",
       "Bash(grep -n \"BẢNG ĐIỂM\\\\|Cột phải\\\\|</Grid>\\\\s*$\\\\|<!-- ═══\\\\|</ScrollViewer>\\\\|</UserControl>\\\\|Style=\\\\\"{StaticResource Card}\\\\\" Margin=\\\\\"0,12,0,0\\\\\"\\\\|id=\\\\\"selbar\\\\|StatusMessage\" AM.Modules.Motion/MotionView.xaml)",
-      "PowerShell($ok=$true; foreach\\($f in 'vi','en','zh'\\){ try { Get-Content \"AM.Application.Shell\\\\lang\\\\strings.$f.json\" -Raw -Encoding utf8 | ConvertFrom-Json | Out-Null; Write-Output \"$f OK\" } catch { $ok=$false; Write-Output \"$f INVALID: $\\($_.Exception.Message\\)\" } })"
+      "PowerShell($ok=$true; foreach\\($f in 'vi','en','zh'\\){ try { Get-Content \"AM.Application.Shell\\\\lang\\\\strings.$f.json\" -Raw -Encoding utf8 | ConvertFrom-Json | Out-Null; Write-Output \"$f OK\" } catch { $ok=$false; Write-Output \"$f INVALID: $\\($_.Exception.Message\\)\" } })",
+      "PowerShell(dotnet build AM.AutoFrame.sln --no-incremental -clp:Summary)"
     ]
   },
   "hooks": {
