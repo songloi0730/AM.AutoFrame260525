@@ -6,7 +6,7 @@
 
 ## [Session 73] 2026-07-02 — Shell v3: gộp header+nav 56px, alarm banner co giãn, chip kết nối + popup, kiosk config-driven
 
-**Commit:** *(điền sau)*
+**Commit:** `991f34b`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án nhận đề xuất Shell v3 (MainWindow.xaml từ phiên thiết kế ngoài) — gộp 7 vùng v2 còn 4 vùng để tăng diện tích content ở 1080p. Nhiệm vụ: đánh giá + tích hợp có hiệu chỉnh. Chi tiết đánh giá/phương án: **ADR `docs/design-notes/0009-shell-v3-header-nav-gop.md`**.
 

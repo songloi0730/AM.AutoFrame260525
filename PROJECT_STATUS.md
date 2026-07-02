@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-02
 **Session:** #73 — **Shell v3** (ADR 0009): đánh giá + tích hợp đề xuất gộp 7 vùng → 4 vùng: header+nav 56px (tab RadioButton), alarm banner co giãn 36→52, connection bar → chip "Thiết bị n/m · Host n/m" + popup 2 cột trên action bar 76px. Chrome dọc 284→168px (~+116px content @1080p). 4 hiệu chỉnh so với đề xuất: kiosk config-driven `AutoMachine:KioskMode` + Ctrl+Shift+F11 (Engineer+), lệnh máy 64px (Master Index §2.9), fix bug double-toggle Popup, ScrollViewer popup. Việc tiếp: sync template HMI lên v3.
-**Commit:** *(điền sau)*  ·  (S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919` · S70: Vision V3 `cce281e`)
+**Commit:** `991f34b`  ·  (S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919` · S70: Vision V3 `cce281e`)
 
 ---
 
