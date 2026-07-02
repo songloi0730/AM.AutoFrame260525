@@ -77,6 +77,19 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty] private double _unitsPerHour;
     [ObservableProperty] private double _avgCycleTimeMs;
 
+    // KPI dạng chữ: gạch ngang khi chưa có dữ liệu để không gây hiểu nhầm là số không phần trăm.
+    // Cycle tự đổi đơn vị mili-giây sang giây vì cycle thực tế của máy lắp ráp toàn giây.
+    [ObservableProperty] private string _yieldText = "—";
+    [ObservableProperty] private string _avgCycleText = "—";
+
+    // Card "Kết quả gần nhất" trên work area — record mới nhất trong ca (ảnh cycle sẽ bổ sung cùng vision service)
+    [ObservableProperty] private bool _hasLatest;
+    [ObservableProperty] private string _latestSn = string.Empty;
+    [ObservableProperty] private string _latestCycleText = string.Empty;
+    [ObservableProperty] private string _latestRecipeName = string.Empty;
+    [ObservableProperty] private string _latestResultText = "—";
+    [ObservableProperty] private bool _latestIsPassed;
+
     // An toàn (ISafetyInput — CHỈ ĐỌC, event push qua SafetyStateChanged; mạch cứng là lớp an toàn thật)
     [ObservableProperty] private bool _hasSafety;
     [ObservableProperty] private bool _eStopOk = true;
@@ -201,15 +214,15 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 
     private void BuildQuickActions()
     {
-        // Risk: tiện ích (đèn/còi/ion/gọi KT) = R0 (Operator); cửa an toàn/cấp liệu = R1 (LineLead, máy dừng).
+        // Nhóm theo ngữ nghĩa trên lưới 3 cột: hàng trên gồm tiện ích R0 cho Operator,
+        // hàng dưới gồm thao tác có rủi ro R1 (cửa — LineLead, máy dừng) cùng Gọi kỹ thuật (Andon).
         // Tắt còi — wired ILightController (Momentary). KHÔNG ACK alarm (EEMUA 201).
         QuickActions.Add(new QuickActionVm("BuzzerOff", "E74F") { Risk = RiskTier.R0 });
-        // Các nút còn lại: HAL/interlock chưa có — mờ + lý do (adoption §9). Cửa = R1, còn lại = R0.
         QuickActions.Add(new QuickActionVm("WorkLight", "E706") { Risk = RiskTier.R0 });
+        QuickActions.Add(new QuickActionVm("Ionizer", "E945") { Risk = RiskTier.R0 });
         QuickActions.Add(new QuickActionVm("SafetyDoor", "E72E") { Risk = RiskTier.R1 });
         QuickActions.Add(new QuickActionVm("FeedDoor", "E8B7") { Risk = RiskTier.R1 });
-        QuickActions.Add(new QuickActionVm("Ionizer", "E945") { Risk = RiskTier.R0 });
-        QuickActions.Add(new QuickActionVm("CallTech", "E717") { Risk = RiskTier.R0 });
+        QuickActions.Add(new QuickActionVm("CallTech", "E717") { Risk = RiskTier.R0, IsAndon = true });
     }
 
     // HAL của từng quick action: BuzzerOff (ILightController) · WorkLight/Ionizer/cửa (DO theo io.map) · CallTech (thông báo).
@@ -247,6 +260,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
                 ? buzzerOn
                 : DoTagById.TryGetValue(qa.Id, out var tag) && DoOn(tag);
             qa.IsEnabled = hasHal && guard.Allowed && condition;
+            qa.NeedsRole = hasHal && !guard.Allowed && guard.Block == GuardBlock.InsufficientRole;
             qa.SubText = QuickSubText(qa, hasHal, guard);
         }
     }
@@ -458,9 +472,28 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
                 YieldPercent   = s.YieldPercent;
                 UnitsPerHour   = s.UnitsPerHour;
                 AvgCycleTimeMs = s.AvgCycleTimeMs;
+                YieldText      = s.Total == 0 ? "—"
+                    : string.Create(CultureInfo.InvariantCulture, $"{s.YieldPercent:F1} %");
+                AvgCycleText   = FormatCycle(s.Total, s.AvgCycleTimeMs);
 
                 RecentRecords.Clear();
                 foreach (var row in rows) RecentRecords.Add(row);
+
+                // Card "Kết quả gần nhất" = record mới nhất trong ca
+                var latest = rows.Count > 0 ? rows[0] : null;
+                HasLatest = latest is not null;
+                if (latest is not null)
+                {
+                    LatestSn         = latest.SerialNumber;
+                    LatestCycleText  = latest.CycleText;
+                    LatestRecipeName = latest.RecipeName;
+                    LatestResultText = latest.ResultText;
+                    LatestIsPassed   = latest.IsPassed;
+                }
+                else
+                {
+                    LatestResultText = "—";
+                }
             });
         }
         catch (OperationCanceledException) { /* đóng app */ }
@@ -470,6 +503,16 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         {
             _logger.LogError(ex, "[Home] Refresh production thất bại");
         }
+    }
+
+    // Cycle TB: gạch ngang khi chưa có dữ liệu; tự đổi đơn vị mili-giây sang giây
+    // vì cycle máy lắp ráp thực tế toàn giây.
+    private static string FormatCycle(int total, double ms)
+    {
+        if (total == 0 || ms <= 0) return "—";
+        return ms < 1000
+            ? string.Create(CultureInfo.InvariantCulture, $"{ms:F0} ms")
+            : string.Create(CultureInfo.InvariantCulture, $"{ms / 1000.0:F1} s");
     }
 
     // Cột "Data trạm": demo dùng vision score / lý do NG — máy thật cấu hình qua ProductDataColumns

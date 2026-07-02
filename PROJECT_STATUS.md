@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-02
-**Session:** #73 — **Shell v3** (ADR 0009): đánh giá + tích hợp đề xuất gộp 7 vùng → 4 vùng: header+nav 56px (tab RadioButton), alarm banner co giãn 36→52, connection bar → chip "Thiết bị n/m · Host n/m" + popup 2 cột trên action bar 76px. Chrome dọc 284→168px (~+116px content @1080p). 4 hiệu chỉnh so với đề xuất: kiosk config-driven `AutoMachine:KioskMode` + Ctrl+Shift+F11 (Engineer+), lệnh máy 64px (Master Index §2.9), fix bug double-toggle Popup, ScrollViewer popup. Việc tiếp: sync template HMI lên v3.
-**Commit:** `991f34b`  ·  (S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919` · S70: Vision V3 `cce281e`)
+**Session:** #74 — **Home v2.1** (ADR 0010): đánh giá phản biện ISA-101 7 điểm cho nội dung Dashboard → áp: card "Kết quả gần nhất" thay dải camera (KQ OK/NG lớn + SN/cycle/recipe, chấm trạng thái camera thay chữ xanh), bảng sản phẩm empty state + KQ chip màu + counter gộp lên header, KPI số 26px + màu chỉ khi >0 + "—"/ms→s, quick actions bỏ dòng "cần quyền" (tooltip + icon khoá + nhóm tiện ích/rủi ro + Andon viền amber), `Safety.OK` viết đủ, nhật ký empty state, divider tách Reset ở action bar. Từ chối: thu rail 560→420 (giữ spec v2). Việc tiếp: sync template v3 + Dashboard spec v2.1.
+**Commit:** *(điền sau)*  ·  (S73: Shell v3 `991f34b` · S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919`)
 
 ---
 
@@ -35,7 +35,7 @@
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
 | AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
-| AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2** (S45): work area (thumbnail vision + bảng truy vết SN, dòng NG tô màu) + right rail 560px (KPI ca 8h, **quick actions đủ HAL: đèn/ion/cửa toggle DO + còi + gọi KT, hold-to-confirm 1s cho cửa R1 — S65**, trạm & an toàn ISafetyInput event, nhật ký 1 dòng) — spec: `docs/HMI_Dashboard_Spec.md` v2 |
+| AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2.1** (S74, ADR 0010): work area (card "Kết quả gần nhất" + bảng truy vết SN empty-state, KQ chip màu) + right rail 560px (KPI ca 8h số 26px màu-khi-có-nghĩa, **quick actions đủ HAL — S65** + tooltip lý do + Andon, trạm & an toàn ISafetyInput event, nhật ký) — spec: `docs/HMI_Dashboard_Spec.md` v2 (cần nâng v2.1) |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | Danh sách "địa chỉ·tên" (IOMap) + ô lọc + chỉ báo Off/On/Pending/Forced + nhóm Xi lanh ▲giữa (S60); set/reset thường (Engineer; **có hậu quả → chạm-2-bước**) + Chế độ Force (Admin) + **alarm 70010 "còn IO forced"** (S61); nav tự sinh từ [ModuleNavigation] |
 | AM.Modules.Identity | ✅ Hoàn thành | **Mới** — login/logout/RBAC (IUserService); password ở code-behind; nav order 90 |
@@ -218,7 +218,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 *(Không có bug nào đang mở)*
 
 ### TODO tiếp theo
-- [ ] Sync `HMI_UI_Architecture_Template` + Master Index §3 lên **v3** — Shell đã đổi 7 vùng → 4 vùng (ADR 0009), tài liệu đang mô tả bố cục cũ
+- [ ] Sync `HMI_UI_Architecture_Template` + Master Index §3 lên **v3** — Shell đã đổi 7 vùng → 4 vùng (ADR 0009), tài liệu đang mô tả bố cục cũ; cùng đợt nâng `HMI_Dashboard_Spec` lên v2.1 (card KQ gần nhất — ADR 0010) + ghi 3 nguyên tắc: màu-khi-có-nghĩa, empty-state-có-hướng-dẫn, xếp-theo-tần-suất-liếc
 - [ ] Màn Cài đặt: thêm nút vào/thoát kiosk (hiện chỉ có Ctrl+Shift+F11 Engineer+)
 - [ ] Vision V4 — `ILightController` per-channel + `SimulatedLightController` + test (ADR 0007 Quyết định 5)
 - [ ] Vision V5 — `VisionRecipe` model (promote `VisionTeachConfig` lên Core) + validate attribute-driven + test

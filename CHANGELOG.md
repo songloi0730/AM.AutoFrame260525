@@ -4,6 +4,41 @@
 
 ---
 
+## [Session 74] 2026-07-02 — Home v2.1: card "Kết quả gần nhất", empty state, KPI màu-khi-có-nghĩa, quick actions gọn (phản biện ISA-101)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Nhận phản biện 7 điểm cho vùng nội dung Dashboard theo tiêu chí ISA-101 Level 1 ("liếc 3 giây") kèm wireframe. Đánh giá từng điểm, áp 6.5/7, từ chối 1. Chi tiết: **ADR `docs/design-notes/0010-home-content-tinh-chinh-isa101.md`**.
+
+### ✅ Áp dụng
+1. **Card "Kết quả gần nhất"** thay dải thumbnail camera: thumb camera gọn 96×62 (chấm trạng thái + tên xám — hết chữ "Sẵn sàng" xanh) + chip KQ OK/NG 22px (xám "—" khi chưa có cycle) + SN/Cycle/Recipe. VM +6 property `Latest*`/`HasLatest` từ record mới nhất trong ca. Live view vẫn ở tab Vision; ảnh cycle thật chờ vision service (ADR 0008).
+2. **Bảng sản phẩm**: empty state có hướng dẫn ("Khởi tạo → Chạy…"), cột Cycle căn phải, KQ = chip màu (`DataGridTemplateColumn`, nền Ok/Ng), bộ đếm footer gộp lên góc phải header card.
+3. **KPI**: số 17→26px (nhãn 12 mờ trên); Đạt/Lỗi chỉ có màu khi >0 (DataTrigger về xám khi =0); `YieldText` "—" khi chưa có dữ liệu; `AvgCycleText` tự đổi ms→s. Ngưỡng đổi màu yield: hoãn (chưa có ngưỡng cấu hình — R10).
+4. **Quick actions**: bỏ dòng lý do lặp trên nút → tooltip (tự ẩn khi rỗng) + icon khoá nhỏ khi thiếu quyền (`NeedsRole`); nhóm lại hàng tiện ích R0 / hàng rủi ro R1; Gọi kỹ thuật = **Andon** viền hổ phách (`IsAndon`).
+5. **`Safety.OK`**: "B.thường" → "Không kích hoạt" (en "Not triggered", zh "未触发") — hết viết tắt tối nghĩa trên màn an toàn.
+6. **Nhật ký**: thêm empty state (nội dung event đã có sẵn từ S45 — phản biện xem mockup lúc chưa có sự kiện).
+7. **Action bar Shell**: divider tách Reset khỏi Dừng (chống bấm nhầm); guard state đã có sẵn (`CanReset` chỉ InitAlarm/RunAlarm).
+
+### ❌ Từ chối
+- **Thu rail 560→400-420px**: 560px là quyết định spec v2 (S45) — quick action 3 cột ≥64px + KPI không vỡ khi đổi ngôn ngữ. Xét lại khi sync template v3.
+
+### 🔧 Sửa đổi
+- `AM.Modules.Dashboard/DashboardView.xaml` — card KQ gần nhất, empty state ×2, KQ chip, KPI 26px + trigger màu, quick button gọn + lock icon + Andon, counter lên header.
+- `AM.Modules.Dashboard/DashboardViewModel.cs` — +`Latest*`/`YieldText`/`AvgCycleText`/`FormatCycle`; reorder quick actions; set `NeedsRole`.
+- `AM.Modules.Dashboard/DashboardTileVms.cs` — `QuickActionVm` +`IsAndon`/`NeedsRole`.
+- `AM.Application.Shell/MainWindow.xaml` — divider trước Reset.
+- `lang/strings.{vi,en,zh}.json` — +4 key (`Dash.EmptyTitle/EmptyHint/NoCycle/LogEmpty`), sửa `Safety.OK`.
+- `docs/design-notes/0010-home-content-tinh-chinh-isa101.md` — ADR mới (+index README).
+
+### 🧪 Test & Build
+- Build 0 warning · 0 error (sửa 4 lỗi analyzer S125/S1135/S3358 trong comment/ternary mới). Smoke test: app chạy 10s, log sạch ("started successfully"; JsonException UserStore trong log là của lần chạy sáng — bẫy users.json đã biết, tự fallback seed).
+
+### ⏭️ Việc tiếp
+- Nâng `HMI_Dashboard_Spec` v2.1 + ghi 3 nguyên tắc (màu-khi-có-nghĩa · empty-state-có-hướng-dẫn · xếp-theo-tần-suất-liếc) vào template — gộp cùng đợt sync template v3 (S73).
+- Nối ảnh cycle thật vào card KQ khi vision service IPC (ADR 0008) sẵn sàng.
+
+---
+
 ## [Session 73] 2026-07-02 — Shell v3: gộp header+nav 56px, alarm banner co giãn, chip kết nối + popup, kiosk config-driven
 
 **Commit:** `991f34b`

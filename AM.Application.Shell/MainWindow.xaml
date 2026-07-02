@@ -521,6 +521,11 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- Reset tách khỏi cụm vận hành (divider) — đứng sát Dừng dễ bấm nhầm lúc vội;
+                         enable đã guard theo state machine (chỉ InitAlarm/RunAlarm — CanReset) -->
+                    <Border Width="1" Height="32" Background="{DynamicResource Border.DefaultBrush}"
+                            Margin="6,0,16,0"/>
+
                     <Button Style="{StaticResource MachineActionButton}"
                             Command="{Binding ResetCommand}"
                             ToolTip="{Binding [Shell.ResetTip], Source={x:Static loc:Loc.Strings}}">

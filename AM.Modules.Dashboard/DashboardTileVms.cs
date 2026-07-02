@@ -75,6 +75,9 @@ public sealed partial class QuickActionVm : ObservableObject
     /// <summary>Thời gian giữ-để-xác-nhận (ms): R1+ = 1000 (giữ 1s); R0 = 0 (bấm thường).</summary>
     public int HoldMs => Risk >= RiskTier.R1 ? 1000 : 0;
 
+    /// <summary>True nếu là nút Andon (Gọi kỹ thuật) — viền hổ phách để operator tìm thấy khi bối rối.</summary>
+    public bool IsAndon { get; init; }
+
     /// <summary>
     /// Glyph Segoe MDL2 (một màu — adoption §9: không thêm package icon).
     /// Nhận mã hex ASCII trong constructor, convert runtime để source không chứa ký tự PUA.
@@ -89,6 +92,9 @@ public sealed partial class QuickActionVm : ObservableObject
 
     /// <summary>False → nút mờ (chưa có HAL / điều kiện chưa đạt).</summary>
     [ObservableProperty] private bool _isEnabled;
+
+    /// <summary>True nếu bị khoá do thiếu quyền — hiện icon khoá nhỏ góc nút (lý do đầy đủ ở tooltip).</summary>
+    [ObservableProperty] private bool _needsRole;
 
     /// <summary>True nếu là Toggle đang bật (viền nhấn).</summary>
     [ObservableProperty] private bool _isOn;
