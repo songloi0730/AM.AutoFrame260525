@@ -4,6 +4,32 @@
 
 ---
 
+## [Session 76] 2026-07-02 — Ẩn danh hoá nguồn tham khảo (viết lại lịch sử) + ADR 0011 AM.Core.Sequencing (chờ duyệt)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Thực hiện Prompt A + B của kế hoạch Sequencing_NextSteps. Commit S75 đã push chứa tên thật dự án tham khảo trong message + nội dung → phải ẩn danh hoá kể cả lịch sử git, rồi mới thiết kế engine.
+
+### ✅ Prompt A — Ẩn danh hoá (hoàn tất)
+1. **CLAUDE.md**: thêm mục "⚡ BẮT BUỘC — Quy ước ẩn danh nguồn tham khảo" (bí danh `RefSeq-A/B/…`; bảng đối chiếu chỉ nằm `docs/private/alias.local.md`; tài liệu điền từ dự án tham khảo không commit; tổng quát hoá dấu vết nhận dạng).
+2. **`docs/private/`** (gitignore, xác nhận bằng git status): `alias.local.md` (bảng đối chiếu) + `Sequence_Requirements_RefSeqA.md` — bản requirements S75 đã **tổng quát hoá nội dung**: tên trạm ngôn ngữ gốc → vai trò chức năng tiếng Việt (Bàn chỉnh/Chỉnh chính/Đo kiểm/…), hệ thống upload nội bộ → "MES"/"data-host", đại lượng đo đặc thù → Đ1–Đ4, xoá tên phần mềm/công ty/model + chuỗi thanh ghi nguyên văn; GIỮ NGUYÊN hành vi, bảng 14 anti-pattern + 7 hành vi đáng học. File gốc trong `docs/` đã xoá.
+3. **CHANGELOG (S75) + PROJECT_STATUS + CLAUDE.md (bảng tài liệu)**: mọi tham chiếu → `RefSeq-A`, đường dẫn → private "(local, không commit)".
+4. **Viết lại lịch sử** (chủ dự án duyệt qua prompt): squash 2 commit đỉnh (S75 + fill-hash) cùng sửa đổi ẩn danh → commit sạch `8be4ef0`, `git push --force-with-lease`. Kiểm tra: `git log --all -S` với mọi tên nhận dạng (tên dự án, tên máy, hệ thống upload, tên trạm ngôn ngữ gốc) = 0 kết quả; grep toàn repo (trừ `docs/private`) = sạch. ⚠ Repo public — commit cũ còn truy cập được qua GitHub cache (HTTP 200); triệt để cần GitHub Support.
+5. Ghi chú phạm vi: từ đơn tên 2 nguồn tham khảo HMI cũ còn trong tree các commit S46–S60 (không kèm định danh đầy đủ) — chủ dự án chọn chấp nhận, không rewrite sâu.
+
+### ✅ Prompt B — ADR 0011 (chờ duyệt, CHƯA code)
+- `docs/design-notes/0011-sequencing-engine.md` — 7 mục theo yêu cầu: (1) loader/validator 2 pha, bảng lỗi-lúc-nạp vs lúc-chạy; (2) DryIoc keyed qua `IStationResolver` (engine không reference container) + bắt tên station sai NGAY LÚC NẠP; (3) pseudocode vòng lặp sản phẩm — nhóm `order` song song, linked CTS per-step, nhánh onError/retry/onRetryExhausted, Ng + runOnNg, PauseGate ranh giới bước; (4) hành vi học từ RefSeq-A có trích số mục: `IResumeVerifiable` (resume-check), init kiểm liệu sót + `IOperatorPrompt` (thay popup chặn thread); (5) sự kiện một nguồn → ProductionBridge (dashboard ăn đường CycleCompleted cũ) + LogSink (log + persist bước); (6) hoãn giai đoạn 2 (single-step, pipeline >1, resources, resume-from-crash) kèm lý do; (7) bảng 14 anti-pattern → cách tránh từng dòng.
+
+### 🔧 File thay đổi
+- `.gitignore` (+`docs/private/`), `CLAUDE.md`, `PROJECT_STATUS.md`, `CHANGELOG.md` (S75 viết lại)
+- `docs/Sequence_Requirements_*.md` (bản điền) — XOÁ khỏi repo, chuyển vào private
+- `docs/design-notes/0011-sequencing-engine.md` — MỚI (+index README)
+
+### ⏭️ Việc tiếp
+- Chủ dự án duyệt ADR 0011 (nhất là §3 pseudocode + §7) → Prompt C (engine + ≥6 test + validator test) → Prompt D (SimIoService + 6 station demo + sequence JSON + nối dashboard + 4 kịch bản nghiệm thu).
+
+---
+
 ## [Session 75] 2026-07-02 — Sequence Requirements: khảo sát máy tham khảo RefSeq-A → tài liệu yêu cầu sequence
 
 **Commit:** *(gộp lại ở S76 — xem bên dưới)*

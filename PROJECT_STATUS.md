@@ -10,8 +10,14 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-02
+**Session:** #76 — **Ẩn danh hoá nguồn tham khảo + ADR 0011 Sequencing (chờ duyệt)**: thêm quy ước ẩn danh vào CLAUDE.md (bí danh `RefSeq-A`, bảng đối chiếu + requirements đã điền chuyển vào `docs/private/` — gitignore); viết lại lịch sử git (squash 2 commit đỉnh → `8be4ef0`, force-with-lease đã được chủ dự án duyệt) — `git log -S` + grep sạch tên thật; commit cũ có thể còn cache trên GitHub (repo public). Viết **ADR 0011** thiết kế `AM.Core.Sequencing` (loader/validator, IStationResolver, pseudocode vòng lặp, IOperatorPrompt, event → dashboard+log, bảng anti-pattern) — **DỪNG chờ duyệt trước khi code (Prompt C)**.
+**Commit:** *(điền sau)*  ·  (S75 gộp trong `8be4ef0` · S74: Home v2.1 `970f078` · S73: Shell v3 `991f34b`)
+
+---
+
+## 🗓️ Session trước
 **Session:** #75 — **Sequence Requirements (khảo sát máy tham khảo RefSeq-A)**: đọc dự án tham khảo RefSeq-A (C# WinForms, 8 trạm thread-per-station + bit bắt tay), điền `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit)* theo template — 10 mục: vai trò 8 trạm, vòng đời init phụ thuộc chéo, ngữ nghĩa Pause (giữa bước + resume-check vị trí)/Stop (hủy ngay + Thread.Abort)/EMG (mọi Error-warning → EMG toàn máy)/Reset (xóa bit + re-init), chính sách lỗi popup-operator (không auto-retry, timeout mặc định 600s), song song giả (bit handshake), traceability MES + data-host + CSV, 4 mode chạy, anti-pattern KHÔNG bắt chước + 7 hành vi đáng học. Nhập bộ spec sequence vào docs/: `SequenceEngine_Spec.md` (chuẩn thiết kế), `DemoMachine_IO_Map.md`, `Sequence_Requirements_Template.md`. Việc tiếp: thiết kế `AM.Core.Sequencing` CHỈ từ 3 file này.
-**Commit:** `548c418`  ·  (S74: Home v2.1 `970f078` · S73: Shell v3 `991f34b` · S72: ADR 0008 Vision IPC `b50e22b`)
+**Commit:** `8be4ef0` *(S75 được gộp + ẩn danh hoá ở S76 — hash gốc đã bị viết lại)*  ·  (S74: Home v2.1 `970f078` · S73: Shell v3 `991f34b` · S72: ADR 0008 Vision IPC `b50e22b`)
 
 ---
 
@@ -218,7 +224,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 *(Không có bug nào đang mở)*
 
 ### TODO tiếp theo
-- [ ] **Thiết kế `AM.Core.Sequencing`** theo `docs/SequenceEngine_Spec.md` — yêu cầu tham khảo đã chốt ở `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit — S75)*; KHÔNG mở lại dự án RefSeq-A khi thiết kế, chỉ dùng 2 file này + `DemoMachine_IO_Map.md`
+- [ ] **Duyệt ADR 0011 `AM.Core.Sequencing`** (S76 — đặc biệt §3 pseudocode + §7 bảng anti-pattern) → triển khai engine + test (Prompt C), rồi máy mẫu DemoPickPlace + nối dashboard (Prompt D); KHÔNG mở lại dự án RefSeq-A, chỉ dùng spec + requirements local + IO map
 - [ ] Sync `HMI_UI_Architecture_Template` + Master Index §3 lên **v3** — Shell đã đổi 7 vùng → 4 vùng (ADR 0009), tài liệu đang mô tả bố cục cũ; cùng đợt nâng `HMI_Dashboard_Spec` lên v2.1 (card KQ gần nhất — ADR 0010) + ghi 3 nguyên tắc: màu-khi-có-nghĩa, empty-state-có-hướng-dẫn, xếp-theo-tần-suất-liếc
 - [ ] Màn Cài đặt: thêm nút vào/thoát kiosk (hiện chỉ có Ctrl+Shift+F11 Engineer+)
 - [ ] Vision V4 — `ILightController` per-channel + `SimulatedLightController` + test (ADR 0007 Quyết định 5)
