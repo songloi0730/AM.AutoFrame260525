@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-02
 **Session:** #77 — **AM.Core.Sequencing (Prompt C, theo ADR 0011 đã duyệt + 2 hiệu chỉnh)**: project mới standalone — contracts spec §1 nguyên văn (`IStation`/`StepContext`/`StationResult`) + `IStationResolver` (engine không thấy DryIoc) + `IResumeVerifiable`/`IOperatorPrompt`; `SequenceLoader` 2 pha gom TOÀN BỘ lỗi (tên station chết LÚC NẠP + gợi ý tên đã đăng ký); `SequenceEngine`: nhóm `order` song song, timeout linked-CTS, onError/retry/onRetryExhausted, prompt operator không-chặn-thread (Respond trong args), NG bypass trừ `runOnNg`, pause ranh giới bước + resume-check, Stop sạch + sản phẩm dở Aborted. **20/20 test** (đủ 6 case spec §4 + validator + prompt/resume/blackboard) — coverage engine core **92.7% line** (package 85.5%), toàn solution **253 pass**. Việc tiếp: **Prompt D** — SimIoService + 6 station demo + sequence JSON + nối master controller/dashboard + 4 kịch bản nghiệm thu.
-**Commit:** *(điền sau)*  ·  (S76: ẩn danh + ADR `798e6c9` · S75 gộp trong `8be4ef0` · S74: Home v2.1 `970f078`)
+**Commit:** `4789c51`  ·  (S76: ẩn danh + ADR `798e6c9` · S75 gộp trong `8be4ef0` · S74: Home v2.1 `970f078`)
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 77] 2026-07-02 — AM.Core.Sequencing: engine + loader + 20 unit test (Prompt C — theo ADR 0011 đã duyệt)
 
-**Commit:** *(điền sau)*
+**Commit:** `4789c51`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Triển khai theo `SequenceEngine_Spec.md` + ADR 0011 (đã duyệt kèm 2 hiệu chỉnh: resume-snapshot do station tự lưu; nhánh Pause chỉ dùng event với kênh trả lời trong args). Phạm vi đúng Prompt C: contracts + loader/validator + engine + events + test. KHÔNG UI, KHÔNG hardware.
 
