@@ -56,3 +56,6 @@ libs/Vision/Cognex/x86/
 /parameters.json
 /users.json
 /points.json
+
+# Tai lieu doc tu du an tham khao (bang doi chieu bi danh + requirements da dien) — KHONG BAO GIO commit
+docs/private/

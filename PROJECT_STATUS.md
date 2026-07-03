@@ -10,8 +10,8 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-02
-**Session:** #74 — **Home v2.1** (ADR 0010): đánh giá phản biện ISA-101 7 điểm cho nội dung Dashboard → áp: card "Kết quả gần nhất" thay dải camera (KQ OK/NG lớn + SN/cycle/recipe, chấm trạng thái camera thay chữ xanh), bảng sản phẩm empty state + KQ chip màu + counter gộp lên header, KPI số 26px + màu chỉ khi >0 + "—"/ms→s, quick actions bỏ dòng "cần quyền" (tooltip + icon khoá + nhóm tiện ích/rủi ro + Andon viền amber), `Safety.OK` viết đủ, nhật ký empty state, divider tách Reset ở action bar. Từ chối: thu rail 560→420 (giữ spec v2). Việc tiếp: sync template v3 + Dashboard spec v2.1.
-**Commit:** `970f078`  ·  (S73: Shell v3 `991f34b` · S72: ADR 0008 Vision IPC `b50e22b` · S71: dọn warning `e736919`)
+**Session:** #75 — **Sequence Requirements (khảo sát máy tham khảo RefSeq-A)**: đọc dự án tham khảo RefSeq-A (C# WinForms, 8 trạm thread-per-station + bit bắt tay), điền `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit)* theo template — 10 mục: vai trò 8 trạm, vòng đời init phụ thuộc chéo, ngữ nghĩa Pause (giữa bước + resume-check vị trí)/Stop (hủy ngay + Thread.Abort)/EMG (mọi Error-warning → EMG toàn máy)/Reset (xóa bit + re-init), chính sách lỗi popup-operator (không auto-retry, timeout mặc định 600s), song song giả (bit handshake), traceability MES + data-host + CSV, 4 mode chạy, anti-pattern KHÔNG bắt chước + 7 hành vi đáng học. Nhập bộ spec sequence vào docs/: `SequenceEngine_Spec.md` (chuẩn thiết kế), `DemoMachine_IO_Map.md`, `Sequence_Requirements_Template.md`. Việc tiếp: thiết kế `AM.Core.Sequencing` CHỈ từ 3 file này.
+**Commit:** `548c418`  ·  (S74: Home v2.1 `970f078` · S73: Shell v3 `991f34b` · S72: ADR 0008 Vision IPC `b50e22b`)
 
 ---
 
@@ -218,6 +218,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 *(Không có bug nào đang mở)*
 
 ### TODO tiếp theo
+- [ ] **Thiết kế `AM.Core.Sequencing`** theo `docs/SequenceEngine_Spec.md` — yêu cầu tham khảo đã chốt ở `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit — S75)*; KHÔNG mở lại dự án RefSeq-A khi thiết kế, chỉ dùng 2 file này + `DemoMachine_IO_Map.md`
 - [ ] Sync `HMI_UI_Architecture_Template` + Master Index §3 lên **v3** — Shell đã đổi 7 vùng → 4 vùng (ADR 0009), tài liệu đang mô tả bố cục cũ; cùng đợt nâng `HMI_Dashboard_Spec` lên v2.1 (card KQ gần nhất — ADR 0010) + ghi 3 nguyên tắc: màu-khi-có-nghĩa, empty-state-có-hướng-dẫn, xếp-theo-tần-suất-liếc
 - [ ] Màn Cài đặt: thêm nút vào/thoát kiosk (hiện chỉ có Ctrl+Shift+F11 Engineer+)
 - [ ] Vision V4 — `ILightController` per-channel + `SimulatedLightController` + test (ADR 0007 Quyết định 5)

@@ -4,6 +4,29 @@
 
 ---
 
+## [Session 75] 2026-07-02 — Sequence Requirements: khảo sát máy tham khảo RefSeq-A → tài liệu yêu cầu sequence
+
+**Commit:** *(gộp lại ở S76 — xem bên dưới)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chuẩn bị thiết kế `AM.Core.Sequencing`. Theo quy trình trong `Sequence_Requirements_Template.md`: mở phiên riêng đọc dự án tham khảo **RefSeq-A** (C# WinForms, framework nội bộ — bí danh theo quy ước ẩn danh trong CLAUDE.md), rút **hành vi và yêu cầu** — không chép code. Sau file này, thiết kế engine KHÔNG mở lại dự án tham khảo.
+
+### ✅ Đã làm
+1. **Đọc dự án tham khảo** (chọn lọc): base trạm (thread lifecycle, `CheckContinue`, timeout dialog), manager trạm (start/stop/pause/resume/EMG/reset), lớp mode dispatch (4 run-mode virtual, wait register/TCP), file đăng ký 8 trạm, 8 file trạm (enum bước + handshake bit), guard thao tác tay, trạm upload (MES/data-host/CSV).
+2. **Điền requirements RefSeq-A** *(local, không commit — `docs/private/`)* — đủ 10 mục template: thông tin máy (hybrid PC+PLC, 1 sản phẩm/lượt, theo dõi làn tuyến 1/2/3), bảng 8 trạm + vai trò, vòng đời (init phụ thuộc chéo, Z-lên-trước, kiểm liệu sót + hỏi operator), ngữ nghĩa lệnh (Pause giữa bước; **Resume có kiểm tra vị trí trục/xi lanh không đổi**; Stop hủy ngay + `Thread.Abort`; mọi warning mức Error → EMG toàn máy; Reset xóa bit bắt tay + re-init), chính sách lỗi (popup operator chọn — không auto-retry; timeout mặc định 600 s; NG vs lỗi máy phân biệt bằng convention), song song hóa (thread-per-station nhưng tuần tự theo bit; trạm Upload là song song thật duy nhất), traceability (MES lúc xong + data-host sau khi PLC xác nhận trôi + CSV backup trước upload), 4 mode chạy (Normal/DryRun±carrier/Calib/GRR + Simulate), an toàn (cửa = Warn, cắt cứng ở PLC), log (tên bước + duration, persist số bước để resume), **bảng anti-pattern KHÔNG bắt chước** (Thread.Abort, busy-wait, MessageBox trong thread trạm, magic string ngôn ngữ gốc, god-class 3.4k dòng, singleton, bit cứng chéo trạm, switch ~90 bước...) + **7 hành vi đáng học** (resume-check, kiểm liệu sót khi init, guard hình học, persist bước, đo thời gian bước, CSV-trước-upload, simulate auto-pass).
+3. **Nhập bộ spec sequence vào `docs/`**: `SequenceEngine_Spec.md` (chuẩn thiết kế IStation/StepContext/sequence JSON/PackML mapping/bất biến/test), `DemoMachine_IO_Map.md` (IO máy mẫu DemoPickPlace + IoMap + SimIoService), `Sequence_Requirements_Template.md` (template trống dùng lại).
+4. **CLAUDE.md**: thêm 4 dòng vào bảng tài liệu tham khảo (nhóm **Sequence**).
+
+### 🔧 File thay đổi
+- `docs/private/Sequence_Requirements_RefSeqA.md` — MỚI, local không commit (tài liệu chính của session)
+- `docs/SequenceEngine_Spec.md`, `docs/DemoMachine_IO_Map.md`, `docs/Sequence_Requirements_Template.md` — MỚI (nhập từ bộ spec ngoài)
+- `CLAUDE.md` — bảng tài liệu +4 dòng
+- `PROJECT_STATUS.md` — session #75 + TODO thiết kế `AM.Core.Sequencing`
+
+### ⏭️ Việc tiếp
+- Thiết kế `AM.Core.Sequencing` (lưu ADR vào `docs/design-notes/`) CHỈ từ `SequenceEngine_Spec.md` + requirements RefSeq-A (local) + `DemoMachine_IO_Map.md` — không mở lại dự án RefSeq-A.
+
+---
+
 ## [Session 74] 2026-07-02 — Home v2.1: card "Kết quả gần nhất", empty state, KPI màu-khi-có-nghĩa, quick actions gọn (phản biện ISA-101)
 
 **Commit:** `970f078`

@@ -33,6 +33,23 @@ giải thích các lựa chọn kiến trúc lớn. Mục đích: người khác
 
 ---
 
+## ⚡ BẮT BUỘC — Quy ước ẩn danh nguồn tham khảo
+
+- Dự án/máy/phần mềm/công ty tham khảo KHÔNG BAO GIỜ xuất hiện bằng tên thật trong
+  bất kỳ file nào được commit: code, docs, commit message, CHANGELOG, PROJECT_STATUS,
+  tên file, tên nhánh.
+- Mỗi nguồn tham khảo được gán bí danh dạng `RefSeq-A`, `RefSeq-B`… Bảng đối chiếu
+  bí danh ↔ tên thật chỉ nằm trong `docs/private/alias.local.md` (đã gitignore).
+- Tài liệu ĐIỀN TỪ dự án tham khảo (requirements đã điền, ghi chú đọc code) nằm trong
+  `docs/private/` — không commit. Repo công khai chỉ chứa: template trống, spec engine,
+  ADR (đã trừu tượng hóa).
+- Nội dung phải tổng quát hóa các dấu vết nhận dạng: tên trạm theo ngôn ngữ gốc,
+  tên cột dữ liệu đặc thù sản phẩm, tên hệ thống nội bộ (đổi thành "MES", "host"),
+  thông số quy trình đặc thù. Kiểm tra bằng câu hỏi: "người trong ngành đọc có đoán
+  ra máy nào không?"
+
+---
+
 ## ⚡ BẮT BUỘC — Cuối mỗi session (trước khi kết thúc):
 
 ```
@@ -327,5 +344,9 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
 | `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") |
 | `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính Home (v2): work area + right rail, data binding interface-only, checklist nghiệm thu |
+| `docs/SequenceEngine_Spec.md` | **Sequence — CHUẨN THIẾT KẾ** `AM.Core.Sequencing`: IStation/StepContext/StationResult, sequence JSON theo recipe, engine + PackML mapping, bất biến, yêu cầu test |
+| `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit)* | **Sequence — YÊU CẦU THAM KHẢO** rút từ máy tham khảo **RefSeq-A**: 8 trạm, vòng đời, ngữ nghĩa Pause/Stop/EMG/Reset, chính sách lỗi, anti-pattern KHÔNG bắt chước + hành vi đáng học |
+| `docs/DemoMachine_IO_Map.md` | **Sequence** — IO map máy mẫu DemoPickPlace (DI/DO/AI/trục + hằng IoMap + SimIoService) |
+| `docs/Sequence_Requirements_Template.md` | **Sequence** — template trống để điền khi khảo sát máy tham khảo khác |
 | `CLAUDE.md` | File này — project instructions cho Claude |
 | `README.md` | *(chưa có — TODO)* Tổng quan kiến trúc solution |
