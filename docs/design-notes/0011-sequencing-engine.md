@@ -1,7 +1,7 @@
 # 0011 — Thiết kế AM.Core.Sequencing (sequence engine khai báo, station plugin)
 
-**Ngày:** 2026-07-02 (Session 76)
-**Trạng thái:** Chờ duyệt — CHƯA triển khai code
+**Ngày:** 2026-07-02 (Session 76) · duyệt + hiệu chỉnh S77
+**Trạng thái:** ĐÃ DUYỆT (chủ dự án ủy quyền tự đánh giá, S77) — kèm 2 hiệu chỉnh triển khai ở cuối file
 **Nguồn thiết kế (và CHỈ những nguồn này):** `docs/SequenceEngine_Spec.md` (hợp đồng đã chốt),
 `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit — trích dẫn "req §n")*,
 `docs/DemoMachine_IO_Map.md`. KHÔNG mở lại dự án tham khảo RefSeq-A.
@@ -308,3 +308,13 @@ UI thread (pattern RunOnUi đã dùng toàn dự án). Đo thời gian bước l
   mock thuần, fake `IStationResolver`.
 - Điểm chưa chốt để hỏi khi triển khai: snapshot resume-check do station tự lưu hay engine
   phát sự kiện `Paused` (§4.1 — đề xuất: station tự lưu, đơn giản hơn).
+
+## Hiệu chỉnh khi duyệt (S77 — tự đánh giá được ủy quyền)
+
+1. **Resume-check snapshot: station TỰ LƯU** (chốt phương án đề xuất §4.1). Station là nơi duy nhất
+   biết cơ cấu nào cần so; engine phát thêm sự kiện `Paused` nội bộ là rò kiến thức cơ cấu vào
+   engine — vi phạm tinh thần bất biến 1–2. Engine chỉ gọi `VerifyResumeAsync` khi Resume.
+2. **Nhánh Pause: engine CHỈ phát event** `OperatorPromptRequired`, kênh trả lời (`Respond`)
+   nằm ngay trong EventArgs — bỏ tầng "engine gọi service rồi mirror ra event" ở §4.2 (thừa một
+   indirection, khó test hơn). `IOperatorPrompt` vẫn được định nghĩa làm contract cho **station**
+   dùng lúc `InitializeAsync` (triển khai UI + adapter ở Prompt D) — một nguồn hỏi, hai ngữ cảnh dùng.

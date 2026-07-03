@@ -4,6 +4,31 @@
 
 ---
 
+## [Session 77] 2026-07-02 — AM.Core.Sequencing: engine + loader + 20 unit test (Prompt C — theo ADR 0011 đã duyệt)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Triển khai theo `SequenceEngine_Spec.md` + ADR 0011 (đã duyệt kèm 2 hiệu chỉnh: resume-snapshot do station tự lưu; nhánh Pause chỉ dùng event với kênh trả lời trong args). Phạm vi đúng Prompt C: contracts + loader/validator + engine + events + test. KHÔNG UI, KHÔNG hardware.
+
+### ✅ Thêm mới — project `AM.Core.Sequencing` (net9, standalone: chỉ reference M.E.Logging.Abstractions)
+- **Contracts** (`Contracts/`): `IStation`, `StepContext` (required init, Blackboard = ConcurrentDictionary sống 1 cycle), `StationResult`/`StationStatus`/`StepErrorAction` (đúng nguyên văn spec §1), `ProductContext` (thread-safe, NG giữ lý do đầu), `IRecipeView`, `IIoService`/`IMotionService` (HAL theo tên logic — adapter thật để Prompt D), `IStationResolver` (abstraction trên DryIoc keyed — engine không thấy container), `IOperatorPrompt` (cho station init — impl ở D), `IResumeVerifiable` (capability tuỳ chọn), `ISequenceRuntimeContext`.
+- **Loader** (`Definition/`): `SequenceLoader` 2 pha (schema qua JsonDocument — bắt được key lạ thành warning; ngữ nghĩa: id trùng, order âm, timeout ≤ 0, retry, **tên station chết NGAY LÚC NẠP** qua `IStationResolver.Contains` + gợi ý `AllNames`), gom TOÀN BỘ lỗi một lần (`SequenceLoadResult` / `LoadOrThrow` → `SequenceValidationException`); `onError=Retry` thiếu `onRetryExhausted` → default `Pause`.
+- **Engine** (`Engine/`): `SequenceEngine` — nhóm `order` song song (`Task.WhenAll`), timeout per-step bằng linked CTS (phân biệt Stop bằng exception filter), nhánh Error theo chính sách khai báo (Retry đếm đúng số lần → onRetryExhausted; Pause → `OperatorPromptRequired` với `Respond()` ngay trong args — không chặn thread, không subscriber → Abort an toàn; operator Retry reset đếm), NG không áp onError + bước sau bị bỏ trừ `runOnNg` (vẫn phát sự kiện Skipped để log đủ), pause ở ranh giới bước + **resume-check** (`IResumeVerifiable` — lệch thì giữ Paused + prompt Retry/Abort), Stop = token hủy → sản phẩm dở `IsAborted` + `ProductCompleted` vẫn phát, consumer sự kiện ném lỗi không giết vòng chạy.
+
+### 🧪 Test — project `AM.Core.Sequencing.Tests` (xUnit + FluentAssertions, station = fake thuần)
+- **20/20 pass**: đủ 6 case spec §4 (tuần tự theo order · song song cùng order chứng minh bằng barrier chéo · timeout→retry 3 lần→exhausted · Ng bypass trừ runOnNg · pause-ranh-giới-bước + resume · cancel giữa bước dừng sạch + Aborted · station lạ chết lúc nạp) + validator (thiếu timeoutMs, order âm, id trùng, retry=0, key lạ = warning, JSON hỏng, gom 3 lỗi một lần, parse nguyên văn JSON mẫu spec §2) + prompt Skip + resume-check từ chối rồi Retry + blackboard `{stepId}.{field}`.
+- **Coverage**: package `AM.Core.Sequencing` **85.5% line / 75.1% branch**; riêng `SequenceEngine` core **92.7% line**.
+- Toàn solution: **253 tests pass** (233 cũ + 20 mới), build 0 warning (5 lỗi analyzer trong lúc viết đã sửa: CA1716 `Resume` suppress theo spec, S6667, S3267, S1172, S3458).
+
+### 🔧 File thay đổi
+- `AM.Core.Sequencing/` + `AM.Core.Sequencing.Tests/` — MỚI (+ vào `AM.AutoFrame.sln` → 27 projects)
+- `docs/design-notes/0011-sequencing-engine.md` — trạng thái ĐÃ DUYỆT + 2 hiệu chỉnh S77 (+index README)
+
+### ⏭️ Việc tiếp (Prompt D — phiên riêng)
+- SimIoService + 6 station demo + `recipes/DemoPickPlace.sequence.json` + nối master controller (PackML mapping spec §3) + nối sự kiện engine vào dashboard (bridge — không tạo đường dữ liệu riêng) + 4 kịch bản nghiệm thu tay.
+
+---
+
 ## [Session 76] 2026-07-02 — Ẩn danh hoá nguồn tham khảo (viết lại lịch sử) + ADR 0011 AM.Core.Sequencing (chờ duyệt)
 
 **Commit:** `798e6c9` (lịch sử viết lại: S75 gộp thành `8be4ef0`)
