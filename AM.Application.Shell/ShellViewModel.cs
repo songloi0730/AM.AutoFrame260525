@@ -15,6 +15,7 @@ using AM.Core.Abstractions.Interfaces.Services;
 using AM.Core.Enums;
 using AM.Core.Models;
 using AM.Core.Models.EventArgs;
+using AM.Core.Sequencing;
 using AM.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -49,8 +50,10 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     private readonly IRecipeService _recipe;
     private readonly IUserService _user;
     private readonly IHardwareManagerService _hardware;
+    private readonly ISequenceEngine _engine;
     private readonly SynchronizationContext? _ui;
     private readonly DispatcherTimer _timer;
+    private OperatorPromptEventArgs? _activePrompt;
     private bool _disposed;
 
     [ObservableProperty]
@@ -81,6 +84,11 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _hostOnlineText = "0/0";
     [ObservableProperty] private bool _allConnectionsOk;
 
+    // Operator prompt từ sequence engine (onError: Pause / resume-check) — hiện trên banner (S78)
+    [ObservableProperty] private bool _hasOperatorPrompt;
+    [ObservableProperty] private string _promptText = string.Empty;
+    [ObservableProperty] private bool _promptCanSkip;
+
     /// <summary>Chuỗi phiên bản thường trực ở footer popup kết nối (audit/support).</summary>
     public string VersionText { get; }
 
@@ -92,18 +100,20 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     /// <summary>Tạo VM Shell (resolve trên UI thread để capture SynchronizationContext).</summary>
     public ShellViewModel(IMasterController master, IAlarmService alarm, IRecipeService recipe,
-        IUserService user, IHardwareManagerService hardware)
+        IUserService user, IHardwareManagerService hardware, ISequenceEngine engine)
     {
         ArgumentNullException.ThrowIfNull(master);
         ArgumentNullException.ThrowIfNull(alarm);
         ArgumentNullException.ThrowIfNull(recipe);
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(hardware);
+        ArgumentNullException.ThrowIfNull(engine);
         _master = master;
         _alarm = alarm;
         _recipe = recipe;
         _user = user;
         _hardware = hardware;
+        _engine = engine;
         _ui = SynchronizationContext.Current;
 
         var ver = Assembly.GetExecutingAssembly().GetName().Version;
@@ -129,6 +139,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         _alarm.AlarmCleared += OnAlarmChanged;
         _recipe.RecipeChanged += OnRecipeChanged;
         _user.UserChanged += OnUserChanged;
+        _engine.OperatorPromptRequired += OnOperatorPrompt;
         Loc.Strings.PropertyChanged += OnLanguageChanged;
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -170,6 +181,47 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
             _master.OperationMode == OperationMode.Normal ? OperationMode.DryRun : OperationMode.Normal);
         RefreshState();
     }
+
+    // ─── Operator prompt (sequence engine — banner 3 nút, S78 Prompt D) ────────
+
+    /// <summary>
+    /// Engine cần operator quyết định (lỗi máy với onError=Pause / resume-check lệch).
+    /// Kênh trả lời nằm trong args — VM chỉ hiển thị và gọi Respond; "Bỏ qua" lọc theo
+    /// quyền (Engineer+ — học RefSeq-A: lựa chọn bỏ qua chỉ ở chế độ kỹ sư).
+    /// </summary>
+    private void OnOperatorPrompt(object? sender, OperatorPromptEventArgs e)
+    {
+        RunOnUi(() =>
+        {
+            _activePrompt = e;
+            PromptText = $"{e.StationName} · {e.Message}";
+            PromptCanSkip = e.Choices.Contains(StepErrorAction.Skip)
+                && _user.CurrentLevel >= UserLevel.Engineer;
+            HasOperatorPrompt = true;
+        });
+        // Prompt kết thúc từ bất kỳ đâu (trả lời / máy Stop hủy prompt) → tự dọn banner
+        _ = e.Decision.ContinueWith(_ => RunOnUi(ClearPrompt),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+    }
+
+    private void ClearPrompt()
+    {
+        _activePrompt = null;
+        HasOperatorPrompt = false;
+        PromptText = string.Empty;
+    }
+
+    /// <summary>Operator chọn Thử lại — chạy lại bước lỗi (đếm retry lại từ đầu).</summary>
+    [RelayCommand]
+    private void PromptRetry() => _activePrompt?.Respond(StepErrorAction.Retry);
+
+    /// <summary>Operator chọn Bỏ qua bước lỗi (chỉ Engineer+ thấy nút).</summary>
+    [RelayCommand]
+    private void PromptSkip() => _activePrompt?.Respond(StepErrorAction.Skip);
+
+    /// <summary>Operator chọn Dừng máy (Abort) — máy vào trạng thái lỗi, cần Reset.</summary>
+    [RelayCommand]
+    private void PromptAbort() => _activePrompt?.Respond(StepErrorAction.Abort);
 
     /// <summary>ACK alarm đang hiển thị trên banner (ưu tiên cao nhất chưa ACK).</summary>
     [RelayCommand]
@@ -273,6 +325,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         _alarm.AlarmCleared -= OnAlarmChanged;
         _recipe.RecipeChanged -= OnRecipeChanged;
         _user.UserChanged -= OnUserChanged;
+        _engine.OperatorPromptRequired -= OnOperatorPrompt;
         Loc.Strings.PropertyChanged -= OnLanguageChanged;
     }
 }

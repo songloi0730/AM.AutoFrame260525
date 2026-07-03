@@ -20,6 +20,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Seq = AM.Core.Sequencing; // alias — tránh đụng IStation của Machine namespace
 
 namespace AM.Modules.Dashboard;
 
@@ -48,6 +49,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IUserService _user;
     private readonly IIoModule _io;
     private readonly IIoTagMap _ioMap;
+    private readonly Seq.ISequenceEngine _engine;
     private readonly ILogger<DashboardViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
@@ -129,6 +131,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         IUserService user,
         IIoModule io,
         IIoTagMap ioMap,
+        Seq.ISequenceEngine engine,
         ILogger<DashboardViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(alarmService);
@@ -140,6 +143,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(io);
         ArgumentNullException.ThrowIfNull(ioMap);
+        ArgumentNullException.ThrowIfNull(engine);
         ArgumentNullException.ThrowIfNull(logger);
 
         _alarmService      = alarmService;
@@ -151,6 +155,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _user              = user;
         _io                = io;
         _ioMap             = ioMap;
+        _engine            = engine;
         _logger            = logger;
         _uiContext         = SynchronizationContext.Current;
 
@@ -200,6 +205,11 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _alarmService.AlarmRaised        += OnAlarmRaised;
         _alarmService.AlarmCleared       += OnAlarmCleared;
         _user.UserChanged                += OnUserChanged; // đăng nhập/đăng xuất → đổi quyền quick action
+        // Mini log ăn TRỰC TIẾP sự kiện engine (một nguồn — ADR 0011 §5); KPI/bảng SP/card KQ
+        // đi đường IProductionService (ReportStation ghi) → không có đường dữ liệu riêng cho UI
+        _engine.StepCompleted            += OnSeqStepCompleted;
+        _engine.ProductCompleted         += OnSeqProductCompleted;
+        _engine.OperatorPromptRequired   += OnSeqPrompt;
         Loc.Strings.PropertyChanged      += OnLanguageChanged;
 
         foreach (var alarm in _alarmService.ActiveAlarms)
@@ -395,6 +405,41 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private void OnSafetyChanged(object? sender, SafetyStateChangedEventArgs e)
         => RunOnUIThread(RefreshSafety);
 
+    // ─── Sự kiện sequence engine → mini log (chỉ dòng đáng chú ý — log file mới đủ mọi bước) ──
+
+    private void OnSeqStepCompleted(object? sender, Seq.StepEventArgs e)
+    {
+        if (e.Result is null) return;
+        if (e.Result.Status == Seq.StationStatus.Error)
+        {
+            RunOnUIThread(() => AddLog("ERR", e.StationName, string.Format(
+                CultureInfo.InvariantCulture, Loc.Strings["Seq.LogStepError"], e.StepId, e.Result.Message)));
+        }
+        else if (e.Result.Status == Seq.StationStatus.Ng)
+        {
+            RunOnUIThread(() => AddLog("WARN", e.StationName, string.Format(
+                CultureInfo.InvariantCulture, Loc.Strings["Seq.LogStepNg"], e.StepId, e.Result.Message)));
+        }
+        // Ok/Skipped: không đưa vào mini log để tránh 6 dòng mỗi cycle
+    }
+
+    private void OnSeqProductCompleted(object? sender, Seq.ProductEventArgs e)
+    {
+        string result;
+        if (e.IsAborted) result = Loc.Strings["Seq.Aborted"];
+        else if (e.IsNg) result = "NG";
+        else result = "OK";
+        string level = e.IsAborted || e.IsNg ? "WARN" : "INFO";
+        string duration = e.TotalDuration.TotalSeconds.ToString("F1", CultureInfo.InvariantCulture);
+        RunOnUIThread(() => AddLog(level, Loc.Strings["Log.System"], string.Format(
+            CultureInfo.InvariantCulture, Loc.Strings["Seq.LogProduct"],
+            e.SerialNumber ?? "?", result, duration)));
+    }
+
+    private void OnSeqPrompt(object? sender, Seq.OperatorPromptEventArgs e)
+        => RunOnUIThread(() => AddLog("WARN", e.StationName, string.Format(
+            CultureInfo.InvariantCulture, Loc.Strings["Seq.LogPrompt"], e.Message)));
+
     // ─── Monitor loop (devices + KPI) ─────────────────────────────────────────────
 
     private async Task MonitorLoopAsync(CancellationToken ct)
@@ -575,6 +620,9 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _alarmService.AlarmRaised        -= OnAlarmRaised;
         _alarmService.AlarmCleared       -= OnAlarmCleared;
         _user.UserChanged                -= OnUserChanged;
+        _engine.StepCompleted            -= OnSeqStepCompleted;
+        _engine.ProductCompleted         -= OnSeqProductCompleted;
+        _engine.OperatorPromptRequired   -= OnSeqPrompt;
         Loc.Strings.PropertyChanged      -= OnLanguageChanged;
         _cts.Cancel();
         _cts.Dispose();

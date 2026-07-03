@@ -15,11 +15,12 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
-  <!-- Dashboard chỉ cần Core.Abstractions để bind tới IMasterController, IAlarmService -->
+  <!-- Dashboard bind IMasterController/IAlarmService + nghe sự kiện ISequenceEngine (mini log — ADR 0011 §5) -->
   <ItemGroup>
     <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
     <ProjectReference Include="..\AM.UI.Localization\AM.UI.Localization.csproj" />
+    <ProjectReference Include="..\AM.Core.Sequencing\AM.Core.Sequencing.csproj" />
   </ItemGroup>
 
 </Project>

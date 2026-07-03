@@ -45,6 +45,8 @@
   "60002": { "name": "Duplicate serial number", "remedy": "Check barcode and production history" },
   "60003": { "name": "Batch full", "remedy": "Close current batch and open a new one" },
   "60004": { "name": "NG limit reached", "remedy": "Investigate defect cause and reset counter" },
+  "60005": { "name": "Sequence invalid", "remedy": "Fix the sequence JSON per errors in log, then Initialize again" },
+  "60006": { "name": "Sequence aborted", "remedy": "Check the failing step in the log, resolve, then Reset and restart" },
 
   "70001": { "name": "Emergency stop", "remedy": "Release E-Stop and reset safety" },
   "70002": { "name": "Safety door open", "remedy": "Close door and confirm interlock" },

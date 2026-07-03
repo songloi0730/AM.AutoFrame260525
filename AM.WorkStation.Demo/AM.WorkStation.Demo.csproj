@@ -10,12 +10,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
-  <!-- WorkStation ONLY references Core.Abstractions + Infrastructure (base classes) — never Hardware implementation -->
+  <!-- WorkStation ONLY references Core.Abstractions + Infrastructure (base classes) + Core.Sequencing
+       (contracts + engine — KHÔNG chứa hardware implementation) -->
   <ItemGroup>
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
     <ProjectReference Include="..\AM.Infrastructure\AM.Infrastructure.csproj" />
+    <ProjectReference Include="..\AM.Core.Sequencing\AM.Core.Sequencing.csproj" />
   </ItemGroup>
 
 </Project>

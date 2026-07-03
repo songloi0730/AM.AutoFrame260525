@@ -318,3 +318,20 @@ UI thread (pattern RunOnUi đã dùng toàn dự án). Đo thời gian bước l
    nằm ngay trong EventArgs — bỏ tầng "engine gọi service rồi mirror ra event" ở §4.2 (thừa một
    indirection, khó test hơn). `IOperatorPrompt` vẫn được định nghĩa làm contract cho **station**
    dùng lúc `InitializeAsync` (triển khai UI + adapter ở Prompt D) — một nguồn hỏi, hai ngữ cảnh dùng.
+
+## Prompt D — đã triển khai (S78)
+
+Máy mẫu **DemoPickPlace** chạy end-to-end trên mô phỏng, nối engine với master controller + dashboard:
+- `AM.WorkStation.Demo/Sequencing/`: `SimIoService` (IIoService+IMotionService — delay + xác suất lỗi
+  theo `DemoSimOptions`, hành vi tự động IO map §8), 6 station (Scanner/Feed/Pick/Vision/Place/Report —
+  tôn trọng IsDryRun/timeout/liên động §5: homing Z→X→Y, Abort giữ vacuum khi đang giữ hàng, kiểm liệu
+  sót đầu cycle + init), `RecipeViewAdapter`/`DemoRuntimeContext`/`SequenceSource`.
+- `DemoMasterController` nối engine: mỗi cycle = `engine.RunAsync(SingleCycle)`; Pause/Resume override
+  gọi `RequestPause`/`Resume` (dừng giữa cycle ở ranh giới bước); Abort→alarm 60006, sequence hỏng→60005.
+- **Dashboard**: mini log ăn trực tiếp sự kiện engine (StepCompleted lỗi/NG + ProductCompleted); KPI/bảng
+  SP/card KQ đi đường `IProductionService` (ReportStation ghi record thật — SN scanner, OK/NG, vision
+  score) → không đường dữ liệu riêng cho UI. `ProductionRecorder` cũ bị gỡ khỏi máy này (tránh ghi trùng).
+- **Nút mới trên banner** (Shell): 3 nút trả lời operator prompt — **Thử lại · Bỏ qua (Engineer+) · Dừng
+  máy** — thay popup chặn thread. UI lọc "Bỏ qua" theo quyền (học RefSeq-A: bỏ qua chỉ ở chế độ kỹ sư).
+- **4 kịch bản nghiệm thu** (`AM.WorkStation.Demo.Tests`, chạy engine+station+sim thật trên file sequence
+  thật) — xem kết quả trong PROJECT_STATUS/CHANGELOG S78.

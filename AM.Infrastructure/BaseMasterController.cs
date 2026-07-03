@@ -154,7 +154,9 @@ public abstract class BaseMasterController : IMasterController
     }
 
     /// <inheritdoc/>
-    public async Task PauseAsync(CancellationToken ct = default)
+    /// <remarks>Virtual để subclass nối engine tuỳ máy (vd RequestPause của sequence engine
+    /// — dừng ở ranh giới bước GIỮA cycle, thay vì chỉ giữa 2 cycle như checkpoint mặc định).</remarks>
+    public virtual async Task PauseAsync(CancellationToken ct = default)
     {
         if (!FireTrigger(MachineTrigger.Pause)) return;
         _pauseRequested = true;
@@ -163,7 +165,8 @@ public abstract class BaseMasterController : IMasterController
     }
 
     /// <inheritdoc/>
-    public async Task ResumeAsync(CancellationToken ct = default)
+    /// <remarks>Virtual — xem <see cref="PauseAsync"/>.</remarks>
+    public virtual async Task ResumeAsync(CancellationToken ct = default)
     {
         if (!FireTrigger(MachineTrigger.Resume)) return;
         _pauseRequested = false;

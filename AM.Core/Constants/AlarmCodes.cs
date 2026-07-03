@@ -65,6 +65,8 @@ public static class AlarmCodes
     public const int ProdSnDuplicate       = 60002;
     public const int ProdBatchFull         = 60003;
     public const int ProdNgLimitReached    = 60004;
+    public const int ProdSequenceInvalid   = 60005;  // Sequence JSON không hợp lệ lúc nạp (validate fail)
+    public const int ProdSequenceAborted   = 60006;  // Sequence bị Abort (chính sách onError / operator chọn)
 
     // ─── 70000–70999  Safety / Interlock ─────────────────────────────────────
     public const int SafetyEstop           = 70001;

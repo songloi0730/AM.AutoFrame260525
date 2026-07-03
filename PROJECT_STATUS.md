@@ -9,9 +9,14 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-07-02
-**Session:** #77 — **AM.Core.Sequencing (Prompt C, theo ADR 0011 đã duyệt + 2 hiệu chỉnh)**: project mới standalone — contracts spec §1 nguyên văn (`IStation`/`StepContext`/`StationResult`) + `IStationResolver` (engine không thấy DryIoc) + `IResumeVerifiable`/`IOperatorPrompt`; `SequenceLoader` 2 pha gom TOÀN BỘ lỗi (tên station chết LÚC NẠP + gợi ý tên đã đăng ký); `SequenceEngine`: nhóm `order` song song, timeout linked-CTS, onError/retry/onRetryExhausted, prompt operator không-chặn-thread (Respond trong args), NG bypass trừ `runOnNg`, pause ranh giới bước + resume-check, Stop sạch + sản phẩm dở Aborted. **20/20 test** (đủ 6 case spec §4 + validator + prompt/resume/blackboard) — coverage engine core **92.7% line** (package 85.5%), toàn solution **253 pass**. Việc tiếp: **Prompt D** — SimIoService + 6 station demo + sequence JSON + nối master controller/dashboard + 4 kịch bản nghiệm thu.
-**Commit:** `4789c51`  ·  (S76: ẩn danh + ADR `798e6c9` · S75 gộp trong `8be4ef0` · S74: Home v2.1 `970f078`)
+**Ngày:** 2026-07-04
+**Session:** #78 — **Prompt D: máy mẫu DemoPickPlace end-to-end trên mô phỏng**. `SimIoService` (IIoService+IMotionService, delay+xác suất lỗi cấu hình `DemoSimOptions`) + 6 station (Scanner/Feed/Pick/Vision/Place/Report — homing Z→X→Y, Abort GIỮ vacuum khi đang giữ hàng, kiểm liệu sót đầu cycle+init) + `recipes/DemoPickPlace.sequence.json` (spec §2) + `DemoMasterController` nối engine (mỗi cycle=1 sản phẩm; Pause/Resume override→RequestPause/Resume dừng giữa cycle ở ranh giới bước; Abort→alarm 60006, sequence hỏng→60005). Dashboard mini-log ăn TRỰC TIẾP sự kiện engine (StepCompleted lỗi/NG + ProductCompleted); KPI/bảng SP/card KQ đi đường IProductionService (ReportStation ghi record thật: SN scanner, OK/NG, vision score — không đường dữ liệu riêng cho UI). **Nút mới**: banner Shell 3 nút trả lời operator prompt (Thử lại / Bỏ qua-Engineer+ / Dừng máy) thay popup chặn thread. **4 kịch bản nghiệm thu (test tự động, engine+station+SimIoService thật trên file sequence thật)**: (a) 20 sản phẩm liên tục — 20 record PASS, SN không trùng, KPI khớp log; (b) vacuum fail 100% → retry đúng 2 lần (1 đầu + retry=1) → prompt → operator Abort → 0 record; (c) Pause giữa cycle dừng ở ranh giới bước (vision CHƯA chạy) → Resume chạy nốt; (d) Stop khi đang giữ hàng → vacuum GIỮ + sản phẩm Aborted → Reset+Init tự thoát liệu sót → chạy lại 1 sản phẩm sạch. **258 test pass** (20 engine + 5 demo + 233 cũ), build 0 warning, app boot sạch với DI graph mới (keyed stations + engine + resolver). Việc tiếp (tuỳ chọn): vòng review phản biện ADR+engine; đấu ảnh cycle thật vào card KQ khi vision IPC (ADR 0008) xong.
+**Commit:** *(điền sau)*  ·  (S77: engine+test `4789c51` · S76: ẩn danh+ADR `798e6c9` · S74: Home v2.1 `970f078`)
+
+---
+
+## 🗓️ Session #77
+**Session:** #77 — **AM.Core.Sequencing (Prompt C, theo ADR 0011 đã duyệt + 2 hiệu chỉnh)**: project mới standalone — contracts spec §1 nguyên văn (`IStation`/`StepContext`/`StationResult`) + `IStationResolver` (engine không thấy DryIoc) + `IResumeVerifiable`/`IOperatorPrompt`; `SequenceLoader` 2 pha gom TOÀN BỘ lỗi (tên station chết LÚC NẠP + gợi ý tên đã đăng ký); `SequenceEngine`: nhóm `order` song song, timeout linked-CTS, onError/retry/onRetryExhausted, prompt operator không-chặn-thread (Respond trong args), NG bypass trừ `runOnNg`, pause ranh giới bước + resume-check, Stop sạch + sản phẩm dở Aborted. **20/20 test** (đủ 6 case spec §4 + validator + prompt/resume/blackboard) — coverage engine core **92.7% line** (package 85.5%). Commit `4789c51`.
 
 ---
 
@@ -25,7 +30,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **27 projects** (CPM), production 0 warning, **253 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
+| Solution structure | ✅ Hoàn thành | **28 projects** (CPM), production 0 warning, **258 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Core.Sequencing | ✅ Hoàn thành | **Mới (S77, ADR 0011)** — sequence engine khai báo: contracts (`IStation`/`StepContext`/`StationResult`/`IStationResolver`/`IResumeVerifiable`/`IOperatorPrompt`), `SequenceLoader` 2 pha gom lỗi, `SequenceEngine` (order song song, timeout linked-CTS, onError/retry/prompt, pause ranh giới bước + resume-check). Standalone — không reference DryIoc/hardware/UI |
@@ -42,7 +47,8 @@
 | AM.Data | ✅ Hoàn thành | EF Core SQLite, AlarmRepository, ProductionRepository |
 | AM.Infrastructure | ✅ Hoàn thành | BaseMechanism, StationBase\<T\>, BaseMasterController, **JsonLocalizationService (i18n runtime)** |
 | AM.CommonTools | ✅ Hoàn thành | Guard, RetryHelper |
-| AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController |
+| AM.WorkStation.Demo | ✅ Hoàn thành | Full 3-tier: DemoPick/InspectMechanism → DemoStation → DemoMasterController; **+Sequencing (S78)**: SimIoService + 6 station (Scanner/Feed/Pick/Vision/Place/Report) + adapters, master nối SequenceEngine (mỗi cycle=1 sản phẩm, Pause/Resume→ranh giới bước, Abort→60006) |
+| AM.WorkStation.Demo.Tests | ✅ Hoàn thành | **Mới (S78)** — 5 tests: 4 kịch bản nghiệm thu Prompt D (20 sản phẩm/KPI, vacuum-fail retry+prompt+Abort, Pause-giữa-cycle+Resume, Stop-giữ-hàng+Reset+chạy-lại) + vòng đời ISA-88 master nối engine; chạy engine+station+SimIoService thật trên file sequence thật |
 | AM.Modules.Dashboard | ✅ Hoàn thành | **Home v2.1** (S74, ADR 0010): work area (card "Kết quả gần nhất" + bảng truy vết SN empty-state, KQ chip màu) + right rail 560px (KPI ca 8h số 26px màu-khi-có-nghĩa, **quick actions đủ HAL — S65** + tooltip lý do + Andon, trạm & an toàn ISafetyInput event, nhật ký) — spec: `docs/HMI_Dashboard_Spec.md` v2 (cần nâng v2.1) |
 | AM.Modules.Alarm | ✅ Hoàn thành | active alarms + acknowledge/clear, đồng bộ realtime |
 | AM.Modules.IoMonitor | ✅ Hoàn thành | Danh sách "địa chỉ·tên" (IOMap) + ô lọc + chỉ báo Off/On/Pending/Forced + nhóm Xi lanh ▲giữa (S60); set/reset thường (Engineer; **có hậu quả → chạm-2-bước**) + Chế độ Force (Admin) + **alarm 70010 "còn IO forced"** (S61); nav tự sinh từ [ModuleNavigation] |
@@ -226,7 +232,10 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 *(Không có bug nào đang mở)*
 
 ### TODO tiếp theo
-- [ ] **Prompt D — máy mẫu DemoPickPlace end-to-end trên mô phỏng** (ADR 0011 đã duyệt, engine đã xong S77): `SimIoService` (delay + xác suất lỗi theo config — IO map §8) + 6 station demo (tôn trọng IsDryRun/timeout/liên động §5: homing Z→X→Y, Abort giữ vacuum khi đang giữ hàng) + `recipes/DemoPickPlace.sequence.json` (spec §2) + nối master controller (PackML mapping spec §3) + bridge sự kiện engine → dashboard (không tạo đường dữ liệu riêng) + 4 kịch bản nghiệm thu tay, ghi kết quả vào đây; KHÔNG mở lại dự án RefSeq-A
+- [x] **Prompt D — máy mẫu DemoPickPlace end-to-end** ✅ HOÀN THÀNH (S78): SimIoService + 6 station + sequence JSON + master nối engine + dashboard bridge + banner prompt 3 nút; 4 kịch bản nghiệm thu đạt (test tự động)
+- [ ] (Tuỳ chọn) Vòng review phản biện ADR 0011 + engine (ChatGPT/Gemini → lọc bằng chứng theo SequenceEngine_Spec + requirements local) như quy trình chương sách
+- [ ] Đấu ảnh cycle thật vào card "Kết quả gần nhất" khi vision service IPC (ADR 0008) sẵn sàng — hiện dùng placeholder tối
+- [ ] (Giai đoạn 2 sequence) single-step mode · pipeline maxProductsInFlight>1 · resources chống tranh chấp · resume-from-crash (đã ghi lý do hoãn ở ADR 0011 §6)
 - [ ] Sync `HMI_UI_Architecture_Template` + Master Index §3 lên **v3** — Shell đã đổi 7 vùng → 4 vùng (ADR 0009), tài liệu đang mô tả bố cục cũ; cùng đợt nâng `HMI_Dashboard_Spec` lên v2.1 (card KQ gần nhất — ADR 0010) + ghi 3 nguyên tắc: màu-khi-có-nghĩa, empty-state-có-hướng-dẫn, xếp-theo-tần-suất-liếc
 - [ ] Màn Cài đặt: thêm nút vào/thoát kiosk (hiện chỉ có Ctrl+Shift+F11 Engineer+)
 - [ ] Vision V4 — `ILightController` per-channel + `SimulatedLightController` + test (ADR 0007 Quyết định 5)

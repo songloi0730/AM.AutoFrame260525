@@ -358,6 +358,11 @@
                             <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
                         </DataTrigger>
+                        <!-- Operator prompt từ sequence engine — cùng cấp khẩn với alarm chưa ACK -->
+                        <DataTrigger Binding="{Binding HasOperatorPrompt}" Value="True">
+                            <Setter Property="Height" Value="52"/>
+                            <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
+                        </DataTrigger>
                         <DataTrigger Binding="{Binding IsBannerError}" Value="True">
                             <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Ng.BackgroundBrush}"/>
@@ -374,6 +379,10 @@
                             <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasUnackedAlarm}" Value="True">
+                                    <Setter Property="Text" Value="⚠"/>
+                                    <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding HasOperatorPrompt}" Value="True">
                                     <Setter Property="Text" Value="⚠"/>
                                     <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
                                 </DataTrigger>
@@ -395,6 +404,33 @@
                         Background="{DynamicResource Panel.BackgroundAltBrush}"
                         BorderBrush="{StaticResource Warn.TextBrush}" BorderThickness="1"
                         Foreground="{StaticResource Warn.TextBrush}"/>
+
+                <!-- Nút trả lời operator prompt (sequence engine): Thử lại · Bỏ qua (Engineer+) · Dừng máy.
+                     Engine chờ Respond — không popup chặn thread (ADR 0011 §4.3). -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"
+                            Margin="12,0,0,0"
+                            Visibility="{Binding HasOperatorPrompt, Converter={StaticResource BoolToVis}}">
+                    <Button Height="40" Padding="18,0" FontWeight="Bold" FontSize="14" Cursor="Hand"
+                            Content="{Binding [Shell.PromptRetry], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding PromptRetryCommand}"
+                            Background="{DynamicResource Panel.BackgroundAltBrush}"
+                            BorderBrush="{StaticResource Status.NormalBrush}" BorderThickness="1"
+                            Foreground="{StaticResource Status.NormalBrush}"/>
+                    <Button Height="40" Padding="18,0" FontSize="14" Cursor="Hand" Margin="8,0,0,0"
+                            Content="{Binding [Shell.PromptSkip], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding PromptSkipCommand}"
+                            Visibility="{Binding PromptCanSkip, Converter={StaticResource BoolToVis}}"
+                            Background="{DynamicResource Panel.BackgroundAltBrush}"
+                            BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
+                            Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                    <Button Height="40" Padding="18,0" FontWeight="Bold" FontSize="14" Cursor="Hand"
+                            Margin="8,0,0,0"
+                            Content="{Binding [Shell.PromptAbort], Source={x:Static loc:Loc.Strings}}"
+                            Command="{Binding PromptAbortCommand}"
+                            Background="{DynamicResource Panel.BackgroundAltBrush}"
+                            BorderBrush="{StaticResource Status.AlarmBrush}" BorderThickness="1"
+                            Foreground="{StaticResource Status.AlarmBrush}"/>
+                </StackPanel>
 
                 <!-- Chip "+N cảnh báo khác" -->
                 <Border DockPanel.Dock="Right" VerticalAlignment="Center" CornerRadius="13"
@@ -418,9 +454,21 @@
                                 <DataTrigger Binding="{Binding HasUnackedAlarm}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding HasOperatorPrompt}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Nội dung operator prompt — chiếm chỗ BannerText khi engine chờ quyết định -->
+                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{StaticResource Warn.TextBrush}"
+                           Visibility="{Binding HasOperatorPrompt, Converter={StaticResource BoolToVis}}">
+                    <Run Text="{Binding [Shell.PromptPrefix], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                    <Run Text=" — "/><Run Text="{Binding PromptText, Mode=OneWay}"/>
                 </TextBlock>
 
                 <TextBlock Text="{Binding BannerText}" VerticalAlignment="Center" FontWeight="SemiBold"
@@ -434,6 +482,9 @@
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding IsBannerError}" Value="True">
                                     <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding HasOperatorPrompt}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

@@ -71,8 +71,8 @@ public partial class App
             // 4b'. Đèn tháp tự lái theo trạng thái máy + alarm + an toàn (ISA-101 andon)
             _serviceProvider.GetRequiredService<ITowerLightService>().Start();
 
-            // 4b''. Tự ghi ProductionRecord mỗi cycle hoàn thành (UPH/yield/traceability)
-            _serviceProvider.GetRequiredService<IProductionRecorder>().Start();
+            // 4b''. ProductionRecord do ReportStation của sequence ghi (SN thật, OK/NG, vision score —
+            //        S78 Prompt D); ProductionRecorder cũ (PASS + SN tự sinh) không còn dùng cho máy này.
 
             // 4b'''. Đẩy trạng thái an toàn lên HardwareInputEventBus cho guard tầng 3 (điều kiện phần cứng)
             _serviceProvider.GetRequiredService<AM.Services.SafetySignalPublisher>().Start();

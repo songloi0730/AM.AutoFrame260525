@@ -48,6 +48,8 @@ using AM.Core.Abstractions.Interfaces;
 using AM.WorkStation.Demo.Controllers;
 using AM.WorkStation.Demo.Mechanisms;
 using AM.WorkStation.Demo.Recipe;
+using AM.WorkStation.Demo.Sequencing;
+using AM.WorkStation.Demo.Sequencing.Stations;
 using AM.WorkStation.Demo.Stations;
 using AM.WorkStation.Demo.SubRoutines;
 using Microsoft.EntityFrameworkCore;
@@ -110,7 +112,8 @@ internal static class ServiceCollectionExtensions
             Path.Combine(AppContext.BaseDirectory, "machine.json")));
         services.AddSingleton<IHardwareWatchdogService, HardwareWatchdogService>();
         services.AddSingleton<ITowerLightService, TowerLightService>(); // đèn tháp tự lái theo state/alarm/safety
-        services.AddSingleton<IProductionRecorder, ProductionRecorder>(); // CycleCompleted → tự ghi ProductionRecord
+        // ProductionRecorder (CycleCompleted → record PASS với SN tự sinh) KHÔNG dùng cho máy sequence:
+        // ReportStation ghi record thật (SN scanner, OK/NG, vision score) — tránh ghi trùng (S78, Prompt D)
         // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
         services.AddSingleton<IUserService, UserService>(sp =>
             new UserService(sp.GetRequiredService<ILogger<UserService>>(), "users.json"));
@@ -172,8 +175,8 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>Demo machine 3-tier.</summary>
-    public static IServiceCollection AddDemoMachine(this IServiceCollection services)
+    /// <summary>Demo machine 3-tier + sequence engine (ADR 0011, Prompt D).</summary>
+    public static IServiceCollection AddDemoMachine(this IServiceCollection services, IConfiguration config)
     {
         // Recipe service + seed recipe MẶC ĐỊNH của máy Demo (PickPlaceRecipe) — máy khác seed recipe riêng.
         services.AddSingleton<IRecipeService>(sp => new RecipeService(
@@ -198,6 +201,53 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<ISubRoutine, HomeAllSubRoutine>();
         services.AddSingleton<ISubRoutine, SafetyCheckSubRoutine>();
         services.AddSingleton<ISubRoutineRunner, SubRoutineRunner>();
+
+        services.AddDemoSequencing(config);
+        return services;
+    }
+
+    /// <summary>
+    /// Sequence engine cho máy demo (ADR 0011): sim HAL, 6 station keyed, resolver,
+    /// runtime context, engine, nguồn sequence JSON. Station name = const trên chính station.
+    /// </summary>
+    private static IServiceCollection AddDemoSequencing(this IServiceCollection services, IConfiguration config)
+    {
+        // Sim HAL (IO map §8) — delay + xác suất lỗi từ appsettings AutoMachine:DemoSim
+        var simOptions = config.GetSection("AutoMachine:DemoSim").Get<DemoSimOptions>() ?? new DemoSimOptions();
+        services.AddSingleton(simOptions);
+        services.AddSingleton<SimIoService>();
+        services.AddSingleton<AM.Core.Sequencing.IIoService>(sp => sp.GetRequiredService<SimIoService>());
+        services.AddSingleton<AM.Core.Sequencing.IMotionService>(sp => sp.GetRequiredService<SimIoService>());
+
+        // 6 station demo — keyed theo tên logic (khớp trường "station" trong sequence JSON)
+        services.AddKeyedSingleton<AM.Core.Sequencing.IStation, ScannerStation>(ScannerStation.StationName);
+        services.AddKeyedSingleton<AM.Core.Sequencing.IStation, FeedStation>(FeedStation.StationName);
+        services.AddKeyedSingleton<AM.Core.Sequencing.IStation, PickStation>(PickStation.StationName);
+        services.AddKeyedSingleton<AM.Core.Sequencing.IStation, VisionStation>(VisionStation.StationName);
+        services.AddKeyedSingleton<AM.Core.Sequencing.IStation, PlaceStation>(PlaceStation.StationName);
+        services.AddKeyedSingleton<AM.Core.Sequencing.IStation, ReportStation>(ReportStation.StationName);
+        string[] stationNames =
+        [
+            ScannerStation.StationName, FeedStation.StationName, PickStation.StationName,
+            VisionStation.StationName, PlaceStation.StationName, ReportStation.StationName,
+        ];
+        services.AddSingleton<AM.Core.Sequencing.IStationResolver>(sp =>
+            new Sequencing.KeyedStationResolver(sp, stationNames));
+
+        // Runtime context: recipe view read-only + cờ dry-run từ OperationMode (delegate — tránh vòng DI)
+        services.AddSingleton<AM.Core.Sequencing.IRecipeView, RecipeViewAdapter>();
+        services.AddSingleton<AM.Core.Sequencing.ISequenceRuntimeContext>(sp => new DemoRuntimeContext(
+            sp.GetRequiredService<AM.Core.Sequencing.IIoService>(),
+            sp.GetRequiredService<AM.Core.Sequencing.IMotionService>(),
+            sp.GetRequiredService<AM.Core.Sequencing.IRecipeView>(),
+            () => sp.GetRequiredService<IMasterController>().OperationMode == OperationMode.DryRun));
+
+        services.AddSingleton<AM.Core.Sequencing.ISequenceEngine, AM.Core.Sequencing.SequenceEngine>();
+        services.AddSingleton(sp => new SequenceSource(
+            Path.Combine(AppContext.BaseDirectory,
+                config.GetValue<string>("AutoMachine:Sequence:File") ?? "recipes/DemoPickPlace.sequence.json"),
+            sp.GetRequiredService<AM.Core.Sequencing.IStationResolver>(),
+            sp.GetRequiredService<ILogger<SequenceSource>>()));
         return services;
     }
 
@@ -218,7 +268,7 @@ internal static class ServiceCollectionExtensions
             Log.Information(">>> REAL hardware mode ENABLED <<<");
         }
 
-        services.AddDemoMachine();
+        services.AddDemoMachine(config);
         HardwareFactory.RegisterPeripherals(services, config, useSimulation); // vision/scanner/safety/io-tagmap
         return services;
     }

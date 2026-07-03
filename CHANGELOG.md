@@ -4,6 +4,41 @@
 
 ---
 
+## [Session 78] 2026-07-04 — Prompt D: máy mẫu DemoPickPlace end-to-end trên mô phỏng + nối dashboard + banner prompt
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Triển khai Prompt D của Sequencing_NextSteps — máy mẫu chạy end-to-end trên SimIoService, nối `SequenceEngine` (S77) với master controller + dashboard. Chi tiết thiết kế: ADR 0011 (mục "Prompt D — đã triển khai").
+
+### ✅ Thêm mới — `AM.WorkStation.Demo/Sequencing/`
+- **`SimIoService`** (IIoService + IMotionService): IO/AI/vị trí in-memory + hành vi tự động (IO map §8) — bật vacuum→cảm biến báo sau delay (xác suất fail cấu hình), nhịp feeder→có hàng, thổi nhả→mất chân không; `DemoSimOptions` (delay + %lỗi vacuum/scan/vision NG) từ `appsettings:AutoMachine:DemoSim`.
+- **6 station**: Scanner (SN + %scan-fail), Feed (nhịp feeder + chờ cảm biến), Pick (homing **Z→X→Y**, Z-an-toàn-trước-XY, kiểm liệu sót đầu cycle+init, **Abort khi đang giữ hàng → GIỮ vacuum** không thả — IO map §5), Vision (NG = kết quả nghiệp vụ StationResult.Ng, score→blackboard), Place (khay OK/NG theo runOnNg, nhả có kiểm soát, đọc "đang giữ hàng" từ HAL không tham chiếu Pick), Report (CSV local TRƯỚC + DB + upload — runOnNg, lỗi không giết cycle).
+- **Adapters**: `RecipeViewAdapter` (IRecipeView read-only trên IRecipeService qua reflection tên property), `DemoRuntimeContext` (HAL+recipe+dry-run từ OperationMode), `SequenceSource` (nạp+validate+cache, lỗi→SequenceValidationException).
+- **`recipes/DemoPickPlace.sequence.json`** (spec §2, gắn theo recipe qua `AutoMachine:Sequence:File`).
+
+### ✅ Nối hệ thống
+- **`DemoMasterController`** nối engine: mỗi `RunOneCycleAsync` = `engine.RunAsync(SingleCycle)` (run-loop base lo lặp + CycleCompleted/sản phẩm); InitializeCore nạp sequence (fail→alarm **60005**) + init station theo thứ tự khai báo; **Pause/Resume override** gọi `RequestPause`/`Resume` (dừng GIỮA cycle ở ranh giới bước); Abort→alarm **60006** (mã mới). `BaseMasterController.Pause/ResumeAsync` thành `virtual`.
+- **DI** (`ServiceCollectionExtensions.AddDemoSequencing`): SimIoService, 6 station **keyed** theo `StationName`, `KeyedStationResolver` (IStationResolver trên keyed DI — engine không thấy container, tên bắt sai lúc nạp), engine, runtime context, SequenceSource. Gỡ `ProductionRecorder` khỏi máy này (ReportStation ghi record thật — tránh trùng).
+- **Dashboard**: mini-log ăn TRỰC TIẾP `StepCompleted`(lỗi/NG)+`ProductCompleted` của engine (một nguồn — ADR 0011 §5); KPI/bảng SP/card KQ vẫn đi đường `IProductionService`.
+- **Nút mới — banner Shell**: 3 nút trả lời `OperatorPromptRequired` — **Thử lại · Bỏ qua (Engineer+) · Dừng máy** — thay popup chặn thread; ShellViewModel `PromptRetry/Skip/AbortCommand`, banner co giãn + ẩn ghi chú khi có prompt; +9 key i18n (Shell.Prompt* + Seq.Log*) vi/en/zh.
+- Alarm catalog +60005/60006 (vi/en/zh).
+
+### 🧪 4 kịch bản nghiệm thu (`AM.WorkStation.Demo.Tests` — engine+station+SimIoService THẬT trên file sequence THẬT)
+- **(a) 20 sản phẩm liên tục**: 20 `ProductCompleted` không NG/Abort, 20 record PASS, SN không trùng, CycleTimeMs>0 → KPI (IProductionService) khớp log (engine events).
+- **(b) vacuum fail 100%** (app demo để 30%): bước pick chạy **đúng 2 lần** (1 đầu + retry=1) → `OperatorPromptRequired` (message "Chân không", 3 lựa chọn) → operator **Abort** → SequenceAbortException, 0 record.
+- **(c) Pause giữa cycle**: RequestPause khi StepStarted "pick" → dừng ở **ranh giới bước** (vision CHƯA chạy) → Resume → chạy nốt, có record.
+- **(d) Stop khi đang giữ hàng**: cancel khi StepStarted "vision" → dừng sạch, sản phẩm **Aborted**, `DO.Vacuum.On` GIỮ true + `DI.Nozzle.VacuumOn` true → Reset+Init **tự thoát liệu sót** (vacuum tắt) → chạy lại 1 sản phẩm PASS sạch.
+- +1 test vòng đời ISA-88 master nối engine (Initialize→Start→Pause→Resume→Stop, cycle không đếm sau Stop).
+
+### 🔧 Build & smoke
+- **258 test pass** (20 engine + 5 demo + 233 cũ), build **0 warning** (sửa CA1034/CA1716 IoMap→internal, S3358 ternary lồng Dashboard). App boot sạch với DI graph mới (keyed stations + engine + resolver + ctor mới ShellVM/DashboardVM).
+- +2 project vào solution (`AM.Core.Sequencing.Tests` S77, `AM.WorkStation.Demo.Tests` S78) → **28 projects**.
+
+### ⏭️ Việc tiếp (tuỳ chọn)
+- Vòng review phản biện ADR+engine; đấu ảnh cycle thật vào card KQ khi vision IPC (ADR 0008) xong; giai đoạn 2 sequence (single-step/pipeline/resources/resume-from-crash — lý do hoãn ở ADR 0011 §6).
+
+---
+
 ## [Session 77] 2026-07-02 — AM.Core.Sequencing: engine + loader + 20 unit test (Prompt C — theo ADR 0011 đã duyệt)
 
 **Commit:** `4789c51`

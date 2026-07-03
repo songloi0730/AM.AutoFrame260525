@@ -45,6 +45,8 @@
   "60002": { "name": "Trùng số serial", "remedy": "Kiểm tra mã vạch và lịch sử sản xuất" },
   "60003": { "name": "Lô sản xuất đã đầy", "remedy": "Đóng lô hiện tại và mở lô mới" },
   "60004": { "name": "Đạt giới hạn NG", "remedy": "Kiểm tra nguyên nhân lỗi và reset bộ đếm" },
+  "60005": { "name": "Sequence không hợp lệ", "remedy": "Sửa file sequence JSON theo danh sách lỗi trong log rồi Khởi tạo lại" },
+  "60006": { "name": "Sequence bị hủy (Abort)", "remedy": "Xem bước gây hủy trong nhật ký, xử lý rồi Reset → chạy lại" },
 
   "70001": { "name": "Dừng khẩn cấp", "remedy": "Nhả nút E-Stop và reset an toàn" },
   "70002": { "name": "Cửa an toàn mở", "remedy": "Đóng cửa và xác nhận interlock" },
