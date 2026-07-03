@@ -6,7 +6,7 @@
 
 ## [Session 76] 2026-07-02 — Ẩn danh hoá nguồn tham khảo (viết lại lịch sử) + ADR 0011 AM.Core.Sequencing (chờ duyệt)
 
-**Commit:** *(điền sau)*
+**Commit:** `798e6c9` (lịch sử viết lại: S75 gộp thành `8be4ef0`)
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Thực hiện Prompt A + B của kế hoạch Sequencing_NextSteps. Commit S75 đã push chứa tên thật dự án tham khảo trong message + nội dung → phải ẩn danh hoá kể cả lịch sử git, rồi mới thiết kế engine.
 

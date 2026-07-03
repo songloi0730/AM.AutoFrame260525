@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-02
 **Session:** #76 — **Ẩn danh hoá nguồn tham khảo + ADR 0011 Sequencing (chờ duyệt)**: thêm quy ước ẩn danh vào CLAUDE.md (bí danh `RefSeq-A`, bảng đối chiếu + requirements đã điền chuyển vào `docs/private/` — gitignore); viết lại lịch sử git (squash 2 commit đỉnh → `8be4ef0`, force-with-lease đã được chủ dự án duyệt) — `git log -S` + grep sạch tên thật; commit cũ có thể còn cache trên GitHub (repo public). Viết **ADR 0011** thiết kế `AM.Core.Sequencing` (loader/validator, IStationResolver, pseudocode vòng lặp, IOperatorPrompt, event → dashboard+log, bảng anti-pattern) — **DỪNG chờ duyệt trước khi code (Prompt C)**.
-**Commit:** *(điền sau)*  ·  (S75 gộp trong `8be4ef0` · S74: Home v2.1 `970f078` · S73: Shell v3 `991f34b`)
+**Commit:** `798e6c9`  ·  (S75 gộp trong `8be4ef0` · S74: Home v2.1 `970f078` · S73: Shell v3 `991f34b`)
 
 ---
 
