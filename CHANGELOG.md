@@ -6,7 +6,7 @@
 
 ## [Session 78] 2026-07-04 — Prompt D: máy mẫu DemoPickPlace end-to-end trên mô phỏng + nối dashboard + banner prompt
 
-**Commit:** *(điền sau)*
+**Commit:** `6c71301`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Triển khai Prompt D của Sequencing_NextSteps — máy mẫu chạy end-to-end trên SimIoService, nối `SequenceEngine` (S77) với master controller + dashboard. Chi tiết thiết kế: ADR 0011 (mục "Prompt D — đã triển khai").
 
