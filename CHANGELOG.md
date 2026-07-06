@@ -6,7 +6,7 @@
 
 ## [Session 80] 2026-07-06 — ROADMAP P0 hoàn tất: E-Stop state machine + retention job + users.json backup + docs HMI v3
 
-**Commit:** *(điền sau)*
+**Commit:** `b72cf8b`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Thực hiện giai đoạn P0 của `docs/ROADMAP_HOAN_THIEN.md` — 4 mục sửa-ngay về đúng đắn & an toàn nền, tất cả gap đã kiểm chứng code ở S79.
 
