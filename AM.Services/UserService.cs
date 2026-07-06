@@ -241,16 +241,37 @@ public sealed class UserService : IUserService
                     return;
                 }
                 _logger.LogWarning("[User] Store {Path} sai/cũ schema → seed lại mặc định", _storePath);
+                BackupCorruptStore();
             }
 #pragma warning disable CA1031 // file user lỗi/định dạng cũ → seed lại mặc định, không sập app
             catch (Exception ex)
 #pragma warning restore CA1031
             {
                 _logger.LogError(ex, "[User] Lỗi nạp {Path} — seed mặc định", _storePath);
+                BackupCorruptStore();
             }
         }
 
         SeedDefaults();
+    }
+
+    // P0.3: re-seed sẽ GHI ĐÈ store — backup file cũ trước để user đã tạo không mất im lặng.
+    private void BackupCorruptStore()
+    {
+        try
+        {
+            string backupPath = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                $"{_storePath}.bak-{DateTime.Now:yyyyMMdd-HHmmss}");
+            File.Copy(_storePath, backupPath, overwrite: true);
+            _logger.LogError("[User] Store cũ đã BACKUP vào {Backup} trước khi seed lại — cần user cũ thì khôi phục từ đây",
+                backupPath);
+        }
+#pragma warning disable CA1031 // backup lỗi (read-only...) không được chặn seed — app vẫn phải chạy
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "[User] Không backup được {Path} — dữ liệu cũ sẽ bị ghi đè", _storePath);
+        }
     }
 
     private void SeedDefaults()

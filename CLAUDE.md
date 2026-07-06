@@ -73,8 +73,9 @@ giải thích các lựa chọn kiến trúc lớn. Mục đích: người khác
   **chuột + cảm ứng** — KHÔNG phải HMI panel nhỏ 7–10". Thiết kế theo **ISA-101 / SEMI E95** (High-Performance HMI:
   yên tĩnh khi bình thường, 4 cấp màn hình, connection status chips). Trước khi làm/đánh giá UI, ĐỌC:
   `docs/HMI_Master_Index.md` (đầu mối toàn bộ HMI — đọc đây TRƯỚC) →
-  `.claude/skills/am-hmi-design/SKILL.md` → **`docs/HMI_UI_Architecture_Template_v2.md`** (bố cục Home 7 vùng
-  + palette — CHUẨN HIỆN HÀNH) → `docs/HMI_Button_Spec.md` (precondition/role từng nút)
+  `.claude/skills/am-hmi-design/SKILL.md` → **`docs/HMI_UI_Architecture_Template_v3.md`** (shell 4 vùng
+  + 3 nguyên tắc nội dung — CHUẨN HIỆN HÀNH; v2 còn hiệu lực phần work area/palette/schemas)
+  → `docs/HMI_Button_Spec.md` (precondition/role từng nút)
   → `docs/HMI_Components_Catalog.md`. Bản v1.1 (`HMI_UI_Architecture_Template.md`) CHỈ còn hiệu lực phần
   template điều khiển (AxisControlView/VisionTeachView). Khi chạm **màn Vận hành tay** (gộp Manual+Motion/IO):
   đọc `docs/HMI_Manual_Operation_and_Safety_v1.0.md` (chính sách an toàn, 4 role, 4 mức rủi ro R0–R3, guard).
@@ -336,18 +337,19 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/PROMPT_TEMPLATES.md` | PT-01 đến PT-14 — copy & fill |
 | `docs/QUICK_REFERENCE.md` | In ra dán cạnh màn hình |
 | `docs/HMI_Master_Index.md` | **UI — ĐỌC TRƯỚC** — đầu mối toàn bộ HMI: bộ tài liệu, nguyên tắc bất biến, bố cục 7 vùng tóm tắt, config schemas gộp, checklist sinh màn mới |
-| `docs/HMI_UI_Architecture_Template_v2.md` | **UI — CHUẨN HIỆN HÀNH** — bố cục Home 7 vùng (work area + right rail), palette v2, multi-alarm banner, quick actions |
+| `docs/HMI_UI_Architecture_Template_v3.md` | **UI — CHUẨN HIỆN HÀNH (S79)** — shell 4 vùng (header+nav gộp, banner co giãn + operator prompt, action bar 76 + chip kết nối), kiosk, 3 nguyên tắc nội dung |
+| `docs/HMI_UI_Architecture_Template_v2.md` | **UI** — còn hiệu lực: work area + right rail Home (§3.4/§3.5), palette v2 (§5), config schemas (§7), multi-alarm EEMUA 201; phần shell 7 vùng đã bị v3 thay |
 | `docs/HMI_Button_Spec.md` | **UI** — đặc tả MỌI nút trên Home: precondition (state machine), role, audit, mở ra gì |
 | `docs/HMI_Manual_Operation_and_Safety_v1.0.md` | **UI** — chính sách màn Vận hành tay (gộp Manual+Motion/IO): 4 role, 4 mức rủi ro R0–R3, guard, Supervised Override, bất biến an toàn |
 | `docs/HMI_UI_Architecture_Template.md` | **UI** — v1.1, CHỈ còn hiệu lực phần template điều khiển (AxisControlView/VisionTeachView) |
 | `docs/HMI_Naming_and_Axis_Point_Model.md` | **UI** — quy ước tên IO/trục/điểm, mô hình Trục–Điểm Set/Confirm, trạng thái IO, set/reset vs Force, layout thích ứng 3 tầng |
 | `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
 | `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") |
-| `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính Home (v2): work area + right rail, data binding interface-only, checklist nghiệm thu |
+| `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính Home (v2.1): shell v3 + card KQ gần nhất + KPI màu-khi-có-nghĩa + prompt banner, data binding interface-only, checklist nghiệm thu |
 | `docs/SequenceEngine_Spec.md` | **Sequence — CHUẨN THIẾT KẾ** `AM.Core.Sequencing`: IStation/StepContext/StationResult, sequence JSON theo recipe, engine + PackML mapping, bất biến, yêu cầu test |
 | `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit)* | **Sequence — YÊU CẦU THAM KHẢO** rút từ máy tham khảo **RefSeq-A**: 8 trạm, vòng đời, ngữ nghĩa Pause/Stop/EMG/Reset, chính sách lỗi, anti-pattern KHÔNG bắt chước + hành vi đáng học |
 | `docs/DemoMachine_IO_Map.md` | **Sequence** — IO map máy mẫu DemoPickPlace (DI/DO/AI/trục + hằng IoMap + SimIoService) |
 | `docs/Sequence_Requirements_Template.md` | **Sequence** — template trống để điền khi khảo sát máy tham khảo khác |
 | `docs/ROADMAP_HOAN_THIEN.md` | **KẾ HOẠCH HOÀN THIỆN** — đánh giá toàn diện (an toàn/bảo mật/chức năng/hiệu chỉnh/UI) + roadmap P0–P5 có DoD; đọc khi chọn việc cho session mới |
 | `CLAUDE.md` | File này — project instructions cho Claude |
-| `README.md` | *(chưa có — TODO)* Tổng quan kiến trúc solution |
+| `README.md` | Tổng quan kiến trúc solution (đã có từ CI/CD session) |

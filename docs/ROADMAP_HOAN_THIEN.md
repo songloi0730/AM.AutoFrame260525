@@ -152,10 +152,10 @@
 
 | Ưu tiên | Mục | Trục | Phiên | Phụ thuộc |
 |---------|-----|------|-------|-----------|
-| 🔴 1 | P0.1 E-Stop state machine | An toàn | 0.5 | — |
-| 🔴 2 | P0.2 Retention job | Dữ liệu | 0.5 | — |
-| 🔴 3 | P0.3 users.json backup | Bảo mật | 0.25 | — |
-| 🟠 4 | P0.4 Sync tài liệu HMI v3 | Docs | 0.75 | — |
+| ✅ 1 | P0.1 E-Stop state machine — XONG S80 (`EmergencyStop` fire Error → RunAlarm/InitAlarm + alarm 70001 + wire ISafetyInput; cửa mở KHÔNG estop; +transition Paused→RunAlarm; 5 test) | An toàn | 0.5 | — |
+| ✅ 2 | P0.2 Retention job — XONG S80 (`RetentionCleanupService`: dọn ngay lúc boot + mỗi 24h; 4 test) | Dữ liệu | 0.5 | — |
+| ✅ 3 | P0.3 users.json backup — XONG S80 (backup `.bak-{timestamp}` trước re-seed; 2 test) | Bảo mật | 0.25 | — |
+| ✅ 4 | P0.4 Sync tài liệu HMI v3 — XONG S80 (Template v3 mới + Master Index 4 vùng + 3 nguyên tắc + Dashboard spec v2.1 + CLAUDE.md) | Docs | 0.75 | — |
 | 🔴 5 | P1.1 Chốt §9 | An toàn | (chủ dự án) | — |
 | 🔴 6 | P1.2 Màn Vận hành tay v1 | UI+An toàn | 2 | P1.1 |
 | 🟠 7 | P1.3 Nút vật lý | An toàn | 0.5 | — |

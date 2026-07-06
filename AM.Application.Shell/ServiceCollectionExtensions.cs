@@ -85,6 +85,12 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<IAlarmRepository, AlarmRepository>();
         services.AddScoped<IProductionRepository, ProductionRepository>();
         services.AddScoped<IProductionService, ProductionService>();
+
+        // Dọn dữ liệu quá hạn theo DataRetentionDays (P0.2) — Start() gọi ở App.OnStartup
+        services.AddSingleton<IRetentionCleanupService>(sp => new RetentionCleanupService(
+            sp.GetRequiredService<IServiceScopeFactory>(),
+            sp.GetRequiredService<ILogger<RetentionCleanupService>>(),
+            config.GetValue("AutoMachine:DataRetentionDays", 365)));
         return services;
     }
 

@@ -9,7 +9,13 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-07-04
+**Ngày:** 2026-07-06
+**Session:** #80 — **ROADMAP P0 hoàn tất (cả 4 mục)**: **P0.1** E-Stop vào state machine — `EmergencyStop()` fire trigger Error (Running/Paused→RunAlarm, Initializing→InitAlarm — thêm transition Paused+Error, bảng 14 cạnh) + raise alarm 70001 fire-and-forget + wire `ISafetyInput.SafetyStateChanged` (E-Stop vật lý → EmergencyStop; cửa mở KHÔNG estop từ software — spec §8); **P0.2** `RetentionCleanupService` (IRetentionCleanupService — dọn alarm+production cũ hơn `DataRetentionDays` ngay lúc boot + mỗi 24h, xác nhận log runtime); **P0.3** users.json schema cũ → backup `.bak-{timestamp}` TRƯỚC khi re-seed ghi đè; **P0.4** docs sync: `HMI_UI_Architecture_Template_v3.md` MỚI (chuẩn hiện hành — shell 4 vùng + prompt banner + kiosk + 3 nguyên tắc), Master Index (§1/§2 +3 nguyên tắc/§3 bố cục 4 vùng), Dashboard spec v2.1, CLAUDE.md trỏ v3 + sửa README stale. **+11 test mới → 269 pass** (Infra 62, Services 128), build 0 warning, app boot sạch + log Retention chạy. Việc tiếp: **P1** — chốt §5 Q1–Q7 của roadmap rồi dựng màn Vận hành tay.
+**Commit:** *(điền sau)*  ·  (S79: roadmap `35c75cc` · S78: Prompt D `6c71301` · S77: engine `4789c51`)
+
+---
+
+## 🗓️ Session #79
 **Session:** #79 — **Đánh giá toàn diện + ROADMAP hoàn thiện** (`docs/ROADMAP_HOAN_THIEN.md`): rà 6 trục (an toàn/bảo mật/chức năng/hiệu chỉnh/UI/tích hợp), kiểm chứng gap trực tiếp trong code — nổi bật: **E-Stop không đổi state machine** (EmergencyStop không fire trigger — máy vẫn hiện "Đang chạy"), **DataRetentionDays không được thực thi** (DeleteOlderThanAsync 0 caller — DB phình vô hạn), **users.json re-seed ghi đè không backup**, **nút vật lý DI.Btn.* chưa wire**, **không lockout/password-policy/auto-logout**, calibration = trục trắng (tài liệu tham chiếu treo). Kế hoạch P0–P5 (~17 phiên P0–P4) kèm DoD từng mục + 7 câu hỏi cần chủ dự án chốt (§5) + hợp đồng vision app riêng (§6). Việc tiếp: **P0.1 E-Stop state machine** (ưu tiên 🔴 số 1).
 **Commit:** `35c75cc`  ·  (S78: Prompt D `6c71301` · S77: engine `4789c51` · S76: ẩn danh+ADR `798e6c9`)
 

@@ -73,6 +73,8 @@ public partial class App
 
             // 4b''. ProductionRecord do ReportStation của sequence ghi (SN thật, OK/NG, vision score —
             //        S78 Prompt D); ProductionRecorder cũ (PASS + SN tự sinh) không còn dùng cho máy này.
+            //        Dọn dữ liệu quá hạn theo DataRetentionDays (P0.2): 1 lượt ngay + mỗi 24h.
+            _serviceProvider.GetRequiredService<IRetentionCleanupService>().Start();
 
             // 4b'''. Đẩy trạng thái an toàn lên HardwareInputEventBus cho guard tầng 3 (điều kiện phần cứng)
             _serviceProvider.GetRequiredService<AM.Services.SafetySignalPublisher>().Start();

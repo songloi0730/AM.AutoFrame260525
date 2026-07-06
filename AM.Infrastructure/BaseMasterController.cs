@@ -44,6 +44,7 @@ public abstract class BaseMasterController : IMasterController
             { (MachineState.Running,       MachineTrigger.Error),                MachineState.RunAlarm     },
             { (MachineState.Paused,        MachineTrigger.Resume),               MachineState.Running      },
             { (MachineState.Paused,        MachineTrigger.Stop),                 MachineState.Idle         },
+            { (MachineState.Paused,        MachineTrigger.Error),                MachineState.RunAlarm     }, // E-Stop khi đang pause (P0.1)
             { (MachineState.InitAlarm,     MachineTrigger.Reset),                MachineState.Resetting    },
             { (MachineState.RunAlarm,      MachineTrigger.Reset),                MachineState.Resetting    },
             { (MachineState.Resetting,     MachineTrigger.ResetDone),            MachineState.Idle         },
@@ -83,6 +84,20 @@ public abstract class BaseMasterController : IMasterController
         AlarmService = alarmService;
         Logger       = logger;
         Safety       = safety;
+
+        // E-Stop VẬT LÝ nhấn → software phải EmergencyStop ngay (P0.1). Cửa/light-curtain
+        // KHÔNG estop từ software — chỉ cảnh báo; cắt cứng do PLC/safety relay (HMI spec §8).
+        if (Safety is not null)
+            Safety.SafetyStateChanged += OnSafetyStateChanged;
+    }
+
+    private void OnSafetyStateChanged(object? sender, SafetyStateChangedEventArgs e)
+    {
+        if (Safety is { IsEStopOk: false })
+        {
+            Logger.LogCritical("[MasterController] E-Stop vật lý kích hoạt — EmergencyStop toàn máy");
+            EmergencyStop();
+        }
     }
 
     // ─── IMasterController properties ────────────────────────────────────────
@@ -250,7 +265,32 @@ public abstract class BaseMasterController : IMasterController
 #pragma warning restore CA1849
 #pragma warning restore CA1031
 
+        // P0.1: phản ánh vào state machine — máy đã dừng khẩn KHÔNG được hiện "Đang chạy".
+        // Running/Paused → RunAlarm, Initializing → InitAlarm; state khác (Idle/Uninitialized):
+        // trigger bị bỏ qua an toàn, alarm vẫn raise + interlock IsAllSafe đã chặn Start.
+        FireTrigger(MachineTrigger.Error);
+        RaiseEstopAlarmSafe();
+
         Logger.LogCritical("[MasterController] EMERGENCY STOP executed");
+    }
+
+    // Raise alarm 70001 fire-and-forget — EmergencyStop là safety path, TUYỆT ĐỐI không throw/không chờ IO.
+    private void RaiseEstopAlarmSafe()
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await AlarmService.RaiseAsync(AlarmCodes.SafetyEstop, "SAFETY",
+                    "Dừng khẩn cấp (E-Stop) đã kích hoạt — xử lý nguyên nhân rồi Reset").ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // safety path: lỗi ghi alarm không được lan ra ngoài
+            catch (Exception ex)
+#pragma warning restore CA1031
+            {
+                Logger.LogError(ex, "[MasterController] Không raise được alarm E-Stop");
+            }
+        });
     }
 
     /// <inheritdoc/>
@@ -383,6 +423,9 @@ public abstract class BaseMasterController : IMasterController
     {
         if (_disposed) return;
         _disposed = true;
+
+        if (Safety is not null)
+            Safety.SafetyStateChanged -= OnSafetyStateChanged;
 
         if (_runCts is not null)
         {

@@ -38,6 +38,34 @@ internal sealed class RecordingAlarmService : IAlarmService
         => Task.FromResult<IReadOnlyList<AlarmModel>>([]);
 }
 
+/// <summary>Safety input giả — TriggerEstop/TriggerGuardOpen phát event như phần cứng thật (P0.1).</summary>
+internal sealed class FakeSafetyInput : AM.Core.Abstractions.Interfaces.Hardware.ISafetyInput
+{
+    public bool IsEStopOk { get; private set; } = true;
+    public bool IsGuardClosed { get; private set; } = true;
+    public bool IsLightCurtainClear => true;
+    public bool IsAllSafe => IsEStopOk && IsGuardClosed && IsLightCurtainClear;
+    public bool IsConnected => true;
+
+    public event EventHandler<SafetyStateChangedEventArgs>? SafetyStateChanged;
+
+    public void TriggerEstop()
+    {
+        IsEStopOk = false;
+        SafetyStateChanged?.Invoke(this, new SafetyStateChangedEventArgs(IsEStopOk, IsGuardClosed, IsLightCurtainClear));
+    }
+
+    public void TriggerGuardOpen()
+    {
+        IsGuardClosed = false;
+        SafetyStateChanged?.Invoke(this, new SafetyStateChangedEventArgs(IsEStopOk, IsGuardClosed, IsLightCurtainClear));
+    }
+
+    public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public void Dispose() { }
+}
+
 /// <summary>Mechanism test — đếm số lần init/home, OnEmergencyStop có thể ép throw.</summary>
 internal sealed class TestMechanism : BaseMechanism
 {

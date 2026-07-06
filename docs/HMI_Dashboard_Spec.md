@@ -1,28 +1,25 @@
-# HMI Dashboard Spec — Màn hình chính Home (v2.0, IPC 24" 1920×1080)
+# HMI Dashboard Spec — Màn hình chính Home (v2.1, IPC 24" 1920×1080)
 
 > **Mục đích:** Spec nghiệm thu cho **màn Home** của AM.AutoFrame theo
-> `HMI_UI_Architecture_Template_v2.md` (bố cục 7 vùng, mockup `hmi_home_v2.html`).
-> Bản này THAY THẾ spec layout 5 hàng cũ (S44).
+> `HMI_UI_Architecture_Template_v3.md` (shell 4 vùng) + nội dung Home v2.1 (ADR 0010).
+> v2.1 (S79/P0.4) cập nhật theo Shell v3 (S73), Home v2.1 (S74) và sequence engine (S78).
 >
-> **Đọc cùng:** `.claude/skills/am-hmi-design/SKILL.md` · `docs/HMI_UI_Architecture_Template_v2.md`
-> (kèm mục Quyết định adoption §9) · `docs/HMI_Button_Spec.md`.
+> **Đọc cùng:** `.claude/skills/am-hmi-design/SKILL.md` · `docs/HMI_UI_Architecture_Template_v3.md`
+> · `docs/HMI_Button_Spec.md` · ADR 0009/0010/0011.
 >
 > **Hiện thực:** Shell = `AM.Application.Shell/MainWindow.xaml` + `ShellViewModel.cs`;
 > Home = `AM.Modules.Dashboard/DashboardView.xaml` + `DashboardViewModel.cs` + `DashboardTileVms.cs`.
 
 ---
 
-## 1. Phân công Shell ↔ Home (Persistent Frame)
+## 1. Phân công Shell ↔ Home (Persistent Frame — shell v3, 4 vùng)
 
 | Vùng | Cao | Thuộc | Nội dung đã hiện thực |
 |------|-----|-------|----------------------|
-| 1 Header | 64 | Shell | Logo + tên máy · badge **AUTO/DRY** · badge **LOCAL** (tĩnh — GEM TODO) · badge **state ISA-88** · Recipe · Clock + **heartbeat** (chấm nháy 1Hz) · nút Ngôn ngữ · User |
-| 2 Nav tabs | 48 | Shell | Tab ngang icon+chữ tự sinh từ `[ModuleNavigation]`, active = nền đậm + chữ đậm |
-| 3 Alarm banner | 40 | Shell | **Duy nhất alarm ưu tiên cao nhất chưa ACK** + ACK (40px) + chip `+N khác`; xám khi sạch, hổ phách = Warning, đỏ = Error/Critical |
-| 4 Work area | * | Home | Sub-tab "Sản phẩm": dải thumbnail vision + bảng truy vết SN (dòng NG tô `#F9E6E3`) + footer đếm |
-| 5 Right rail | 560px | Home | KPI ca (3×2) → Thao tác nhanh (lưới 2–3 cột, ≥64px) → Trạm & an toàn (2 cột) → Nhật ký (1 dòng/entry) |
-| 6 Action bar | 84 | Shell | `Start · Pause/Resume · Stop · Reset │ Dry run · Manual` — nút trắng phẳng 64px, icon MDL2 trên + nhãn dưới, CHỈ Start viền xanh; mờ + tooltip lý do khi không khả dụng |
-| 7 Connection bar | 40 | Shell | Nhóm **Thiết bị** │ **Host** (ký hiệu ●/✕, ○ chưa cấu hình) + version góc phải |
+| 1 Header+Nav | 56 | Shell | Logo (tooltip tên máy) · chip **AUTO/DRY · LOCAL · state ISA-88** (26px) · tab điều hướng RadioButton tự sinh từ `[ModuleNavigation]` (gạch chân 3px, ScrollViewer ngang) · Recipe · Clock (MinWidth) + **heartbeat** 1Hz · Ngôn ngữ · User |
+| 2 Alarm banner | 36→52 | Shell | Co giãn: sạch 36px xám; **1 alarm ưu tiên cao nhất chưa ACK** + ACK 40px + chip `+N` (52px) HOẶC **operator prompt** của sequence engine: nội dung + 3 nút Thử lại · Bỏ qua (Engineer+) · Dừng máy |
+| 3 Content | * | Home | **Work area**: card "Kết quả gần nhất" (thumb camera chấm-trạng-thái + chip KQ OK/NG 22px + SN/Cycle/Recipe) → bảng truy vết SN (empty state có hướng dẫn, Cycle căn phải, KQ chip màu, counter trên header). **Right rail 560px**: KPI ca 3×2 (số 26px, màu chỉ khi >0, "—" khi trống, cycle tự đổi ms→s) → Thao tác nhanh (2 hàng tiện ích/rủi ro, tooltip lý do + icon khoá, Gọi KT = Andon viền hổ phách) → Trạm & an toàn → Nhật ký (empty state) |
+| 4 Action bar | 76 | Shell | `Init · Start · Pause/Resume · Stop │(divider) Reset · Dry run · Manual` — lệnh máy 64px nằm ngang, CHỈ Start viền xanh; mờ + tooltip khi khoá · **chip "● Thiết bị n/m · Host n/m"** (44px) mở Popup 2 cột + version footer |
 
 ## 2. Nguồn dữ liệu (interface-only — đổi máy không sửa XAML)
 
@@ -31,13 +28,14 @@
 | Badge state + enable nút action bar | `IMasterController.State/StateChanged` (`CanExecute` ≙ CanFire) | event |
 | Badge AUTO/DRY | `IMasterController.OperationMode` (`Mode.{enum}` i18n) | RefreshState |
 | Alarm banner | `IAlarmService.ActiveAlarms` lọc `!IsAcknowledged`, sort `Level` desc → `RaisedAt` desc | event |
-| KPI ca (3×2) | `IProductionService.GetStatisticsAsync(now-8h, now)` qua scope | CycleCompleted + 10s |
-| Bảng sản phẩm | `IProductionRepository.GetByDateRangeAsync` → 14 dòng mới nhất | CycleCompleted + 10s |
-| Thumbnail vision | `IHardwareManagerService` Category=Camera (tên + IsConnected; ảnh kết quả = TODO vision service) | poll 2s |
+| KPI ca (3×2) | `IProductionService.GetStatisticsAsync(now-8h, now)` qua scope — **record do ReportStation của sequence ghi** (SN scanner, OK/NG, vision score) | CycleCompleted + 10s |
+| Bảng sản phẩm + card KQ gần nhất | `IProductionRepository.GetByDateRangeAsync` → 14 dòng mới nhất; card = record[0] | CycleCompleted + 10s |
+| Thumb camera trong card KQ | `IHardwareManagerService` Category=Camera (tên + chấm trạng thái; ảnh cycle = chờ app vision riêng) | poll 2s |
 | Trạm & an toàn | `IMasterController.Stations` (event) + `ISafetyInput` (event `SafetyStateChanged` — push, không poll) | event |
-| Thao tác nhanh | `QuickActionVm` list — **Tắt còi** wired `ILightController.SetAsync(Current with {Buzzer=false})`; còn lại disabled + lý do (HAL/audit TODO) | poll buzzer 2s |
-| Nhật ký | In-memory từ events (state/alarm/cycle), 1 dòng/entry, cap 30 | event |
-| Connection bar | `IHardwareManagerService.GetMonitoredDevices()` — Host = OPC-UA + DB, còn lại = Thiết bị | poll 1s |
+| Thao tác nhanh | `QuickActionVm` — Tắt còi/đèn/ion/cửa qua HAL + guard R0–R3, hold-to-confirm 1s cửa; lý do khoá ở tooltip + icon khoá | poll DO 2s |
+| Nhật ký | In-memory từ events (state/alarm/cycle) + **sự kiện sequence engine** (`StepCompleted` lỗi/NG, `ProductCompleted`, prompt) — một nguồn, cap 30 | event |
+| Chip kết nối (action bar) | `IHardwareManagerService.GetMonitoredDevices()` — Host = OPC-UA + DB, còn lại = Thiết bị; `DeviceOnlineText/HostOnlineText/AllConnectionsOk` | poll 1s |
+| Operator prompt banner | `ISequenceEngine.OperatorPromptRequired` — Respond ngay trong args; Skip lọc theo `UserLevel ≥ Engineer` | event |
 
 ## 3. Quy tắc đã áp (theo template v2 §1)
 
@@ -71,4 +69,4 @@ vision thumbnail ảnh kết quả thật (gRPC/vision service) · popup chẩn 
 
 ---
 
-*Phiên bản 2.0 — Session 45 (12/06/2026). Thay thế bản 1.0 (S44, layout 5 hàng).*
+*Phiên bản 2.1 — Session 79/P0.4 (04/07/2026): shell v3 4 vùng + card KQ gần nhất + KPI màu-khi-có-nghĩa + prompt banner + mini-log sequence. Bản 2.0 — Session 45 (thay bản 1.0 S44).*

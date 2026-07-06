@@ -22,11 +22,12 @@ Khi sinh bất kỳ màn HMI / ViewModel / config nào, ĐỌC file này trướ
 
 | File | Nội dung | Khi nào đọc |
 |------|----------|-------------|
-| **HMI_UI_Architecture_Template_v2.0.md** | Tài liệu GỐC: 10 nguyên tắc nền, 7 vùng Persistent Frame, đặc tả từng vùng, màu/chữ/icon, config schemas, billboard/heartbeat/REMOTE | Mọi màn HMI |
+| **HMI_UI_Architecture_Template_v3.md** | **CHUẨN HIỆN HÀNH (S79)**: bố cục shell 4 vùng (header+nav gộp 56 · banner co giãn 36→52 + operator prompt · content · action bar 76 + chip kết nối), kiosk config-driven, 3 nguyên tắc nội dung | Mọi màn HMI — đọc TRƯỚC |
+| HMI_UI_Architecture_Template_v2.0.md | Tài liệu GỐC: 10 nguyên tắc nền, màu/chữ/icon, config schemas — **phần bố cục shell 7 vùng đã bị v3 thay thế**; còn hiệu lực: §3.4/§3.5 work area + right rail, §5 palette, §7 schemas | Khi làm nội dung Home / cần palette+schema |
 | **HMI_Button_Spec_v2.0.md** | Bảng chuẩn Nút → Điều kiện → Hành động → Mở ra → Role cho mọi phần tử Home | Khi làm nút/lệnh |
 | **HMI_Manual_Operation_and_Safety_v1.0.md** | Màn Vận hành tay (gộp Manual+Motion), 4 role, 4 mức rủi ro R0–R3, guard, Supervised Override, sub-tab | Màn vận hành tay, thao tác có rủi ro |
 | **HMI_Naming_and_Axis_Point_Model_v1.0.md** | Đặt tên IO/biến, mô hình Trục–Điểm, Set/Confirm, layout thích ứng 3 tầng nhất quán, trạng thái IO, set/reset vs Force | Trục, điểm, IO, đặt tên |
-| **HMI_Calibration_Model_v1.0.md** *(chưa có — TBD)* | Calib: phân loại frequency (routine/rare), gắn sự kiện thay thiết bị, wizard 2 nhánh tự động/thủ công theo sai số | Calib, hiệu chỉnh, bảo trì |
+| **HMI_Calibration_Model_v1.0.md** *(chưa có — sẽ viết ở ROADMAP_HOAN_THIEN P2.1)* | Calib: phân loại frequency (routine/rare), gắn sự kiện thay thiết bị, wizard 2 nhánh tự động/thủ công theo sai số | Calib, hiệu chỉnh, bảo trì |
 
 Mockup HTML (tham chiếu trực quan, tỷ lệ thật 1920×1080):
 
@@ -37,7 +38,7 @@ Mockup HTML (tham chiếu trực quan, tỷ lệ thật 1920×1080):
 | hmi_axis_detail_v1.html | Điều khiển trục chi tiết — bảng đèn 8 tín hiệu, bảng điểm Set/Confirm |
 | hmi_adaptive_layout.html | Layout thích ứng nhỏ/vừa/lớn (4→20 trục) |
 | hmi_io_states.html | Trạng thái IO + set/reset vs Force mode |
-| hmi_calib_wizard.html *(chưa có — TBD)* | Wizard hiệu chỉnh — 2 nhánh tự động/thủ công theo sai số |
+| hmi_calib_wizard.html *(chưa có — sẽ làm cùng ROADMAP P2)* | Wizard hiệu chỉnh — 2 nhánh tự động/thủ công theo sai số |
 | hmi_motion_v2.html *(đã thay bằng hmi_manual_operation_v1.html)* | (bản gộp cũ — không dùng nữa) |
 
 ---
@@ -54,22 +55,23 @@ Mockup HTML (tham chiếu trực quan, tỷ lệ thật 1920×1080):
 8. **An toàn = event push** qua `HardwareInputEventBus`, không polling. Khu điều chỉnh bind MỘT cờ container theo trạng thái máy.
 9. **Cảm ứng theo mm**: nút thường ≥48 px, lệnh chính/jog ≥64 px, dòng bảng ≥44 px, khoảng cách ≥8 px. `UiScale` theo PPI.
 10. **Config-driven**: khác biệt giữa máy đi qua config, KHÔNG hardcode trong Shell/Home.
+11. **Màu chỉ khi có ý nghĩa trạng thái** (ADR 0010): Lỗi=0 là xám trung tính, KQ OK/NG mới có màu, thiết bị bình thường = chấm nhỏ chứ không chữ màu.
+12. **Vùng trống phải nói bước tiếp theo**: mọi empty state có hướng dẫn hành động, không để vùng trắng câm.
+13. **Xếp theo tần suất liếc nhìn**: KQ gần nhất > KPI ca > thao tác > log.
 
 ---
 
-## 3. Bố cục Home (7 vùng, 1080 px)
+## 3. Bố cục shell (4 vùng — v3 từ S73, chi tiết ở HMI_UI_Architecture_Template_v3.md)
 
 ```
-[1] Header 48px      logo·tên máy · AUTO · LOCAL/REMOTE · PackML · tiến độ lô · đồng hồ+heartbeat
-[2] Nav 48px         8 tab chức năng (trái) ……………… 🌐 ngôn ngữ · 👤 login (mép phải, có phân cách)
-[3] Banner alarm 40  alarm ưu tiên cao nhất + ACK + "+N khác"   (xám khi không có)
-[4] Work area ~664   sub-tab theo máy (HomeSubViews); vùng giữa thích ứng VisionLayout
-[5] Right rail 560   KPI ca → Thao tác nhanh → Trạm&an toàn → Nhật ký (1 dòng)
-[6] Action bar 84    Start·Pause/Resume·Stop·Reset │ Dry run·Manual  (icon trên, chữ dưới)
-[7] Thanh kết nối 32 Thiết bị │ Host │ phiên bản (góc phải)
+[1] Header+Nav 56   logo(tooltip tên máy) · chip AUTO/DRY·LOCAL·state │ tab điều hướng │ recipe·clock+heartbeat·🌐·👤
+[2] Banner 36→52    alarm ưu tiên cao nhất + ACK + "+N khác" HOẶC operator prompt (Thử lại·Bỏ qua·Dừng máy)
+[3] Content *       Home: work area (card KQ gần nhất + bảng SP) + right rail 560 (KPI → Thao tác nhanh → Trạm&an toàn → Nhật ký)
+[4] Action bar 76   Init·Start·Pause/Resume·Stop │ Reset (divider) · Dry run·Manual · chip "● Thiết bị n/m · Host n/m"+popup
 ```
 
-Vùng 1,2,3,6,7 = Persistent Frame (mọi màn kế thừa). Action bar bind `stateMachine.CanFire(trigger)`.
+Vùng 1,2,4 = Persistent Frame (mọi màn kế thừa). Action bar bind `stateMachine.CanFire(trigger)`.
+Chrome dọc 168px (v2 cũ 7 vùng = 284px). *(Bản 7 vùng cũ: xem template v2 — chỉ để tra cứu lịch sử.)*
 
 ---
 

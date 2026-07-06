@@ -4,6 +4,40 @@
 
 ---
 
+## [Session 80] 2026-07-06 — ROADMAP P0 hoàn tất: E-Stop state machine + retention job + users.json backup + docs HMI v3
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Thực hiện giai đoạn P0 của `docs/ROADMAP_HOAN_THIEN.md` — 4 mục sửa-ngay về đúng đắn & an toàn nền, tất cả gap đã kiểm chứng code ở S79.
+
+### ✅ P0.1 — E-Stop vào state machine (an toàn — gap [✓code] nghiêm trọng nhất)
+- `BaseMasterController.EmergencyStop()`: fire trigger `Error` (Running/**Paused**→RunAlarm, Initializing→InitAlarm — **thêm transition (Paused, Error)**, bảng 13→14 cạnh) + `RaiseEstopAlarmSafe()` raise alarm **70001** fire-and-forget (safety path tuyệt đối không throw). Trước đây E-Stop xong máy vẫn hiện "Đang chạy".
+- Wire `ISafetyInput.SafetyStateChanged` ngay trong Base ctor: **E-Stop vật lý nhấn → EmergencyStop toàn máy**; cửa/light-curtain mở KHÔNG estop từ software (chỉ cảnh báo — cắt cứng do PLC/relay, HMI spec §8). Unsubscribe trong DisposeAsync.
+- Test +5 (`BaseMasterControllerTests` + `FakeSafetyInput` mới): EStop lúc Running→RunAlarm+70001 · lúc Idle giữ Idle nhưng vẫn alarm · tín hiệu E-Stop vật lý → RunAlarm · cửa mở lúc Running → VẪN Running · transition Paused+Error.
+
+### ✅ P0.2 — Retention job (gap [✓code]: DeleteOlderThanAsync có sẵn nhưng 0 caller — DB phình vô hạn)
+- MỚI `IRetentionCleanupService` (Abstractions) + `RetentionCleanupService` (AM.Services): dọn alarm history + production record cũ hơn `DataRetentionDays` — 1 lượt ngay lúc `Start()` + `PeriodicTimer` mỗi 24h; scope per-lượt (EF Scoped); lỗi một lượt chỉ log. Đăng ký ở `AddDataAccess`, start ở `App.OnStartup`. Xác nhận runtime: log "[Retention] Started — giữ 365 ngày".
+- Test +4: dọn cả 2 repo + trả tổng, cutoff = now−retention (±1'), ctor chặn ngày ≤ 0.
+
+### ✅ P0.3 — users.json backup trước re-seed (gap [✓code]: mất user im lặng, đã xảy ra 02/07)
+- `UserService.Load()`: 2 nhánh re-seed (schema sai/cũ + exception) gọi `BackupCorruptStore()` — copy `users.json.bak-{yyyyMMdd-HHmmss}` + LogError rõ đường dẫn TRƯỚC khi `SeedDefaults()` ghi đè; backup lỗi không chặn seed.
+- Test +2: store hỏng → có đúng 1 file .bak nội dung NGUYÊN VẸN + store mới seed hợp lệ; lần đầu chạy (chưa có file) → không tạo .bak.
+
+### ✅ P0.4 — Đồng bộ tài liệu HMI (docs mô tả 7 vùng trong khi shell đã 4 vùng từ S73)
+- MỚI **`docs/HMI_UI_Architecture_Template_v3.md`** (CHUẨN HIỆN HÀNH): 4 vùng + số đo chạm, banner alarm/operator-prompt, kiosk config-driven, **3 nguyên tắc nội dung** (ADR 0010), bảng đối chiếu v2→v3; v2 giữ hiệu lực phần work-area/palette/schemas.
+- `HMI_Master_Index.md`: §1 bảng (+v3, đánh dấu v2), §2 nguyên tắc bất biến +3 (11–13), §3 bố cục 4 vùng, tham chiếu calib treo → trỏ ROADMAP P2.
+- `HMI_Dashboard_Spec.md` → **v2.1**: bảng vùng theo shell v3, nguồn dữ liệu cập nhật (record do ReportStation ghi, mini-log ăn sự kiện engine, chip kết nối, prompt banner).
+- CLAUDE.md: chuẩn UI trỏ v3, sửa dòng README stale.
+
+### 🧪 Build & test
+- **269 tests pass** (+11: Infra 57→62, Services 122→128), build 0 warning; app boot sạch (lưu ý: `dotnet test` KHÔNG build WinExe — phải build Shell riêng trước khi smoke, đã gặp exe cũ 07-04).
+- `AM.Services.Tests` +PackageReference `Microsoft.Extensions.DependencyInjection` (BuildServiceProvider cho scope-factory test).
+
+### ⏭️ Việc tiếp
+- **P1** roadmap: chủ dự án chốt §5 Q1–Q7 (nhất là Q1 override + Q2 R2) → dựng màn Vận hành tay v1 (P1.2); song song làm được ngay: P1.3 nút vật lý, P1.6 prompt liệu sót + resume-check demo.
+
+---
+
 ## [Session 79] 2026-07-04 — Đánh giá toàn diện dự án + ROADMAP hoàn thiện (docs/ROADMAP_HOAN_THIEN.md)
 
 **Commit:** `35c75cc`
