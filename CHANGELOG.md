@@ -4,6 +4,28 @@
 
 ---
 
+## [Session 79] 2026-07-04 — Đánh giá toàn diện dự án + ROADMAP hoàn thiện (docs/ROADMAP_HOAN_THIEN.md)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án yêu cầu rà toàn diện (giao diện/chức năng/an toàn/bảo mật/hiệu chỉnh — vision tạm bỏ, sẽ làm app riêng) + kế hoạch chi tiết hoàn thiện. Gap được KIỂM CHỨNG trực tiếp trong source (grep/đọc code) chứ không chỉ gom TODO cũ.
+
+### 🔍 Phát hiện chính (đánh dấu [✓code] trong roadmap)
+1. **An toàn**: `BaseMasterController.EmergencyStop()` KHÔNG fire trigger/alarm — E-Stop xong máy vẫn hiện "Đang chạy"; nút vật lý `DI.Btn.*` chỉ là hằng số chưa wire; guard tầng 3 mới có nguồn Safety.*; jog deadman chưa có.
+2. **Dữ liệu**: `DataRetentionDays` chỉ được validate — `DeleteOlderThanAsync` có ở 2 repository nhưng **0 caller** → DB SQLite phình vô hạn.
+3. **Bảo mật**: không lockout / không password policy / không bắt đổi mật khẩu seed / không auto-logout; `users.json` schema cũ → re-seed **ghi đè không backup** (đã xảy ra thật trong log 02/07); audit ghi nhưng chưa xem/export được.
+4. **Hiệu chỉnh**: trục trắng hoàn toàn — `HMI_Calibration_Model_v1.0.md` là tham chiếu treo, chưa có framework/wizard/routine nào.
+5. **UI/docs**: màn Vận hành tay chưa dựng (nút Manual disabled); Settings còn 4 placeholder; template HMI vẫn mô tả 7 vùng (thực tế 4).
+
+### ✅ Thêm mới
+- `docs/ROADMAP_HOAN_THIEN.md` — hiện trạng theo 6 trục + bảng gap có bằng chứng + **kế hoạch P0–P5** (mỗi mục: việc cụ thể/DoD/ước lượng, ~17 phiên cho P0–P4) + bảng ưu tiên 20 dòng + 7 câu hỏi cần chủ dự án chốt + hợp đồng để app vision riêng cắm vào (giữ IVisionProcessor/VisionStation/card KQ, không đổi engine).
+- CLAUDE.md bảng tài liệu +1 dòng; PROJECT_STATUS trỏ TODO chính về roadmap.
+
+### ⏭️ Việc tiếp
+- **P0.1 E-Stop vào state machine** (ưu tiên 🔴 số 1) → P0.2 Retention job → P0.3 users.json backup → P0.4 sync docs; song song chủ dự án trả lời §5 (Q1–Q7) để mở khoá P1 Vận hành tay.
+
+---
+
 ## [Session 78] 2026-07-04 — Prompt D: máy mẫu DemoPickPlace end-to-end trên mô phỏng + nối dashboard + banner prompt
 
 **Commit:** `6c71301`

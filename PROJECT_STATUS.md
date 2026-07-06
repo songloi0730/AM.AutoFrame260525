@@ -10,6 +10,12 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-04
+**Session:** #79 — **Đánh giá toàn diện + ROADMAP hoàn thiện** (`docs/ROADMAP_HOAN_THIEN.md`): rà 6 trục (an toàn/bảo mật/chức năng/hiệu chỉnh/UI/tích hợp), kiểm chứng gap trực tiếp trong code — nổi bật: **E-Stop không đổi state machine** (EmergencyStop không fire trigger — máy vẫn hiện "Đang chạy"), **DataRetentionDays không được thực thi** (DeleteOlderThanAsync 0 caller — DB phình vô hạn), **users.json re-seed ghi đè không backup**, **nút vật lý DI.Btn.* chưa wire**, **không lockout/password-policy/auto-logout**, calibration = trục trắng (tài liệu tham chiếu treo). Kế hoạch P0–P5 (~17 phiên P0–P4) kèm DoD từng mục + 7 câu hỏi cần chủ dự án chốt (§5) + hợp đồng vision app riêng (§6). Việc tiếp: **P0.1 E-Stop state machine** (ưu tiên 🔴 số 1).
+**Commit:** *(điền sau)*  ·  (S78: Prompt D `6c71301` · S77: engine `4789c51` · S76: ẩn danh+ADR `798e6c9`)
+
+---
+
+## 🗓️ Session #78
 **Session:** #78 — **Prompt D: máy mẫu DemoPickPlace end-to-end trên mô phỏng**. `SimIoService` (IIoService+IMotionService, delay+xác suất lỗi cấu hình `DemoSimOptions`) + 6 station (Scanner/Feed/Pick/Vision/Place/Report — homing Z→X→Y, Abort GIỮ vacuum khi đang giữ hàng, kiểm liệu sót đầu cycle+init) + `recipes/DemoPickPlace.sequence.json` (spec §2) + `DemoMasterController` nối engine (mỗi cycle=1 sản phẩm; Pause/Resume override→RequestPause/Resume dừng giữa cycle ở ranh giới bước; Abort→alarm 60006, sequence hỏng→60005). Dashboard mini-log ăn TRỰC TIẾP sự kiện engine (StepCompleted lỗi/NG + ProductCompleted); KPI/bảng SP/card KQ đi đường IProductionService (ReportStation ghi record thật: SN scanner, OK/NG, vision score — không đường dữ liệu riêng cho UI). **Nút mới**: banner Shell 3 nút trả lời operator prompt (Thử lại / Bỏ qua-Engineer+ / Dừng máy) thay popup chặn thread. **4 kịch bản nghiệm thu (test tự động, engine+station+SimIoService thật trên file sequence thật)**: (a) 20 sản phẩm liên tục — 20 record PASS, SN không trùng, KPI khớp log; (b) vacuum fail 100% → retry đúng 2 lần (1 đầu + retry=1) → prompt → operator Abort → 0 record; (c) Pause giữa cycle dừng ở ranh giới bước (vision CHƯA chạy) → Resume chạy nốt; (d) Stop khi đang giữ hàng → vacuum GIỮ + sản phẩm Aborted → Reset+Init tự thoát liệu sót → chạy lại 1 sản phẩm sạch. **258 test pass** (20 engine + 5 demo + 233 cũ), build 0 warning, app boot sạch với DI graph mới (keyed stations + engine + resolver). Việc tiếp (tuỳ chọn): vòng review phản biện ADR+engine; đấu ảnh cycle thật vào card KQ khi vision IPC (ADR 0008) xong.
 **Commit:** `6c71301`  ·  (S77: engine+test `4789c51` · S76: ẩn danh+ADR `798e6c9` · S74: Home v2.1 `970f078`)
 
@@ -232,6 +238,7 @@ Triggers: Initialize, InitializeDone, Start, Pause, Resume, Stop,
 *(Không có bug nào đang mở)*
 
 ### TODO tiếp theo
+> ⚡ **Nguồn TODO chính từ S79: `docs/ROADMAP_HOAN_THIEN.md`** — bảng ưu tiên §4: P0.1 E-Stop state machine (🔴 số 1) → P0.2 Retention job → P0.3 users.json backup → P0.4 sync docs → P1 Vận hành tay (cần chốt §5 Q1–Q7). Các dòng dưới đã gộp vào roadmap, giữ để truy vết:
 - [x] **Prompt D — máy mẫu DemoPickPlace end-to-end** ✅ HOÀN THÀNH (S78): SimIoService + 6 station + sequence JSON + master nối engine + dashboard bridge + banner prompt 3 nút; 4 kịch bản nghiệm thu đạt (test tự động)
 - [ ] (Tuỳ chọn) Vòng review phản biện ADR 0011 + engine (ChatGPT/Gemini → lọc bằng chứng theo SequenceEngine_Spec + requirements local) như quy trình chương sách
 - [ ] Đấu ảnh cycle thật vào card "Kết quả gần nhất" khi vision service IPC (ADR 0008) sẵn sàng — hiện dùng placeholder tối
