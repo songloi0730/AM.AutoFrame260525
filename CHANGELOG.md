@@ -6,7 +6,7 @@
 
 ## [Session 79] 2026-07-04 — Đánh giá toàn diện dự án + ROADMAP hoàn thiện (docs/ROADMAP_HOAN_THIEN.md)
 
-**Commit:** *(điền sau)*
+**Commit:** `35c75cc`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án yêu cầu rà toàn diện (giao diện/chức năng/an toàn/bảo mật/hiệu chỉnh — vision tạm bỏ, sẽ làm app riêng) + kế hoạch chi tiết hoàn thiện. Gap được KIỂM CHỨNG trực tiếp trong source (grep/đọc code) chứ không chỉ gom TODO cũ.
 

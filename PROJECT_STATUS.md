@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-04
 **Session:** #79 — **Đánh giá toàn diện + ROADMAP hoàn thiện** (`docs/ROADMAP_HOAN_THIEN.md`): rà 6 trục (an toàn/bảo mật/chức năng/hiệu chỉnh/UI/tích hợp), kiểm chứng gap trực tiếp trong code — nổi bật: **E-Stop không đổi state machine** (EmergencyStop không fire trigger — máy vẫn hiện "Đang chạy"), **DataRetentionDays không được thực thi** (DeleteOlderThanAsync 0 caller — DB phình vô hạn), **users.json re-seed ghi đè không backup**, **nút vật lý DI.Btn.* chưa wire**, **không lockout/password-policy/auto-logout**, calibration = trục trắng (tài liệu tham chiếu treo). Kế hoạch P0–P5 (~17 phiên P0–P4) kèm DoD từng mục + 7 câu hỏi cần chủ dự án chốt (§5) + hợp đồng vision app riêng (§6). Việc tiếp: **P0.1 E-Stop state machine** (ưu tiên 🔴 số 1).
-**Commit:** *(điền sau)*  ·  (S78: Prompt D `6c71301` · S77: engine `4789c51` · S76: ẩn danh+ADR `798e6c9`)
+**Commit:** `35c75cc`  ·  (S78: Prompt D `6c71301` · S77: engine `4789c51` · S76: ẩn danh+ADR `798e6c9`)
 
 ---
 
