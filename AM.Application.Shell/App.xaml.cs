@@ -81,6 +81,8 @@ public partial class App
 
             // 4b'''. Đẩy trạng thái an toàn lên HardwareInputEventBus cho guard tầng 3 (điều kiện phần cứng)
             _serviceProvider.GetRequiredService<AM.Services.SafetySignalPublisher>().Start();
+            //        + tín hiệu hình học trục Z-an-toàn cho guard jog X/Y (P1.4)
+            _serviceProvider.GetRequiredService<AM.Services.MotionSignalPublisher>().Start();
 
             // 4b''''. Đăng ký handler thao tác trạm máy Demo (Approach C — composition root biết máy cụ thể).
             //         ClampRelease CỐ TÌNH không đăng ký → minh hoạ UI "chưa cấu hình HAL" của mô hình hybrid.

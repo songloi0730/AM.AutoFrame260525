@@ -159,8 +159,8 @@
 | ✅ 5 | P1.1 Chốt §9 — XONG S81: Override = 1 người 2 bước+đếm ngược 3s (giữ S64) · R2 cứng Engineer · ngưỡng Set–Confirm 0.05mm config | An toàn | (đã chốt) | — |
 | ✅ 6 | P1.2 Màn Vận hành tay — XONG S81: màn đã có từ S48 (đính chính C2); nối nút Manual action bar → tab Vận hành tay (gate LineLead+, tooltip 3 ngữ) | UI+An toàn | 0.25 | — |
 | ✅ 7 | P1.3 Nút vật lý — XONG S81: `PhysicalButtonMonitor` poll 50ms edge-detect DI.Btn.* → Start/Stop/Reset (master tự kiểm điều kiện); 3 test | An toàn | 0.5 | — |
-| 🟠 8 | P1.4 Guard hình học (publish tín hiệu trục/IO lên HardwareSignalBus + predicate jog) | An toàn | 1 | phiên riêng |
-| 🟠 9 | P1.5 Jog deadman (IAxisJog velocity-mode + watchdog 200ms + jog pad giữ-để-chạy) | An toàn | 1 | phiên riêng |
+| ✅ 8 | P1.4 Guard hình học — XONG S82: `MotionSignalPublisher` poll Z 100ms → publish `Motion.ZAtSafe` (fail-safe false khi chưa kết nối/lỗi đọc); `GeometricGuardFor` khai `GuardCondition` cho jog/move/hold X/Y/U (Z được miễn); blockReason `Manual.ZNotSafe` 3 ngữ; 2 test | An toàn | 1 | — |
+| ✅ 9 | P1.5 Jog deadman — XONG S82: `IAxisJog` (StartJog/KeepAlive/StopJog, watchdog 200ms) sim implement (vòng tích phân 25ms, mất KeepAlive → TỰ DỪNG); jog pad giữ-để-chạy qua `JogHoldBehavior` (nhả nút/rời nút/mất capture → Stop; UI nuôi KeepAlive 80ms); HAL không có IAxisJog → fallback inching; 4 test | An toàn | 1 | — |
 | ✅ 10 | P1.6 Prompt liệu sót + resume-check — XONG S81: `BannerOperatorPromptService` (IOperatorPrompt → nút động trên banner; không subscriber → chọn lựa chọn an toàn nhất đứng đầu); PickStation init HỎI operator (lấy tay/tự thoát, lặp tới khi sạch); PickStation + `IResumeVerifiable` kiểm BẤT BIẾN HÌNH HỌC Z-ở-độ-cao-an-toàn (không so snapshot — gantry dùng chung làm snapshot per-station stale); 3 test | An toàn | 0.5 | — |
 | 🟡 11 | P2.1–P2.3 Calibration (doc+framework+UI) | Hiệu chỉnh | 3 | P1.2 (sub-tab) |
 | 🟠 12 | P3.1 Password policy + lockout | Bảo mật | 1 | — |

@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              xmlns:conv="clr-namespace:AM.Modules.Motion.Converters"
+             xmlns:local="clr-namespace:AM.Modules.Motion"
              xmlns:iomon="clr-namespace:AM.Modules.IoMonitor;assembly=AM.Modules.IoMonitor"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
@@ -648,37 +649,55 @@
                                              Content="{Binding [Axis.Absolute], Source={x:Static loc:Loc.Strings}}"/>
                             </StackPanel>
 
-                            <!-- Jog pad 3×3 (slot0=X giữa, slot1=Y, slot2=Z, slot3=U) -->
+                            <!-- Jog pad 3×3 (slot0=X giữa, slot1=Y, slot2=Z, slot3=U).
+                                 GIỮ-ĐỂ-CHẠY (P1.5): nhấn giữ = velocity-jog + KeepAlive deadman;
+                                 nhả/rời nút = dừng. HAL không hỗ trợ IAxisJog → mỗi nhấn = 1 bước inching. -->
                             <UniformGrid Rows="3" Columns="3" HorizontalAlignment="Center">
                                 <Button Style="{StaticResource JogButton}" Content="U +"
                                         Visibility="{Binding JogSlots[3], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[3]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[3]}"/>
                                 <Button Style="{StaticResource JogButton}" Content="Y ↑"
                                         Visibility="{Binding JogSlots[1], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[1]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[1]}"/>
                                 <Button Style="{StaticResource JogButton}" Content="Z ↑"
                                         Visibility="{Binding JogSlots[2], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[2]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[2]}"/>
 
                                 <Button Style="{StaticResource JogButton}" Content="X −"
                                         Visibility="{Binding JogSlots[0], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[0]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[0]}"/>
                                 <Button Style="{StaticResource JogButton}" Content="STOP" Command="{Binding StopMotionCommand}"
                                         BorderBrush="{StaticResource Status.AlarmBrush}"
                                         Foreground="{StaticResource Status.AlarmBrush}" FontWeight="Bold"/>
                                 <Button Style="{StaticResource JogButton}" Content="X +"
                                         Visibility="{Binding JogSlots[0], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogPlusCommand}" CommandParameter="{Binding JogSlots[0]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[0]}"/>
 
                                 <Button Style="{StaticResource JogButton}" Content="U −"
                                         Visibility="{Binding JogSlots[3], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[3]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[3]}"/>
                                 <Button Style="{StaticResource JogButton}" Content="Y ↓"
                                         Visibility="{Binding JogSlots[1], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[1]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[1]}"/>
                                 <Button Style="{StaticResource JogButton}" Content="Z ↓"
                                         Visibility="{Binding JogSlots[2], Converter={StaticResource NullToVis}}"
-                                        Command="{Binding JogMinusCommand}" CommandParameter="{Binding JogSlots[2]}"/>
+                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding JogSlots[2]}"/>
                             </UniformGrid>
 
                             <!-- Bước inching -->

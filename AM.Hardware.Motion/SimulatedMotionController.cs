@@ -18,9 +18,10 @@ namespace AM.Hardware.Motion;
 /// Lưu trạng thái trục trong memory, giả lập thời gian di chuyển.
 /// Dùng trong development và test không cần phần cứng.
 /// Cũng implement <see cref="IAxisDiagnostics"/> để HMI điều khiển trục "sống" đầy đủ
-/// (bảng đèn 8 tín hiệu, servo on/off, phản hồi servo) khi chạy mô phỏng.
+/// (bảng đèn 8 tín hiệu, servo on/off, phản hồi servo) khi chạy mô phỏng,
+/// và <see cref="IAxisJog"/> — jog giữ-để-chạy có deadman watchdog (P1.5).
 /// </summary>
-public sealed class SimulatedMotionController : IMotionController, IAxisDiagnostics
+public sealed class SimulatedMotionController : IMotionController, IAxisDiagnostics, IAxisJog
 {
     // ─── Constants ─────────────────────────────────────────────────────────────
     private const int HomeTimeoutMs   = 10_000;
@@ -36,6 +37,10 @@ public sealed class SimulatedMotionController : IMotionController, IAxisDiagnost
     private readonly bool[] _moving;
     private readonly bool[] _servoOn;     // IAxisDiagnostics: servo励磁 state per axis
     private readonly bool[] _alarm;       // IAxisDiagnostics: servo alarm per axis (Clear để xoá)
+    private readonly Lock _jogSync = new();          // IAxisJog: bảo vệ trạng thái jog
+    private readonly bool[] _jogging;                // IAxisJog: trục đang jog velocity-mode
+    private readonly double[] _jogVelocity;          // IAxisJog: vận tốc có dấu (mm/s)
+    private readonly long[] _jogLastKeepAlive;       // IAxisJog: TickCount64 lần nuôi watchdog cuối
     private bool _isConnected;
     private bool _disposed;
 
@@ -52,6 +57,9 @@ public sealed class SimulatedMotionController : IMotionController, IAxisDiagnost
         _moving    = new bool[axisCount];
         _servoOn   = new bool[axisCount];
         _alarm     = new bool[axisCount];
+        _jogging   = new bool[axisCount];
+        _jogVelocity = new double[axisCount];
+        _jogLastKeepAlive = new long[axisCount];
     }
 
     // ─── Public properties ───────────────────────────────────────────────────────
@@ -275,6 +283,82 @@ public sealed class SimulatedMotionController : IMotionController, IAxisDiagnost
         _servoOn[axisIndex] = enabled;
         _logger.LogDebug("[SimMotion] Servo axis={Axis} → {State}", axisIndex, enabled ? "ON" : "OFF");
         return Task.CompletedTask;
+    }
+
+    // ─── IAxisJog — jog giữ-để-chạy với deadman watchdog (P1.5) ──────────────────
+
+    /// <inheritdoc/>
+    public async Task StartJogAsync(int axisIndex, double velocityMmPerSec, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        EnsureConnected();
+        if (Math.Abs(velocityMmPerSec) < 1e-9)
+            throw new ArgumentOutOfRangeException(nameof(velocityMmPerSec), "Vận tốc jog phải khác 0");
+
+        bool startLoop;
+        lock (_jogSync)
+        {
+            _jogVelocity[axisIndex] = velocityMmPerSec;
+            _jogLastKeepAlive[axisIndex] = Environment.TickCount64;
+            startLoop = !_jogging[axisIndex];
+            _jogging[axisIndex] = true;
+            _moving[axisIndex] = true;
+        }
+
+        _logger.LogInformation("[SimMotion] Jog axis={Axis} vel={Vel:F1}mm/s (deadman {Timeout}ms)",
+            axisIndex, velocityMmPerSec, IAxisJog.WatchdogTimeoutMs);
+        if (startLoop)
+            _ = Task.Run(() => JogLoopAsync(axisIndex), CancellationToken.None); // vòng sống theo deadman, không theo ct
+        await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public void KeepAlive(int axisIndex)
+    {
+        ValidateAxis(axisIndex);
+        lock (_jogSync) { _jogLastKeepAlive[axisIndex] = Environment.TickCount64; }
+    }
+
+    /// <inheritdoc/>
+    public async Task StopJogAsync(int axisIndex, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        bool wasJogging;
+        lock (_jogSync)
+        {
+            wasJogging = _jogging[axisIndex];
+            _jogging[axisIndex] = false;
+            _moving[axisIndex] = false;
+        }
+        if (wasJogging)
+            _logger.LogInformation("[SimMotion] Jog axis={Axis} dừng (nhả nút)", axisIndex);
+        await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    // Vòng tích phân vị trí ~25ms/tick; DEADMAN: mất KeepAlive quá 200ms → tự dừng.
+    private async Task JogLoopAsync(int axisIndex)
+    {
+        const int tickMs = 25;
+        while (true)
+        {
+            await Task.Delay(tickMs).ConfigureAwait(false);
+            lock (_jogSync)
+            {
+                if (!_jogging[axisIndex]) return; // StopJog chủ động
+
+                if (Environment.TickCount64 - _jogLastKeepAlive[axisIndex] > IAxisJog.WatchdogTimeoutMs)
+                {
+                    _jogging[axisIndex] = false;
+                    _moving[axisIndex] = false;
+                    _logger.LogWarning(
+                        "[SimMotion] JOG WATCHDOG axis={Axis} — mất KeepAlive >{Timeout}ms → TỰ DỪNG (deadman)",
+                        axisIndex, IAxisJog.WatchdogTimeoutMs);
+                    return;
+                }
+
+                _positions[axisIndex] += _jogVelocity[axisIndex] * tickMs / 1000.0;
+            }
+        }
     }
 
     // ─── IDisposable ─────────────────────────────────────────────────────────────

@@ -23,4 +23,7 @@ public static class SignalKeys
 
     /// <summary>An toàn — toàn bộ điều kiện an toàn đang OK.</summary>
     public const string SafetyAllSafe = "Safety.AllSafe";
+
+    /// <summary>Chuyển động — trục Z đang ở độ cao an toàn (guard hình học: X/Y chỉ chạy khi true — P1.4).</summary>
+    public const string MotionZAtSafe = "Motion.ZAtSafe";
 }

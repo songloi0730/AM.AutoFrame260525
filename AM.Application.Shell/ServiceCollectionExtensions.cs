@@ -130,6 +130,8 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IAuditService, AuditService>();
         // Adapter đẩy trạng thái an toàn lên bus (Start() lúc khởi động trong App.xaml.cs)
         services.AddSingleton<SafetySignalPublisher>();
+        // Tín hiệu hình học trục (Motion.ZAtSafe) cho guard tầng 3 — P1.4
+        services.AddSingleton<MotionSignalPublisher>();
 
         // Thao tác trạm (RecoveryActions, Approach C): metadata từ config + sổ handler theo id (đăng ký lúc bootstrap)
         services.AddSingleton<IRecoveryActionRegistry, RecoveryActionRegistry>();

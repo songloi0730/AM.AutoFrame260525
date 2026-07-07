@@ -10,6 +10,12 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-07
+**Session:** #82 — **ROADMAP P1 HOÀN TẤT (P1.4 + P1.5 — 2 mục cuối)**. **P1.4 Guard hình học**: `MotionSignalPublisher` (AM.Services) poll vị trí Z mỗi 100ms → publish tín hiệu `Motion.ZAtSafe` lên `HardwareSignalBus` (bus dedup — consumer vẫn event-push; **fail-safe**: chưa kết nối/lỗi đọc → false); `SignalKeys.MotionZAtSafe` mới; MotionViewModel khai `GeometricGuardFor(axis)` — jog/nudge/move/hold trên **X/Y/U bị chặn khi Z chưa ở độ cao an toàn** (0±0.5mm, trục Z được miễn để còn nâng lên), blockReason `Manual.ZNotSafe` 3 ngữ + audit DENIED. **P1.5 Jog deadman**: interface `IAxisJog` (StartJog velocity-mode / KeepAlive / StopJog, `WatchdogTimeoutMs=200`); `SimulatedMotionController` implement — vòng tích phân 25ms, **mất KeepAlive >200ms → TỰ DỪNG** (UI treo/crash không thể để trục chạy tiếp); jog pad MotionView thành **giữ-để-chạy** qua attached behavior `JogHoldBehavior` (PreviewMouseDown/Up + MouseLeave + LostMouseCapture — nhả/rời nút là Stop), VM nuôi KeepAlive 80ms nền; HAL không có IAxisJog → **fallback inching** (hành vi cũ, an toàn); STOP đỏ hủy hold + StopAllAxes. **+6 test (4 deadman + 2 publisher) → 281 pass**, build 0 warning, smoke boot sạch (log `[MotionSignals] Started`, i18n 326 chuỗi ×3). **P1 xong toàn bộ 6/6** — việc tiếp theo roadmap §4: **P2 Calibration** (3 phiên) hoặc **P3.1 Password policy + lockout** (1 phiên).
+**Commit:** *(điền sau khi commit)*  ·  (S81: P1 4/6 `00c5367` · S80: P0 `b72cf8b` · S79: roadmap `35c75cc`)
+
+---
+
+## 🗓️ Session #81
 **Session:** #81 — **ROADMAP P1: xong 4/6 mục (P1.1/P1.2/P1.3/P1.6)**. **P1.1** chốt chính sách §9 với chủ dự án: Override = **1 người, 2 bước + đếm ngược 3s** (giữ S64) · **R2 cứng Engineer** · ngưỡng Set–Confirm **0.05mm config** — docs HMI_Manual_Operation + Master Index §9 đánh dấu ĐÃ CHỐT. **P1.2** ĐÍNH CHÍNH gap C2: màn Vận hành tay ĐÃ TỒN TẠI từ S48 (MotionView, 5 sub-tab, gate LineLead) — việc thật chỉ là nối **nút Manual action bar** → tab Vận hành tay (enable theo quyền + tooltip 3 ngữ). **P1.3** `PhysicalButtonMonitor`: poll 50ms edge-detect `DI.Btn.Start/Stop/Reset` → lệnh master (master tự kiểm interlock/state — không logic riêng; giữ nút không lặp lệnh). **P1.6** `BannerOperatorPromptService` (IOperatorPrompt → nút ĐỘNG trên banner; headless → tự chọn lựa chọn an toàn nhất đứng đầu); PickStation init **HỎI operator** khi liệu sót (Máy tự thoát / Đã lấy tay — lặp tới khi cảm biến sạch) + implement `IResumeVerifiable` kiểm **bất biến hình học Z-an-toàn** (không snapshot per-station vì gantry dùng chung — Z bị đẩy khi pause → từ chối resume + prompt). **+6 test → 275 pass**, build 0 warning, app boot sạch. **Còn lại P1.4 (guard hình học) + P1.5 (jog deadman)** — code chuyển động an toàn-trọng-yếu, mỗi mục 1 phiên riêng.
 **Commit:** `00c5367`  ·  (S80: P0 `b72cf8b` · S79: roadmap `35c75cc` · S78: Prompt D `6c71301`)
 
@@ -48,13 +54,13 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **28 projects** (CPM), production 0 warning, **258 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
+| Solution structure | ✅ Hoàn thành | **28 projects** (CPM), production 0 warning, **281 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Core.Sequencing | ✅ Hoàn thành | **Mới (S77, ADR 0011)** — sequence engine khai báo: contracts (`IStation`/`StepContext`/`StationResult`/`IStationResolver`/`IResumeVerifiable`/`IOperatorPrompt`), `SequenceLoader` 2 pha gom lỗi, `SequenceEngine` (order song song, timeout linked-CTS, onError/retry/prompt, pause ranh giới bước + resume-check). Standalone — không reference DryIoc/hardware/UI |
 | AM.Core.Sequencing.Tests | ✅ Hoàn thành | **Mới (S77)** — 20 tests: 6 case spec §4 + validator + prompt/resume-check/blackboard; station = fake thuần; coverage engine core 92.7% |
 | AM.Hardware.Scanner | ✅ Hoàn thành | **Keyence + Cognex (TCP line) + Simulated** — IBarcodeScanner |
-| AM.Hardware.Motion | ✅ Hoàn thành | Sim (+**IAxisDiagnostics**: 8 tín hiệu/servo/phản hồi) + **GtsMotionController (固高, P/Invoke)** + **AdvantechMotionController (P/Invoke)** |
+| AM.Hardware.Motion | ✅ Hoàn thành | Sim (+**IAxisDiagnostics**: 8 tín hiệu/servo/phản hồi; +**IAxisJog** jog deadman 200ms, S82) + **GtsMotionController (固高, P/Invoke)** + **AdvantechMotionController (P/Invoke)** |
 | AM.Hardware.Vision | ✅ Hoàn thành | SimulatedCameraDevice (+**GrabFrameAsync sinh frame Bgr24 live, S67**) + SimulatedVisionProcessor (IVisionProcessor) |
 | AM.Hardware.IO | ✅ Hoàn thành | Sim + AdvantechAdamIoModule (+**force/unforce/ReadAllDo** — kênh forced bỏ qua write của logic, S59) + SimulatedSafetyInput + JsonIoTagMap + IoTagExtensions |
 | AM.Hardware.Comm | ✅ Hoàn thành | **Modbus TCP thật (raw MBAP)**, Inovance PLC+servo, Mitsubishi MC 3E, Siemens S7, Robot socket+sim, PLC sim |

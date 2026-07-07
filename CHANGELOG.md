@@ -4,6 +4,37 @@
 
 ---
 
+## [Session 82] 2026-07-07 — ROADMAP P1 HOÀN TẤT: guard hình học Z-an-toàn (P1.4) + jog giữ-để-chạy deadman 200ms (P1.5)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** 2 mục cuối của P1 — code chuyển động an toàn-trọng-yếu, làm trong 1 phiên riêng đúng kế hoạch S81.
+
+### ✅ P1.4 — Guard hình học: cấm X/Y/U khi Z chưa ở độ cao an toàn (gap A3)
+- MỚI `AM.Services/MotionSignalPublisher`: poll vị trí trục Z (mặc định axis 2) mỗi 100ms qua `IMotionController.GetPositionAsync` → publish tín hiệu bool **`Motion.ZAtSafe`** (`|z − safeZ| ≤ 0.5mm`) lên `HardwareSignalBus` — bus dedup nên consumer vẫn event-push. **FAIL-SAFE**: chưa kết nối / lỗi đọc / chưa Start → publish `false` (guard coi như CHƯA an toàn). Đăng ký DI + `Start()` ở App.OnStartup cạnh SafetySignalPublisher.
+- `SignalKeys.MotionZAtSafe` mới (AM.Core). `MotionViewModel.GeometricGuardFor(axis)`: trục **X/Y/U** nhận `GuardCondition.RequireAll(Motion.ZAtSafe)` cho jog/nudge/move-abs/jog-hold; **trục Z được miễn** (phải còn đường nâng Z lên). Bị chặn → blockReason **`Manual.ZNotSafe`** (3 ngữ: "Z chưa ở độ cao an toàn — nâng Z lên đỉnh trước khi chạy X/Y/U") + audit DENIED.
+- `RunGuardedAsync` thêm overload nhận `GuardCondition?` — đường guard 3 tầng (state → role → hardware-condition) dùng chung cho mọi lệnh trục.
+- Test +2 (`MotionSignalPublisherTests`): Z ở 0 → tín hiệu true, đẩy Z −12mm → false · motion chưa kết nối → fail-safe false + KHÔNG gọi GetPosition.
+
+### ✅ P1.5 — Jog giữ-để-chạy với deadman watchdog (gap A4)
+- MỚI interface **`IAxisJog`** (Core.Abstractions): `StartJogAsync(axis, velocity có dấu)` / `KeepAlive(axis)` / `StopJogAsync(axis)` + hằng hợp đồng **`WatchdogTimeoutMs = 200`** — HAL nào implement PHẢI tự dừng trục khi mất KeepAlive quá 200ms (UI treo/crash/mất kết nối KHÔNG thể để trục chạy tiếp).
+- `SimulatedMotionController : IAxisJog`: vòng tích phân vị trí 25ms/tick dưới lock; mất KeepAlive >200ms → tự dừng + log WARNING "JOG WATCHDOG… TỰ DỪNG (deadman)"; StopJog idempotent; vận tốc 0 → ArgumentOutOfRange.
+- MỚI `AM.Modules.Motion/JogHoldBehavior` (attached behavior `local:JogHold.DownCommand/UpCommand/Parameter`): PreviewMouseLeftButtonDown = bắt đầu giữ (CaptureMouse), **Up / MouseLeave / LostMouseCapture = nhả** → không có đường nào giữ nút mà thoát không Stop. 8 nút hướng jog pad MotionView chuyển sang behavior này.
+- `MotionViewModel`: `JogHoldPlus/Minus` → guard R3 + hình học → `StartJogAsync` + **vòng nuôi KeepAlive 80ms nền** (CTS liên kết `_cts`); `JogHoldStop` hủy vòng + StopJog; STOP đỏ hủy hold + StopAllAxes; HAL không có `IAxisJog` → **fallback mỗi lần nhấn = 1 bước inching** (hành vi cũ, an toàn). `Axis.JogHint` viết lại 3 ngữ (GIỮ-để-chạy + deadman 200ms).
+- Test +4 (`SimJogDeadmanTests`): nuôi KeepAlive → chạy liên tục, nhả → đứng yên · **KHÔNG nuôi → tự dừng trong cửa sổ watchdog** · vận tốc âm chạy chiều âm · vận tốc 0 throw.
+
+### 🧪 Build & test
+- **281 tests pass** (+6: Hardware 38→42, Services 128→130), build 0 warning (sửa S1244 so sánh float, CA2016 token, CA1849/S6966 → `CancelHold()` sync helper), smoke boot sạch — log "[MotionSignals] Started — Z(axis 2) an toàn tại 0±0.5 mm", i18n 326 chuỗi ×3 ngôn ngữ.
+
+### 📁 Files
+- Mới: `IAxisJog.cs` · `MotionSignalPublisher.cs` · `JogHoldBehavior.cs` · `SimJogDeadmanTests.cs` · `MotionSignalPublisherTests.cs`
+- Sửa: `SimulatedMotionController.cs` (+IAxisJog) · `SignalKeys.cs` · `MotionViewModel.cs` · `MotionView.xaml` · `ServiceCollectionExtensions.cs` · `App.xaml.cs` · `strings.{vi,en,zh}.json` · `ROADMAP_HOAN_THIEN.md` (§4 hàng 8/9 ✅)
+
+### ⏭️ Việc tiếp
+- **P1 xong 6/6.** Theo roadmap §4: **P2.1–P2.3 Calibration** (3 phiên, doc + framework wizard + demo routine) hoặc chen **P3.1 Password policy + lockout** (🟠, 1 phiên).
+
+---
+
 ## [Session 81] 2026-07-07 — ROADMAP P1 (4/6): chốt chính sách §9, nối nút Manual, nút vật lý, prompt liệu sót + resume-check
 
 **Commit:** `00c5367`

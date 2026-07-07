@@ -38,6 +38,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     private readonly IMotionController _motion;
     private readonly IAxisDiagnostics? _diag;  // null nếu controller không hỗ trợ
+    private readonly IAxisJog? _jog;           // null → jog pad fallback inching (P1.5)
     private readonly IPointTableService _pointTable;
     private readonly IMasterController _master;
     private readonly IUserService _user;
@@ -56,7 +57,12 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
     private readonly int _pollMs;
+    private CancellationTokenSource? _holdCts; // vòng KeepAlive khi đang GIỮ nút jog (P1.5)
+    private AxisVm? _holdAxis;
     private bool _disposed;
+
+    /// <summary>Index trục Z theo convention XYZU của máy demo — máy khác đưa vào machine.json (P5).</summary>
+    private const int ZAxisIndex = 2;
 
     /// <summary>Tất cả trục (đầy đủ, không lọc nhóm).</summary>
     public ObservableCollection<AxisVm> Axes { get; } = [];
@@ -120,6 +126,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(logger);
         _motion = motion;
         _diag = motion as IAxisDiagnostics;
+        _jog = motion as IAxisJog; // capability tuỳ chọn — null thì jog pad fallback inching
         _pointTable = pointTable;
         _master = master;
         _user = user;
@@ -200,14 +207,29 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         GuardBlock.MachineBusy => Loc.Strings["Manual.Locked"],
         GuardBlock.InsufficientRole => string.Format(CultureInfo.InvariantCulture,
             Loc.Strings["Manual.NeedRole"], r.RequiredLevel),
+        GuardBlock.ConditionNotMet => r.Reason ?? Loc.Strings["Manual.ZNotSafe"],
         _ => Loc.Strings["Axis.CtrlError"],
     };
 
+    /// <summary>
+    /// Guard HÌNH HỌC (P1.4): trục ngang (X/Y/U) chỉ được chạy khi Z ở độ cao an toàn
+    /// (tín hiệu Motion.ZAtSafe do MotionSignalPublisher đẩy lên bus). Trục Z: không điều kiện
+    /// — chính Z tạo an toàn (nâng lên mới mở khoá XY).
+    /// </summary>
+    private static GuardCondition? GeometricGuardFor(AxisVm axis)
+        => axis.Index == ZAxisIndex
+            ? null
+            : GuardCondition.RequireAll(Loc.Strings["Manual.ZNotSafe"],
+                new SignalRequirement(AM.Core.Constants.SignalKeys.MotionZAtSafe, true));
+
     // Bọc một thao tác hardware bằng guard + audit (defense-in-depth §9.1, audit §9.6).
     // Bị chặn → báo lý do + audit DENIED, KHÔNG gọi HAL. Cho phép → audit OK rồi chạy.
-    private async Task RunGuardedAsync(RiskTier risk, string action, Func<Task> body)
+    private Task RunGuardedAsync(RiskTier risk, string action, Func<Task> body)
+        => RunGuardedAsync(risk, null, action, body);
+
+    private async Task RunGuardedAsync(RiskTier risk, GuardCondition? condition, string action, Func<Task> body)
     {
-        var r = _guard.Evaluate(risk);
+        var r = _guard.Evaluate(risk, condition);
         string who = _user.CurrentUser ?? "?";
         if (!r.Allowed)
         {
@@ -286,14 +308,85 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         if (axis is null) return Task.CompletedTask;
         SelectAxis(axis);
         double step = CurrentStep * dir;
-        return RunGuardedAsync(RiskTier.R3, $"Jog {axis.Name} {(dir > 0 ? "+" : "-")}{CurrentStep}", () => AbsoluteJog
+        return RunGuardedAsync(RiskTier.R3, GeometricGuardFor(axis),
+            $"Jog {axis.Name} {(dir > 0 ? "+" : "-")}{CurrentStep}", () => AbsoluteJog
             ? _motion.MoveAbsAsync(axis.Index, axis.Position + step, JogVelocity(axis), _cts.Token)
             : _motion.MoveRelAsync(axis.Index, step, JogVelocity(axis), _cts.Token));
     }
 
+    // ─── Jog GIỮ-ĐỂ-CHẠY với deadman (P1.5 — chỉ khi controller hỗ trợ IAxisJog) ──
+
+    /// <summary>Nhấn giữ nút jog +: bắt đầu velocity-jog (fallback: 1 bước inching nếu HAL không hỗ trợ).</summary>
+    [RelayCommand]
+    private Task JogHoldPlus(AxisVm? axis) => StartHoldAsync(axis, +1);
+
+    /// <summary>Nhấn giữ nút jog −.</summary>
+    [RelayCommand]
+    private Task JogHoldMinus(AxisVm? axis) => StartHoldAsync(axis, -1);
+
+    /// <summary>Nhả nút jog (hoặc chuột rời nút) — dừng velocity-jog. Idempotent.</summary>
+    [RelayCommand]
+    private async Task JogHoldStop(AxisVm? axis)
+    {
+        var held = _holdAxis;
+        CancelHold();
+        if (_jog is not null && held is not null)
+            await RunMotionAsync(() => _jog.StopJogAsync(held.Index, _cts.Token)).ConfigureAwait(true);
+    }
+
+    private async Task StartHoldAsync(AxisVm? axis, int dir)
+    {
+        if (axis is null) return;
+        if (_jog is null)
+        {
+            // HAL không hỗ trợ velocity-jog → mỗi lần nhấn = 1 bước inching (an toàn, hành vi cũ)
+            await JogAsync(axis, dir).ConfigureAwait(true);
+            return;
+        }
+
+        SelectAxis(axis);
+        await RunGuardedAsync(RiskTier.R3, GeometricGuardFor(axis),
+            $"JogHold {axis.Name} {(dir > 0 ? "+" : "-")}", async () =>
+        {
+            await _jog.StartJogAsync(axis.Index, dir * JogVelocity(axis), _cts.Token).ConfigureAwait(false);
+
+            // Vòng nuôi deadman: gửi KeepAlive mỗi 80ms KHI CÒN GIỮ NÚT; nhả nút/hủy → dừng.
+            // UI treo → vòng này không chạy → watchdog HAL tự dừng trục sau 200ms.
+            CancelHold();
+            var holdCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            _holdCts = holdCts;
+            _holdAxis = axis;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    while (!holdCts.Token.IsCancellationRequested)
+                    {
+                        _jog.KeepAlive(axis.Index);
+                        await Task.Delay(80, holdCts.Token).ConfigureAwait(false);
+                    }
+                }
+                catch (OperationCanceledException) { /* nhả nút — dừng nuôi */ }
+                finally { holdCts.Dispose(); }
+            });
+        }).ConfigureAwait(true);
+    }
+
     /// <summary>STOP đỏ giữa jog pad — dừng MỌI trục (khác Stop chu trình ở action bar).</summary>
     [RelayCommand]
-    private Task StopMotion() => RunMotionAsync(() => _motion.StopAllAxesAsync(_cts.Token));
+    private async Task StopMotion()
+    {
+        CancelHold();
+        await RunMotionAsync(() => _motion.StopAllAxesAsync(_cts.Token)).ConfigureAwait(true);
+    }
+
+    // Cancel() gọi trong method sync để không vướng CA1849/S6966; CTS do vòng nuôi tự Dispose.
+    private void CancelHold()
+    {
+        _holdAxis = null;
+        _holdCts?.Cancel();
+        _holdCts = null;
+    }
 
     private static double JogVelocity(AxisVm axis) => BaseVelocity * Math.Clamp(axis.SpeedPercent, 1, 100) / 100.0;
 
@@ -321,7 +414,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private Task MoveAbs(AxisVm? axis)
         => axis is null ? Task.CompletedTask
-            : RunGuardedAsync(RiskTier.R2, $"MoveAbs {axis.Name} → {axis.MoveTarget:F3}",
+            : RunGuardedAsync(RiskTier.R2, GeometricGuardFor(axis),
+                $"MoveAbs {axis.Name} → {axis.MoveTarget:F3}",
                 () => _motion.MoveAbsAsync(axis.Index, axis.MoveTarget, JogVelocity(axis), _cts.Token));
 
     // ─── Lệnh toàn cục ────────────────────────────────────────────────────────────
