@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-07
 **Session:** #82 — **ROADMAP P1 HOÀN TẤT (P1.4 + P1.5 — 2 mục cuối)**. **P1.4 Guard hình học**: `MotionSignalPublisher` (AM.Services) poll vị trí Z mỗi 100ms → publish tín hiệu `Motion.ZAtSafe` lên `HardwareSignalBus` (bus dedup — consumer vẫn event-push; **fail-safe**: chưa kết nối/lỗi đọc → false); `SignalKeys.MotionZAtSafe` mới; MotionViewModel khai `GeometricGuardFor(axis)` — jog/nudge/move/hold trên **X/Y/U bị chặn khi Z chưa ở độ cao an toàn** (0±0.5mm, trục Z được miễn để còn nâng lên), blockReason `Manual.ZNotSafe` 3 ngữ + audit DENIED. **P1.5 Jog deadman**: interface `IAxisJog` (StartJog velocity-mode / KeepAlive / StopJog, `WatchdogTimeoutMs=200`); `SimulatedMotionController` implement — vòng tích phân 25ms, **mất KeepAlive >200ms → TỰ DỪNG** (UI treo/crash không thể để trục chạy tiếp); jog pad MotionView thành **giữ-để-chạy** qua attached behavior `JogHoldBehavior` (PreviewMouseDown/Up + MouseLeave + LostMouseCapture — nhả/rời nút là Stop), VM nuôi KeepAlive 80ms nền; HAL không có IAxisJog → **fallback inching** (hành vi cũ, an toàn); STOP đỏ hủy hold + StopAllAxes. **+6 test (4 deadman + 2 publisher) → 281 pass**, build 0 warning, smoke boot sạch (log `[MotionSignals] Started`, i18n 326 chuỗi ×3). **P1 xong toàn bộ 6/6** — việc tiếp theo roadmap §4: **P2 Calibration** (3 phiên) hoặc **P3.1 Password policy + lockout** (1 phiên).
-**Commit:** *(điền sau khi commit)*  ·  (S81: P1 4/6 `00c5367` · S80: P0 `b72cf8b` · S79: roadmap `35c75cc`)
+**Commit:** `4a9d35f`  ·  (S81: P1 4/6 `00c5367` · S80: P0 `b72cf8b` · S79: roadmap `35c75cc`)
 
 ---
 

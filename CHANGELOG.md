@@ -6,7 +6,7 @@
 
 ## [Session 82] 2026-07-07 — ROADMAP P1 HOÀN TẤT: guard hình học Z-an-toàn (P1.4) + jog giữ-để-chạy deadman 200ms (P1.5)
 
-**Commit:** *(điền sau)*
+**Commit:** `4a9d35f`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** 2 mục cuối của P1 — code chuyển động an toàn-trọng-yếu, làm trong 1 phiên riêng đúng kế hoạch S81.
 
