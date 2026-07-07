@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-07
 **Session:** #81 — **ROADMAP P1: xong 4/6 mục (P1.1/P1.2/P1.3/P1.6)**. **P1.1** chốt chính sách §9 với chủ dự án: Override = **1 người, 2 bước + đếm ngược 3s** (giữ S64) · **R2 cứng Engineer** · ngưỡng Set–Confirm **0.05mm config** — docs HMI_Manual_Operation + Master Index §9 đánh dấu ĐÃ CHỐT. **P1.2** ĐÍNH CHÍNH gap C2: màn Vận hành tay ĐÃ TỒN TẠI từ S48 (MotionView, 5 sub-tab, gate LineLead) — việc thật chỉ là nối **nút Manual action bar** → tab Vận hành tay (enable theo quyền + tooltip 3 ngữ). **P1.3** `PhysicalButtonMonitor`: poll 50ms edge-detect `DI.Btn.Start/Stop/Reset` → lệnh master (master tự kiểm interlock/state — không logic riêng; giữ nút không lặp lệnh). **P1.6** `BannerOperatorPromptService` (IOperatorPrompt → nút ĐỘNG trên banner; headless → tự chọn lựa chọn an toàn nhất đứng đầu); PickStation init **HỎI operator** khi liệu sót (Máy tự thoát / Đã lấy tay — lặp tới khi cảm biến sạch) + implement `IResumeVerifiable` kiểm **bất biến hình học Z-an-toàn** (không snapshot per-station vì gantry dùng chung — Z bị đẩy khi pause → từ chối resume + prompt). **+6 test → 275 pass**, build 0 warning, app boot sạch. **Còn lại P1.4 (guard hình học) + P1.5 (jog deadman)** — code chuyển động an toàn-trọng-yếu, mỗi mục 1 phiên riêng.
-**Commit:** *(điền sau)*  ·  (S80: P0 `b72cf8b` · S79: roadmap `35c75cc` · S78: Prompt D `6c71301`)
+**Commit:** `00c5367`  ·  (S80: P0 `b72cf8b` · S79: roadmap `35c75cc` · S78: Prompt D `6c71301`)
 
 ---
 

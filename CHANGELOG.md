@@ -6,7 +6,7 @@
 
 ## [Session 81] 2026-07-07 — ROADMAP P1 (4/6): chốt chính sách §9, nối nút Manual, nút vật lý, prompt liệu sót + resume-check
 
-**Commit:** *(điền sau)*
+**Commit:** `00c5367`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Thực hiện P1 của ROADMAP_HOAN_THIEN. P1.4 (guard hình học) + P1.5 (jog deadman) để phiên riêng — code chuyển động an toàn-trọng-yếu, không làm nửa vời.
 
