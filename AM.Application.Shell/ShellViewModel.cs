@@ -51,9 +51,11 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     private readonly IUserService _user;
     private readonly IHardwareManagerService _hardware;
     private readonly ISequenceEngine _engine;
+    private readonly Sequencing.BannerOperatorPromptService _promptService;
     private readonly SynchronizationContext? _ui;
     private readonly DispatcherTimer _timer;
     private OperatorPromptEventArgs? _activePrompt;
+    private Sequencing.ServicePromptEventArgs? _activeServicePrompt;
     private bool _disposed;
 
     [ObservableProperty]
@@ -89,6 +91,17 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _promptText = string.Empty;
     [ObservableProperty] private bool _promptCanSkip;
 
+    /// <summary>Nút Manual action bar: mở màn Vận hành tay — cần LineLead+ (P1.2).</summary>
+    [ObservableProperty] private bool _canOpenManual;
+
+    // Service prompt (IOperatorPrompt — station hỏi lúc init, vd liệu sót; P1.6):
+    // lựa chọn ĐỘNG theo request, khác 3 nút cố định của engine prompt
+    [ObservableProperty] private bool _hasServicePrompt;
+    [ObservableProperty] private string _servicePromptText = string.Empty;
+
+    /// <summary>Các lựa chọn của service prompt đang chờ (nút động trên banner).</summary>
+    public ObservableCollection<string> ServicePromptChoices { get; } = [];
+
     /// <summary>Chuỗi phiên bản thường trực ở footer popup kết nối (audit/support).</summary>
     public string VersionText { get; }
 
@@ -100,7 +113,8 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     /// <summary>Tạo VM Shell (resolve trên UI thread để capture SynchronizationContext).</summary>
     public ShellViewModel(IMasterController master, IAlarmService alarm, IRecipeService recipe,
-        IUserService user, IHardwareManagerService hardware, ISequenceEngine engine)
+        IUserService user, IHardwareManagerService hardware, ISequenceEngine engine,
+        Sequencing.BannerOperatorPromptService promptService)
     {
         ArgumentNullException.ThrowIfNull(master);
         ArgumentNullException.ThrowIfNull(alarm);
@@ -108,12 +122,14 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(hardware);
         ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(promptService);
         _master = master;
         _alarm = alarm;
         _recipe = recipe;
         _user = user;
         _hardware = hardware;
         _engine = engine;
+        _promptService = promptService;
         _ui = SynchronizationContext.Current;
 
         var ver = Assembly.GetExecutingAssembly().GetName().Version;
@@ -140,6 +156,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         _recipe.RecipeChanged += OnRecipeChanged;
         _user.UserChanged += OnUserChanged;
         _engine.OperatorPromptRequired += OnOperatorPrompt;
+        _promptService.PromptRequested += OnServicePrompt;
         Loc.Strings.PropertyChanged += OnLanguageChanged;
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -223,6 +240,34 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void PromptAbort() => _activePrompt?.Respond(StepErrorAction.Abort);
 
+    // ─── Service prompt (IOperatorPrompt — station hỏi lúc init, P1.6) ─────────
+
+    private void OnServicePrompt(object? sender, Sequencing.ServicePromptEventArgs e)
+    {
+        RunOnUi(() =>
+        {
+            _activeServicePrompt = e;
+            ServicePromptText = $"{e.Request.Source} · {e.Request.Message}";
+            ServicePromptChoices.Clear();
+            foreach (string c in e.Request.Choices) ServicePromptChoices.Add(c);
+            HasServicePrompt = true;
+        });
+        _ = e.Decision.ContinueWith(_ => RunOnUi(ClearServicePrompt),
+            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+    }
+
+    private void ClearServicePrompt()
+    {
+        _activeServicePrompt = null;
+        HasServicePrompt = false;
+        ServicePromptText = string.Empty;
+        ServicePromptChoices.Clear();
+    }
+
+    /// <summary>Operator bấm một lựa chọn của service prompt (nút động trên banner).</summary>
+    [RelayCommand]
+    private void RespondServicePrompt(string choice) => _activeServicePrompt?.Respond(choice);
+
     /// <summary>ACK alarm đang hiển thị trên banner (ưu tiên cao nhất chưa ACK).</summary>
     [RelayCommand]
     private async Task AcknowledgeAlarm()
@@ -274,9 +319,12 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     private void RefreshRecipe() => RecipeText = _recipe.ActiveRecipe?.Name ?? "—";
 
     private void RefreshUser()
-        => UserText = _user.IsLoggedIn
+    {
+        UserText = _user.IsLoggedIn
             ? $"{_user.CurrentUser} · {_user.CurrentLevel}"
             : Loc.Strings["Shell.Guest"];
+        CanOpenManual = _user.CurrentLevel >= UserLevel.LineLead; // tab Vận hành tay gate LineLead+
+    }
 
     /// <summary>Alarm chưa ACK ưu tiên cao nhất (Level desc → mới nhất trước).</summary>
     private AlarmModel? HighestUnacked()
@@ -326,6 +374,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         _recipe.RecipeChanged -= OnRecipeChanged;
         _user.UserChanged -= OnUserChanged;
         _engine.OperatorPromptRequired -= OnOperatorPrompt;
+        _promptService.PromptRequested -= OnServicePrompt;
         Loc.Strings.PropertyChanged -= OnLanguageChanged;
     }
 }

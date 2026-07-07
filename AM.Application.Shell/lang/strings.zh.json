@@ -186,7 +186,7 @@
   "Shell.DryRun": "空运行",
   "Shell.DryRunTip": "无料运行，视觉仿真（仅待机时）",
   "Shell.Manual": "手动",
-  "Shell.ManualTip": "手动界面未完成 — 暂用工程页",
+  "Shell.ManualTip": "打开手动操作画面（班组长及以上）",
   "Shell.InitTip": "初始化硬件（未初始化时）",
   "Shell.StartTip": "自动运行（待机时）",
   "Shell.ResetTip": "报警后复位",

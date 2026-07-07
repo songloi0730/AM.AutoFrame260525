@@ -186,7 +186,7 @@
   "Shell.DryRun": "Dry run",
   "Shell.DryRunTip": "Chạy không vật liệu, mô phỏng vision (chỉ khi Sẵn sàng)",
   "Shell.Manual": "Manual",
-  "Shell.ManualTip": "ManualControlView chưa xây — tạm dùng tab Kỹ thuật",
+  "Shell.ManualTip": "Mở màn Vận hành tay (cần Line Lead trở lên)",
   "Shell.InitTip": "Khởi tạo phần cứng (khi Chưa khởi tạo)",
   "Shell.StartTip": "Chạy tự động (khi Sẵn sàng)",
   "Shell.ResetTip": "Reset sau alarm (khi Lỗi)",

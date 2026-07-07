@@ -51,7 +51,7 @@
 | # | Gap | Bằng chứng |
 |---|-----|-----------|
 | C1 | **`DataRetentionDays` KHÔNG được thực thi** — `DeleteOlderThanAsync` có sẵn ở cả 2 repository nhưng không service nào gọi → DB SQLite phình vô hạn (LogRetentionDays thì Serilog đã lo) | **[✓code]** grep: 0 caller |
-| C2 | **Màn Vận hành tay** (gộp Manual + Motion/IO — tab lớn nhất theo spec) chưa dựng; nút Manual trên action bar đang disabled vĩnh viễn | adoption §C — hoãn chờ chốt §9 |
+| C2 | ~~Màn Vận hành tay chưa dựng~~ **ĐÍNH CHÍNH (S81): màn này ĐÃ TỒN TẠI từ S48** — MotionView = tab "Vận hành tay" (`[ModuleNavigation(Nav.ManualOp, minLevel: LineLead)]`) đủ 5 sub-tab Trục/Điểm/IO/Thao tác trạm/Override + dải khoá IsAdjustAllowed. Gap thật chỉ là nút Manual trên action bar disabled → ĐÃ NỐI (S81) | đánh giá S79 ghi quá tay |
 | C3 | Sequence giai đoạn 2: single-step · pipeline >1 sản phẩm · khai báo resources · resume-from-crash (persist-step sink) — đã ghi lý do hoãn | ADR 0011 §6 |
 | C4 | Sequence gắn 1 file config chung — chưa **per-recipe** thật (đổi recipe không đổi sequence, không Invalidate) | SequenceSource v1 |
 | C5 | Settings còn 4 ô placeholder "Đang phát triển": Phần cứng · Host · Sao lưu & phục hồi · Hiệu chuẩn; chưa có nút thoát kiosk (đang chỉ Ctrl+Shift+F11) | S52 GridMenu + ADR 0009 TODO |
@@ -156,12 +156,12 @@
 | ✅ 2 | P0.2 Retention job — XONG S80 (`RetentionCleanupService`: dọn ngay lúc boot + mỗi 24h; 4 test) | Dữ liệu | 0.5 | — |
 | ✅ 3 | P0.3 users.json backup — XONG S80 (backup `.bak-{timestamp}` trước re-seed; 2 test) | Bảo mật | 0.25 | — |
 | ✅ 4 | P0.4 Sync tài liệu HMI v3 — XONG S80 (Template v3 mới + Master Index 4 vùng + 3 nguyên tắc + Dashboard spec v2.1 + CLAUDE.md) | Docs | 0.75 | — |
-| 🔴 5 | P1.1 Chốt §9 | An toàn | (chủ dự án) | — |
-| 🔴 6 | P1.2 Màn Vận hành tay v1 | UI+An toàn | 2 | P1.1 |
-| 🟠 7 | P1.3 Nút vật lý | An toàn | 0.5 | — |
-| 🟠 8 | P1.4 Guard hình học | An toàn | 1 | P1.2 |
-| 🟠 9 | P1.5 Jog deadman | An toàn | 1 | P1.2 |
-| 🟠 10 | P1.6 Prompt liệu sót + resume-check | An toàn | 0.5 | — |
+| ✅ 5 | P1.1 Chốt §9 — XONG S81: Override = 1 người 2 bước+đếm ngược 3s (giữ S64) · R2 cứng Engineer · ngưỡng Set–Confirm 0.05mm config | An toàn | (đã chốt) | — |
+| ✅ 6 | P1.2 Màn Vận hành tay — XONG S81: màn đã có từ S48 (đính chính C2); nối nút Manual action bar → tab Vận hành tay (gate LineLead+, tooltip 3 ngữ) | UI+An toàn | 0.25 | — |
+| ✅ 7 | P1.3 Nút vật lý — XONG S81: `PhysicalButtonMonitor` poll 50ms edge-detect DI.Btn.* → Start/Stop/Reset (master tự kiểm điều kiện); 3 test | An toàn | 0.5 | — |
+| 🟠 8 | P1.4 Guard hình học (publish tín hiệu trục/IO lên HardwareSignalBus + predicate jog) | An toàn | 1 | phiên riêng |
+| 🟠 9 | P1.5 Jog deadman (IAxisJog velocity-mode + watchdog 200ms + jog pad giữ-để-chạy) | An toàn | 1 | phiên riêng |
+| ✅ 10 | P1.6 Prompt liệu sót + resume-check — XONG S81: `BannerOperatorPromptService` (IOperatorPrompt → nút động trên banner; không subscriber → chọn lựa chọn an toàn nhất đứng đầu); PickStation init HỎI operator (lấy tay/tự thoát, lặp tới khi sạch); PickStation + `IResumeVerifiable` kiểm BẤT BIẾN HÌNH HỌC Z-ở-độ-cao-an-toàn (không so snapshot — gantry dùng chung làm snapshot per-station stale); 3 test | An toàn | 0.5 | — |
 | 🟡 11 | P2.1–P2.3 Calibration (doc+framework+UI) | Hiệu chỉnh | 3 | P1.2 (sub-tab) |
 | 🟠 12 | P3.1 Password policy + lockout | Bảo mật | 1 | — |
 | 🟡 13 | P3.2 Auto-logout + audit UI | Bảo mật | 1 | — |

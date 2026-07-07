@@ -363,6 +363,11 @@
                             <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
                         </DataTrigger>
+                        <!-- Service prompt (station hỏi lúc init — P1.6) -->
+                        <DataTrigger Binding="{Binding HasServicePrompt}" Value="True">
+                            <Setter Property="Height" Value="52"/>
+                            <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
+                        </DataTrigger>
                         <DataTrigger Binding="{Binding IsBannerError}" Value="True">
                             <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Ng.BackgroundBrush}"/>
@@ -383,6 +388,10 @@
                                     <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding HasOperatorPrompt}" Value="True">
+                                    <Setter Property="Text" Value="⚠"/>
+                                    <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding HasServicePrompt}" Value="True">
                                     <Setter Property="Text" Value="⚠"/>
                                     <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
                                 </DataTrigger>
@@ -457,9 +466,43 @@
                                 <DataTrigger Binding="{Binding HasOperatorPrompt}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding HasServicePrompt}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Nút động của service prompt (station hỏi — vd liệu sót: Máy tự thoát / Đã lấy tay) -->
+                <ItemsControl DockPanel.Dock="Right" VerticalAlignment="Center" Margin="12,0,0,0"
+                              ItemsSource="{Binding ServicePromptChoices}"
+                              Visibility="{Binding HasServicePrompt, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Height="40" Padding="16,0" Margin="0,0,8,0" FontSize="14"
+                                    FontWeight="Bold" Cursor="Hand"
+                                    Content="{Binding}"
+                                    Command="{Binding DataContext.RespondServicePromptCommand,
+                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}"
+                                    Background="{DynamicResource Panel.BackgroundAltBrush}"
+                                    BorderBrush="{StaticResource Warn.TextBrush}" BorderThickness="1"
+                                    Foreground="{StaticResource Warn.TextBrush}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Nội dung service prompt -->
+                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{StaticResource Warn.TextBrush}"
+                           Visibility="{Binding HasServicePrompt, Converter={StaticResource BoolToVis}}">
+                    <Run Text="{Binding [Shell.PromptPrefix], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                    <Run Text=" — "/><Run Text="{Binding ServicePromptText, Mode=OneWay}"/>
                 </TextBlock>
 
                 <!-- Nội dung operator prompt — chiếm chỗ BannerText khi engine chờ quyết định -->
@@ -484,6 +527,9 @@
                                     <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding HasOperatorPrompt}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding HasServicePrompt}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -598,8 +644,9 @@
                                        Text="{Binding [Shell.DryRun], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
-                    <!-- Manual: ManualControlView overlay chưa build (adoption §9) — mờ + lý do, không ẩn -->
-                    <Button Style="{StaticResource ActionButton}" IsEnabled="False" Margin="0,0,16,0"
+                    <!-- Manual → màn Vận hành tay (tab MotionView, S48). Thiếu quyền: mờ + tooltip lý do (P1.2) -->
+                    <Button Style="{StaticResource ActionButton}" Margin="0,0,16,0"
+                            IsEnabled="{Binding CanOpenManual}" Click="ManualButton_Click"
                             ToolTip="{Binding [Shell.ManualTip], Source={x:Static loc:Loc.Strings}}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE7C9;"/>

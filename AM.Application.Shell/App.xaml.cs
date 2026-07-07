@@ -76,6 +76,9 @@ public partial class App
             //        Dọn dữ liệu quá hạn theo DataRetentionDays (P0.2): 1 lượt ngay + mỗi 24h.
             _serviceProvider.GetRequiredService<IRetentionCleanupService>().Start();
 
+            // 4b'''''. Nút vật lý Start/Stop/Reset trên IPC → lệnh master (P1.3, edge-detect)
+            _serviceProvider.GetRequiredService<AM.WorkStation.Demo.Sequencing.PhysicalButtonMonitor>().Start();
+
             // 4b'''. Đẩy trạng thái an toàn lên HardwareInputEventBus cho guard tầng 3 (điều kiện phần cứng)
             _serviceProvider.GetRequiredService<AM.Services.SafetySignalPublisher>().Start();
 

@@ -4,6 +4,38 @@
 
 ---
 
+## [Session 81] 2026-07-07 — ROADMAP P1 (4/6): chốt chính sách §9, nối nút Manual, nút vật lý, prompt liệu sót + resume-check
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Thực hiện P1 của ROADMAP_HOAN_THIEN. P1.4 (guard hình học) + P1.5 (jog deadman) để phiên riêng — code chuyển động an toàn-trọng-yếu, không làm nửa vời.
+
+### ✅ P1.1 — Chốt chính sách §9 (chủ dự án trả lời qua AskUserQuestion)
+- **Q1 Override**: 1 người — 2 bước + đếm ngược 3s + lý do bắt buộc + audit nặng (GIỮ NGUYÊN S64). **Q2 R2**: cứng ở Engineer, KHÔNG hạ LineLead. **Q3 ngưỡng Set–Confirm**: 0.05 mm mặc định, khai config theo trục khi có máy thật.
+- `HMI_Manual_Operation_and_Safety_v1.0.md` + `HMI_Master_Index.md` §9: từ "chờ xác nhận/default TẠM" → **ĐÃ CHỐT** (mục 3 — số trục máy thật — chờ P5.1).
+
+### ✅ P1.2 — Nối nút Manual (kèm ĐÍNH CHÍNH roadmap)
+- **Đính chính gap C2 (S79 ghi quá tay)**: màn Vận hành tay ĐÃ TỒN TẠI từ S48 — `MotionView` = tab `Nav.ManualOp` (minLevel LineLead) đủ 5 sub-tab Trục/Điểm/IO/Thao tác trạm/Override + dải khoá `IsAdjustAllowed`. Gap thật: nút Manual trên action bar disabled vĩnh viễn.
+- Shell: nút Manual → `NavigateToView("MotionView")`, `IsEnabled` bind `CanOpenManual` (LineLead+, cập nhật theo UserChanged), tooltip mới 3 ngữ ("Mở màn Vận hành tay...").
+
+### ✅ P1.3 — Nút vật lý Start/Stop/Reset (gap [✓code] A2)
+- MỚI `PhysicalButtonMonitor` (Demo/Sequencing): poll 50ms `DI.Btn.*` qua IIoService, **edge-detect sườn lên** (giữ nút không lặp lệnh), ưu tiên Stop trước Start cùng tick; gọi thẳng master Start/Stop/ResetAsync — **master tự kiểm interlock + state** (một nguồn sự thật, monitor không thêm logic). Đăng ký DI + `Start()` ở App.OnStartup.
+- Test +3: sườn lên gọi đúng 1 lần khi giữ nút · nhấn-nhả-nhấn = 2 lần · Stop gọi đúng lệnh.
+
+### ✅ P1.6 — Prompt liệu sót khi init + resume-check demo (ADR 0011 §4.1/§4.2 hoàn tất vòng)
+- MỚI `BannerOperatorPromptService : IOperatorPrompt` (Shell): station hỏi operator KHÔNG dính UI — ShellViewModel subscribe, banner hiện câu hỏi + **nút ĐỘNG theo Choices** (`RespondServicePromptCommand`); KHÔNG có UI subscriber (headless/test) → tự chọn **lựa chọn ĐẦU TIÊN** (quy ước: an toàn nhất đứng đầu).
+- `PickStation.InitializeAsync`: liệu sót → **HỎI operator** "Máy tự thoát liệu / Đã lấy tay — kiểm lại", lặp tới khi cảm biến xác nhận sạch (RefSeq-A req §2.4/§10b.2 — thay hành vi tự-quyết cũ).
+- `PickStation : IResumeVerifiable`: kiểm **bất biến hình học** — mọi ranh giới bước Z phải ở độ cao an toàn (±0.5mm); Z bị đẩy khi pause → `VerifyResumeAsync` Fail → engine giữ Paused + prompt. *Quyết định thiết kế: KHÔNG so snapshot per-station (gantry dùng chung Pick/Place làm snapshot stale) — kiểm bất biến tự nhất quán thay thế; ghi chú vào roadmap.*
+- Test +3: init liệu sót hỏi đúng + tự thoát · "đã lấy tay" tắt van kiểm lại · Z lệch khi pause → từ chối resume → đưa Z về + Retry → cycle hoàn thành sạch.
+
+### 🧪 Build & test
+- **275 tests pass** (+6: Demo 5→11), build 0 warning (sửa CA1515/CA1812 service internal + suppress DI), app boot sạch — log "[PhysBtn] Started".
+
+### ⏭️ Việc tiếp
+- **P1.4** guard hình học (publish tín hiệu trục/IO lên HardwareSignalBus + predicate jog) và **P1.5** jog deadman (IAxisJog velocity-mode + watchdog 200ms) — mỗi mục một phiên riêng; sau đó P2 calibration.
+
+---
+
 ## [Session 80] 2026-07-06 — ROADMAP P0 hoàn tất: E-Stop state machine + retention job + users.json backup + docs HMI v3
 
 **Commit:** `b72cf8b`

@@ -236,6 +236,9 @@ public partial class MainWindow : Window
 
     private void RecipeButton_Click(object sender, RoutedEventArgs e) => NavigateToView("ParameterView");
 
+    /// <summary>Nút Manual (action bar) → tab Vận hành tay (MotionView — nav chỉ hiện LineLead+).</summary>
+    private void ManualButton_Click(object sender, RoutedEventArgs e) => NavigateToView("MotionView");
+
     // Login: overlay dialog (SEMI E95 — chỉ phủ vùng content, không che alarm/nav). Nút User mở.
     private void UserButton_Click(object sender, RoutedEventArgs e)
     {

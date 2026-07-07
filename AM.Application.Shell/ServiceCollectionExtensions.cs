@@ -248,6 +248,17 @@ internal static class ServiceCollectionExtensions
             sp.GetRequiredService<AM.Core.Sequencing.IRecipeView>(),
             () => sp.GetRequiredService<IMasterController>().OperationMode == OperationMode.DryRun));
 
+        // Kênh hỏi operator cho station (init liệu sót...) — hiển thị trên banner Shell (P1.6)
+        services.AddSingleton<Sequencing.BannerOperatorPromptService>();
+        services.AddSingleton<AM.Core.Sequencing.IOperatorPrompt>(sp =>
+            sp.GetRequiredService<Sequencing.BannerOperatorPromptService>());
+
+        // Nút vật lý Start/Stop/Reset (IO map §1) → lệnh master (P1.3) — Start() ở App.OnStartup
+        services.AddSingleton(sp => new PhysicalButtonMonitor(
+            sp.GetRequiredService<AM.Core.Sequencing.IIoService>(),
+            sp.GetRequiredService<IMasterController>(),
+            sp.GetRequiredService<ILogger<PhysicalButtonMonitor>>()));
+
         services.AddSingleton<AM.Core.Sequencing.ISequenceEngine, AM.Core.Sequencing.SequenceEngine>();
         services.AddSingleton(sp => new SequenceSource(
             Path.Combine(AppContext.BaseDirectory,

@@ -86,6 +86,24 @@ public sealed class DictStationResolver : IStationResolver
     public IReadOnlyList<string> AllNames() => _stations.Keys.ToList();
 }
 
+/// <summary>Prompt fake — ghi lại câu hỏi, trả lời theo hàng đợi (mặc định: lựa chọn ĐẦU TIÊN = an toàn nhất).</summary>
+public sealed class FakeOperatorPrompt : IOperatorPrompt
+{
+    private readonly Queue<string> _answers = new();
+
+    public List<OperatorPromptRequest> Requests { get; } = [];
+
+    /// <summary>Xếp sẵn câu trả lời cho các lần hỏi kế tiếp.</summary>
+    public void EnqueueAnswer(string choice) => _answers.Enqueue(choice);
+
+    public Task<string> AskAsync(OperatorPromptRequest request, CancellationToken ct = default)
+    {
+        lock (Requests) { Requests.Add(request); }
+        string answer = _answers.Count > 0 ? _answers.Dequeue() : request.Choices[0];
+        return Task.FromResult(answer);
+    }
+}
+
 /// <summary>Runtime context fake — sim HAL + recipe fake, dry-run tắt.</summary>
 public sealed class TestRuntime : ISequenceRuntimeContext
 {
@@ -112,6 +130,7 @@ public sealed class ScenarioHarness
     public List<ProductionRecord> Records { get; } = [];
     public IReadOnlyList<IStation> Stations { get; }
     public DictStationResolver Resolver { get; }
+    public FakeOperatorPrompt Prompt { get; } = new();
 
     public ScenarioHarness(Action<DemoSimOptions>? configure = null)
     {
@@ -136,7 +155,7 @@ public sealed class ScenarioHarness
         [
             new ScannerStation(Options, NullLogger<ScannerStation>.Instance),
             new FeedStation(Sim, NullLogger<FeedStation>.Instance),
-            new PickStation(Sim, Sim, NullLogger<PickStation>.Instance),
+            new PickStation(Sim, Sim, Prompt, NullLogger<PickStation>.Instance),
             new VisionStation(Sim, Options, NullLogger<VisionStation>.Instance),
             new PlaceStation(Sim, Sim, NullLogger<PlaceStation>.Instance),
             new ReportStation(scopeFactory, NullLogger<ReportStation>.Instance),

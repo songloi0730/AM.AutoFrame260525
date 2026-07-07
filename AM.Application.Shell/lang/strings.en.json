@@ -186,7 +186,7 @@
   "Shell.DryRun": "Dry run",
   "Shell.DryRunTip": "Run without material, simulated vision (Idle only)",
   "Shell.Manual": "Manual",
-  "Shell.ManualTip": "ManualControlView not built yet — use Engineering tab",
+  "Shell.ManualTip": "Open Manual Operation screen (Line Lead or above)",
   "Shell.InitTip": "Initialize hardware (from Uninitialized)",
   "Shell.StartTip": "Start auto cycle (Idle only)",
   "Shell.ResetTip": "Reset after alarm",

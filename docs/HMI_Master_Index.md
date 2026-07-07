@@ -195,12 +195,12 @@ Trục thuộc trạm hay chung: khai `"station": "X"` hoặc `null`. Trạm KH�
 
 ---
 
-## 9. Điểm còn chờ xác nhận từ chủ dự án (thay khi có số thật)
+## 9. Điểm chờ xác nhận từ chủ dự án — ✅ ĐÃ CHỐT 1/2/4 (Session 81)
 
-1. Cơ chế confirm Supervised Override: 1 người (2 bước+đếm ngược, đang dùng) hay 2 người đỡ (giữ-nút)?
-2. R2 (move-to-point gỡ kẹt): cứng ở Engineer hay cho hạ Line Lead có điều kiện theo từng máy?
-3. Số trục/trạm thật của máy chủ lực + trục nào thuộc trạm / dùng chung.
-4. Ngưỡng cảnh báo lệch Set–Confirm theo loại trục.
+1. ✅ Cơ chế confirm Supervised Override: **1 người — 2 bước + đếm ngược 3s** (giữ nguyên S64).
+2. ✅ R2 (move-to-point gỡ kẹt): **cứng ở Engineer** — không hạ Line Lead.
+3. ⏳ Số trục/trạm thật của máy chủ lực + trục nào thuộc trạm / dùng chung — chờ máy thật (roadmap P5.1).
+4. ✅ Ngưỡng cảnh báo lệch Set–Confirm: **0.05 mm mặc định, config theo trục** khi có máy thật.
 
 ---
 

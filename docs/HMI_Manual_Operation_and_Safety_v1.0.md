@@ -35,7 +35,7 @@ Mỗi operator giỏi được nâng lên Line Lead bằng **tài khoản riêng
 |------|----------|----------------|----------------|
 | **R0 — Tiện ích** | Không tác động liệu/an toàn | Đèn, còi, ionizer | Operator |
 | **R1 — Phục hồi đóng gói** | Tác động cơ cấu nhưng CÓ guard ràng buộc, không tự do | Băng tải xả liệu, đóng/nhả xi lanh, bật/tắt khí âm | Line Lead |
-| **R2 — Chuyển động có kiểm soát** | Dịch trục theo điểm dạy sẵn / giới hạn chặt, tốc độ giới hạn | Đưa trục về điểm gỡ kẹt (move-to-point) | Engineer (xem §6 — có thể hạ có điều kiện) |
+| **R2 — Chuyển động có kiểm soát** | Dịch trục theo điểm dạy sẵn / giới hạn chặt, tốc độ giới hạn | Đưa trục về điểm gỡ kẹt (move-to-point) | **Engineer — ĐÃ CHỐT (S81): cứng, KHÔNG hạ Line Lead** |
 | **R3 — Tự do / đè an toàn** | Trục tọa độ tự do, nhả servo, force IO, teach | Jog tự do, Force Output, nhả servo trục Z | Engineer / Admin |
 
 Thao tác đặc thù máy được khai vào đúng tier trong config — không phát sinh tier mới.
@@ -147,7 +147,7 @@ Thay vì bắt người dùng tự mở khu thao tác rồi tìm nút, **đính 
 
 ---
 
-*Cần xác nhận từ người dùng: (a) cơ chế confirm của Override — một người hay hai người đỡ liệu (§5); (b) R2 cứng ở Engineer hay cho hạ có điều kiện theo máy (§6).*
+*✅ ĐÃ CHỐT bởi chủ dự án (Session 81, roadmap §5): (a) Override confirm = **MỘT NGƯỜI — 2 bước + đếm ngược 3s + lý do bắt buộc + audit nặng** (giữ nguyên S64); (b) **R2 cứng ở Engineer** — không hạ theo máy; (c) ngưỡng cảnh báo lệch Set–Confirm = **0.05 mm mặc định, khai config theo trục** khi có máy thật.*
 
 
 ---
