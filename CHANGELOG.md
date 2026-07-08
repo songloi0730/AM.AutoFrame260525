@@ -4,6 +4,45 @@
 
 ---
 
+## [Session 86] 2026-07-08 — P3.3 Backup & restore: zip 3 loại bản lưu + auto hàng ngày + phục hồi 2 bước có đường lùi — P3 XONG TOÀN BỘ
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** P3.3 (gap B6, C5-một-phần) — thẻ Settings cuối cùng của trục bảo mật còn placeholder.
+Xong mục này: P0–P3 của roadmap sạch bảng.
+
+### ✅ IBackupService + BackupService
+- Gom dữ liệu vận hành thành zip: db · users/points/parameters.json · io.map/machine/axismap.json ·
+  calibration-history.json · recovery/override-actions.json · appsettings.json · recipes/ — chỉ gom mục
+  đang tồn tại (máy chưa có file nào thì bỏ qua mục đó).
+- **3 loại bản lưu theo prefix**: `am-backup-*` (tay), `am-auto-*` (tự động **mỗi ngày một bản** lúc app chạy —
+  khởi động nhiều lần/ngày không nhân bản; giữ `AutoMachine:Backup:KeepCount`=7 bản mới nhất, xoá bản cũ;
+  lỗi auto-backup chỉ log — không phá app đang sản xuất), `am-prerestore-*` (**TỰ tạo trước MỌI lần phục hồi** —
+  phục hồi nhầm bản vẫn còn đường lùi về trạng thái ngay trước đó).
+- Restore: giải nén đè vào thư mục gốc app, **chặn path-traversal** (entry vượt thư mục gốc → InvalidDataException),
+  audit `Backup.Restore`, log WARNING nhắc **khởi động lại app** (UserService/RecipeService... đã nạp dữ liệu cũ
+  vào RAM). Tên file chống trùng trong cùng giây (hậu tố -1, -2 — bug bắt được nhờ test).
+
+### ✅ Màn "Sao lưu & phục hồi" (Settings — hết placeholder)
+- `BackupView`+`BackupViewModel` (gate Administrator): khối "Nội dung sẽ sao lưu" (minh bạch cái gì vào zip) +
+  nút **Sao lưu ngay…** (OpenFolderDialog chọn đích) + danh sách bản lưu (tên/thời điểm/KB, mới nhất trước) +
+  nút Phục hồi từng dòng → **confirm 2 bước**: cảnh báo đỏ "GHI ĐÈ dữ liệu hiện tại… PHẢI khởi động lại" →
+  nút xác nhận lần 2 (pattern giống Override). Sau phục hồi status nhắc khởi động lại.
+- i18n +13 key `Backup.*`/`Set.BackupDesc` ×3 ngôn ngữ → 380 chuỗi. DI: `AddCoreServices` đăng ký theo config;
+  `App.OnStartup` gọi `Start()` bật auto-backup. Settings giờ chỉ còn 2 placeholder: Phần cứng + Host (P4.3).
+
+### 🧪 Build & test
+- **300 tests pass** (+3 `BackupServiceTests`: zip đúng nội dung + bỏ mục không tồn tại · restore khôi phục file
+  đã xoá/đè file hỏng + có bản prerestore · zip thiếu throw + danh sách mới-nhất-trước), build 0 warning
+  (sửa S1994 vòng for → while), smoke: "[Backup] Auto-backup hàng ngày BẬT — giữ 7 bản" + tạo thật
+  `am-auto-20260708-*.zip` ngay lần boot đầu, i18n 380×3.
+
+### ⏭️ Việc tiếp
+- **P0–P3 XONG TOÀN BỘ.** Còn theo roadmap §4: **P4.1 Single-step** · **P4.2 Sequence per-recipe** ·
+  **P4.3 Settings hoàn thiện** (2 placeholder cuối) · **P4.4 Production/SPC/ca** · **P5** tích hợp máy thật.
+
+---
+
 ## [Session 85] 2026-07-08 — P3.2: tự đăng xuất khi idle (máy vẫn chạy) + audit lưu bền JSONL + màn Audit trong Cài đặt
 
 **Commit:** `6f05f0d`

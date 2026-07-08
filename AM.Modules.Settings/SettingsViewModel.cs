@@ -37,6 +37,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>VM màn Audit (nhúng khi mở thẻ "Nhật ký audit" — P3.2, Administrator).</summary>
     public AuditViewModel Audit { get; }
 
+    /// <summary>VM màn Sao lưu &amp; phục hồi (P3.3, Administrator).</summary>
+    public BackupViewModel Backup { get; }
+
     /// <summary>Thông tin "Giới thiệu" (phiên bản app + .NET) — không localize từng dòng.</summary>
     public string AboutText { get; }
 
@@ -55,22 +58,25 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool ShowAbout       => Section == "about";
     public bool ShowCalib       => Section == "calib";
     public bool ShowAudit       => Section == "audit";
+    public bool ShowBackup      => Section == "backup";
 
     /// <summary>Tạo VM Cài đặt với các VM con đã đăng ký DI.</summary>
     public SettingsViewModel(DiagnosticsViewModel diagnostics, EngineeringViewModel engineering,
         UserAdminViewModel users, AM.Modules.Calibration.RareCalibrationPanelViewModel calib,
-        AuditViewModel audit)
+        AuditViewModel audit, BackupViewModel backup)
     {
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(engineering);
         ArgumentNullException.ThrowIfNull(users);
         ArgumentNullException.ThrowIfNull(calib);
         ArgumentNullException.ThrowIfNull(audit);
+        ArgumentNullException.ThrowIfNull(backup);
         Diagnostics = diagnostics;
         Engineering = engineering;
         Users = users;
         Calib = calib;
         Audit = audit;
+        Backup = backup;
 
         var asm = Assembly.GetExecutingAssembly().GetName();
         var ver = asm.Version?.ToString(3) ?? "0.0.0";
@@ -96,5 +102,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowAbout));
         OnPropertyChanged(nameof(ShowCalib));
         OnPropertyChanged(nameof(ShowAudit));
+        OnPropertyChanged(nameof(ShowBackup));
     }
 }

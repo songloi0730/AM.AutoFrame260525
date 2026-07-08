@@ -376,5 +376,18 @@
   "Audit.ColUser": "Người dùng",
   "Audit.ColAction": "Thao tác",
   "Audit.ColResult": "Kết quả",
-  "Audit.ColDetail": "Chi tiết"
+  "Audit.ColDetail": "Chi tiết",
+  "Set.BackupDesc": "Sao lưu zip db/recipes/users/points — phục hồi 2 bước, auto hàng ngày",
+  "Backup.NeedAdmin": "Sao lưu & phục hồi cần quyền Administrator. Đăng nhập tài khoản đủ quyền để tiếp tục.",
+  "Backup.TargetsTitle": "Nội dung sẽ sao lưu",
+  "Backup.Now": "Sao lưu ngay…",
+  "Backup.PickFolder": "Chọn thư mục lưu bản sao lưu",
+  "Backup.ListTitle": "Các bản sao lưu (thư mục backups)",
+  "Backup.Empty": "Chưa có bản sao lưu nào — auto-backup hàng ngày sẽ tự tạo, hoặc bấm Sao lưu ngay.",
+  "Backup.Restore": "Phục hồi…",
+  "Backup.ConfirmWarn": "⚠ PHỤC HỒI sẽ GHI ĐÈ dữ liệu hiện tại (db, recipes, users…). Trạng thái hiện tại sẽ được tự sao lưu vào am-prerestore-*. Sau phục hồi PHẢI khởi động lại phần mềm.",
+  "Backup.ConfirmRestore": "Xác nhận phục hồi",
+  "Backup.Created": "Đã tạo bản sao lưu: {0}",
+  "Backup.RestoredRestart": "✓ Phục hồi xong — KHỞI ĐỘNG LẠI phần mềm để áp dụng dữ liệu mới.",
+  "Backup.Error": "Lỗi sao lưu/phục hồi: {0}"
 }

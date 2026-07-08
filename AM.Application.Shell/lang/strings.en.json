@@ -376,5 +376,18 @@
   "Audit.ColUser": "User",
   "Audit.ColAction": "Action",
   "Audit.ColResult": "Result",
-  "Audit.ColDetail": "Detail"
+  "Audit.ColDetail": "Detail",
+  "Set.BackupDesc": "Zip backup of db/recipes/users/points — 2-step restore, daily auto",
+  "Backup.NeedAdmin": "Backup & restore requires Administrator level. Log in with a sufficient account to continue.",
+  "Backup.TargetsTitle": "What gets backed up",
+  "Backup.Now": "Back up now…",
+  "Backup.PickFolder": "Choose a folder for the backup",
+  "Backup.ListTitle": "Backups (backups folder)",
+  "Backup.Empty": "No backups yet — daily auto-backup will create one, or press Back up now.",
+  "Backup.Restore": "Restore…",
+  "Backup.ConfirmWarn": "⚠ RESTORE will OVERWRITE current data (db, recipes, users…). The current state is auto-saved to am-prerestore-* first. You MUST restart the software after restoring.",
+  "Backup.ConfirmRestore": "Confirm restore",
+  "Backup.Created": "Backup created: {0}",
+  "Backup.RestoredRestart": "✓ Restored — RESTART the software to apply the data.",
+  "Backup.Error": "Backup/restore error: {0}"
 }

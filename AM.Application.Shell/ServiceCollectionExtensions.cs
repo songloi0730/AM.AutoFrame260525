@@ -132,6 +132,13 @@ internal static class ServiceCollectionExtensions
                 sp.GetRequiredService<IAuditService>()));
         // Tự đăng xuất khi idle (P3.2) — Start() ở App.OnStartup (cần UI thread cho InputManager)
         services.AddSingleton<InactivityMonitor>();
+        // Sao lưu & phục hồi (P3.3) — auto-backup hàng ngày Start() ở App.OnStartup
+        services.AddSingleton<IBackupService>(sp => new BackupService(
+            sp.GetRequiredService<ILogger<BackupService>>(),
+            sp.GetRequiredService<IAuditService>(),
+            baseDir: ".",
+            keepCount: config.GetValue("AutoMachine:Backup:KeepCount", 7),
+            autoDaily: config.GetValue("AutoMachine:Backup:AutoDaily", true)));
         // Hiệu chỉnh: registry + wizard 2 nhánh + lịch sử theo HMI_Calibration_Model_v1.0 —
         // routine của máy được App.OnStartup nạp vào registry lúc khởi động
         services.AddSingleton<ICalibrationService>(sp => new CalibrationService(
@@ -199,6 +206,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<DiagnosticsViewModel>();
         services.AddSingleton<AM.Modules.Settings.UserAdminViewModel>();
         services.AddSingleton<AM.Modules.Settings.AuditViewModel>(); // màn Audit (P3.2, Administrator)
+        services.AddSingleton<AM.Modules.Settings.BackupViewModel>(); // màn Sao lưu & phục hồi (P3.3, Administrator)
         services.AddSingleton<AM.Modules.Settings.SettingsViewModel>(); // gom Chẩn đoán + Kỹ thuật + Người dùng
         services.AddSingleton<LoggingViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips

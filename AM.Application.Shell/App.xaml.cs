@@ -84,6 +84,7 @@ public partial class App
             //        + tín hiệu hình học trục Z-an-toàn cho guard jog X/Y (P1.4)
             _serviceProvider.GetRequiredService<AM.Services.MotionSignalPublisher>().Start();
             _serviceProvider.GetRequiredService<InactivityMonitor>().Start(); // P3.2 — tự đăng xuất khi idle
+            _serviceProvider.GetRequiredService<IBackupService>().Start();   // P3.3 — auto-backup hàng ngày
 
             // 4b''''. Đăng ký handler thao tác trạm máy Demo (Approach C — composition root biết máy cụ thể).
             //         ClampRelease CỐ TÌNH không đăng ký → minh hoạ UI "chưa cấu hình HAL" của mô hình hybrid.

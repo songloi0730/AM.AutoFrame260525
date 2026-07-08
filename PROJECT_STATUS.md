@@ -10,6 +10,12 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-08
+**Session:** #86 — **P3.3 Backup & restore hoàn tất → P3 XONG TOÀN BỘ (P0–P3 sạch bảng)**. `IBackupService` + `BackupService`: zip dữ liệu vận hành (db · users.json · points.json · parameters.json · io.map/machine/axismap.json · calibration-history.json · recovery/override-actions.json · appsettings.json · recipes/) — chỉ gom mục đang tồn tại; **3 loại bản lưu**: `am-backup-*` (tay, chọn thư mục qua OpenFolderDialog), `am-auto-*` (tự động mỗi ngày 1 bản lúc app chạy, giữ `Backup:KeepCount`=7 bản mới nhất, lỗi chỉ log không phá app), `am-prerestore-*` (**TỰ sao lưu trạng thái hiện tại trước MỌI lần phục hồi** — không mất đường lùi); restore giải nén đè có **chặn path-traversal**, chống trùng tên file cùng giây, xong yêu cầu KHỞI ĐỘNG LẠI app (service đã nạp dữ liệu cũ vào RAM). **Settings thẻ "Sao lưu & phục hồi" hết placeholder** (Admin gate): nội dung sẽ backup + nút Sao lưu ngay + danh sách bản lưu + **phục hồi confirm 2 bước** (chọn bản → cảnh báo đỏ ghi-đè → xác nhận lần 2). i18n +13 key ×3 (**380 chuỗi**). **+3 test → 300 pass**, build 0 warning, smoke: log "[Backup] Auto-backup hàng ngày BẬT" + tạo thật `am-auto-*.zip` ngay lần boot đầu. **Settings chỉ còn 2 placeholder: Phần cứng + Host (P4.3)**. Việc tiếp theo roadmap §4: **P4** (single-step, sequence per-recipe, Settings hoàn thiện, Production/SPC) hoặc **P5** tích hợp máy thật.
+**Commit:** *(điền sau khi commit)*  ·  (S85: P3.2 `6f05f0d` · S84: P2 `a6ff044` · S83: P3.1 `f813b91`)
+
+---
+
+## 🗓️ Session #85
 **Session:** #85 — **P3.2 Auto-logout + màn Audit hoàn tất**. **Auto-logout**: `InactivityMonitor` (Shell) hook `InputManager.PreProcessInput` (chuột/phím/cảm ứng toàn app) + DispatcherTimer 30s — idle ≥ `Security:AutoLogoutMinutes` (mặc định **15 phút** — Q6 chốt config được, 0=tắt) và đang đăng nhập → `Logout()` **hạ quyền về "Chưa đăng nhập", máy VẪN chạy** (0012: an toàn phiên không gây downtime) + audit "AutoLogout" + đăng nhập xong tính idle lại. **Audit lưu bền**: `AuditService` ngoài structured log giờ append JSONL `logs/audit-yyyyMMdd.jsonl` (một file/ngày, dọn file quá `LogRetentionDays` lúc boot, ghi lỗi không phá thao tác gốc); `IAuditService.Query(from,to,userFilter,max)` đọc từ ngày mới về cũ dừng sớm khi đủ. **Màn Audit**: Settings thẻ MỚI "Nhật ký audit" (gate Administrator — dưới quyền hiện thông điệp): bảng 5 cột (thời gian/user/thao tác/kết quả OK-DENIED đỏ/chi tiết, virtualized 500 dòng), lọc từ/đến ngày + user, **export CSV** (escape chuẩn, SaveFileDialog). i18n +14 key ×3 (**367 chuỗi**). **+3 test → 297 pass**, build 0 warning, smoke: log "[AutoLogout] Bật — idle 15 phút". Việc tiếp: **P3.3 Backup & restore** (đang làm cùng đợt).
 **Commit:** `6f05f0d`  ·  (S84: P2 `a6ff044` · S83: P3.1 `f813b91` · S82: P1 6/6 `4a9d35f`)
 
@@ -72,7 +78,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **29 projects** (CPM), production 0 warning, **297 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
+| Solution structure | ✅ Hoàn thành | **29 projects** (CPM), production 0 warning, **300 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Core.Sequencing | ✅ Hoàn thành | **Mới (S77, ADR 0011)** — sequence engine khai báo: contracts (`IStation`/`StepContext`/`StationResult`/`IStationResolver`/`IResumeVerifiable`/`IOperatorPrompt`), `SequenceLoader` 2 pha gom lỗi, `SequenceEngine` (order song song, timeout linked-CTS, onError/retry/prompt, pause ranh giới bước + resume-check). Standalone — không reference DryIoc/hardware/UI |

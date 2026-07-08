@@ -131,11 +131,11 @@
                             <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
-                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE8C8;"
+                            Command="{Binding OpenCommand}" CommandParameter="backup">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Backup], Source={x:Static loc:Loc.Strings}}"/>
-                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.BackupDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
                 </UniformGrid>
@@ -163,6 +163,8 @@
                                             Visibility="{Binding DataContext.ShowCalib, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <local:AuditView DataContext="{Binding Audit}"
                                  Visibility="{Binding DataContext.ShowAudit, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
+                <local:BackupView DataContext="{Binding Backup}"
+                                  Visibility="{Binding DataContext.ShowBackup, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
