@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-08
 **Session:** #86 — **P3.3 Backup & restore hoàn tất → P3 XONG TOÀN BỘ (P0–P3 sạch bảng)**. `IBackupService` + `BackupService`: zip dữ liệu vận hành (db · users.json · points.json · parameters.json · io.map/machine/axismap.json · calibration-history.json · recovery/override-actions.json · appsettings.json · recipes/) — chỉ gom mục đang tồn tại; **3 loại bản lưu**: `am-backup-*` (tay, chọn thư mục qua OpenFolderDialog), `am-auto-*` (tự động mỗi ngày 1 bản lúc app chạy, giữ `Backup:KeepCount`=7 bản mới nhất, lỗi chỉ log không phá app), `am-prerestore-*` (**TỰ sao lưu trạng thái hiện tại trước MỌI lần phục hồi** — không mất đường lùi); restore giải nén đè có **chặn path-traversal**, chống trùng tên file cùng giây, xong yêu cầu KHỞI ĐỘNG LẠI app (service đã nạp dữ liệu cũ vào RAM). **Settings thẻ "Sao lưu & phục hồi" hết placeholder** (Admin gate): nội dung sẽ backup + nút Sao lưu ngay + danh sách bản lưu + **phục hồi confirm 2 bước** (chọn bản → cảnh báo đỏ ghi-đè → xác nhận lần 2). i18n +13 key ×3 (**380 chuỗi**). **+3 test → 300 pass**, build 0 warning, smoke: log "[Backup] Auto-backup hàng ngày BẬT" + tạo thật `am-auto-*.zip` ngay lần boot đầu. **Settings chỉ còn 2 placeholder: Phần cứng + Host (P4.3)**. Việc tiếp theo roadmap §4: **P4** (single-step, sequence per-recipe, Settings hoàn thiện, Production/SPC) hoặc **P5** tích hợp máy thật.
-**Commit:** *(điền sau khi commit)*  ·  (S85: P3.2 `6f05f0d` · S84: P2 `a6ff044` · S83: P3.1 `f813b91`)
+**Commit:** `31da608`  ·  (S85: P3.2 `6f05f0d` · S84: P2 `a6ff044` · S83: P3.1 `f813b91`)
 
 ---
 

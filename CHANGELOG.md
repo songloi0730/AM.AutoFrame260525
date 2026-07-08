@@ -6,7 +6,7 @@
 
 ## [Session 86] 2026-07-08 — P3.3 Backup & restore: zip 3 loại bản lưu + auto hàng ngày + phục hồi 2 bước có đường lùi — P3 XONG TOÀN BỘ
 
-**Commit:** *(điền sau)*
+**Commit:** `31da608`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** P3.3 (gap B6, C5-một-phần) — thẻ Settings cuối cùng của trục bảo mật còn placeholder.
 Xong mục này: P0–P3 của roadmap sạch bảng.
