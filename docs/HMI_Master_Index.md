@@ -27,7 +27,7 @@ Khi sinh bất kỳ màn HMI / ViewModel / config nào, ĐỌC file này trướ
 | **HMI_Button_Spec_v2.0.md** | Bảng chuẩn Nút → Điều kiện → Hành động → Mở ra → Role cho mọi phần tử Home | Khi làm nút/lệnh |
 | **HMI_Manual_Operation_and_Safety_v1.0.md** | Màn Vận hành tay (gộp Manual+Motion), 4 role, 4 mức rủi ro R0–R3, guard, Supervised Override, sub-tab | Màn vận hành tay, thao tác có rủi ro |
 | **HMI_Naming_and_Axis_Point_Model_v1.0.md** | Đặt tên IO/biến, mô hình Trục–Điểm, Set/Confirm, layout thích ứng 3 tầng nhất quán, trạng thái IO, set/reset vs Force | Trục, điểm, IO, đặt tên |
-| **HMI_Calibration_Model_v1.0.md** *(chưa có — sẽ viết ở ROADMAP_HOAN_THIEN P2.1)* | Calib: phân loại frequency (routine/rare), gắn sự kiện thay thiết bị, wizard 2 nhánh tự động/thủ công theo sai số | Calib, hiệu chỉnh, bảo trì |
+| **HMI_Calibration_Model_v1.0.md** ✅ (P2.1, S84) | Calib: phân loại frequency (routine/rare), gắn sự kiện thay thiết bị, wizard 2 nhánh tự động/thủ công theo sai số | Calib, hiệu chỉnh, bảo trì |
 
 Mockup HTML (tham chiếu trực quan, tỷ lệ thật 1920×1080):
 
@@ -250,7 +250,7 @@ Màn **Vận hành tay** và hệ con là khối lớn, AN TOÀN-TRỌNG YẾU, 
 ### D. Phản biện mâu thuẫn NỘI BỘ bộ tài liệu (sửa khi ra bản sau)
 1. **Chiều cao header không nhất quán**: Master Index §3 = 48px, Template §3.1 = 64px, mockup `hmi_manual_operation` = 56px → thống nhất **64px**.
 2. **Connection bar**: §3 = 32px, Template §2 = 40px → thống nhất **40px**.
-3. **Tham chiếu treo**: §1 trỏ `HMI_Calibration_Model_v1.0.md`, `hmi_calib_wizard.html`, `hmi_motion_v2.html` — KHÔNG có trong bộ giao. Bổ sung hoặc bỏ trỏ.
+3. **Tham chiếu treo**: ~~`HMI_Calibration_Model_v1.0.md`~~ (ĐÃ BỔ SUNG P2.1/S84); `hmi_calib_wizard.html`/`hmi_motion_v2.html` — bỏ trỏ, UI thật đã thay mockup (AM.Modules.Calibration S84, MotionView S48+).
 4. **Override confirm + R2 policy** tự nhận "cần xác nhận" (§9) nhưng config schema §8 đã ghi cứng `confirm:"TwoStep+Countdown(3s)"` và `r2DowngradeToLineLead` — mâu thuẫn "chưa chốt" vs "ví dụ cứng". Đánh dấu là default TẠM.
 
 ### E. Phản biện thiết kế (giữ để bản sau cân nhắc)

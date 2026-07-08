@@ -87,6 +87,7 @@ public partial class App
             // 4b''''. Đăng ký handler thao tác trạm máy Demo (Approach C — composition root biết máy cụ thể).
             //         ClampRelease CỐ TÌNH không đăng ký → minh hoạ UI "chưa cấu hình HAL" của mô hình hybrid.
             RegisterDemoRecoveryActions(_serviceProvider);
+            RegisterCalibrationRoutines(_serviceProvider);
 
             // 4c. Khôi phục ngôn ngữ đã lưu (i18n §7.4) + lưu lại khi đổi
             RestoreAndPersistLanguage(_serviceProvider);
@@ -142,6 +143,17 @@ public partial class App
         // Supervised Override (§6.4): nhả khí âm VƯỢT guard (id dùng chung sổ registry).
         registry.Register("VacuumReleaseOverride",
             ct => io.WriteDoByTagAsync(tagMap, "DO_Vacuum1", false, ct));
+    }
+
+    /// <summary>
+    /// Nạp mọi routine hiệu chỉnh máy đã khai trong DI vào registry (HMI_Calibration_Model §5 —
+    /// routine là class có logic đo, đăng ký code lúc bootstrap; máy khác chỉ thêm AddSingleton).
+    /// </summary>
+    private static void RegisterCalibrationRoutines(IServiceProvider sp)
+    {
+        var calib = sp.GetRequiredService<ICalibrationService>();
+        foreach (var routine in sp.GetServices<ICalibrationRoutine>())
+            calib.Register(routine);
     }
 
     /// <summary>Khôi phục ngôn ngữ đã lưu trong parameters.json; lưu lại mỗi lần đổi (i18n §7.4).</summary>

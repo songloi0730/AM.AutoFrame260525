@@ -4,6 +4,59 @@
 
 ---
 
+## [Session 84] 2026-07-08 — ROADMAP P2 HOÀN TẤT: mô hình calibration + framework wizard 2 nhánh + UI hai chỗ nhúng + demo routine
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** P2 là trục "Hiệu chỉnh" của roadmap (gap D1–D3 — trước đây calib là trục trắng, tài liệu tham chiếu treo).
+Làm trọn 3 phần trong một phiên theo yêu cầu chủ dự án.
+
+### ✅ P2.1 — `docs/HMI_Calibration_Model_v1.0.md` (chuẩn hiện hành)
+- Calib ≠ Setting (quy trình động có đo/bù ≠ giá trị tĩnh); `frequency` routine/rare quyết định CHỖ ĐỨNG UI
+  (không quyết định quyền — `MinLevel` khai riêng); **wizard 2 nhánh theo `autoThreshold`** với bất biến an toàn:
+  không tự áp khi vượt ngưỡng (che giấu vấn đề cơ khí), không áp khi chưa đo; lịch sử + audit;
+  `requiresCalibAfterChange` + usage counter để khái niệm (code P5 khi có máy thật).
+- 4 quyết định ADR-style: framework đặt Abstractions+Services (không project riêng — engine nhỏ);
+  routine đăng ký CODE lúc bootstrap (routine là class có logic đo — config JSON không mô tả được phép đo);
+  MỘT module UI nhúng hai chỗ; kết quả bù ghi vào RECIPE qua IRecipeService (một nguồn sự thật).
+- Master Index: gạch tham chiếu treo `HMI_Calibration_Model_v1.0.md` (đã có) + mockup calib (bỏ trỏ — UI thật thay).
+
+### ✅ P2.2 — Framework (contracts + service + wizard + 5 test)
+- MỚI enum `CalibrationFrequency`/`CalibrationWizardState` (AM.Core), record `CalibrationMeasurement`
+  (Offset đại diện + Components dx/dy) / `CalibrationRecord`; interfaces `ICalibrationRoutine` /
+  `ICalibrationService` (Register chống trùng Id + CreateWizard + GetHistory) / `ICalibrationWizard`.
+- `CalibrationService`: lịch sử `calibration-history.json` (giữ 200 mới nhất, sống qua restart) + audit
+  `Calibration.{routineId}` mỗi lần hoàn tất. `CalibrationWizard`: Idle→Measuring→Within/OutOfThreshold→Applying→
+  Completed/Failed; Apply sai trạng thái → InvalidOperationException; đo lỗi → Failed (không sập); Reset về Idle;
+  bản ghi phân biệt "tự áp" vs "sau chỉnh tay".
+- 5 test: nhánh trong ngưỡng 1 chạm · nhánh chỉnh tay đo lại 2 lần rồi đạt · cấm áp khi chưa đo/vượt ngưỡng
+  (routine.Apply không bao giờ bị gọi) · đo hỏng → Failed → Reset · trùng Id throw + lịch sử reload.
+
+### ✅ P2.3 — UI hai chỗ nhúng + demo routine end-to-end
+- MỚI project **`AM.Modules.Calibration`** (#29): `CalibrationPanelView` + `CalibrationPanelViewModel`
+  (danh sách routine theo frequency · wizard card: trạng thái/kết quả đo/ngưỡng/nút Đo–Áp bù–Làm lại ≥44px ·
+  hướng dẫn chỉnh tay từng bước khi vượt ngưỡng · lịch sử 10 dòng · gate quyền theo `MinLevel` + `UserChanged`);
+  2 subclass mỏng `RoutineCalibrationPanelViewModel`/`RareCalibrationPanelViewModel` chốt frequency để DI thường.
+- Vận hành tay: **sub-tab thứ 6 "Hiệu chỉnh"** (pane 5) — RadioButton TỰ ẨN khi `Calibration.HasRoutines=false`.
+- Cài đặt: thẻ "Hiệu chuẩn" **hết placeholder** → mở `CalibrationPanelView` (rare).
+- Demo: `PickOffsetCalibrationRoutine` (`demo.pick-offset`, routine, LineLead+, **ngưỡng 0.05mm** khớp Set–Confirm §9):
+  đo mô phỏng độ trôi ±0.12mm (đo lại co ×0.35 như thể operator đã chỉnh giữa 2 lần đo — cả 2 nhánh demo được);
+  Áp bù cộng dX/dY vào `PickPositionX/Y` recipe active + `SaveRecipeAsync` (audit người thực hiện);
+  sau áp còn nhiễu dư ±0.01mm — đo kiểm lại thấy trong ngưỡng. Đăng ký: DI `ICalibrationRoutine` (AddDemoMachine)
+  + `RegisterCalibrationRoutines` generic ở App.OnStartup (máy mới chỉ thêm 1 dòng AddSingleton).
+- i18n +26 key `Calib.*`/`Manual.Tab.Calib`/`Set.CalibDesc` ×3 ngôn ngữ (353 chuỗi).
+
+### 🧪 Build & test
+- **294 tests pass** (+5), build 0 warning (sửa CA2017/S6677 template log, CA2007 ConfigureAwait(true) module,
+  S125 comment), smoke boot sạch: log "[Calib] Đăng ký routine demo.pick-offset (Routine, ngưỡng 0.05mm)".
+- Bẫy lặp lại đã dính lần nữa: sln build KHÔNG build exe WinExe — smoke lần đầu chạy exe cũ (không có [Calib],
+  i18n 327) → build `AM.Application.Shell` riêng rồi smoke lại mới đúng (353 ×3).
+
+### ⏭️ Việc tiếp
+- **P3.2 Auto-logout + audit UI** và **P3.3 Backup & restore** (đang làm tiếp cùng đợt nếu đủ).
+
+---
+
 ## [Session 83] 2026-07-08 — P3.1 chính sách đăng nhập nhà máy: bỏ lockout, break-glass day-code + file recovery, banner mật khẩu mặc định
 
 **Commit:** `f813b91`

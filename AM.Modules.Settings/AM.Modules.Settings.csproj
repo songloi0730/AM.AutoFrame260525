@@ -19,6 +19,7 @@
     <ProjectReference Include="..\AM.UI.Localization\AM.UI.Localization.csproj" />
     <ProjectReference Include="..\AM.Modules.Diagnostics\AM.Modules.Diagnostics.csproj" />
     <ProjectReference Include="..\AM.Modules.Engineering\AM.Modules.Engineering.csproj" />
+    <ProjectReference Include="..\AM.Modules.Calibration\AM.Modules.Calibration.csproj" />
   </ItemGroup>
 
 </Project>

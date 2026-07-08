@@ -7,6 +7,7 @@
              xmlns:conv="clr-namespace:AM.Modules.Motion.Converters"
              xmlns:local="clr-namespace:AM.Modules.Motion"
              xmlns:iomon="clr-namespace:AM.Modules.IoMonitor;assembly=AM.Modules.IoMonitor"
+             xmlns:calib="clr-namespace:AM.Modules.Calibration;assembly=AM.Modules.Calibration"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
 
@@ -292,6 +293,11 @@
                              Command="{Binding SelectSubTabCommand}" CommandParameter="4"
                              Foreground="{StaticResource Status.AlarmBrush}"
                              Content="{Binding [Manual.Tab.Override], Source={x:Static loc:Loc.Strings}}"/>
+                <!-- Hiệu chỉnh routine — TỰ ẨN khi máy không khai routine (HMI_Calibration_Model §2) -->
+                <RadioButton Style="{StaticResource SubTab}" GroupName="mtab"
+                             Command="{Binding SelectSubTabCommand}" CommandParameter="5"
+                             Visibility="{Binding Calibration.HasRoutines, Converter={StaticResource BoolToVis}}"
+                             Content="{Binding [Manual.Tab.Calib], Source={x:Static loc:Loc.Strings}}"/>
             </StackPanel>
         </Border>
 
@@ -1080,6 +1086,12 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
+            </ScrollViewer>
+
+            <!-- ══ PANE 5: Hiệu chỉnh routine (wizard 2 nhánh — HMI_Calibration_Model_v1.0) ══ -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=5}">
+                <calib:CalibrationPanelView DataContext="{Binding Calibration}"/>
             </ScrollViewer>
         </Grid>
     </Grid>

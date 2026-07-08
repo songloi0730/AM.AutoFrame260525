@@ -5,8 +5,8 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>AM.Modules.Motion</RootNamespace>
-    <AssemblyName>AM.Modules.Motion</AssemblyName>
+    <RootNamespace>AM.Modules.Calibration</RootNamespace>
+    <AssemblyName>AM.Modules.Calibration</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,9 +18,6 @@
     <ProjectReference Include="..\AM.Core\AM.Core.csproj" />
     <ProjectReference Include="..\AM.Core.Abstractions\AM.Core.Abstractions.csproj" />
     <ProjectReference Include="..\AM.UI.Localization\AM.UI.Localization.csproj" />
-    <!-- Vận hành tay nhúng Giám sát I/O làm sub-tab (gộp Motion/IO theo checklist) -->
-    <ProjectReference Include="..\AM.Modules.IoMonitor\AM.Modules.IoMonitor.csproj" />
-    <ProjectReference Include="..\AM.Modules.Calibration\AM.Modules.Calibration.csproj" />
   </ItemGroup>
 
 </Project>

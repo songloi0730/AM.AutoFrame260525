@@ -128,6 +128,12 @@ internal static class ServiceCollectionExtensions
                     ?? new AM.Core.Models.SecurityOptions(),
                 sp.GetRequiredService<IAlarmService>(),
                 sp.GetRequiredService<IAuditService>()));
+        // Hiệu chỉnh: registry + wizard 2 nhánh + lịch sử theo HMI_Calibration_Model_v1.0 —
+        // routine của máy được App.OnStartup nạp vào registry lúc khởi động
+        services.AddSingleton<ICalibrationService>(sp => new CalibrationService(
+            sp.GetRequiredService<ILogger<CalibrationService>>(),
+            sp.GetRequiredService<IAuditService>(),
+            "calibration-history.json"));
         // Bus tín hiệu phần cứng (event-push) — nguồn cho guard tầng 3
         services.AddSingleton<IHardwareSignalBus, HardwareSignalBus>();
         // Guard engine: phân quyền per-action R0–R3 (state → role → điều kiện phần cứng) + audit log
@@ -175,6 +181,9 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IoMonitorViewModel>();
         services.AddSingleton<AM.Modules.Motion.StationOpsViewModel>();
         services.AddSingleton<AM.Modules.Motion.OverrideViewModel>();
+        // Panel hiệu chỉnh ×2 (một VM class, chốt frequency bằng subclass — HMI_Calibration_Model §2)
+        services.AddSingleton<AM.Modules.Calibration.RoutineCalibrationPanelViewModel>();
+        services.AddSingleton<AM.Modules.Calibration.RareCalibrationPanelViewModel>();
         services.AddSingleton<IdentityViewModel>();
         services.AddSingleton<MotionViewModel>();
         services.AddSingleton<ParameterViewModel>();
@@ -214,6 +223,9 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<ISubRoutine, HomeAllSubRoutine>();
         services.AddSingleton<ISubRoutine, SafetyCheckSubRoutine>();
         services.AddSingleton<ISubRoutineRunner, SubRoutineRunner>();
+
+        // Routine hiệu chỉnh của máy Demo (P2.3) — App.OnStartup nạp vào ICalibrationService
+        services.AddSingleton<ICalibrationRoutine, AM.WorkStation.Demo.Calibration.PickOffsetCalibrationRoutine>();
 
         services.AddDemoSequencing(config);
         return services;

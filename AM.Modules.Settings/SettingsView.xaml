@@ -6,6 +6,7 @@
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
              xmlns:diag="clr-namespace:AM.Modules.Diagnostics;assembly=AM.Modules.Diagnostics"
              xmlns:eng="clr-namespace:AM.Modules.Engineering;assembly=AM.Modules.Engineering"
+             xmlns:calib="clr-namespace:AM.Modules.Calibration;assembly=AM.Modules.Calibration"
              xmlns:local="clr-namespace:AM.Modules.Settings"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
@@ -102,11 +103,11 @@
                             <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
-                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE9D9;"
+                            Command="{Binding OpenCommand}" CommandParameter="calib">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Calib], Source={x:Static loc:Loc.Strings}}"/>
-                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.CalibDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource MenuCard}" Tag="&#xE77B;"
@@ -151,6 +152,8 @@
                                      Visibility="{Binding DataContext.ShowEngineering, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <local:UserAdminView DataContext="{Binding Users}"
                                      Visibility="{Binding DataContext.ShowUsers, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
+                <calib:CalibrationPanelView DataContext="{Binding Calib}"
+                                            Visibility="{Binding DataContext.ShowCalib, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"

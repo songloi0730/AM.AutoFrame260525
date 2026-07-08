@@ -54,6 +54,9 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
 
     /// <summary>VM Supervised Override nhúng làm sub-tab "⚠ Override" (sở hữu bởi DI — KHÔNG dispose ở đây).</summary>
     public OverrideViewModel Override { get; }
+
+    /// <summary>Panel hiệu chỉnh routine nhúng làm sub-tab "Hiệu chỉnh" — tab tự ẩn khi máy không có routine (P2.3).</summary>
+    public AM.Modules.Calibration.RoutineCalibrationPanelViewModel Calibration { get; }
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
     private readonly int _pollMs;
@@ -112,6 +115,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     public MotionViewModel(IMotionController motion, IPointTableService pointTable,
         IMasterController master, IUserService user, IoMonitorViewModel ioMonitor,
         StationOpsViewModel stationOps, OverrideViewModel overrideVm, IGuardEngine guard, IAuditService audit,
+        AM.Modules.Calibration.RoutineCalibrationPanelViewModel calibration,
         ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
     {
         ArgumentNullException.ThrowIfNull(motion);
@@ -123,7 +127,9 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(overrideVm);
         ArgumentNullException.ThrowIfNull(guard);
         ArgumentNullException.ThrowIfNull(audit);
+        ArgumentNullException.ThrowIfNull(calibration);
         ArgumentNullException.ThrowIfNull(logger);
+        Calibration = calibration;
         _motion = motion;
         _diag = motion as IAxisDiagnostics;
         _jog = motion as IAxisJog; // capability tuỳ chọn — null thì jog pad fallback inching
