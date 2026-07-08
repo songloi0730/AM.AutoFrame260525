@@ -6,7 +6,7 @@
 
 ## [Session 85] 2026-07-08 — P3.2: tự đăng xuất khi idle (máy vẫn chạy) + audit lưu bền JSONL + màn Audit trong Cài đặt
 
-**Commit:** *(điền sau)*
+**Commit:** `6f05f0d`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** P3.2 theo roadmap (gap B2, B5). Q6 phần auto-logout: mặc định 15 phút, config
 `AutoMachine:Security:AutoLogoutMinutes` (0 = tắt) — chỉnh theo nhà máy lúc triển khai.

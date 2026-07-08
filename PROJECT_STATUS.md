@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-08
 **Session:** #85 — **P3.2 Auto-logout + màn Audit hoàn tất**. **Auto-logout**: `InactivityMonitor` (Shell) hook `InputManager.PreProcessInput` (chuột/phím/cảm ứng toàn app) + DispatcherTimer 30s — idle ≥ `Security:AutoLogoutMinutes` (mặc định **15 phút** — Q6 chốt config được, 0=tắt) và đang đăng nhập → `Logout()` **hạ quyền về "Chưa đăng nhập", máy VẪN chạy** (0012: an toàn phiên không gây downtime) + audit "AutoLogout" + đăng nhập xong tính idle lại. **Audit lưu bền**: `AuditService` ngoài structured log giờ append JSONL `logs/audit-yyyyMMdd.jsonl` (một file/ngày, dọn file quá `LogRetentionDays` lúc boot, ghi lỗi không phá thao tác gốc); `IAuditService.Query(from,to,userFilter,max)` đọc từ ngày mới về cũ dừng sớm khi đủ. **Màn Audit**: Settings thẻ MỚI "Nhật ký audit" (gate Administrator — dưới quyền hiện thông điệp): bảng 5 cột (thời gian/user/thao tác/kết quả OK-DENIED đỏ/chi tiết, virtualized 500 dòng), lọc từ/đến ngày + user, **export CSV** (escape chuẩn, SaveFileDialog). i18n +14 key ×3 (**367 chuỗi**). **+3 test → 297 pass**, build 0 warning, smoke: log "[AutoLogout] Bật — idle 15 phút". Việc tiếp: **P3.3 Backup & restore** (đang làm cùng đợt).
-**Commit:** *(điền sau khi commit)*  ·  (S84: P2 `a6ff044` · S83: P3.1 `f813b91` · S82: P1 6/6 `4a9d35f`)
+**Commit:** `6f05f0d`  ·  (S84: P2 `a6ff044` · S83: P3.1 `f813b91` · S82: P1 6/6 `4a9d35f`)
 
 ---
 
