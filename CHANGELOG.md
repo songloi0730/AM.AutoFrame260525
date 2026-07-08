@@ -6,7 +6,7 @@
 
 ## [Session 83] 2026-07-08 — P3.1 chính sách đăng nhập nhà máy: bỏ lockout, break-glass day-code + file recovery, banner mật khẩu mặc định
 
-**Commit:** *(điền sau)*
+**Commit:** `f813b91`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án phản biện DoD gốc của P3.1 (lockout 5 lần + MustChangePassword) bằng thực tế nhà máy:
 tài khoản dùng chung theo vai, kỹ sư vận hành nhiều máy, lockout đúng lúc hỏng máy = downtime, không có khôi phục
