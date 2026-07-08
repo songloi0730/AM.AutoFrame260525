@@ -120,14 +120,18 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<ITowerLightService, TowerLightService>(); // đèn tháp tự lái theo state/alarm/safety
         // ProductionRecorder (CycleCompleted → record PASS với SN tự sinh) KHÔNG dùng cho máy sequence:
         // ReportStation ghi record thật (SN scanner, OK/NG, vision score) — tránh ghi trùng (S78, Prompt D)
+        // Chính sách bảo mật nhà máy (0012) — bind một lần, dùng chung UserService/InactivityMonitor
+        services.AddSingleton(config.GetSection("AutoMachine:Security").Get<SecurityOptions>()
+            ?? new SecurityOptions());
         // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
         // Chính sách nhà máy 0012: không lockout, break-glass day-code + file recovery, banner mật khẩu mặc định
         services.AddSingleton<IUserService, UserService>(sp =>
             new UserService(sp.GetRequiredService<ILogger<UserService>>(), "users.json",
-                config.GetSection("AutoMachine:Security").Get<AM.Core.Models.SecurityOptions>()
-                    ?? new AM.Core.Models.SecurityOptions(),
+                sp.GetRequiredService<SecurityOptions>(),
                 sp.GetRequiredService<IAlarmService>(),
                 sp.GetRequiredService<IAuditService>()));
+        // Tự đăng xuất khi idle (P3.2) — Start() ở App.OnStartup (cần UI thread cho InputManager)
+        services.AddSingleton<InactivityMonitor>();
         // Hiệu chỉnh: registry + wizard 2 nhánh + lịch sử theo HMI_Calibration_Model_v1.0 —
         // routine của máy được App.OnStartup nạp vào registry lúc khởi động
         services.AddSingleton<ICalibrationService>(sp => new CalibrationService(
@@ -138,7 +142,10 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<IHardwareSignalBus, HardwareSignalBus>();
         // Guard engine: phân quyền per-action R0–R3 (state → role → điều kiện phần cứng) + audit log
         services.AddSingleton<IGuardEngine, GuardService>();
-        services.AddSingleton<IAuditService, AuditService>();
+        // Audit: structured log + JSONL theo ngày trong logs/ (giữ theo LogRetentionDays) — màn Audit đọc Query
+        services.AddSingleton<IAuditService, AuditService>(sp => new AuditService(
+            sp.GetRequiredService<ILogger<AuditService>>(), "logs",
+            config.GetValue("AutoMachine:LogRetentionDays", 30)));
         // Adapter đẩy trạng thái an toàn lên bus (Start() lúc khởi động trong App.xaml.cs)
         services.AddSingleton<SafetySignalPublisher>();
         // Tín hiệu hình học trục (Motion.ZAtSafe) cho guard tầng 3 — P1.4
@@ -191,6 +198,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<ProductionViewModel>();
         services.AddSingleton<DiagnosticsViewModel>();
         services.AddSingleton<AM.Modules.Settings.UserAdminViewModel>();
+        services.AddSingleton<AM.Modules.Settings.AuditViewModel>(); // màn Audit (P3.2, Administrator)
         services.AddSingleton<AM.Modules.Settings.SettingsViewModel>(); // gom Chẩn đoán + Kỹ thuật + Người dùng
         services.AddSingleton<LoggingViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips

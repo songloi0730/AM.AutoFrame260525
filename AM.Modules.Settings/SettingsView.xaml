@@ -110,6 +110,13 @@
                             <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.CalibDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE81C;"
+                            Command="{Binding OpenCommand}" CommandParameter="audit">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Audit], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.AuditDesc], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
                     <Button Style="{StaticResource MenuCard}" Tag="&#xE77B;"
                             Command="{Binding OpenCommand}" CommandParameter="users">
                         <StackPanel>
@@ -154,6 +161,8 @@
                                      Visibility="{Binding DataContext.ShowUsers, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <calib:CalibrationPanelView DataContext="{Binding Calib}"
                                             Visibility="{Binding DataContext.ShowCalib, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
+                <local:AuditView DataContext="{Binding Audit}"
+                                 Visibility="{Binding DataContext.ShowAudit, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"

@@ -362,5 +362,19 @@
   "Calib.PickOffset": "取料点偏移",
   "Calib.PickOffset.Step1": "松开吸嘴座的 2 颗锁紧螺丝（2.5 内六角）。",
   "Calib.PickOffset.Step2": "按显示的 dX/dY 反方向移动吸嘴座。",
-  "Calib.PickOffset.Step3": "重新锁紧螺丝，确认无旷量后按 测量。"
+  "Calib.PickOffset.Step3": "重新锁紧螺丝，确认无旷量后按 测量。",
+  "Set.Audit": "审计日志",
+  "Set.AuditDesc": "谁在何时做了什么 — 按日期/用户筛选，导出 CSV（管理员）",
+  "Audit.NeedAdmin": "查看审计日志需要管理员权限。请用足够权限的账号登录后继续。",
+  "Audit.From": "起始日期",
+  "Audit.To": "结束日期",
+  "Audit.User": "用户",
+  "Audit.Refresh": "刷新",
+  "Audit.Export": "导出 CSV",
+  "Audit.Count": "{0} 条记录（最多 500）",
+  "Audit.Exported": "已导出：{0}",
+  "Audit.ColUser": "用户",
+  "Audit.ColAction": "操作",
+  "Audit.ColResult": "结果",
+  "Audit.ColDetail": "详情"
 }

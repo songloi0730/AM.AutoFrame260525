@@ -362,5 +362,19 @@
   "Calib.PickOffset": "Pick point offset",
   "Calib.PickOffset.Step1": "Loosen the 2 locking screws of the nozzle mount (2.5 hex).",
   "Calib.PickOffset.Step2": "Shift the mount opposite to the displayed dX/dY offset.",
-  "Calib.PickOffset.Step3": "Re-tighten the screws, check for play, then press Measure."
+  "Calib.PickOffset.Step3": "Re-tighten the screws, check for play, then press Measure.",
+  "Set.Audit": "Audit log",
+  "Set.AuditDesc": "Who did what, when — filter by date/user, CSV export (Administrator)",
+  "Audit.NeedAdmin": "Viewing the audit log requires Administrator level. Log in with a sufficient account to continue.",
+  "Audit.From": "From",
+  "Audit.To": "To",
+  "Audit.User": "User",
+  "Audit.Refresh": "Refresh",
+  "Audit.Export": "Export CSV",
+  "Audit.Count": "{0} records (max 500)",
+  "Audit.Exported": "Exported: {0}",
+  "Audit.ColUser": "User",
+  "Audit.ColAction": "Action",
+  "Audit.ColResult": "Result",
+  "Audit.ColDetail": "Detail"
 }

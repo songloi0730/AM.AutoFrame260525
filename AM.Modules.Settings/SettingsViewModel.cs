@@ -34,6 +34,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>Panel hiệu chỉnh rare (nhúng khi mở thẻ "Bảo trì &amp; Hiệu chuẩn" — P2.3).</summary>
     public AM.Modules.Calibration.RareCalibrationPanelViewModel Calib { get; }
 
+    /// <summary>VM màn Audit (nhúng khi mở thẻ "Nhật ký audit" — P3.2, Administrator).</summary>
+    public AuditViewModel Audit { get; }
+
     /// <summary>Thông tin "Giới thiệu" (phiên bản app + .NET) — không localize từng dòng.</summary>
     public string AboutText { get; }
 
@@ -51,19 +54,23 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool ShowUsers       => Section == "users";
     public bool ShowAbout       => Section == "about";
     public bool ShowCalib       => Section == "calib";
+    public bool ShowAudit       => Section == "audit";
 
     /// <summary>Tạo VM Cài đặt với các VM con đã đăng ký DI.</summary>
     public SettingsViewModel(DiagnosticsViewModel diagnostics, EngineeringViewModel engineering,
-        UserAdminViewModel users, AM.Modules.Calibration.RareCalibrationPanelViewModel calib)
+        UserAdminViewModel users, AM.Modules.Calibration.RareCalibrationPanelViewModel calib,
+        AuditViewModel audit)
     {
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(engineering);
         ArgumentNullException.ThrowIfNull(users);
         ArgumentNullException.ThrowIfNull(calib);
+        ArgumentNullException.ThrowIfNull(audit);
         Diagnostics = diagnostics;
         Engineering = engineering;
         Users = users;
         Calib = calib;
+        Audit = audit;
 
         var asm = Assembly.GetExecutingAssembly().GetName();
         var ver = asm.Version?.ToString(3) ?? "0.0.0";
@@ -88,5 +95,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowUsers));
         OnPropertyChanged(nameof(ShowAbout));
         OnPropertyChanged(nameof(ShowCalib));
+        OnPropertyChanged(nameof(ShowAudit));
     }
 }

@@ -4,6 +4,41 @@
 
 ---
 
+## [Session 85] 2026-07-08 — P3.2: tự đăng xuất khi idle (máy vẫn chạy) + audit lưu bền JSONL + màn Audit trong Cài đặt
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** P3.2 theo roadmap (gap B2, B5). Q6 phần auto-logout: mặc định 15 phút, config
+`AutoMachine:Security:AutoLogoutMinutes` (0 = tắt) — chỉnh theo nhà máy lúc triển khai.
+
+### ✅ Auto-logout (an toàn phiên, không đụng sản xuất)
+- MỚI `InactivityMonitor` (Shell): hook `InputManager.Current.PreProcessInput` — MỌI input chuột/bàn phím/cảm ứng
+  toàn app đều reset đồng hồ idle; DispatcherTimer kiểm mỗi 30s. Idle ≥ ngưỡng và đang có phiên đăng nhập →
+  `IUserService.Logout()` — **chỉ hạ quyền về "Chưa đăng nhập", máy đang chạy VẪN chạy** (nguyên tắc 0012:
+  biện pháp bảo mật không được gây downtime) + audit `AutoLogout` kèm số phút idle. Đăng nhập xong tính idle
+  lại từ đầu (không bị đăng xuất oan ngay sau login). `AutoLogoutMinutes=0` → tắt hẳn, log rõ.
+- `SecurityOptions` bind MỘT lần thành singleton — UserService + InactivityMonitor dùng chung (hết bind lặp).
+
+### ✅ Audit lưu bền + màn Audit
+- `AuditService`: ngoài structured log `[AUDIT]` giờ append 1 dòng JSON/bản ghi vào `logs/audit-yyyyMMdd.jsonl`
+  (một file mỗi ngày; file quá `LogRetentionDays` bị xoá lúc boot; **ghi file lỗi không phá thao tác gốc**).
+  `IAuditService` + model `AuditEntry` + `Query(from, to, userFilter, max=500)` — đọc từ ngày mới về cũ,
+  dừng sớm khi đủ max, file hỏng bỏ qua ngày đó.
+- Settings thẻ MỚI **"Nhật ký audit"** (`AuditView`+`AuditViewModel`, gate Administrator): bảng 5 cột
+  (thời gian · user · thao tác · kết quả OK/DENIED-đỏ · chi tiết, virtualized), lọc từ/đến ngày (DatePicker)
+  + user (contains), nút Làm mới + **Xuất CSV** (escape ngoặc kép/phẩy/xuống dòng chuẩn, SaveFileDialog).
+- i18n +14 key (`Set.Audit*`, `Audit.*`) ×3 ngôn ngữ → 367 chuỗi.
+
+### 🧪 Build & test
+- **297 tests pass** (+3 `AuditServiceTests`: Record→Query mới-nhất-trước + lọc user · đọc gộp nhiều ngày +
+  sống qua reload · retention xoá file >30 ngày giữ file mới), build 0 warning (sửa S6580 parse có culture),
+  smoke boot sạch: "[AutoLogout] Bật — idle 15 phút sẽ tự đăng xuất (máy vẫn chạy)", i18n 367×3.
+
+### ⏭️ Việc tiếp
+- **P3.3 Backup & restore** (thẻ Settings cuối còn placeholder) — làm tiếp cùng đợt.
+
+---
+
 ## [Session 84] 2026-07-08 — ROADMAP P2 HOÀN TẤT: mô hình calibration + framework wizard 2 nhánh + UI hai chỗ nhúng + demo routine
 
 **Commit:** `a6ff044`

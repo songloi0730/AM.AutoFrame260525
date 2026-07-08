@@ -33,4 +33,10 @@ public sealed class SecurityOptions
 
     /// <summary>Thời hạn (phút) tài khoản 'recovery' đăng nhập được sau khi file khôi phục kích hoạt.</summary>
     public int RecoveryWindowMinutes { get; init; } = 30;
+
+    /// <summary>
+    /// Tự đăng xuất sau bao nhiêu phút không có input (P3.2). Máy VẪN chạy — chỉ hạ quyền
+    /// về "Chưa đăng nhập". 0 = tắt. Mặc định 15 phút (Q6 — config được theo nhà máy).
+    /// </summary>
+    public int AutoLogoutMinutes { get; init; } = 15;
 }

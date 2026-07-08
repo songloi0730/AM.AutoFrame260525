@@ -164,7 +164,7 @@
 | ✅ 10 | P1.6 Prompt liệu sót + resume-check — XONG S81: `BannerOperatorPromptService` (IOperatorPrompt → nút động trên banner; không subscriber → chọn lựa chọn an toàn nhất đứng đầu); PickStation init HỎI operator (lấy tay/tự thoát, lặp tới khi sạch); PickStation + `IResumeVerifiable` kiểm BẤT BIẾN HÌNH HỌC Z-ở-độ-cao-an-toàn (không so snapshot — gantry dùng chung làm snapshot per-station stale); 3 test | An toàn | 0.5 | — |
 | ✅ 11 | P2.1–P2.3 Calibration — XONG S84: `HMI_Calibration_Model_v1.0.md` (P2.1, hết tham chiếu treo Master Index); `ICalibrationRoutine`/`ICalibrationService`/`ICalibrationWizard` + `CalibrationService`+`CalibrationWizard` state machine 2 nhánh + lịch sử `calibration-history.json` + audit (P2.2, 5 test); module UI `AM.Modules.Calibration` dùng chung — sub-tab "Hiệu chỉnh" Vận hành tay (routine, tự ẩn nếu rỗng) + thẻ "Hiệu chuẩn" Settings (rare, thay placeholder); demo `PickOffsetCalibrationRoutine` đo lệch sim → áp `PickPositionX/Y` recipe (P2.3) | Hiệu chỉnh | 3 | — |
 | ✅ 12 | P3.1 Chính sách đăng nhập nhà máy + break-glass — XONG S83 theo design-notes/0012: KHÔNG lockout (sai ≥5 lần → audit + alarm 40010, đăng nhập đúng vẫn vào); day-code `service` HMAC(secret, máy+ngày) ±1 ngày → SuperUser + alarm 40011 (tool `scripts/am-daycode.ps1` — đã kiểm chứng khớp C#); file `am-recovery.key` → xoá ngay + cửa sổ 30' login `recovery` = Admin tạm + alarm 40012 (không đụng users.json); MinLength 8 config; banner vàng thường trực khi còn mật khẩu mặc định; 8 test | Bảo mật | 1 | — |
-| 🟡 13 | P3.2 Auto-logout + audit UI | Bảo mật | 1 | — |
+| ✅ 13 | P3.2 Auto-logout + audit UI — XONG S85: `InactivityMonitor` (InputManager toàn cửa sổ, check 30s) idle ≥ `Security:AutoLogoutMinutes` (mặc định 15, 0=tắt) → Logout hạ quyền (máy VẪN chạy) + audit; `AuditService` lưu bền JSONL/ngày `logs/audit-*.jsonl` (dọn theo LogRetentionDays) + `IAuditService.Query`; Settings thẻ MỚI "Nhật ký audit" (Administrator): bảng + lọc ngày/user + export CSV; 3 test | Bảo mật | 1 | — |
 | 🟡 14 | P3.3 Backup & restore | Bảo mật/Ops | 1 | — |
 | 🟡 15 | P4.1 Single-step | Chức năng | 1 | — |
 | 🟡 16 | P4.2 Sequence per-recipe | Chức năng | 0.5 | — |
@@ -187,7 +187,7 @@ sau P3 mới nên đưa ra môi trường có nhiều người dùng; P5 gắn v
 | Q3 | Ngưỡng cảnh báo lệch Set–Confirm theo loại trục = bao nhiêu (mm)? | P1.2 bảng điểm |
 | Q4 | Ngưỡng yield đổi màu KPI (vd <98% vàng, <95% đỏ)? Ca làm việc thật (giờ bắt đầu/độ dài)? | P4.4 |
 | Q5 | Host nhà máy dùng gì: SECS/GEM, OPC UA, hay chỉ CSV/DB? (quyết P5.2 làm gì) | P5.2 |
-| Q6 | Auto-logout sau bao nhiêu phút idle? ~~Lockout~~ (ĐÃ CHỐT S82: không lockout — audit-only, xem design-notes/0012) | P3.1/P3.2 |
+| Q6 | ~~Auto-logout~~ (S85: mặc định 15 phút, config `Security:AutoLogoutMinutes`, 0=tắt — chỉnh theo nhà máy khi triển khai) · ~~Lockout~~ (ĐÃ CHỐT S82: không lockout — audit-only, design-notes/0012) | P3.1/P3.2 |
 | Q7 | Máy reference thật: dùng bo motion nào (GTS/Advantech) + IO nào để ưu tiên test P/Invoke? | P5.1 |
 
 ---

@@ -362,5 +362,19 @@
   "Calib.PickOffset": "Offset điểm pick",
   "Calib.PickOffset.Step1": "Nới 2 vít hãm bàn gá đầu hút (lục giác 2.5).",
   "Calib.PickOffset.Step2": "Dịch bàn gá theo hướng ngược độ lệch dX/dY hiển thị.",
-  "Calib.PickOffset.Step3": "Siết lại vít hãm, xác nhận không rơ rồi bấm Đo."
+  "Calib.PickOffset.Step3": "Siết lại vít hãm, xác nhận không rơ rồi bấm Đo.",
+  "Set.Audit": "Nhật ký audit",
+  "Set.AuditDesc": "Ai làm gì lúc nào — lọc ngày/user, xuất CSV (Administrator)",
+  "Audit.NeedAdmin": "Xem nhật ký audit cần quyền Administrator. Đăng nhập tài khoản đủ quyền để tiếp tục.",
+  "Audit.From": "Từ ngày",
+  "Audit.To": "Đến ngày",
+  "Audit.User": "User",
+  "Audit.Refresh": "Làm mới",
+  "Audit.Export": "Xuất CSV",
+  "Audit.Count": "{0} bản ghi (tối đa 500)",
+  "Audit.Exported": "Đã xuất: {0}",
+  "Audit.ColUser": "Người dùng",
+  "Audit.ColAction": "Thao tác",
+  "Audit.ColResult": "Kết quả",
+  "Audit.ColDetail": "Chi tiết"
 }
