@@ -6,7 +6,7 @@
 
 ## [Session 84] 2026-07-08 — ROADMAP P2 HOÀN TẤT: mô hình calibration + framework wizard 2 nhánh + UI hai chỗ nhúng + demo routine
 
-**Commit:** *(điền sau)*
+**Commit:** `a6ff044`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** P2 là trục "Hiệu chỉnh" của roadmap (gap D1–D3 — trước đây calib là trục trắng, tài liệu tham chiếu treo).
 Làm trọn 3 phần trong một phiên theo yêu cầu chủ dự án.
