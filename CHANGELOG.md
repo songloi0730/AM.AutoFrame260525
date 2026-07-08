@@ -4,6 +4,54 @@
 
 ---
 
+## [Session 83] 2026-07-08 — P3.1 chính sách đăng nhập nhà máy: bỏ lockout, break-glass day-code + file recovery, banner mật khẩu mặc định
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án phản biện DoD gốc của P3.1 (lockout 5 lần + MustChangePassword) bằng thực tế nhà máy:
+tài khoản dùng chung theo vai, kỹ sư vận hành nhiều máy, lockout đúng lúc hỏng máy = downtime, không có khôi phục
+online, người giữ mật khẩu admin có thể rời đi vĩnh viễn. Đánh giá + 3 câu hỏi chốt qua AskUserQuestion →
+lưu **`docs/design-notes/0012-security-policy-factory.md`** (ADR đầy đủ phương án + đánh đổi) rồi mới thực hiện.
+
+### ✅ Chính sách chốt (0012)
+- **Q1 — KHÔNG lockout, không delay**: mọi lần sai → audit log; sai ≥5 lần LIÊN TIẾP (cùng username, reset khi đúng)
+  → alarm nhẹ **40010** để ca trưởng biết có người dò. Đăng nhập đúng luôn vào được ngay — zero rủi ro downtime.
+- **Q2 — Break-glass kép, nguyên tắc "vào được nhưng không vào lén được"**:
+  - **Day-code**: user `service` + mã 8 số = HMAC-SHA256(secret, machineId + yyyyMMdd) — chấp nhận ±1 ngày →
+    phiên **SuperUser** + alarm **40011** + audit. Secret rỗng = TẮT (mặc định repo — chỉ đặt trong config triển khai).
+    Tool **`scripts/am-daycode.ps1`** cho kỹ sư hãng (1 tool mọi máy) — **kiểm chứng thực nghiệm khớp C#** bằng spike
+    console gọi thẳng `UserService.ComputeDayCode` từ DLL build: 2 ngày thử cùng ra `69307252`/`88579376`.
+  - **File recovery**: đặt **`am-recovery.key`** cạnh executable → lúc boot file bị **XOÁ NGAY** (một lần dùng) + mở
+    cửa sổ **30 phút** đăng nhập `recovery/recovery` = **Administrator tạm** + alarm **40012** + audit.
+    KHÔNG đụng users.json — danh sách user giữ nguyên (khác đường xoá-file re-seed vốn có, vẫn giữ làm lớp cuối).
+- **Q3 — Banner thay ép đổi**: không MustChangePassword (tài khoản dùng chung — người đổi không báo được ca khác);
+  `HasDefaultPasswordsAsync` (BCrypt so nền, cache invalidate khi Save) → **banner vàng thường trực** trên Shell khi
+  còn tài khoản seed dùng mật khẩu mặc định; alarm/prompt khẩn hơn đè lên; tắt trong ~1s sau khi đổi hết.
+  MinLength giữ lại (config, mặc định 8) — không thể gây downtime.
+
+### 📁 Thay đổi
+- MỚI: `AM.Core/Models/SecurityOptions.cs` (bind `AutoMachine:Security`) · `scripts/am-daycode.ps1` ·
+  `docs/design-notes/0012-security-policy-factory.md` · `AM.Services.Tests/UserSecurityPolicyTests.cs`
+- `AlarmCodes`: +40010/40011/40012 (+ catalog `Alarms.{vi,en,zh}.json`); `IUserService`: +`HasDefaultPasswordsAsync`
+- `UserService`: break-glass 2 đường trong LoginAsync (username dành riêng `service`/`recovery` — cấm tạo tài khoản
+  trùng), `ComputeDayCode` public static (chung thuật toán với tool), đếm chuỗi sai + audit, MinLength, seed dùng
+  bảng `SeedAccounts` chung với kiểm mật khẩu mặc định; ctor thêm 4 tham số optional (tương thích ngược test cũ)
+- Shell: `AddCoreServices(config)` + factory UserService (Security options + IAlarmService + IAuditService);
+  ShellViewModel `HasSecurityNotice` (poll cache mỗi tick 1s) + banner else-branch; MainWindow.xaml +2 DataTrigger
+  (nền vàng + glyph ⚠, đặt đầu để trạng thái khẩn hơn đè); appsettings +`Security`; strings +`Shell.DefaultPwdWarn` 3 ngữ
+- Roadmap: hàng 12 ✅ S83 + DoD P3.1 viết lại theo 0012 + Q6 gạch phần lockout
+
+### 🧪 Build & test
+- **+8 test → 289 pass**: không-khoá-sau-5-lần + alarm đúng 1 lần · day-code hôm nay/±1 vào, quá hạn/sai/chưa-config
+  từ chối · file key bị xoá + cửa sổ recovery vào được + không file thì không · MinLength tạo/đổi · cấm tên dành riêng ·
+  banner true khi seed / false sau đổi hết. 2 test cũ nâng mật khẩu test lên ≥8 ký tự theo policy mới.
+- Build 0 warning; smoke boot sạch (i18n 327 chuỗi ×3, users.json nạp bình thường, không lỗi).
+
+### ⏭️ Việc tiếp
+- **P2.1–P2.3 Calibration** (3 phiên) hoặc **P3.2 Auto-logout + audit UI** (Q6 phần auto-logout còn chờ chốt số phút).
+
+---
+
 ## [Session 82] 2026-07-07 — ROADMAP P1 HOÀN TẤT: guard hình học Z-an-toàn (P1.4) + jog giữ-để-chạy deadman 200ms (P1.5)
 
 **Commit:** `4a9d35f`

@@ -64,7 +64,7 @@ internal static class Bootstrapper
         bool useSimulation = config.GetValue<bool>("AutoMachine:UseSimulation", defaultValue: true);
 
         services.AddDataAccess(config);
-        services.AddCoreServices();
+        services.AddCoreServices(config);
         services.AddUiViewModels();
         services.AddHardware(config, useSimulation);
     }

@@ -140,6 +140,7 @@
   "Shell.Mode": "Chế độ",
   "Shell.Guest": "Chưa đăng nhập",
   "Shell.NoAlarm": "Không có cảnh báo",
+  "Shell.DefaultPwdWarn": "⚠ Còn tài khoản dùng mật khẩu mặc định — đổi trong Cài đặt → Người dùng & phân quyền",
 
   "Col.Code": "Mã",
   "Col.Level": "Mức",

@@ -354,6 +354,10 @@
                     <Setter Property="Height" Value="36"/>
                     <Setter Property="Background" Value="{DynamicResource Notice.OkBrush}"/>
                     <Style.Triggers>
+                        <!-- Cảnh báo mật khẩu mặc định (0012) — đặt ĐẦU: trạng thái khẩn hơn phía dưới đè lên -->
+                        <DataTrigger Binding="{Binding HasSecurityNotice}" Value="True">
+                            <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
+                        </DataTrigger>
                         <DataTrigger Binding="{Binding HasUnackedAlarm}" Value="True">
                             <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
@@ -383,6 +387,10 @@
                             <Setter Property="Text" Value="✓"/>
                             <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
                             <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasSecurityNotice}" Value="True">
+                                    <Setter Property="Text" Value="⚠"/>
+                                    <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
+                                </DataTrigger>
                                 <DataTrigger Binding="{Binding HasUnackedAlarm}" Value="True">
                                     <Setter Property="Text" Value="⚠"/>
                                     <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>

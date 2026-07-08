@@ -40,6 +40,12 @@ public interface IUserService
     /// <summary>True nếu cấp quyền hiện tại ≥ <paramref name="required"/>.</summary>
     bool HasPermission(UserLevel required);
 
+    /// <summary>
+    /// True nếu còn tài khoản seed đang dùng mật khẩu mặc định (nguồn cho banner cảnh báo
+    /// thường trực — design-notes/0012). Kết quả được cache tới lần đổi mật khẩu kế tiếp.
+    /// </summary>
+    Task<bool> HasDefaultPasswordsAsync(CancellationToken ct = default);
+
     // ─── Quản trị tài khoản (Settings → Người dùng; gọi khi quyền Administrator) ──
 
     /// <summary>Danh sách tài khoản (tên + cấp quyền; KHÔNG kèm hash). Rỗng nếu không có.</summary>

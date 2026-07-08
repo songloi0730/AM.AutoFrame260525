@@ -26,6 +26,9 @@
   "40003": { "name": "Cấu hình không hợp lệ", "remedy": "Kiểm tra file cấu hình và giá trị tham số" },
   "40004": { "name": "License hết hạn", "remedy": "Liên hệ nhà cung cấp để gia hạn license" },
   "40005": { "name": "Khởi tạo hệ thống lỗi", "remedy": "Xem log khởi tạo và kiểm tra phần cứng" },
+  "40010": { "name": "Nhiều lần đăng nhập sai", "remedy": "Kiểm tra ai đang thao tác tại máy — không khoá tài khoản, chỉ cảnh báo" },
+  "40011": { "name": "Đăng nhập quyền dịch vụ (day-code)", "remedy": "Xác nhận kỹ sư hãng đang bảo trì; xem audit log; đăng xuất khi xong" },
+  "40012": { "name": "File khôi phục break-glass kích hoạt", "remedy": "Xác nhận việc khôi phục quyền admin là chủ đích; đổi mật khẩu admin ngay sau đó" },
 
   "50001": { "name": "Kết nối thất bại", "remedy": "Kiểm tra cáp mạng và địa chỉ thiết bị" },
   "50002": { "name": "Quá thời gian truyền thông", "remedy": "Kiểm tra thiết bị và độ trễ mạng" },

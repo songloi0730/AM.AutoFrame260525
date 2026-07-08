@@ -26,6 +26,9 @@
   "40003": { "name": "Invalid configuration", "remedy": "Check config file and parameter values" },
   "40004": { "name": "License expired", "remedy": "Contact vendor to renew the license" },
   "40005": { "name": "System init failed", "remedy": "Review init log and check hardware" },
+  "40010": { "name": "Repeated failed logins", "remedy": "Check who is operating the machine — account is NOT locked, warning only" },
+  "40011": { "name": "Service login (day-code)", "remedy": "Confirm OEM engineer is servicing; review audit log; log out when done" },
+  "40012": { "name": "Break-glass recovery file armed", "remedy": "Confirm the admin recovery was intentional; change admin password afterwards" },
 
   "50001": { "name": "Connection failed", "remedy": "Check network cable and device address" },
   "50002": { "name": "Communication timeout", "remedy": "Check device and network latency" },

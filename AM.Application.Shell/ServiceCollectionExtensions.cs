@@ -95,7 +95,7 @@ internal static class ServiceCollectionExtensions
     }
 
     /// <summary>Business + infrastructure services (Alarm/Recipe/Parameter/HardwareManager/StationSync/Watchdog).</summary>
-    public static IServiceCollection AddCoreServices(this IServiceCollection services)
+    public static IServiceCollection AddCoreServices(this IServiceCollection services, IConfiguration config)
     {
         services.AddSingleton<IAlarmService, AlarmService>();
         // IRecipeService đăng ký ở AddDemoMachine (kèm seed recipe theo máy) — service không cứng loại recipe.
@@ -121,8 +121,13 @@ internal static class ServiceCollectionExtensions
         // ProductionRecorder (CycleCompleted → record PASS với SN tự sinh) KHÔNG dùng cho máy sequence:
         // ReportStation ghi record thật (SN scanner, OK/NG, vision score) — tránh ghi trùng (S78, Prompt D)
         // UserService: phiên đăng nhập + RBAC (user store JSON, mật khẩu BCrypt)
+        // Chính sách nhà máy 0012: không lockout, break-glass day-code + file recovery, banner mật khẩu mặc định
         services.AddSingleton<IUserService, UserService>(sp =>
-            new UserService(sp.GetRequiredService<ILogger<UserService>>(), "users.json"));
+            new UserService(sp.GetRequiredService<ILogger<UserService>>(), "users.json",
+                config.GetSection("AutoMachine:Security").Get<AM.Core.Models.SecurityOptions>()
+                    ?? new AM.Core.Models.SecurityOptions(),
+                sp.GetRequiredService<IAlarmService>(),
+                sp.GetRequiredService<IAuditService>()));
         // Bus tín hiệu phần cứng (event-push) — nguồn cho guard tầng 3
         services.AddSingleton<IHardwareSignalBus, HardwareSignalBus>();
         // Guard engine: phân quyền per-action R0–R3 (state → role → điều kiện phần cứng) + audit log

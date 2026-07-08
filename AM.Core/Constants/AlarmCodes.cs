@@ -44,6 +44,11 @@ public static class AlarmCodes
     public const int SystemLicenseExpired  = 40004;
     public const int SystemInitFail        = 40005;
 
+    // Bảo mật đăng nhập (design-notes/0012 — không lockout, break-glass phải ỒN ÀO)
+    public const int SecurityLoginFailures = 40010;  // Sai mật khẩu nhiều lần liên tiếp
+    public const int SecurityServiceLogin  = 40011;  // Đăng nhập quyền dịch vụ bằng mã theo ngày
+    public const int SecurityRecoveryUsed  = 40012;  // File khôi phục break-glass được kích hoạt
+
     // ─── 50000–50999  Communication / Network ────────────────────────────────
     public const int CommConnectionFail    = 50001;  // Generic: kết nối thất bại
     public const int CommTimeout           = 50002;  // Generic: timeout

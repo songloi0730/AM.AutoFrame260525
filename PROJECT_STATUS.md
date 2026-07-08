@@ -9,7 +9,13 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-07-07
+**Ngày:** 2026-07-08
+**Session:** #83 — **P3.1 Chính sách đăng nhập nhà máy + break-glass (chốt lại theo `design-notes/0012`)**. Chủ dự án phản biện DoD gốc (lockout gây downtime khi hỏng máy; tài khoản dùng chung theo vai không hợp ép-đổi-mật-khẩu; mất quyền admin vĩnh viễn khi người giữ mật khẩu rời đi) → chốt qua AskUserQuestion: **KHÔNG lockout** (Q1: chỉ audit — sai ≥5 lần liên tiếp → alarm 40010, đăng nhập đúng vẫn vào ngay), **break-glass kép** (Q2: day-code + file), **banner thay ép đổi** (Q3). Thực hiện: `SecurityOptions` (config `AutoMachine:Security`); UserService — đếm chuỗi sai + audit mọi lần đăng nhập; user `service` + **mã 8 số theo ngày** HMAC-SHA256(secret, machineId+yyyyMMdd) ±1 ngày → SuperUser tạm + alarm 40011 (secret rỗng = TẮT — mặc định repo; tool `scripts/am-daycode.ps1` **đã kiểm chứng thực nghiệm khớp C#** bằng spike); file **`am-recovery.key`** cạnh exe → lúc boot XOÁ NGAY (một lần dùng) + cửa sổ 30' đăng nhập `recovery/recovery` = Administrator tạm + alarm 40012 — KHÔNG đụng users.json (giữ danh sách user, khác đường xoá-file re-seed cũ); MinLength 8 khi tạo/đổi; 2 tên break-glass cấm tạo tài khoản; `HasDefaultPasswordsAsync` (cache, invalidate khi Save) → **banner vàng thường trực** trên Shell khi còn mật khẩu mặc định (alarm/prompt đè lên; tắt ~1s sau khi đổi hết); alarm catalog + strings 3 ngữ. **+8 test → 289 pass** (2 test cũ nâng mật khẩu lên 8 ký tự theo policy), build 0 warning, smoke boot sạch (i18n 327×3). Việc tiếp: **P2 Calibration** (3 phiên) hoặc **P3.2 Auto-logout + audit UI**.
+**Commit:** *(điền sau khi commit)*  ·  (S82: P1 6/6 `4a9d35f` · S81: P1 4/6 `00c5367` · S80: P0 `b72cf8b`)
+
+---
+
+## 🗓️ Session #82
 **Session:** #82 — **ROADMAP P1 HOÀN TẤT (P1.4 + P1.5 — 2 mục cuối)**. **P1.4 Guard hình học**: `MotionSignalPublisher` (AM.Services) poll vị trí Z mỗi 100ms → publish tín hiệu `Motion.ZAtSafe` lên `HardwareSignalBus` (bus dedup — consumer vẫn event-push; **fail-safe**: chưa kết nối/lỗi đọc → false); `SignalKeys.MotionZAtSafe` mới; MotionViewModel khai `GeometricGuardFor(axis)` — jog/nudge/move/hold trên **X/Y/U bị chặn khi Z chưa ở độ cao an toàn** (0±0.5mm, trục Z được miễn để còn nâng lên), blockReason `Manual.ZNotSafe` 3 ngữ + audit DENIED. **P1.5 Jog deadman**: interface `IAxisJog` (StartJog velocity-mode / KeepAlive / StopJog, `WatchdogTimeoutMs=200`); `SimulatedMotionController` implement — vòng tích phân 25ms, **mất KeepAlive >200ms → TỰ DỪNG** (UI treo/crash không thể để trục chạy tiếp); jog pad MotionView thành **giữ-để-chạy** qua attached behavior `JogHoldBehavior` (PreviewMouseDown/Up + MouseLeave + LostMouseCapture — nhả/rời nút là Stop), VM nuôi KeepAlive 80ms nền; HAL không có IAxisJog → **fallback inching** (hành vi cũ, an toàn); STOP đỏ hủy hold + StopAllAxes. **+6 test (4 deadman + 2 publisher) → 281 pass**, build 0 warning, smoke boot sạch (log `[MotionSignals] Started`, i18n 326 chuỗi ×3). **P1 xong toàn bộ 6/6** — việc tiếp theo roadmap §4: **P2 Calibration** (3 phiên) hoặc **P3.1 Password policy + lockout** (1 phiên).
 **Commit:** `4a9d35f`  ·  (S81: P1 4/6 `00c5367` · S80: P0 `b72cf8b` · S79: roadmap `35c75cc`)
 
@@ -54,7 +60,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **28 projects** (CPM), production 0 warning, **281 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
+| Solution structure | ✅ Hoàn thành | **28 projects** (CPM), production 0 warning, **289 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Core.Sequencing | ✅ Hoàn thành | **Mới (S77, ADR 0011)** — sequence engine khai báo: contracts (`IStation`/`StepContext`/`StationResult`/`IStationResolver`/`IResumeVerifiable`/`IOperatorPrompt`), `SequenceLoader` 2 pha gom lỗi, `SequenceEngine` (order song song, timeout linked-CTS, onError/retry/prompt, pause ranh giới bước + resume-check). Standalone — không reference DryIoc/hardware/UI |

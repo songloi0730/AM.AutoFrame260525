@@ -140,6 +140,7 @@
   "Shell.Mode": "模式",
   "Shell.Guest": "未登录",
   "Shell.NoAlarm": "无报警",
+  "Shell.DefaultPwdWarn": "⚠ 仍有账号使用默认密码 — 请在 设置 → 用户与权限 中修改",
 
   "Col.Code": "代码",
   "Col.Level": "等级",

@@ -121,7 +121,7 @@
 
 | Mục | Việc cụ thể | DoD |
 |-----|-------------|-----|
-| **P3.1 Password policy + lockout** (gap B1, B4) | UserService: MinLength (config, mặc định 8) khi tạo/đổi; `MustChangePassword` flag — seed user bật sẵn, login lần đầu ép đổi (IdentityView thêm bước); lockout sau N lần sai (config, mặc định 5 → khoá 5 phút + audit + alarm nhẹ); banner cảnh báo khi còn user dùng mật khẩu mặc định | Test: sai 5 lần → khoá; seed login → bắt đổi; cảnh báo tắt sau khi đổi hết |
+| **P3.1 Chính sách đăng nhập nhà máy + break-glass** (gap B1, B4 — ĐÃ CHỐT LẠI theo `design-notes/0012`: bỏ lockout + MustChangePassword vì rủi ro downtime/tài khoản dùng chung) | UserService: MinLength (config, mặc định 8) khi tạo/đổi; **KHÔNG lockout** — sai ≥5 lần liên tiếp → audit + alarm nhẹ 40010; **day-code** user `service` + HMAC(secret, machineId+ngày) ±1 ngày → SuperUser tạm + alarm 40011 (tool `scripts/am-daycode.ps1`, secret không commit); **file recovery** `am-recovery.key` cạnh exe → xoá ngay + cửa sổ 30 phút login `recovery` = Admin tạm + alarm 40012 (không đụng users.json); banner vàng thường trực khi còn user dùng mật khẩu mặc định | Test: sai 5 lần → alarm nhưng login đúng vẫn vào; day-code hôm nay/±1 vào, sai ngày không; file recovery bị xoá + trong 30' vào, hết hạn không; cảnh báo tắt sau khi đổi hết |
 | **P3.2 Auto-logout + audit UI** (gap B2, B5) | Inactivity timer (config phút, đếm input toàn cửa sổ) → tự logout về "Chưa đăng nhập" (máy VẪN chạy — chỉ hạ quyền); Settings thêm màn Audit: xem bảng + lọc ngày/user + export CSV | Idle quá hạn → UserText đổi, tab quyền cao biến mất; export mở được |
 | **P3.3 Backup cấu hình** (gap B6, C5-một-phần) | Settings "Sao lưu & phục hồi" (thay placeholder): backup zip (db + recipes + points + users + sequence + io.map) vào thư mục chọn, restore có confirm 2 bước + backup-trước-restore; backup tự động hàng ngày giữ N bản (config) | Backup → xoá file → restore → app chạy lại đúng |
 
@@ -163,7 +163,7 @@
 | ✅ 9 | P1.5 Jog deadman — XONG S82: `IAxisJog` (StartJog/KeepAlive/StopJog, watchdog 200ms) sim implement (vòng tích phân 25ms, mất KeepAlive → TỰ DỪNG); jog pad giữ-để-chạy qua `JogHoldBehavior` (nhả nút/rời nút/mất capture → Stop; UI nuôi KeepAlive 80ms); HAL không có IAxisJog → fallback inching; 4 test | An toàn | 1 | — |
 | ✅ 10 | P1.6 Prompt liệu sót + resume-check — XONG S81: `BannerOperatorPromptService` (IOperatorPrompt → nút động trên banner; không subscriber → chọn lựa chọn an toàn nhất đứng đầu); PickStation init HỎI operator (lấy tay/tự thoát, lặp tới khi sạch); PickStation + `IResumeVerifiable` kiểm BẤT BIẾN HÌNH HỌC Z-ở-độ-cao-an-toàn (không so snapshot — gantry dùng chung làm snapshot per-station stale); 3 test | An toàn | 0.5 | — |
 | 🟡 11 | P2.1–P2.3 Calibration (doc+framework+UI) | Hiệu chỉnh | 3 | P1.2 (sub-tab) |
-| 🟠 12 | P3.1 Password policy + lockout | Bảo mật | 1 | — |
+| ✅ 12 | P3.1 Chính sách đăng nhập nhà máy + break-glass — XONG S83 theo design-notes/0012: KHÔNG lockout (sai ≥5 lần → audit + alarm 40010, đăng nhập đúng vẫn vào); day-code `service` HMAC(secret, máy+ngày) ±1 ngày → SuperUser + alarm 40011 (tool `scripts/am-daycode.ps1` — đã kiểm chứng khớp C#); file `am-recovery.key` → xoá ngay + cửa sổ 30' login `recovery` = Admin tạm + alarm 40012 (không đụng users.json); MinLength 8 config; banner vàng thường trực khi còn mật khẩu mặc định; 8 test | Bảo mật | 1 | — |
 | 🟡 13 | P3.2 Auto-logout + audit UI | Bảo mật | 1 | — |
 | 🟡 14 | P3.3 Backup & restore | Bảo mật/Ops | 1 | — |
 | 🟡 15 | P4.1 Single-step | Chức năng | 1 | — |
@@ -187,7 +187,7 @@ sau P3 mới nên đưa ra môi trường có nhiều người dùng; P5 gắn v
 | Q3 | Ngưỡng cảnh báo lệch Set–Confirm theo loại trục = bao nhiêu (mm)? | P1.2 bảng điểm |
 | Q4 | Ngưỡng yield đổi màu KPI (vd <98% vàng, <95% đỏ)? Ca làm việc thật (giờ bắt đầu/độ dài)? | P4.4 |
 | Q5 | Host nhà máy dùng gì: SECS/GEM, OPC UA, hay chỉ CSV/DB? (quyết P5.2 làm gì) | P5.2 |
-| Q6 | Auto-logout sau bao nhiêu phút idle? Lockout bao nhiêu lần sai/khoá bao lâu? | P3.1/P3.2 |
+| Q6 | Auto-logout sau bao nhiêu phút idle? ~~Lockout~~ (ĐÃ CHỐT S82: không lockout — audit-only, xem design-notes/0012) | P3.1/P3.2 |
 | Q7 | Máy reference thật: dùng bo motion nào (GTS/Advantech) + IO nào để ưu tiên test P/Invoke? | P5.1 |
 
 ---

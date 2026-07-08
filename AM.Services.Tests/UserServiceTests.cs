@@ -169,11 +169,12 @@ public sealed class UserServiceTests : IDisposable
     public async Task CreateUser_ThenLoginWithNewPassword_Succeeds()
     {
         var sut = Create();
-        (await sut.CreateUserAsync("tester", "pass123", UserLevel.Engineer)).Should().BeTrue();
-        (await sut.CreateUserAsync("tester", "other", UserLevel.Operator)).Should().BeFalse("trùng tên");
+        // mật khẩu ≥8 ký tự theo MinPasswordLength (0012) — case ngắn hơn test ở UserSecurityPolicyTests
+        (await sut.CreateUserAsync("tester", "pass1234", UserLevel.Engineer)).Should().BeTrue();
+        (await sut.CreateUserAsync("tester", "other-123", UserLevel.Operator)).Should().BeFalse("trùng tên");
 
         var reopened = Create(); // nạp lại từ file → persisted
-        (await reopened.LoginAsync("tester", "pass123")).Should().BeTrue();
+        (await reopened.LoginAsync("tester", "pass1234")).Should().BeTrue();
         reopened.CurrentLevel.Should().Be(UserLevel.Engineer);
     }
 
@@ -181,9 +182,9 @@ public sealed class UserServiceTests : IDisposable
     public async Task ResetPassword_OldFails_NewWorks()
     {
         var sut = Create();
-        (await sut.ResetPasswordAsync("operator", "newpass")).Should().BeTrue();
+        (await sut.ResetPasswordAsync("operator", "newpass-1")).Should().BeTrue();
         (await sut.LoginAsync("operator", "operator123")).Should().BeFalse("mật khẩu cũ không còn dùng được");
-        (await sut.LoginAsync("operator", "newpass")).Should().BeTrue();
+        (await sut.LoginAsync("operator", "newpass-1")).Should().BeTrue();
     }
 
     [Fact]

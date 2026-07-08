@@ -94,6 +94,9 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     /// <summary>Nút Manual action bar: mở màn Vận hành tay — cần LineLead+ (P1.2).</summary>
     [ObservableProperty] private bool _canOpenManual;
 
+    /// <summary>Banner vàng thường trực: còn tài khoản dùng mật khẩu mặc định (design-notes/0012).</summary>
+    [ObservableProperty] private bool _hasSecurityNotice;
+
     // Service prompt (IOperatorPrompt — station hỏi lúc init, vd liệu sót; P1.6):
     // lựa chọn ĐỘNG theo request, khác 3 nút cố định của engine prompt
     [ObservableProperty] private bool _hasServicePrompt;
@@ -296,6 +299,28 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
             if (chip is not null) chip.Connected = d.Device.IsConnected;
         }
         RefreshConnectionSummary();
+        _ = RefreshSecurityNoticeAsync(); // kết quả cache trong UserService — rẻ sau lần tính đầu
+    }
+
+    // Banner vàng thường trực khi còn tài khoản dùng mật khẩu mặc định — tắt trong ~1s sau khi đổi hết.
+    private async Task RefreshSecurityNoticeAsync()
+    {
+        try
+        {
+            bool warn = await _user.HasDefaultPasswordsAsync().ConfigureAwait(false); // RunOnUi tự về UI thread
+            if (warn == HasSecurityNotice) return;
+            RunOnUi(() =>
+            {
+                HasSecurityNotice = warn;
+                RefreshAlarm();
+            });
+        }
+#pragma warning disable CA1031 // kiểm tra nền lỗi không được phá tick UI — chỉ ghi debug
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            System.Diagnostics.Debug.WriteLine($"RefreshSecurityNotice lỗi: {ex}");
+        }
     }
 
     /// <summary>Tổng hợp "n online / m tổng" cho chip kết nối — gọi sau mỗi lần cập nhật chips.</summary>
@@ -347,6 +372,12 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
             BannerText = $"[{top.AlarmCode}] {top.Message} · "
                 + $"{top.RaisedAt.ToLocalTime().ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)}"
                 + $" · {top.Station}";
+        }
+        else if (HasSecurityNotice)
+        {
+            // Cảnh báo bảo mật chỉ chiếm banner khi KHÔNG có alarm — alarm luôn ưu tiên hơn
+            IsBannerError = false;
+            BannerText = Loc.Strings["Shell.DefaultPwdWarn"];
         }
         else
         {
