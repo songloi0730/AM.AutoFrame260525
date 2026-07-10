@@ -4,6 +4,43 @@
 
 ---
 
+## [Session 87] 2026-07-10 — Chắt lọc bộ UX guidelines web/mobile (RefUX-A): 11 quy tắc interaction/feedback vào chuẩn HMI, phần styles/palette từ chối có lý do
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án đưa link một repo OSS AI-skill sinh design-system UI/UX (bí danh **RefUX-A** —
+`docs/private/alias.local.md`) và yêu cầu rà xem áp được gì vào AM.AutoFrame.
+
+### 🔍 Đánh giá (phê phán)
+- RefUX-A nhắm **web/mobile marketing UI**: 67 UI styles (Glassmorphism, Claymorphism...), 161 color palettes,
+  57 font pairings, reasoning rules theo ngành (fintech/e-commerce), stack React/Next/Tailwind.
+- **KHÔNG cài làm skill**: skill trigger tự động cho mọi yêu cầu UI → sẽ đề xuất style/gradient/font web vào HMI,
+  ngược trực diện High-Performance HMI (nền yên tĩnh, palette v2 duy nhất, màu-chỉ-khi-có-nghĩa). Từ chối ghi thành
+  bảng "KHÔNG áp + lý do" để phiên sau không bê nhầm.
+- Phần giá trị thật: nhóm **99 UX guidelines** có các quy tắc interaction/feedback platform-agnostic KÈM ĐỊNH LƯỢNG
+  mà bộ HMI docs hiện hành nói rải rác nhưng chưa thành luật.
+
+### ✅ Nội dung thêm vào dự án
+- **`docs/HMI_Advanced_Standards.md` +§7** "Đối chiếu RefUX-A — adoption": bảng 5 nhóm KHÔNG áp (styles/palette ·
+  font · mobile-first/web-perf · ARIA/HTML · AI-spatial-sustainability) + bảng **11 quy tắc ÁP**: lệnh >300ms hiện
+  bận + xong việc không im lặng · disable nút khi lệnh chạy (chống double-fire) · đủ bộ trạng thái nút kèm LÝ DO
+  disabled · animation micro 150–300ms ease-out, cấm animation trang trí · thông báo tiện ích tự tắt 3–5s vs lỗi
+  phải đi đường alarm/ACK · không layout shift (trừ banner co giãn chủ đích) · truncation có tooltip · form label
+  luôn hiện + validate cạnh ô · số ngăn nghìn + ngày một định dạng `HH:mm:ss dd/MM/yyyy` · empty state có lối đi ·
+  2 bước cho hành động không đảo ngược. Nhiều mục vốn là pattern có sẵn trong code (IsBusy, blockReason,
+  Override/Restore 2 bước, Calib.Empty) — giờ được NÂNG THÀNH LUẬT.
+- **`.claude/skills/am-hmi-design/SKILL.md`**: Release Checklist +10 mục nhóm "Interaction & feedback (RefUX-A §7)".
+- **CLAUDE.md**: dòng mô tả `HMI_Advanced_Standards.md` trỏ thêm §7.
+- **`docs/private/alias.local.md`** (local, không commit): thêm bí danh RefUX-A theo quy ước ẩn danh nguồn tham khảo.
+
+### 🧪 Build & test
+- Docs-only — không đổi code/string; 300 tests + build giữ nguyên trạng thái S86.
+
+### ⏭️ Việc tiếp
+- **P4.1 Single-step** · **P4.2 Sequence per-recipe** · **P4.3 Settings hoàn thiện** · **P4.4 Production/SPC** · **P5** máy thật.
+
+---
+
 ## [Session 86] 2026-07-08 — P3.3 Backup & restore: zip 3 loại bản lưu + auto hàng ngày + phục hồi 2 bước có đường lùi — P3 XONG TOÀN BỘ
 
 **Commit:** `31da608`

@@ -77,3 +77,38 @@
 Chỉ theo đủ **bố cục 4-panel + HCI Compliance Statement** (đánh dấu từng yêu cầu Implemented/Compliant) **khi bán máy cho
 nhà máy bán dẫn yêu cầu**. Khi đó: Title/Information/Command(phải)/Navigation(đáy ≤10 nút, Alarm kế cuối + cách rộng, Help cuối),
 salience đầy đủ, dialog đúng quy ước, không minimize/close màn chính. Còn lại → **ISA-101 layout hiện tại là đủ và đúng chuẩn**.
+
+---
+
+## 7. Đối chiếu bộ UX guidelines web/mobile "RefUX-A" — adoption (S87)
+
+> Nguồn: bộ ~99 UX guidelines + 67 UI styles + 161 palettes cho web/mobile (bí danh **RefUX-A** — xem
+> `docs/private/alias.local.md`). Chủ dự án yêu cầu rà xem áp được gì. Kết luận: **KHÔNG cài làm skill**
+> (styles/palette/reasoning của nó viết cho marketing web — trigger tự động sẽ đề xuất Glassmorphism/gradient/
+> font-pairing ngược ISA-101, gây hại); **chắt lọc nhóm interaction/feedback platform-agnostic** dưới đây.
+
+### 7a. KHÔNG áp (ghi rõ để phiên sau không bê nhầm)
+
+| Nhóm RefUX-A | Lý do không áp |
+|---|---|
+| 67 UI styles (Glassmorphism, Claymorphism, Neumorphism...) | Ngược High-Performance HMI: nền yên tĩnh, phẳng, không hiệu ứng trang trí. Palette v2 là bảng màu DUY NHẤT. |
+| 161 color palettes + 57 font pairings | Màu/typography đã cố định theo ISA-101 (skill am-hmi-design). |
+| Mobile-first, breakpoints, viewport, PWA/SEO/performance web | WPF desktop, một cỡ màn 1920×1080 cố định. |
+| ARIA/semantic HTML, skip links | Web-specific; WPF dùng AutomationProperties khi cần (chưa là yêu cầu). |
+| AI interaction / Spatial UI / Sustainability | Ngoài phạm vi HMI máy đơn. |
+
+### 7b. ÁP — quy tắc interaction/feedback định lượng (bổ sung vào checklist skill)
+
+| Quy tắc | Nội dung áp cho AM.AutoFrame |
+|---|---|
+| **Feedback ≤ hành động** | Lệnh chạy > **300ms** phải hiện trạng thái bận (IsBusy/spinner/label đổi); KHÔNG để UI "đơ câm". Thao tác xong phải có xác nhận nhìn thấy (status text/toast) — không im lặng cả khi thành công lẫn thất bại. |
+| **Chống double-fire** | Nút lệnh async phải **disable trong lúc lệnh đang chạy** (pattern IsBusy đã dùng ở Calib/Backup — nâng thành luật mọi nút lệnh). |
+| **Đủ bộ trạng thái nút** | Mỗi nút: enabled / pressed (phản hồi khi bấm) / disabled **kèm LÝ DO** (tooltip/blockReason — pattern guard hiện có). Disabled phải khác enabled rõ rệt (opacity + cursor). |
+| **Animation có kỷ luật** | Micro-interaction **150–300ms, ease-out**; KHÔNG animation liên tục trừ chỉ báo bận; KHÔNG animation trang trí (khớp "yên tĩnh khi bình thường"). Tôn trọng cấu hình giảm chuyển động của OS nếu có dùng animation. |
+| **Thông điệp tạm vs phải-ack** | Thông báo thành công/tiện ích: tự tắt **3–5s**. Cảnh báo/lỗi cần người xử lý: KHÔNG tự tắt — đi đường alarm/ACK (EEMUA 201 đã có). Không dùng toast cho việc cần ack. |
+| **Không layout shift bất ngờ** | Nội dung async phải có chỗ chờ (reserve space/skeleton); ngoại lệ CHỦ ĐÍCH: banner alarm co giãn 36→52px (spec v3). |
+| **Truncation có đường xem đủ** | Chữ bị cắt (bảng audit/log/recipe) → ellipsis + tooltip hoặc mở rộng; không cắt cụt không dấu hiệu. |
+| **Form nhập liệu** | Label luôn hiển thị (không chỉ watermark/placeholder); lỗi validate hiện **cạnh ô sai** ngay khi rời ô, không dồn hết lên đầu form; ô bắt buộc có dấu hiệu. |
+| **Số & ngày** | Số lớn có ngăn cách nghìn theo culture; ngày giờ MỘT định dạng thống nhất `HH:mm:ss dd/MM/yyyy` (đã dùng — nâng thành luật); không hiện số thô kiểu `1234567`. |
+| **Empty state có lối đi** | Màn/danh sách rỗng phải nói *vì sao rỗng + làm gì tiếp* (pattern đã dùng: Calib.Empty, Dash.EmptyHint, Backup.Empty — nâng thành luật). |
+| **Hành động không đảo ngược** | Bắt buộc xác nhận 2 bước (pattern Override/Restore); nút nguy hiểm không đặt cạnh nút thường (< 48px). |

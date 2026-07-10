@@ -9,7 +9,13 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-07-08
+**Ngày:** 2026-07-10
+**Session:** #87 — **Rà bộ UX guidelines web/mobile (bí danh RefUX-A) theo yêu cầu chủ dự án → chắt lọc có phê phán, KHÔNG cài skill**. Đánh giá: repo là AI-skill sinh design-system cho web/mobile (67 UI styles Glassmorphism/Claymorphism..., 161 palettes, 57 font pairings, 99 UX guidelines) — nhóm styles/palette/typography **ngược triết lý ISA-101** (High-Performance HMI yên tĩnh, palette v2 là bảng màu duy nhất) nên KHÔNG áp và KHÔNG cài làm skill (trigger tự động sẽ đề xuất style marketing web vào HMI — gây hại); nhóm đáng giá duy nhất là **UX guidelines interaction/feedback platform-agnostic có định lượng**. Kết quả: **`HMI_Advanced_Standards.md` +§7** (bảng KHÔNG áp ghi rõ lý do để phiên sau không bê nhầm + 11 quy tắc ÁP: feedback ≤300ms/không im lặng, disable chống double-fire, đủ bộ trạng thái nút kèm lý do, animation 150–300ms không trang trí, thông báo tạm 3–5s vs phải-ACK, không layout shift, truncation+tooltip, form label/validate cạnh ô, số ngăn nghìn + ngày một định dạng, empty state có lối đi, 2 bước cho hành động không đảo ngược); **skill am-hmi-design +10 mục checklist** "Interaction & feedback"; CLAUDE.md trỏ §7; bí danh RefUX-A vào `alias.local.md` (không commit). Docs-only — không đổi code, 300 tests giữ nguyên. Việc tiếp: **P4** hoặc **P5** theo roadmap §4.
+**Commit:** *(điền sau khi commit)*  ·  (S86: P3.3 `31da608` · S85: P3.2 `6f05f0d` · S84: P2 `a6ff044`)
+
+---
+
+## 🗓️ Session #86
 **Session:** #86 — **P3.3 Backup & restore hoàn tất → P3 XONG TOÀN BỘ (P0–P3 sạch bảng)**. `IBackupService` + `BackupService`: zip dữ liệu vận hành (db · users.json · points.json · parameters.json · io.map/machine/axismap.json · calibration-history.json · recovery/override-actions.json · appsettings.json · recipes/) — chỉ gom mục đang tồn tại; **3 loại bản lưu**: `am-backup-*` (tay, chọn thư mục qua OpenFolderDialog), `am-auto-*` (tự động mỗi ngày 1 bản lúc app chạy, giữ `Backup:KeepCount`=7 bản mới nhất, lỗi chỉ log không phá app), `am-prerestore-*` (**TỰ sao lưu trạng thái hiện tại trước MỌI lần phục hồi** — không mất đường lùi); restore giải nén đè có **chặn path-traversal**, chống trùng tên file cùng giây, xong yêu cầu KHỞI ĐỘNG LẠI app (service đã nạp dữ liệu cũ vào RAM). **Settings thẻ "Sao lưu & phục hồi" hết placeholder** (Admin gate): nội dung sẽ backup + nút Sao lưu ngay + danh sách bản lưu + **phục hồi confirm 2 bước** (chọn bản → cảnh báo đỏ ghi-đè → xác nhận lần 2). i18n +13 key ×3 (**380 chuỗi**). **+3 test → 300 pass**, build 0 warning, smoke: log "[Backup] Auto-backup hàng ngày BẬT" + tạo thật `am-auto-*.zip` ngay lần boot đầu. **Settings chỉ còn 2 placeholder: Phần cứng + Host (P4.3)**. Việc tiếp theo roadmap §4: **P4** (single-step, sequence per-recipe, Settings hoàn thiện, Production/SPC) hoặc **P5** tích hợp máy thật.
 **Commit:** `31da608`  ·  (S85: P3.2 `6f05f0d` · S84: P2 `a6ff044` · S83: P3.1 `f813b91`)
 

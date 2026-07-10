@@ -331,4 +331,16 @@ Ergonomics (SEMI S8 — đeo găng):
 i18n & audit:
 □ Không hardcode string; đổi ngôn ngữ không restart; text không bị cắt
 □ Thao tác nhạy cảm (force IO, calib, đổi tham số) ghi log user + thời gian
+
+Interaction & feedback (đối chiếu RefUX-A — HMI_Advanced_Standards §7, S87):
+□ Lệnh chạy >300ms → hiện trạng thái bận; xong việc có xác nhận nhìn thấy (không im lặng)
+□ Nút lệnh async DISABLE khi đang chạy (chống double-fire — pattern IsBusy)
+□ Mỗi nút đủ trạng thái: enabled / pressed / disabled KÈM LÝ DO (tooltip/blockReason)
+□ Animation micro 150–300ms ease-out; KHÔNG animation liên tục/trang trí (trừ chỉ báo bận)
+□ Thông báo tiện ích tự tắt 3–5s; lỗi cần xử lý đi đường alarm/ACK — không dùng toast
+□ Nội dung async có chỗ chờ (không layout shift); chữ cắt có ellipsis + tooltip
+□ Form: label luôn hiện (không chỉ watermark); lỗi validate cạnh ô sai, hiện khi rời ô
+□ Số lớn có ngăn cách nghìn; ngày giờ MỘT định dạng HH:mm:ss dd/MM/yyyy toàn app
+□ Danh sách/màn rỗng nói VÌ SAO rỗng + làm gì tiếp (không blank)
+□ Hành động không đảo ngược: xác nhận 2 bước (pattern Override/Restore)
 ```

@@ -344,7 +344,7 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/HMI_UI_Architecture_Template.md` | **UI** — v1.1, CHỈ còn hiệu lực phần template điều khiển (AxisControlView/VisionTeachView) |
 | `docs/HMI_Naming_and_Axis_Point_Model.md` | **UI** — quy ước tên IO/trục/điểm, mô hình Trục–Điểm Set/Confirm, trạng thái IO, set/reset vs Force, layout thích ứng 3 tầng |
 | `docs/HMI_Components_Catalog.md` | **UI** — checklist thành phần từng màn hình (Dashboard/Auto/IO/Motion/...) |
-| `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") |
+| `docs/HMI_Advanced_Standards.md` | **UI** — SEMI E95/EEMUA 201/ISA-18.2/định lượng + **quyết định adoption** (cái gì áp/không cho IPC 21–24") + §7 đối chiếu bộ UX web/mobile RefUX-A (interaction/feedback định lượng; styles/palette KHÔNG áp) |
 | `docs/HMI_Dashboard_Spec.md` | **UI** — spec màn hình chính Home (v2.1): shell v3 + card KQ gần nhất + KPI màu-khi-có-nghĩa + prompt banner, data binding interface-only, checklist nghiệm thu |
 | `docs/SequenceEngine_Spec.md` | **Sequence — CHUẨN THIẾT KẾ** `AM.Core.Sequencing`: IStation/StepContext/StationResult, sequence JSON theo recipe, engine + PackML mapping, bất biến, yêu cầu test |
 | `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit)* | **Sequence — YÊU CẦU THAM KHẢO** rút từ máy tham khảo **RefSeq-A**: 8 trạm, vòng đời, ngữ nghĩa Pause/Stop/EMG/Reset, chính sách lỗi, anti-pattern KHÔNG bắt chước + hành vi đáng học |
