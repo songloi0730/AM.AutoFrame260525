@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-10
 **Session:** #87 — **Rà bộ UX guidelines web/mobile (bí danh RefUX-A) theo yêu cầu chủ dự án → chắt lọc có phê phán, KHÔNG cài skill**. Đánh giá: repo là AI-skill sinh design-system cho web/mobile (67 UI styles Glassmorphism/Claymorphism..., 161 palettes, 57 font pairings, 99 UX guidelines) — nhóm styles/palette/typography **ngược triết lý ISA-101** (High-Performance HMI yên tĩnh, palette v2 là bảng màu duy nhất) nên KHÔNG áp và KHÔNG cài làm skill (trigger tự động sẽ đề xuất style marketing web vào HMI — gây hại); nhóm đáng giá duy nhất là **UX guidelines interaction/feedback platform-agnostic có định lượng**. Kết quả: **`HMI_Advanced_Standards.md` +§7** (bảng KHÔNG áp ghi rõ lý do để phiên sau không bê nhầm + 11 quy tắc ÁP: feedback ≤300ms/không im lặng, disable chống double-fire, đủ bộ trạng thái nút kèm lý do, animation 150–300ms không trang trí, thông báo tạm 3–5s vs phải-ACK, không layout shift, truncation+tooltip, form label/validate cạnh ô, số ngăn nghìn + ngày một định dạng, empty state có lối đi, 2 bước cho hành động không đảo ngược); **skill am-hmi-design +10 mục checklist** "Interaction & feedback"; CLAUDE.md trỏ §7; bí danh RefUX-A vào `alias.local.md` (không commit). Docs-only — không đổi code, 300 tests giữ nguyên. Việc tiếp: **P4** hoặc **P5** theo roadmap §4.
-**Commit:** *(điền sau khi commit)*  ·  (S86: P3.3 `31da608` · S85: P3.2 `6f05f0d` · S84: P2 `a6ff044`)
+**Commit:** `25ec2bf`  ·  (S86: P3.3 `31da608` · S85: P3.2 `6f05f0d` · S84: P2 `a6ff044`)
 
 ---
 

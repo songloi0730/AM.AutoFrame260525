@@ -6,7 +6,7 @@
 
 ## [Session 87] 2026-07-10 — Chắt lọc bộ UX guidelines web/mobile (RefUX-A): 11 quy tắc interaction/feedback vào chuẩn HMI, phần styles/palette từ chối có lý do
 
-**Commit:** *(điền sau)*
+**Commit:** `25ec2bf`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án đưa link một repo OSS AI-skill sinh design-system UI/UX (bí danh **RefUX-A** —
 `docs/private/alias.local.md`) và yêu cầu rà xem áp được gì vào AM.AutoFrame.
