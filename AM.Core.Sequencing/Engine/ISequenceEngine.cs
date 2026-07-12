@@ -42,6 +42,23 @@ public interface ISequenceEngine
     void RequestPause();
 
     /// <summary>
+    /// Chế độ chạy TỪNG BƯỚC (Engineer, P4.1): bật → sau MỖI nhóm order engine tự dừng ở ranh giới
+    /// bước (bất biến 5 — station không biết gì), chờ <see cref="StepOnce"/>. Bật/tắt được giữa chừng;
+    /// tắt khi đang đứng gate thì bấm <see cref="StepOnce"/> một lần nữa để chạy liên tục tiếp.
+    /// </summary>
+    bool SingleStep { get; set; }
+
+    /// <summary>True khi engine đang đứng ở gate từng-bước chờ <see cref="StepOnce"/> (UI hiện nút "Bước tiếp").</summary>
+    bool IsWaitingStep { get; }
+
+    /// <summary>
+    /// Cho chạy nhóm order kế tiếp khi đang đứng ở gate từng-bước. KHÔNG chạy resume-check
+    /// (máy đứng có chủ đích dưới quan sát của engineer — khác Pause thật). Không có tác dụng
+    /// nếu gate hiện tại do <see cref="RequestPause"/> tạo ra (phải <see cref="Resume"/> đúng đường).
+    /// </summary>
+    void StepOnce();
+
+    /// <summary>
     /// Chạy tiếp sau Pause. Trước khi mở lại, engine xác minh mọi station có
     /// <see cref="IResumeVerifiable"/> — cơ cấu lệch thì GIỮ Paused + phát
     /// <see cref="OperatorPromptRequired"/> (hành vi học từ RefSeq-A — ADR 0011 §4.1).

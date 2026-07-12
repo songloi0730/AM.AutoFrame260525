@@ -65,7 +65,7 @@ internal static class Bootstrapper
 
         services.AddDataAccess(config);
         services.AddCoreServices(config);
-        services.AddUiViewModels();
+        services.AddUiViewModels(config);
         services.AddHardware(config, useSimulation);
     }
 

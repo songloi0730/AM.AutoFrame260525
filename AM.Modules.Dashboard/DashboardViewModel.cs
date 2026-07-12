@@ -37,7 +37,6 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
 {
     private const int MaxLogEntries = 30;
     private const int MaxRecentRecords = 14;
-    private const double ShiftHours = 8; // "ca hiện tại" — cửa sổ KPI + bảng sản phẩm
 
     // ─── Private fields ─────────────────────────────────────────────────────────
     private readonly IAlarmService _alarmService;
@@ -50,6 +49,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private readonly IIoModule _io;
     private readonly IIoTagMap _ioMap;
     private readonly Seq.ISequenceEngine _engine;
+    private readonly ProductionOptions _prodOptions; // ca làm việc + ngưỡng màu yield (P4.4)
     private readonly ILogger<DashboardViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
     private readonly CancellationTokenSource _cts = new();
@@ -83,6 +83,9 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     // Cycle tự đổi đơn vị mili-giây sang giây vì cycle thực tế của máy lắp ráp toàn giây.
     [ObservableProperty] private string _yieldText = "—";
     [ObservableProperty] private string _avgCycleText = "—";
+
+    /// <summary>Mức màu yield theo ngưỡng config (P4.4): 0 = thường, 1 = vàng, 2 = đỏ.</summary>
+    [ObservableProperty] private int _yieldLevel;
 
     // Card "Kết quả gần nhất" trên work area — record mới nhất trong ca (ảnh cycle sẽ bổ sung cùng vision service)
     [ObservableProperty] private bool _hasLatest;
@@ -132,6 +135,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         IIoModule io,
         IIoTagMap ioMap,
         Seq.ISequenceEngine engine,
+        ProductionOptions prodOptions,
         ILogger<DashboardViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(alarmService);
@@ -144,6 +148,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(io);
         ArgumentNullException.ThrowIfNull(ioMap);
         ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(prodOptions);
         ArgumentNullException.ThrowIfNull(logger);
 
         _alarmService      = alarmService;
@@ -156,6 +161,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         _io                = io;
         _ioMap             = ioMap;
         _engine            = engine;
+        _prodOptions       = prodOptions;
         _logger            = logger;
         _uiContext         = SynchronizationContext.Current;
 
@@ -491,7 +497,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private async Task RefreshProductionAsync()
     {
         var now = DateTime.UtcNow;
-        var from = now.AddHours(-ShiftHours);
+        // "Ca hiện tại" theo lịch ca config (P4.4) — không còn cửa sổ trượt 8h cứng
+        var from = _prodOptions.GetShiftStartLocal(DateTime.Now).ToUniversalTime();
         try
         {
             using var scope = _scopeFactory.CreateScope();
@@ -519,6 +526,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
                 AvgCycleTimeMs = s.AvgCycleTimeMs;
                 YieldText      = s.Total == 0 ? "—"
                     : string.Create(CultureInfo.InvariantCulture, $"{s.YieldPercent:F1} %");
+                YieldLevel     = _prodOptions.GetYieldLevel(s.YieldPercent, s.Total);
                 AvgCycleText   = FormatCycle(s.Total, s.AvgCycleTimeMs);
 
                 RecentRecords.Clear();

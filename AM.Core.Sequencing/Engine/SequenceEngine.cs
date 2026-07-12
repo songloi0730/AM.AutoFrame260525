@@ -29,12 +29,33 @@ public sealed class SequenceEngine : ISequenceEngine
 
     private bool _pauseRequested;
     private bool _abortAfterResume;
+    private bool _singleStep;
+    private bool _singleStepArmed; // gate hiện tại do single-step tạo (không phải RequestPause)
     private TaskCompletionSource<bool>? _resumeTcs;
     private SequenceDefinition? _current;
     private CancellationToken _runCt;
 
     /// <inheritdoc/>
     public SequenceRunState State { get; private set; } = SequenceRunState.Idle;
+
+    /// <inheritdoc/>
+    public bool SingleStep
+    {
+        get { lock (_sync) { return _singleStep; } }
+        set
+        {
+            lock (_sync) { _singleStep = value; }
+            _logger.LogInformation("SingleStep {State} — {Detail}",
+                value ? "BẬT" : "TẮT",
+                value ? "dừng ở ranh giới sau mỗi nhóm bước" : "chạy liên tục");
+        }
+    }
+
+    /// <inheritdoc/>
+    public bool IsWaitingStep
+    {
+        get { lock (_sync) { return _singleStepArmed && _pauseRequested && State == SequenceRunState.Paused; } }
+    }
 
     /// <inheritdoc/>
     public event EventHandler<StepEventArgs>? StepStarted;
@@ -78,6 +99,7 @@ public sealed class SequenceEngine : ISequenceEngine
             _runCt = ct;
             _pauseRequested = false;
             _abortAfterResume = false;
+            _singleStepArmed = false;
         }
         _logger.LogInformation("Sequence '{Name}' v{Version} bắt đầu ({Steps} bước)",
             sequence.Name, sequence.Version, sequence.Steps.Count);
@@ -113,6 +135,7 @@ public sealed class SequenceEngine : ISequenceEngine
                 _current = null;
                 _pauseRequested = false;
                 _abortAfterResume = false;
+                _singleStepArmed = false;
                 _resumeTcs = null;
                 _runCt = CancellationToken.None;
             }
@@ -144,6 +167,8 @@ public sealed class SequenceEngine : ISequenceEngine
 
                 await Task.WhenAll(runnable.Select(s =>
                     RunStepAsync(s, product, blackboard, ct))).ConfigureAwait(false);
+
+                ArmSingleStepGate(); // P4.1: từng-bước → gate kế tiếp (ii hoặc i) sẽ đứng lại
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -371,6 +396,7 @@ public sealed class SequenceEngine : ISequenceEngine
         lock (_sync)
         {
             _pauseRequested = false;
+            _singleStepArmed = false; // Resume cũng mở được gate từng-bước (đường an toàn hơn — có resume-check)
             _resumeTcs?.TrySetResult(true);
             _resumeTcs = null;
         }
@@ -392,7 +418,7 @@ public sealed class SequenceEngine : ISequenceEngine
                 _logger.LogWarning("Resume-check: trạm {Station} báo lệch — {Message}", name, check.Message);
                 if (OperatorPromptRequired is null)
                 {
-                    lock (_sync) { _abortAfterResume = true; _pauseRequested = false; _resumeTcs?.TrySetResult(true); _resumeTcs = null; }
+                    lock (_sync) { _abortAfterResume = true; _pauseRequested = false; _singleStepArmed = false; _resumeTcs?.TrySetResult(true); _resumeTcs = null; }
                     return false;
                 }
 
@@ -403,13 +429,40 @@ public sealed class SequenceEngine : ISequenceEngine
                 var decision = await args.Decision.ConfigureAwait(false);
                 if (decision == StepErrorAction.Abort)
                 {
-                    lock (_sync) { _abortAfterResume = true; _pauseRequested = false; _resumeTcs?.TrySetResult(true); _resumeTcs = null; }
+                    lock (_sync) { _abortAfterResume = true; _pauseRequested = false; _singleStepArmed = false; _resumeTcs?.TrySetResult(true); _resumeTcs = null; }
                     return false;
                 }
                 // Retry → xác minh lại trạm này
             }
         }
         return true;
+    }
+
+    /// <inheritdoc/>
+    public void StepOnce()
+    {
+        lock (_sync)
+        {
+            // Chỉ mở gate DO single-step tạo — gate của RequestPause phải đi đường Resume (có resume-check)
+            if (!_singleStepArmed || !_pauseRequested) return;
+            _singleStepArmed = false;
+            _pauseRequested = false;
+            _resumeTcs?.TrySetResult(true);
+            _resumeTcs = null;
+        }
+        _logger.LogInformation("SingleStep — chạy nhóm bước kế tiếp");
+    }
+
+    // Sau mỗi nhóm order: nếu đang bật từng-bước thì cài gate cho ranh giới kế tiếp (P4.1).
+    // KHÔNG đè gate của RequestPause (pause thật giữ nguyên ngữ nghĩa resume-check).
+    private void ArmSingleStepGate()
+    {
+        lock (_sync)
+        {
+            if (!_singleStep || _pauseRequested) return;
+            _pauseRequested = true;
+            _singleStepArmed = true;
+        }
     }
 
     /// <summary>Gate ranh giới bước: đứng lại khi có RequestPause; ném Abort nếu resume bị từ chối.</summary>

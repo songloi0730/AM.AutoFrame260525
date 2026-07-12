@@ -372,6 +372,10 @@
                             <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Warn.BackgroundBrush}"/>
                         </DataTrigger>
+                        <!-- Gate từng-bước (P4.1) — banner cao 52 để chứa nút "Bước tiếp" -->
+                        <DataTrigger Binding="{Binding HasStepGate}" Value="True">
+                            <Setter Property="Height" Value="52"/>
+                        </DataTrigger>
                         <DataTrigger Binding="{Binding IsBannerError}" Value="True">
                             <Setter Property="Height" Value="52"/>
                             <Setter Property="Background" Value="{StaticResource Ng.BackgroundBrush}"/>
@@ -421,6 +425,16 @@
                         Background="{DynamicResource Panel.BackgroundAltBrush}"
                         BorderBrush="{StaticResource Warn.TextBrush}" BorderThickness="1"
                         Foreground="{StaticResource Warn.TextBrush}"/>
+
+                <!-- Nút "Bước tiếp" — engine đứng ở gate từng-bước (P4.1) -->
+                <Button DockPanel.Dock="Right" VerticalAlignment="Center" Height="40" Padding="22,0"
+                        Margin="12,0,0,0" FontWeight="Bold" FontSize="14" Cursor="Hand"
+                        Content="{Binding [Shell.StepNext], Source={x:Static loc:Loc.Strings}}"
+                        Command="{Binding StepNextCommand}"
+                        Visibility="{Binding HasStepGate, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource Panel.BackgroundAltBrush}"
+                        BorderBrush="{StaticResource Status.InfoBrush}" BorderThickness="1"
+                        Foreground="{StaticResource Status.InfoBrush}"/>
 
                 <!-- Nút trả lời operator prompt (sequence engine): Thử lại · Bỏ qua (Engineer+) · Dừng máy.
                      Engine chờ Respond — không popup chặn thread (ADR 0011 §4.3). -->
@@ -650,6 +664,20 @@
                             <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE72A;"/>
                             <TextBlock Style="{StaticResource ActionLabel}"
                                        Text="{Binding [Shell.DryRun], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- Từng bước (P4.1, Engineer+): engine dừng ở ranh giới sau mỗi nhóm bước; ● = đang bật -->
+                    <Button Style="{StaticResource ActionButton}" Margin="0,0,10,0"
+                            Command="{Binding ToggleSingleStepCommand}"
+                            IsEnabled="{Binding CanToggleSingleStep}"
+                            ToolTip="{Binding [Shell.SingleStepTip], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE76C;"/>
+                            <TextBlock Style="{StaticResource ActionLabel}"
+                                       Text="{Binding [Shell.SingleStep], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource ActionLabel}" Text=" ●"
+                                       Foreground="{StaticResource Status.InfoBrush}"
+                                       Visibility="{Binding IsSingleStep, Converter={StaticResource BoolToVis}}"/>
                         </StackPanel>
                     </Button>
                     <!-- Manual → màn Vận hành tay (tab MotionView, S48). Thiếu quyền: mờ + tooltip lý do (P1.2) -->

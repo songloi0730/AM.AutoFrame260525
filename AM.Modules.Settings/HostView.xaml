@@ -1,0 +1,51 @@
+<UserControl x:Class="AM.Modules.Settings.HostView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             mc:Ignorable="d">
+
+    <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+        <TextBlock Text="{Binding [Host.Title], Source={x:Static loc:Loc.Strings}}"
+                   FontSize="15" FontWeight="SemiBold" Margin="0,0,0,4"
+                   Foreground="{DynamicResource Text.HeadingBrush}"/>
+        <TextBlock Text="{Binding [Host.Hint], Source={x:Static loc:Loc.Strings}}"
+                   FontSize="12" Margin="0,0,0,10" TextWrapping="Wrap"
+                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+
+        <ItemsControl ItemsSource="{Binding Hosts}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border CornerRadius="6" Padding="12,8" Margin="0,3"
+                            Background="{DynamicResource Panel.BackgroundAltBrush}"
+                            BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center"
+                                       FontSize="13" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="✕"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Connected}" Value="True">
+                                                <Setter Property="Text" Value="●"/>
+                                                <Setter Property="Foreground" Value="{StaticResource Status.NormalBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                <TextBlock Text="{Binding Endpoint}" FontSize="12" FontFamily="Consolas"
+                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

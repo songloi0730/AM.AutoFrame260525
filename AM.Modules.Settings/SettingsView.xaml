@@ -95,12 +95,11 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- Placeholder (mờ + "đang phát triển") -->
-                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
-                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE7F4;"
+                            Command="{Binding OpenCommand}" CommandParameter="hardware">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Hardware], Source={x:Static loc:Loc.Strings}}"/>
-                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.HardwareDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource MenuCard}" Tag="&#xE9D9;"
@@ -124,11 +123,11 @@
                             <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.UsersDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource MenuCard}" Tag="&#xE72E;" IsEnabled="False"
-                            ToolTip="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}">
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE968;"
+                            Command="{Binding OpenCommand}" CommandParameter="host">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Host], Source={x:Static loc:Loc.Strings}}"/>
-                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.Pending], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.HostDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource MenuCard}" Tag="&#xE8C8;"
@@ -139,6 +138,21 @@
                         </StackPanel>
                     </Button>
                 </UniformGrid>
+
+                <!-- Kiosk (P4.3 — Engineer+): nút chính thức; Ctrl+Shift+F11 vẫn là dự phòng -->
+                <Border CornerRadius="8" Padding="14,10" Margin="0,4,12,0"
+                        Background="{DynamicResource Panel.BackgroundAltBrush}"
+                        BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Height="40" Padding="18,0" Cursor="Hand"
+                                Command="{Binding ToggleKioskCommand}" IsEnabled="{Binding CanKiosk}"
+                                Content="{Binding KioskLabel}"/>
+                        <TextBlock VerticalAlignment="Center" FontSize="13" TextWrapping="Wrap"
+                                   Margin="0,0,12,0"
+                                   Text="{Binding [Set.KioskHint], Source={x:Static loc:Loc.Strings}}"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    </DockPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
@@ -165,6 +179,10 @@
                                  Visibility="{Binding DataContext.ShowAudit, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <local:BackupView DataContext="{Binding Backup}"
                                   Visibility="{Binding DataContext.ShowBackup, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
+                <local:HardwareView DataContext="{Binding Hardware}"
+                                    Visibility="{Binding DataContext.ShowHardware, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
+                <local:HostView DataContext="{Binding Host}"
+                                Visibility="{Binding DataContext.ShowHost, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"

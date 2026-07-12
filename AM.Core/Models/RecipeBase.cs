@@ -36,4 +36,11 @@ public abstract class RecipeBase
 
     /// <summary>Đang là recipe active.</summary>
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// File sequence riêng của recipe (P4.2 — đường dẫn tương đối, vd "recipes/SanPhamB.sequence.json").
+    /// Null/rỗng → dùng convention <c>recipes/{Name}.sequence.json</c> nếu file tồn tại,
+    /// không có nữa thì dùng file mặc định của máy (config <c>AutoMachine:Sequence:File</c>).
+    /// </summary>
+    public string? SequenceFile { get; set; }
 }

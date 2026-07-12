@@ -132,6 +132,11 @@ internal static class ServiceCollectionExtensions
                 sp.GetRequiredService<IAuditService>()));
         // Tự đăng xuất khi idle (P3.2) — Start() ở App.OnStartup (cần UI thread cho InputManager)
         services.AddSingleton<InactivityMonitor>();
+        // Kiosk (P4.3): MainWindow gắn trạng thái thật lúc Loaded; Cài đặt gọi qua interface
+        services.AddSingleton<IKioskService, KioskService>();
+        // Ca làm việc + ngưỡng màu yield (P4.4) — Dashboard và Production cùng một định nghĩa ca
+        services.AddSingleton(config.GetSection("AutoMachine:Production").Get<ProductionOptions>()
+            ?? new ProductionOptions());
         // Sao lưu & phục hồi (P3.3) — auto-backup hàng ngày Start() ở App.OnStartup
         services.AddSingleton<IBackupService>(sp => new BackupService(
             sp.GetRequiredService<ILogger<BackupService>>(),
@@ -183,7 +188,7 @@ internal static class ServiceCollectionExtensions
     }
 
     /// <summary>UI ViewModels (resolve trên UI thread để capture SynchronizationContext).</summary>
-    public static IServiceCollection AddUiViewModels(this IServiceCollection services)
+    public static IServiceCollection AddUiViewModels(this IServiceCollection services, IConfiguration config)
     {
         services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<AM.Modules.Vision.Teach.IVisionTeachStore>(sp =>
@@ -207,6 +212,25 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<AM.Modules.Settings.UserAdminViewModel>();
         services.AddSingleton<AM.Modules.Settings.AuditViewModel>(); // màn Audit (P3.2, Administrator)
         services.AddSingleton<AM.Modules.Settings.BackupViewModel>(); // màn Sao lưu & phục hồi (P3.3, Administrator)
+        services.AddSingleton<AM.Modules.Settings.HardwareViewModel>(); // thẻ Phần cứng (P4.3)
+        // Thẻ Kết nối Host (P4.3) — Shell đọc endpoint từ config, module không đụng IConfiguration
+        services.AddSingleton(sp => new AM.Modules.Settings.HostViewModel(
+            sp.GetRequiredService<IHardwareManagerService>(),
+            new AM.Modules.Settings.HostEndpointInfo[]
+            {
+                new("OPC-UA", config.GetValue<string>("AutoMachine:Comm:OpcUaEndpoint") ?? "—",
+                    HardwareCategory.OpcUaClient),
+                new("Modbus TCP",
+                    $"{config.GetValue<string>("AutoMachine:Comm:ModbusHost") ?? "—"}:{config.GetValue("AutoMachine:Comm:ModbusPort", 502)}",
+                    HardwareCategory.ModbusTcp),
+                new("PLC",
+                    $"{config.GetValue<string>("AutoMachine:Plc:Host") ?? "—"}:{config.GetValue("AutoMachine:Plc:Port", 502)}",
+                    HardwareCategory.Plc),
+                new("EtherNet/IP", config.GetValue<string>("AutoMachine:Comm:EthernetIpHost") ?? "—",
+                    HardwareCategory.EthernetIp),
+                new("Database (SQLite local)", config.GetValue<string>("AutoMachine:DatabasePath") ?? "automachine.db",
+                    Category: null),
+            }));
         services.AddSingleton<AM.Modules.Settings.SettingsViewModel>(); // gom Chẩn đoán + Kỹ thuật + Người dùng
         services.AddSingleton<LoggingViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips
@@ -295,11 +319,15 @@ internal static class ServiceCollectionExtensions
             sp.GetRequiredService<ILogger<PhysicalButtonMonitor>>()));
 
         services.AddSingleton<AM.Core.Sequencing.ISequenceEngine, AM.Core.Sequencing.SequenceEngine>();
+        // Sequence theo recipe (P4.2): SequenceFile khai trong recipe → convention {Name}.sequence.json
+        // → file mặc định; đổi recipe tự invalidate + validate sớm (hỏng → alarm 60005 ngay)
         services.AddSingleton(sp => new SequenceSource(
             Path.Combine(AppContext.BaseDirectory,
                 config.GetValue<string>("AutoMachine:Sequence:File") ?? "recipes/DemoPickPlace.sequence.json"),
             sp.GetRequiredService<AM.Core.Sequencing.IStationResolver>(),
-            sp.GetRequiredService<ILogger<SequenceSource>>()));
+            sp.GetRequiredService<ILogger<SequenceSource>>(),
+            sp.GetRequiredService<IRecipeService>(),
+            sp.GetRequiredService<IAlarmService>()));
         return services;
     }
 

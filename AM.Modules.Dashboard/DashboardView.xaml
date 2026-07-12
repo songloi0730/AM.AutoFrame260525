@@ -469,8 +469,22 @@
                             <StackPanel>
                                 <TextBlock Style="{StaticResource KpiCaption}"
                                            Text="{Binding [Prod.Yield], Source={x:Static loc:Loc.Strings}}"/>
-                                <!-- "—" khi chưa có dữ liệu (0.0 % gây hiểu nhầm) -->
-                                <TextBlock Style="{StaticResource KpiNumber}" Text="{Binding YieldText}"/>
+                                <!-- "—" khi chưa có dữ liệu (0.0 % gây hiểu nhầm).
+                                     Màu-khi-có-nghĩa (P4.4): dưới ngưỡng Warn = vàng, dưới Alarm = đỏ (config). -->
+                                <TextBlock Text="{Binding YieldText}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource KpiNumber}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding YieldLevel}" Value="1">
+                                                    <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding YieldLevel}" Value="2">
+                                                    <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource KpiCell}">

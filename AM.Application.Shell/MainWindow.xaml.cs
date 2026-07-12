@@ -104,6 +104,16 @@ public partial class MainWindow : Window
         var options = _services.GetRequiredService<IOptions<AutoMachineOptions>>().Value;
         if (options.KioskMode) ApplyKioskMode(true);
 
+        // Nút kiosk trong Cài đặt (P4.3) đi qua IKioskService — window vẫn là chủ trạng thái
+        (_services.GetRequiredService<IKioskService>() as KioskService)?.Attach(
+            () => _kioskMode,
+            enable => Dispatcher.Invoke(() =>
+            {
+                ApplyKioskMode(enable);
+                Log.Information("Kiosk mode = {Kiosk} (nút Cài đặt) bởi {User}",
+                    _kioskMode, _user?.CurrentUser ?? "?");
+            }));
+
         // Login: đóng overlay khi đăng nhập + dựng lại nav theo role (ẩn/hiện tab như Vận hành tay).
         // ⚠ UserChanged có thể bắn trên thread nền (UserService.LoginAsync dùng Task.Run + ConfigureAwait(false)),
         // nên PHẢI marshal về UI thread trước khi đụng control — nếu không sẽ ném cross-thread.
@@ -127,8 +137,8 @@ public partial class MainWindow : Window
     // ─── Kiosk mode (ADR 0009) ────────────────────────────────────────────────
 
     /// <summary>
-    /// Ctrl+Shift+F11 — vào/thoát kiosk lúc chạy (bảo trì tại xưởng). Cần Engineer trở lên;
-    /// audit qua log. Không có nút UI riêng — màn Cài đặt chưa build (adoption §9).
+    /// Ctrl+Shift+F11 — vào/thoát kiosk lúc chạy (dự phòng khi không mở được Cài đặt).
+    /// Cần Engineer trở lên; audit qua log. Nút UI chính thức: Cài đặt (P4.3, IKioskService).
     /// </summary>
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {

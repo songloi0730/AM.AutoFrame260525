@@ -97,6 +97,15 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     /// <summary>Banner vàng thường trực: còn tài khoản dùng mật khẩu mặc định (design-notes/0012).</summary>
     [ObservableProperty] private bool _hasSecurityNotice;
 
+    /// <summary>Chế độ từng bước (P4.1) — đẩy thẳng vào engine khi đổi.</summary>
+    [ObservableProperty] private bool _isSingleStep;
+
+    /// <summary>Toggle từng bước cần Engineer+ (cập nhật theo UserChanged).</summary>
+    [ObservableProperty] private bool _canToggleSingleStep;
+
+    /// <summary>Engine đang đứng ở gate từng-bước — banner hiện nút "Bước tiếp".</summary>
+    [ObservableProperty] private bool _hasStepGate;
+
     // Service prompt (IOperatorPrompt — station hỏi lúc init, vd liệu sót; P1.6):
     // lựa chọn ĐỘNG theo request, khác 3 nút cố định của engine prompt
     [ObservableProperty] private bool _hasServicePrompt;
@@ -202,6 +211,22 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         RefreshState();
     }
 
+    // ─── Từng bước (P4.1 — Engineer+, engine gate ở ranh giới nhóm order) ──────
+
+    /// <summary>Bật/tắt chế độ từng bước — bật/tắt được cả khi máy đang chạy.</summary>
+    [RelayCommand]
+    private void ToggleSingleStep()
+    {
+        if (!CanToggleSingleStep) return;
+        IsSingleStep = !IsSingleStep;
+    }
+
+    partial void OnIsSingleStepChanged(bool value) => _engine.SingleStep = value;
+
+    /// <summary>Cho chạy nhóm bước kế tiếp khi engine đứng ở gate từng-bước.</summary>
+    [RelayCommand]
+    private void StepNext() => _engine.StepOnce();
+
     // ─── Operator prompt (sequence engine — banner 3 nút, S78 Prompt D) ────────
 
     /// <summary>
@@ -300,6 +325,14 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         }
         RefreshConnectionSummary();
         _ = RefreshSecurityNoticeAsync(); // kết quả cache trong UserService — rẻ sau lần tính đầu
+
+        // Gate từng-bước (P4.1): poll engine — đổi trạng thái thì cập nhật banner
+        bool stepGate = _engine.IsWaitingStep;
+        if (stepGate != HasStepGate)
+        {
+            HasStepGate = stepGate;
+            RefreshAlarm();
+        }
     }
 
     // Banner vàng thường trực khi còn tài khoản dùng mật khẩu mặc định — tắt trong ~1s sau khi đổi hết.
@@ -349,6 +382,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
             ? $"{_user.CurrentUser} · {_user.CurrentLevel}"
             : Loc.Strings["Shell.Guest"];
         CanOpenManual = _user.CurrentLevel >= UserLevel.LineLead; // tab Vận hành tay gate LineLead+
+        CanToggleSingleStep = _user.CurrentLevel >= UserLevel.Engineer; // toggle từng bước (P4.1)
     }
 
     /// <summary>Alarm chưa ACK ưu tiên cao nhất (Level desc → mới nhất trước).</summary>
@@ -372,6 +406,12 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
             BannerText = $"[{top.AlarmCode}] {top.Message} · "
                 + $"{top.RaisedAt.ToLocalTime().ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)}"
                 + $" · {top.Station}";
+        }
+        else if (HasStepGate)
+        {
+            // Từng bước: engine đứng ở ranh giới chờ "Bước tiếp" (P4.1) — alarm vẫn ưu tiên hơn
+            IsBannerError = false;
+            BannerText = Loc.Strings["Shell.StepWaiting"];
         }
         else if (HasSecurityNotice)
         {

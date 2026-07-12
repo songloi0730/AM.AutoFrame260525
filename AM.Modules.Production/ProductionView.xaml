@@ -27,6 +27,12 @@
                         Width="90" Height="30" Margin="8,0,0,0" Command="{Binding RefreshCommand}"
                         Background="{DynamicResource Button.PrimaryBrush}"
                         Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                <!-- Export CSV record trong cửa sổ (P4.4) -->
+                <Button Content="{Binding [Prod.Export], Source={x:Static loc:Loc.Strings}}"
+                        Height="30" Padding="12,0" Margin="8,0,0,0" Command="{Binding ExportCsvCommand}"
+                        Background="{DynamicResource Panel.BackgroundAltBrush}"
+                        BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
+                        Foreground="{DynamicResource Text.PrimaryBrush}"/>
             </StackPanel>
         </DockPanel>
 
@@ -59,11 +65,25 @@
                                HorizontalAlignment="Center" Foreground="{DynamicResource Text.SecondaryBrush}"/>
                 </StackPanel>
             </Border>
-            <!-- Yield -->
+            <!-- Yield — màu-khi-có-nghĩa theo ngưỡng config (P4.4): vàng dưới Warn, đỏ dưới Alarm -->
             <Border Margin="4" CornerRadius="6" Padding="16" Background="{DynamicResource Panel.BackgroundBrush}">
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock Text="{Binding YieldPercent, StringFormat={}{0:F1}%}" FontSize="34" FontWeight="Bold"
-                               HorizontalAlignment="Center" Foreground="{DynamicResource Text.LiveValueBrush}"/>
+                               HorizontalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{DynamicResource Text.LiveValueBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding YieldLevel}" Value="1">
+                                        <Setter Property="Foreground" Value="{StaticResource Warn.TextBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding YieldLevel}" Value="2">
+                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     <TextBlock Text="{Binding [Prod.Yield], Source={x:Static loc:Loc.Strings}}" FontSize="12"
                                HorizontalAlignment="Center" Foreground="{DynamicResource Text.SecondaryBrush}"/>
                 </StackPanel>
@@ -87,5 +107,81 @@
                 </StackPanel>
             </Border>
         </UniformGrid>
+
+        <!-- Trend theo giờ (P4.4 — SPC đơn giản): yield bar + X̄ cycle mỗi giờ trong cửa sổ -->
+        <Border Grid.Row="2" Margin="4,12,4,0" CornerRadius="6" Padding="16"
+                Background="{DynamicResource Panel.BackgroundBrush}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"
+                           Text="{Binding [Prod.TrendTitle], Source={x:Static loc:Loc.Strings}}"
+                           Foreground="{DynamicResource Text.HeadingBrush}"/>
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" FontSize="12"
+                           Margin="0,8,0,0" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <TextBlock Text="{Binding [Prod.NoData], Source={x:Static loc:Loc.Strings}}"
+                                   FontSize="13" Foreground="{DynamicResource Text.SecondaryBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HourStats.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <ItemsControl ItemsSource="{Binding HourStats}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="52"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding HourLabel}" FontFamily="Consolas"
+                                                   FontSize="12" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                        <!-- Thanh yield 0–100% (scale 3px/1%) — màu theo mức -->
+                                        <Border Grid.Column="1" Height="14" CornerRadius="2" HorizontalAlignment="Left"
+                                                Width="{Binding BarWidth}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{DynamicResource Status.NormalBrush}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding YieldLevel}" Value="1">
+                                                            <Setter Property="Background" Value="{StaticResource Warn.TextBrush}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding YieldLevel}" Value="2">
+                                                            <Setter Property="Background" Value="{StaticResource Status.AlarmBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+                                        <TextBlock Grid.Column="2" Text="{Binding YieldText}" FontSize="12"
+                                                   FontFamily="Consolas" VerticalAlignment="Center" Margin="8,0,0,0"
+                                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding CycleText}" FontSize="12"
+                                                   FontFamily="Consolas" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                        <TextBlock Grid.Column="4" FontSize="12" FontFamily="Consolas"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource Text.SecondaryBrush}">
+                                            <Run Text="n="/><Run Text="{Binding Total, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>

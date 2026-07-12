@@ -4,6 +4,74 @@
 
 ---
 
+## [Session 88] 2026-07-11 — ROADMAP P4 HOÀN TẤT: single-step + sequence theo recipe + Settings hết placeholder + Production ca/SPC/CSV
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** "làm p4 đi" — 4 mục cuối trước P5 (máy thật). Xong phiên này: P0–P4 của ROADMAP_HOAN_THIEN sạch bảng.
+
+### ✅ P4.1 — Chế độ từng bước (gap C3a)
+- Engine (`AM.Core.Sequencing`): `SingleStep` (bật/tắt cả khi đang chạy) + `IsWaitingStep` + `StepOnce()`.
+  Bật → sau MỖI nhóm order engine TỰ cài gate pause ở ranh giới (tái dùng cơ chế WaitIfPausedAsync —
+  **bất biến 5: IStation không đổi, station không biết gì**). `StepOnce` chỉ mở gate DO single-step tạo;
+  gate của `RequestPause` thật vẫn phải đi `Resume()` (giữ ngữ nghĩa resume-check an toàn). Tắt toggle khi
+  đang đứng gate → bấm Bước tiếp một lần nữa là chạy liên tục.
+- Shell: toggle **"Từng bước"** trên action bar (Engineer+, hiện ● khi bật) + nút **"Bước tiếp ▶"** trên banner
+  khi engine đứng gate (OnTick poll `IsWaitingStep`, banner cao 52 + text `Shell.StepWaiting`).
+- 3 test: đứng sau mỗi nhóm + StepOnce chạy tiếp · tắt giữa chừng → chạy liên tục · StepOnce KHÔNG mở gate pause thật.
+
+### ✅ P4.2 — Sequence theo recipe (gap C4)
+- `RecipeBase.SequenceFile` (tùy chọn); thứ tự chọn file: khai tường minh → convention
+  `recipes/{RecipeName}.sequence.json` (nếu tồn tại) → file mặc định máy (config).
+- `SequenceSource` nhận thêm IRecipeService + IAlarmService: RecipeChanged → invalidate cache +
+  **validate sớm** — sequence của recipe mới hỏng/thiếu file → **alarm 60005 NGAY lúc đổi recipe**
+  (không đợi bấm Chạy); Get() vẫn ném SequenceValidationException để master chặn chạy như cũ.
+- 4 test: file tường minh · convention/fallback · đổi recipe nạp lại đúng · recipe hỏng → 60005.
+
+### ✅ P4.3 — Settings HẾT PLACEHOLDER (gap C5)
+- Thẻ **"Phần cứng"** (`HardwareView`+VM): bảng thiết bị từ HardwareManager — tên · category · driver
+  (Simulated* nhìn là biết sim) · trạng thái ●/✕ poll 1s + nút **kết nối lại TỪNG thiết bị** (Engineer+, audit
+  `Hardware.Reconnect.{name}`) — khác màn Chẩn đoán vốn chỉ Reconnect All.
+- Thẻ **"Host"** (`HostView`+VM): endpoint OPC-UA/Modbus/PLC/EtherNet-IP/DB đọc từ config (READ-ONLY — ghi rõ
+  "đổi endpoint: sửa appsettings + khởi động lại") + trạng thái sống theo category; Shell bơm danh sách
+  `HostEndpointInfo` qua DI — module không đụng IConfiguration.
+- **Kiosk**: interface `IKioskService` mới (Abstractions) + `KioskService` (Shell, MainWindow attach getter/setter
+  lúc Loaded) + nút "Vào/Thoát kiosk" trên landing Cài đặt (Engineer+); Ctrl+Shift+F11 giữ làm dự phòng.
+- Cài đặt giờ đủ 9 thẻ chức năng thật: Chẩn đoán · Kỹ thuật · Giới thiệu · Phần cứng · Hiệu chuẩn · Audit ·
+  Người dùng · Host · Sao lưu.
+
+### ✅ P4.4 — Production: ca thật + yield màu + CSV + SPC đơn giản (gap C7, C8)
+- `ProductionOptions` (config `AutoMachine:Production`): `ShiftStartHour`=8, `ShiftLengthHours`=8 (ca lặp đều,
+  `GetShiftStartLocal`), `YieldWarnPercent`=95, `YieldAlarmPercent`=90. **Dashboard + Production cùng MỘT định
+  nghĩa "ca hiện tại"** — hết cửa sổ trượt 8h cứng (KPI ca giờ đúng nghĩa "từ đầu ca đến giờ").
+- KPI yield **màu-khi-có-nghĩa** cả 2 màn (hoãn từ ADR 0010): thường = màu live-value; <Warn = vàng; <Alarm = đỏ;
+  Total=0 = không tô (chưa có nghĩa).
+- **Export CSV**: record trong cửa sổ đang chọn (Time/SN/Recipe/OK-NG/Cycle/Score/Reason/Operator, escape chuẩn).
+- **Trend theo giờ** (SPC đơn giản): mỗi giờ một dòng — thanh yield màu theo mức + yield% + X̄ cycle + n=…;
+  tự hiện "chưa có dữ liệu" khi rỗng. Cửa sổ Production mặc định "Ca hiện tại".
+- 10 test `ProductionOptionsTests` (6 case mốc ca 8h/12h qua đêm + 4 case mức màu yield).
+
+### 🧪 Build & test
+- **317 tests pass** (+17: 3 single-step + 4 SequenceSource + 10 ProductionOptions) — chạy theo từng project
+  (Sequencing 23 · Demo 15 · Services 159 · Hardware 42 · Infra 62 · Architecture 6 · Vision 10).
+- Build 0 warning (sửa CA1849/S6966 WriteAllTextAsync, CS0117 ContinueMode.UntilStopped, CS0535 AllNames).
+- i18n +27 key ×3 → **399 chuỗi/ngôn ngữ**. Smoke boot sạch: AutoLogout + Auto-backup + Calib routine
+  + i18n 399×3 + "started successfully".
+- **2 bug thật trong test mới bị bắt và sửa khi chạy**: (a) test single-step kỳ vọng gate ranh giới sản phẩm
+  với SingleCycle — sai, SingleCycle kết thúc sau nhóm cuối → chuyển UntilStopped; (b) test 3 DEADLOCK cả
+  assembly: station stub hoàn thành đồng bộ + UntilStopped → RunAsync không có điểm yield, chiếm vĩnh viễn
+  worker thread xUnit ngay tại lời gọi (tìm ra bằng vstest --diag) → station thêm Task.Delay(20) + chờ engine
+  vào Running trước khi RequestPause. Bài học: station stub trong test engine PHẢI có ít nhất một await thật.
+- Bẫy môi trường ghi lại: MSBuild node-reuse treo (build với `-nodeReuse:false`), bin/ dùng chung chứa dll test
+  cũ (Jun 6/14) — LUÔN `dotnet test <project>`, đừng test dll trong bin/; testhost mồ côi khóa dll sau khi
+  kill run (taskkill testhost trước khi build lại).
+
+### ⏭️ Việc tiếp
+- **P0–P4 XONG TOÀN BỘ.** Còn **P5 tích hợp máy thật** (axis map thật, ngưỡng calib theo trục, day-code secret
+  triển khai, số trục máy thật §9.3) — chờ có phần cứng.
+
+---
+
 ## [Session 87] 2026-07-10 — Chắt lọc bộ UX guidelines web/mobile (RefUX-A): 11 quy tắc interaction/feedback vào chuẩn HMI, phần styles/palette từ chối có lý do
 
 **Commit:** `25ec2bf`
