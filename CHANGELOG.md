@@ -6,7 +6,7 @@
 
 ## [Session 88] 2026-07-11 — ROADMAP P4 HOÀN TẤT: single-step + sequence theo recipe + Settings hết placeholder + Production ca/SPC/CSV
 
-**Commit:** *(điền sau)*
+**Commit:** `abdcedc`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** "làm p4 đi" — 4 mục cuối trước P5 (máy thật). Xong phiên này: P0–P4 của ROADMAP_HOAN_THIEN sạch bảng.
 
