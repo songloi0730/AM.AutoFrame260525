@@ -82,7 +82,8 @@
                         <DockPanel Margin="0,0,0,10">
                             <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="13"
                                        Foreground="{DynamicResource Text.SecondaryBrush}">
-                                <Run Text="{Binding [Calib.Threshold], Source={x:Static loc:Loc.Strings}}"/>
+                                <!-- Run.Text mặc định TwoWay — bind indexer chỉ-đọc PHẢI Mode=OneWay (S89 crash fix) -->
+                                <Run Text="{Binding [Calib.Threshold], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
                                 <Run Text="{Binding ThresholdText, Mode=OneWay}" FontWeight="SemiBold"/>
                             </TextBlock>
                             <TextBlock Text="{Binding StateText}" FontSize="16" FontWeight="Bold"

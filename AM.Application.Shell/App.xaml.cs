@@ -40,6 +40,13 @@ public partial class App
         Bootstrapper.ConfigureLogging(config);
         Log.Information("AutoMachine Shell starting...");
 
+        // Crash UI phải để lại dấu vết trong log app (S89 — XamlParseException chỉ thấy ở Event Log Windows,
+        // mất thời gian truy). Chỉ LOG rồi để app chết như cũ — không nuốt lỗi chạy tiếp với UI hỏng.
+        DispatcherUnhandledException += (_, args) =>
+            Log.Fatal(args.Exception, "Unhandled UI exception — app sẽ thoát");
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            Log.Fatal(args.ExceptionObject as Exception, "Unhandled domain exception — app sẽ thoát");
+
         try
         {
             // 3. Đăng ký DI

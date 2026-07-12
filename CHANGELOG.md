@@ -4,6 +4,33 @@
 
 ---
 
+## [Session 89] 2026-07-12 — HOTFIX: mở Vận hành tay / Cài đặt làm app thoát (Run.Text TwoWay bind vào Loc indexer)
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án báo: chọn tab Vận hành tay hoặc Cài đặt là chương trình thoát. Log app không có gì —
+truy ra qua Windows Event Log (.NET Runtime).
+
+### 🐛 Nguyên nhân
+- `XamlParseException`: *"A TwoWay or OneWayToSource binding cannot work on the read-only property 'Item'"* —
+  trong `CalibrationPanelView.xaml` (S84) có `<Run Text="{Binding [Calib.Threshold], Source=Loc.Strings}"/>`.
+  **`Run.Text` là DP mặc định TwoWay** (bẫy WPF kinh điển) → bind vào indexer chỉ-đọc của Loc nổ ngay lúc load XAML.
+- View này nhúng ở CẢ hai chỗ (sub-tab Hiệu chỉnh trong Vận hành tay + thẻ Hiệu chuẩn trong Cài đặt; SettingsView
+  dựng TẤT CẢ view con ngay khi mở) → mở màn nào cũng sập. Smoke boot không bắt được vì view tạo lười khi điều hướng.
+
+### ✅ Sửa
+- Thêm `Mode=OneWay` cho Run đó (rà toàn repo: đúng MỘT chỗ thiếu — các `<Run Text="{Binding...}">` khác đều đã OneWay).
+- App.OnStartup: đăng ký `DispatcherUnhandledException` + `AppDomain.UnhandledException` → **Log.Fatal trước khi chết**
+  (chỉ log, không nuốt lỗi) — crash UI từ nay để lại dấu vết trong log app, khỏi phải đào Event Log.
+
+### 🧪 Kiểm chứng (UI Automation thật, không chỉ boot)
+- Script UIA (PowerShell): mở app → duyệt **cả 7 tab** trước đăng nhập → đăng nhập `engineer` qua overlay →
+  nav rebuild 8 tab → duyệt **cả 8 tab gồm Vận hành tay** — app sống toàn trình, 0 dòng FTL trong log.
+- Bài học ghi vào quy trình: smoke boot KHÔNG đủ cho thay đổi XAML view — phải điều hướng tới màn bị sửa
+  (checklist am-hmi-design đã có mục Run/binding: mọi bind tới nguồn chỉ-đọc trên DP TwoWay-mặc-định phải Mode=OneWay).
+
+---
+
 ## [Session 88] 2026-07-11 — ROADMAP P4 HOÀN TẤT: single-step + sequence theo recipe + Settings hết placeholder + Production ca/SPC/CSV
 
 **Commit:** `abdcedc`
