@@ -45,22 +45,38 @@
             <Border CornerRadius="6" Padding="12" Margin="0,0,0,10"
                     Background="{DynamicResource Panel.BackgroundBrush}"
                     BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                <!-- Label luôn hiện trên mỗi ô (RefUX-A §7 — không chỉ tooltip/watermark) -->
                 <StackPanel Orientation="Horizontal">
-                    <TextBox Width="160" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0"
-                             Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}"
-                             ToolTip="{Binding [UserAdmin.Username], Source={x:Static loc:Loc.Strings}}"/>
-                    <PasswordBox x:Name="NewPasswordBox" Width="160" Height="32" Margin="0,0,8,0"
-                                 VerticalContentAlignment="Center"/>
-                    <ComboBox Width="140" Height="32" VerticalContentAlignment="Center" Margin="0,0,8,0"
-                              ItemsSource="{Binding AssignableLevels}" SelectedItem="{Binding NewLevel}"/>
-                    <Button Height="32" Padding="14,0" Cursor="Hand" Click="Add_Click"
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Text="{Binding [UserAdmin.Username], Source={x:Static loc:Loc.Strings}}"
+                                   FontSize="11" Margin="0,0,0,2"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <TextBox Width="160" Height="32" VerticalContentAlignment="Center"
+                                 Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Text="{Binding [UserAdmin.Password], Source={x:Static loc:Loc.Strings}}"
+                                   FontSize="11" Margin="0,0,0,2"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <PasswordBox x:Name="NewPasswordBox" Width="160" Height="32"
+                                     VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Text="{Binding [UserAdmin.Level], Source={x:Static loc:Loc.Strings}}"
+                                   FontSize="11" Margin="0,0,0,2"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <ComboBox Width="140" Height="32" VerticalContentAlignment="Center"
+                                  ItemsSource="{Binding AssignableLevels}" SelectedItem="{Binding NewLevel}"/>
+                    </StackPanel>
+                    <Button Height="32" Padding="14,0" Cursor="Hand" Click="Add_Click" VerticalAlignment="Bottom"
                             Content="{Binding [UserAdmin.Add], Source={x:Static loc:Loc.Strings}}"/>
                 </StackPanel>
             </Border>
         </StackPanel>
 
-        <!-- Danh sách tài khoản -->
-        <ListBox Grid.Row="2" Margin="0,0,0,10" SelectedItem="{Binding SelectedUser}"
+        <!-- Danh sách tài khoản (S90: thêm ItemsSource — trước đây THIẾU nên danh sách luôn trống) -->
+        <ListBox Grid.Row="2" Margin="0,0,0,10" ItemsSource="{Binding Users}"
+                 SelectedItem="{Binding SelectedUser}"
                  Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"
                  Background="{DynamicResource Panel.BackgroundBrush}"
                  BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
@@ -111,9 +127,14 @@
                 <TextBlock VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold"
                            Text="{Binding SelectedUser.Username}"
                            Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                <PasswordBox x:Name="ResetPasswordBox" Width="160" Height="32" Margin="0,0,8,0"
-                             VerticalContentAlignment="Center"/>
-                <Button Height="32" Padding="14,0" Cursor="Hand" Click="Reset_Click"
+                <StackPanel Margin="0,0,8,0">
+                    <TextBlock Text="{Binding [UserAdmin.NewPassword], Source={x:Static loc:Loc.Strings}}"
+                               FontSize="11" Margin="0,0,0,2"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <PasswordBox x:Name="ResetPasswordBox" Width="160" Height="32"
+                                 VerticalContentAlignment="Center"/>
+                </StackPanel>
+                <Button Height="32" Padding="14,0" Cursor="Hand" Click="Reset_Click" VerticalAlignment="Bottom"
                         Content="{Binding [UserAdmin.Reset], Source={x:Static loc:Loc.Strings}}"/>
             </StackPanel>
         </Border>

@@ -4,6 +4,46 @@
 
 ---
 
+## [Session 90] 2026-07-13 — Lịch sử cảnh báo + Pareto tần suất lỗi · fix danh sách user trống + label form + audit quản trị user
+
+**Commit:** *(điền sau)*
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án rà UI thực tế và nêu 5 đề xuất (kèm ảnh màn giám sát khí nén tham khảo). Chốt qua
+AskUserQuestion: đợt này làm **Gói A (User+Audit) + Gói B (Lịch sử cảnh báo)**; Gói C (giám sát analog
+áp suất/khí âm/nhiệt/lưu lượng — ngưỡng THEO RECIPE + time settings van/xilanh) và Gói D (phanh trục Z)
+để đợt sau. Riêng phanh Z: chủ dự án phản biện cả 2 phương án ban đầu → chốt hướng lai khi làm:
+**toggle + confirm 2 bước ở mức Engineer** + banner đỏ thường trực khi phanh đang nhả + tự đóng khi
+rời màn/đăng xuất (giữ-để-nhả bất tiện vì chỉnh Z bằng tay cần cả hai tay; SuperUser quá cao).
+
+### 🐛 Gói A — BUG danh sách user TRỐNG + UX + audit
+- **Bug thật chủ dự án phát hiện qua ảnh**: `UserAdminView.xaml` ListBox **thiếu hẳn `ItemsSource="{Binding Users}"`**
+  từ ngày viết màn — VM nạp đủ user nhưng UI không bind → danh sách luôn trắng, không biết máy có những ai. Đã thêm.
+- Label LUÔN HIỆN trên mỗi ô nhập (Tên đăng nhập · Mật khẩu · Quyền · Mật khẩu mới) — trước chỉ có tooltip,
+  vi phạm chính quy tắc RefUX-A §7 đã áp S87.
+- **Audit thao tác quản trị user**: `User.Create` / `User.Delete` / `User.SetLevel` / `User.ResetPassword`
+  giờ ghi `IAuditService` kèm NGƯỜI THỰC HIỆN — hiện trong màn Nhật ký audit (P3.2) → "ai đó mượn phiên admin
+  thêm user" là truy được ai-làm-lúc-nào (auto-logout 15' đã chặn bớt từ P3.2).
+
+### ✅ Gói B — Tab Lịch sử cảnh báo + Pareto (dữ liệu DB có sẵn từ P0, chỉ thiếu UI)
+- Màn Cảnh báo thêm 2 sub-tab **"Đang active" / "Lịch sử"**. Xoá alarm active KHÔNG mất lịch sử —
+  AlarmHistory đã persist mọi alarm từ lúc raise (P0.2, retention 365 ngày).
+- Tab Lịch sử: lọc **từ/đến ngày + text** (mã/trạm/nội dung) · bảng tối đa 500 dòng (virtualized,
+  CheckBox cột Mode=OneWay theo bài học S89) · **export CSV** · panel **Pareto tần suất theo mã**
+  (top 15, đếm + % + thanh bar — tính trên TOÀN BỘ kết quả lọc, không chỉ 500 dòng hiển thị) —
+  trả lời đúng "một ngày nhiều lỗi, không biết lỗi nào hay xảy ra".
+- `AlarmListViewModel` nhận `IServiceScopeFactory` (IAlarmRepository là Scoped/EF); i18n +11 key ×3.
+
+### 🧪 Kiểm chứng
+- UIA: đăng nhập admin → mở Cảnh báo → **click chuột thật** vào tab Lịch sử (phát hiện nhân tiện:
+  UIA `SelectionItemPattern.Select()` không kích `Command` của RadioButton — phải click thật) →
+  **10 dòng lịch sử thật từ DB + Pareto hiển thị**, app sống; màn Người dùng hiện **đủ 5 user**.
+- Bẫy lặp lại lần 3 ghi sổ: sln build EXIT=0 nhưng dll module trong bin/ KHÔNG refresh → chạy exe là bản cũ,
+  suýt kết luận sai "UI mới không hoạt động". Luôn `dotnet build AM.Application.Shell` tường minh + kiểm
+  timestamp dll trước khi smoke.
+- 159/159 Services tests pass (UserService thêm audit không vỡ gì).
+
+---
+
 ## [Session 89] 2026-07-12 — HOTFIX: mở Vận hành tay / Cài đặt làm app thoát (Run.Text TwoWay bind vào Loc indexer)
 
 **Commit:** `231ee0e`

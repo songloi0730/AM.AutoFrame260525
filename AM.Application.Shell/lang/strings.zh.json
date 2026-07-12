@@ -408,5 +408,15 @@
   "Prod.Export": "导出 CSV",
   "Prod.Exported": "✓ 已导出 {0} 条记录：{1}",
   "Prod.NoData": "此时间窗内暂无数据。",
-  "Prod.TrendTitle": "按小时 — 良率 · X̄ 周期（简易 SPC）"
+  "Prod.TrendTitle": "按小时 — 良率 · X̄ 周期（简易 SPC）",
+  "UserAdmin.Password": "密码",
+  "UserAdmin.Level": "权限",
+  "UserAdmin.NewPassword": "新密码",
+  "Alarm.TabActive": "当前报警",
+  "Alarm.TabHistory": "历史",
+  "Alarm.HistFilter": "筛选（代码/工位/内容）",
+  "Alarm.HistCount": "筛选内 {0} 条记录（最多显示 {1}）",
+  "Alarm.HistEmpty": "筛选内没有记录。",
+  "Alarm.HistExported": "✓ 已导出 {0} 条记录：{1}",
+  "Alarm.ParetoTitle": "按代码频次（最多在前）"
 }

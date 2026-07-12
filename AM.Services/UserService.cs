@@ -326,6 +326,8 @@ public sealed class UserService : IUserService
             Save();
         }
         _logger.LogInformation("[User] Tạo tài khoản {User} ({Level})", username, level);
+        // Audit thao tác quản trị (S90): hiện trong màn Nhật ký audit — ai thêm user nào, lúc nào
+        _audit?.Record(CurrentUser ?? "?", "User.Create", allowed: true, detail: $"{username.Trim()} ({level})");
         return true;
     }
 
@@ -346,6 +348,7 @@ public sealed class UserService : IUserService
             Save();
         }
         _logger.LogInformation("[User] Xoá tài khoản {User}", username);
+        _audit?.Record(CurrentUser ?? "?", "User.Delete", allowed: true, detail: username);
         return Task.FromResult(true);
     }
 
@@ -372,6 +375,7 @@ public sealed class UserService : IUserService
             Save();
         }
         _logger.LogInformation("[User] Đặt lại mật khẩu {User}", username);
+        _audit?.Record(CurrentUser ?? "?", "User.ResetPassword", allowed: true, detail: username);
         return true;
     }
 
@@ -390,6 +394,7 @@ public sealed class UserService : IUserService
             Save();
         }
         _logger.LogInformation("[User] Đổi quyền {User} → {Level}", username, level);
+        _audit?.Record(CurrentUser ?? "?", "User.SetLevel", allowed: true, detail: $"{username} → {level}");
         return Task.FromResult(true);
     }
 

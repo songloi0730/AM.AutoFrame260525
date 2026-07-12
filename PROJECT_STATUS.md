@@ -9,7 +9,13 @@
 ---
 
 ## 🗓️ Cập nhật lần cuối
-**Ngày:** 2026-07-12
+**Ngày:** 2026-07-13
+**Session:** #90 — **Lịch sử cảnh báo + Pareto · fix danh sách user trống + audit quản trị user** (5 đề xuất của chủ dự án, chốt làm Gói A+B trước). **Gói A**: BUG danh sách user luôn TRỐNG — `UserAdminView` ListBox **thiếu `ItemsSource`** từ ngày viết màn (chủ dự án phát hiện qua ảnh) → đã bind + label LUÔN HIỆN cho mọi ô nhập (Tên đăng nhập/Mật khẩu/Quyền/Mật khẩu mới) + **audit 4 thao tác quản trị user** (Create/Delete/SetLevel/ResetPassword kèm NGƯỜI thực hiện — hiện trong màn Nhật ký audit, truy được "ai mượn phiên admin thêm user"). **Gói B**: màn Cảnh báo thêm sub-tab **"Lịch sử"** (AlarmHistory DB có sẵn từ P0 — xoá alarm active không mất lịch sử): lọc từ/đến ngày + text, bảng ≤500 dòng, export CSV, **Pareto tần suất theo mã** (top 15, đếm+%+bar, tính trên toàn kết quả lọc) — trả lời "lỗi nào hay xảy ra". Kiểm chứng UIA với DỮ LIỆU THẬT: 10 dòng lịch sử + Pareto hiện, 5 user hiện đủ, app sống (phát hiện thêm: UIA Select() không kích Command RadioButton — phải click chuột thật; sln build không refresh dll bin → luôn build Shell tường minh trước smoke). 159/159 Services tests pass. **Còn hàng đợi đã chốt**: Gói C giám sát analog (ngưỡng theo RECIPE + time settings van/xilanh, ~2 phiên) · Gói D phanh Z (toggle+confirm Engineer + banner đỏ khi nhả + tự đóng khi rời màn, ~1 phiên).
+**Commit:** *(điền sau khi commit)*  ·  (S89: hotfix crash `231ee0e`+`bcef5b3` · S88: P4 `abdcedc` · S87: RefUX-A `25ec2bf`)
+
+---
+
+## 🗓️ Session #89
 **Session:** #89 — **HOTFIX crash mở Vận hành tay / Cài đặt** (chủ dự án báo). Nguyên nhân: `Run.Text` là DP **mặc định TwoWay** (bẫy WPF) — S84 bind nó vào indexer chỉ-đọc `Loc.Strings[...]` trong `CalibrationPanelView.xaml` → XamlParseException ngay lúc load view; view nhúng ở CẢ Vận hành tay lẫn Cài đặt nên mở màn nào cũng thoát app. Log app sạch (crash trước khi kịp ghi) — truy bằng **Windows Event Log**. Sửa: `Mode=OneWay` (rà toàn repo đúng 1 chỗ thiếu) + App đăng ký `DispatcherUnhandledException`/`AppDomain.UnhandledException` → **Log.Fatal trước khi chết** (chỉ log, không nuốt lỗi — crash sau này có dấu vết ngay trong log app). Kiểm chứng bằng **UI Automation thật**: duyệt 7 tab trước đăng nhập → login `engineer` → duyệt 8 tab (gồm Vận hành tay). **Crash thứ 2 cùng lớp** (chủ dự án báo tiếp): màn Cảnh báo thoát KHI CÓ alarm — `DataGridCheckBoxColumn` (cột DataGrid cũng mặc định TwoWay) bind vào `IsAcknowledged` setter private, chỉ nổ khi list có dòng (lần duyệt trước list rỗng nên lọt); handler Log.Fatal vừa thêm cho stack ngay trong log app. Sửa Mode=OneWay + kiểm chứng UIA: đăng nhập sai 5 lần TỰ TẠO alarm 40010 thật → mở màn Cảnh báo có dòng — app sống, 0 FTL. Bài học: XAML phải test bằng điều hướng tới màn + màn danh sách phải test VỚI DỮ LIỆU.
 **Commit:** `231ee0e`  ·  (S88: P4 `abdcedc` · S87: RefUX-A `25ec2bf` · S86: P3.3 `31da608`)
 

@@ -408,5 +408,15 @@
   "Prod.Export": "Export CSV",
   "Prod.Exported": "✓ Exported {0} records: {1}",
   "Prod.NoData": "No data in this window yet.",
-  "Prod.TrendTitle": "Hourly — yield · X̄ cycle (simple SPC)"
+  "Prod.TrendTitle": "Hourly — yield · X̄ cycle (simple SPC)",
+  "UserAdmin.Password": "Password",
+  "UserAdmin.Level": "Level",
+  "UserAdmin.NewPassword": "New password",
+  "Alarm.TabActive": "Active",
+  "Alarm.TabHistory": "History",
+  "Alarm.HistFilter": "Filter (code/station/text)",
+  "Alarm.HistCount": "{0} records in filter (showing up to {1})",
+  "Alarm.HistEmpty": "No records match the filter.",
+  "Alarm.HistExported": "✓ Exported {0} records: {1}",
+  "Alarm.ParetoTitle": "Frequency by code (most first)"
 }

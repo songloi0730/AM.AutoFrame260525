@@ -408,5 +408,15 @@
   "Prod.Export": "Xuất CSV",
   "Prod.Exported": "✓ Đã xuất {0} record: {1}",
   "Prod.NoData": "Chưa có dữ liệu trong cửa sổ này.",
-  "Prod.TrendTitle": "Theo giờ — yield · X̄ cycle (SPC đơn giản)"
+  "Prod.TrendTitle": "Theo giờ — yield · X̄ cycle (SPC đơn giản)",
+  "UserAdmin.Password": "Mật khẩu",
+  "UserAdmin.Level": "Quyền",
+  "UserAdmin.NewPassword": "Mật khẩu mới",
+  "Alarm.TabActive": "Đang active",
+  "Alarm.TabHistory": "Lịch sử",
+  "Alarm.HistFilter": "Lọc (mã/trạm/nội dung)",
+  "Alarm.HistCount": "{0} bản ghi trong bộ lọc (hiển thị tối đa {1})",
+  "Alarm.HistEmpty": "Không có bản ghi nào trong bộ lọc.",
+  "Alarm.HistExported": "✓ Đã xuất {0} bản ghi: {1}",
+  "Alarm.ParetoTitle": "Tần suất theo mã (nhiều nhất trước)"
 }

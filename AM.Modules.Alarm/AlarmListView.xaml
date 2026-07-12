@@ -10,6 +10,7 @@
 
     <UserControl.Resources>
         <conv:AlarmLevelToColorConverter x:Key="LevelToColor"/>
+        <conv:IndexToVisibilityConverter x:Key="IndexToVis"/>
     </UserControl.Resources>
 
     <Grid Margin="16">
@@ -18,16 +19,46 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header + toolbar -->
+        <!-- Header + tab Đang active / Lịch sử (S90) + toolbar -->
         <Grid Grid.Row="0" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="{Binding [Dash.ActiveAlarms], Source={x:Static loc:Loc.Strings}}"
-                           FontSize="18" FontWeight="Bold"
-                           Foreground="{DynamicResource Text.HeadingBrush}"/>
+                <StackPanel.Resources>
+                    <Style x:Key="AlarmTab" TargetType="RadioButton">
+                        <Setter Property="Height" Value="34"/>
+                        <Setter Property="Padding" Value="16,0"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="RadioButton">
+                                    <Border x:Name="Bd" CornerRadius="6" Padding="{TemplateBinding Padding}"
+                                            Background="Transparent">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Bd" Property="Background"
+                                                    Value="{DynamicResource Panel.BackgroundAltBrush}"/>
+                                            <Setter Property="Foreground"
+                                                    Value="{DynamicResource Text.PrimaryBrush}"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </StackPanel.Resources>
+                <RadioButton Style="{StaticResource AlarmTab}" GroupName="alarmtab" IsChecked="True"
+                             Command="{Binding SelectTabCommand}" CommandParameter="0"
+                             Content="{Binding [Alarm.TabActive], Source={x:Static loc:Loc.Strings}}"/>
+                <RadioButton Style="{StaticResource AlarmTab}" GroupName="alarmtab" Margin="4,0,0,0"
+                             Command="{Binding SelectTabCommand}" CommandParameter="1"
+                             Content="{Binding [Alarm.TabHistory], Source={x:Static loc:Loc.Strings}}"/>
                 <Border CornerRadius="10" Padding="8,2" Margin="12,0,0,0"
                         Background="{DynamicResource Status.AlarmBrush}">
                     <TextBlock Text="{Binding ActiveCount, Mode=OneWay}"
@@ -37,12 +68,14 @@
             <Button Grid.Column="1" Content="{Binding [Alarm.ClearAll], Source={x:Static loc:Loc.Strings}}"
                     Command="{Binding ClearAllCommand}"
                     Height="36" Padding="14,0" FontWeight="SemiBold"
+                    Visibility="{Binding TabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=0}"
                     Background="{DynamicResource Status.InterlockBrush}"
                     Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
         </Grid>
 
-        <!-- Alarm DataGrid -->
+        <!-- PANE 0: Alarm đang active -->
         <DataGrid Grid.Row="1"
+                  Visibility="{Binding TabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=0}"
                   ItemsSource="{Binding ActiveAlarms}"
                   AutoGenerateColumns="False" IsReadOnly="True"
                   CanUserAddRows="False" GridLinesVisibility="Horizontal"
@@ -108,5 +141,122 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+
+        <!-- PANE 1: LỊCH SỬ cảnh báo (S90) — đọc AlarmHistory DB; xoá alarm active KHÔNG mất lịch sử -->
+        <Grid Grid.Row="1"
+              Visibility="{Binding TabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=1}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="340"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Bộ lọc -->
+            <WrapPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,10">
+                <TextBlock Text="{Binding [Audit.From], Source={x:Static loc:Loc.Strings}}"
+                           VerticalAlignment="Center" Margin="0,0,6,0"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <DatePicker SelectedDate="{Binding HistoryFrom}" Width="130" Height="34" Margin="0,0,14,0"
+                            VerticalContentAlignment="Center"/>
+                <TextBlock Text="{Binding [Audit.To], Source={x:Static loc:Loc.Strings}}"
+                           VerticalAlignment="Center" Margin="0,0,6,0"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <DatePicker SelectedDate="{Binding HistoryTo}" Width="130" Height="34" Margin="0,0,14,0"
+                            VerticalContentAlignment="Center"/>
+                <TextBlock Text="{Binding [Alarm.HistFilter], Source={x:Static loc:Loc.Strings}}"
+                           VerticalAlignment="Center" Margin="0,0,6,0"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <TextBox Text="{Binding HistoryFilter, UpdateSourceTrigger=PropertyChanged}" Width="160"
+                         Height="34" VerticalContentAlignment="Center" Margin="0,0,14,0"/>
+                <Button Content="{Binding [Audit.Refresh], Source={x:Static loc:Loc.Strings}}"
+                        Command="{Binding RefreshHistoryCommand}" Height="34" Padding="14,0" Cursor="Hand"/>
+                <Button Content="{Binding [Audit.Export], Source={x:Static loc:Loc.Strings}}"
+                        Command="{Binding ExportHistoryCsvCommand}" Height="34" Padding="14,0"
+                        Margin="8,0,0,0" Cursor="Hand"/>
+            </WrapPanel>
+
+            <!-- Bảng lịch sử -->
+            <DataGrid Grid.Row="1" Grid.Column="0"
+                      ItemsSource="{Binding HistoryRows}"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      CanUserAddRows="False" GridLinesVisibility="Horizontal"
+                      HeadersVisibility="Column"
+                      Background="{DynamicResource Panel.BackgroundBrush}"
+                      Foreground="{DynamicResource Text.PrimaryBrush}"
+                      BorderBrush="{DynamicResource Border.DefaultBrush}"
+                      RowBackground="{DynamicResource Panel.BackgroundBrush}"
+                      AlternatingRowBackground="{DynamicResource Panel.BackgroundAltBrush}"
+                      VirtualizingPanel.IsVirtualizing="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}"
+                                        Binding="{Binding RaisedAt, StringFormat=HH:mm:ss dd/MM/yyyy}" Width="150"/>
+                    <DataGridTextColumn Header="{Binding [Col.Code], Source={x:Static loc:Loc.Strings}}"
+                                        Binding="{Binding AlarmCode}" Width="70"/>
+                    <DataGridTemplateColumn Header="{Binding [Col.Level], Source={x:Static loc:Loc.Strings}}" Width="55">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Ellipse Width="12" Height="12" HorizontalAlignment="Center"
+                                         Fill="{Binding Level, Converter={StaticResource LevelToColor}}"
+                                         ToolTip="{Binding Level}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="{Binding [Col.Station], Source={x:Static loc:Loc.Strings}}"
+                                        Binding="{Binding Station}" Width="110"/>
+                    <DataGridTextColumn Header="{Binding [Col.Message], Source={x:Static loc:Loc.Strings}}"
+                                        Binding="{Binding Message}" Width="*"/>
+                    <DataGridCheckBoxColumn Header="{Binding [Col.Ack], Source={x:Static loc:Loc.Strings}}"
+                                            Binding="{Binding IsAcknowledged, Mode=OneWay}" Width="50"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Pareto tần suất theo mã (nhiều nhất trước) -->
+            <Border Grid.Row="1" Grid.Column="2" CornerRadius="6" Padding="12" VerticalAlignment="Stretch"
+                    Background="{DynamicResource Panel.BackgroundBrush}"
+                    BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"
+                               Text="{Binding [Alarm.ParetoTitle], Source={x:Static loc:Loc.Strings}}"
+                               Foreground="{DynamicResource Text.HeadingBrush}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding ParetoRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,4">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" FontFamily="Consolas" FontSize="12"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}">
+                                                <Run Text="{Binding Count, Mode=OneWay}" FontWeight="Bold"/>
+                                                <Run Text="{Binding PercentText, Mode=OneWay}"
+                                                     Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                            </TextBlock>
+                                            <TextBlock FontSize="12" Foreground="{DynamicResource Text.PrimaryBrush}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Message}">
+                                                <Run Text="{Binding Code, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                <Run Text="{Binding Message, Mode=OneWay}"
+                                                     Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                            </TextBlock>
+                                        </DockPanel>
+                                        <Border Height="6" CornerRadius="2" HorizontalAlignment="Left"
+                                                Margin="0,3,0,0" Width="{Binding BarWidth}"
+                                                Background="{DynamicResource Status.InfoBrush}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Text="{Binding HistoryStatus}"
+                       FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"
+                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+        </Grid>
     </Grid>
 </UserControl>
