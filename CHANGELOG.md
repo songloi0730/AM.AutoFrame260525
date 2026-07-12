@@ -23,11 +23,24 @@ truy ra qua Windows Event Log (.NET Runtime).
 - App.OnStartup: đăng ký `DispatcherUnhandledException` + `AppDomain.UnhandledException` → **Log.Fatal trước khi chết**
   (chỉ log, không nuốt lỗi) — crash UI từ nay để lại dấu vết trong log app, khỏi phải đào Event Log.
 
+### 🐛 Crash thứ 2 cùng lớp (chủ dự án báo tiếp): màn Cảnh báo thoát khi CÓ alarm
+- Handler Log.Fatal vừa thêm trả công ngay — stack nằm sẵn trong log app: `DataGridCheckBoxColumn`
+  (cột DataGrid cũng **mặc định TwoWay**) bind vào `AlarmModel.IsAcknowledged` có **setter private** →
+  InvalidOperationException lúc binding activate KHI LIST CÓ DÒNG. Lần duyệt tab trước không lộ vì list rỗng;
+  chủ dự án bấm E-Stop tạo alarm 70001 rồi mở màn Cảnh báo là sập. `IsReadOnly=True` của grid KHÔNG cứu —
+  exception nổ lúc activate binding, trước cả chuyện edit.
+- Sửa: `Mode=OneWay` (rà repo: chỉ 1 CheckBoxColumn duy nhất; các TextColumn bind property `init` nên WPF
+  không coi là read-only — không nổ).
+
 ### 🧪 Kiểm chứng (UI Automation thật, không chỉ boot)
-- Script UIA (PowerShell): mở app → duyệt **cả 7 tab** trước đăng nhập → đăng nhập `engineer` qua overlay →
-  nav rebuild 8 tab → duyệt **cả 8 tab gồm Vận hành tay** — app sống toàn trình, 0 dòng FTL trong log.
-- Bài học ghi vào quy trình: smoke boot KHÔNG đủ cho thay đổi XAML view — phải điều hướng tới màn bị sửa
-  (checklist am-hmi-design đã có mục Run/binding: mọi bind tới nguồn chỉ-đọc trên DP TwoWay-mặc-định phải Mode=OneWay).
+- Crash 1: script UIA mở app → duyệt **cả 7 tab** trước đăng nhập → đăng nhập `engineer` qua overlay →
+  duyệt **cả 8 tab gồm Vận hành tay** — app sống toàn trình.
+- Crash 2: UIA **đăng nhập sai 5 lần để tự tạo alarm 40010 thật** (tính năng P3.1 thành công cụ test) →
+  duyệt hết tab gồm màn Cảnh báo ĐANG CÓ DÒNG alarm — app sống, 0 FTL sau bản sửa.
+- Bài học ghi vào quy trình: smoke boot KHÔNG đủ cho thay đổi XAML — phải điều hướng tới màn bị sửa, và màn
+  danh sách phải test VỚI DỮ LIỆU (binding trong DataTemplate/column chỉ activate khi có item). Quy tắc:
+  mọi bind tới property chỉ-đọc trên DP TwoWay-mặc-định (Run.Text, CheckBox.IsChecked, cột DataGrid...)
+  PHẢI `Mode=OneWay`.
 
 ---
 

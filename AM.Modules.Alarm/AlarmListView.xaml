@@ -81,7 +81,9 @@
                 <DataGridTextColumn Header="{Binding [Col.Station], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Station}" Width="130"/>
                 <DataGridTextColumn Header="{Binding [Col.Message], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Message}" Width="*"/>
                 <DataGridTextColumn Header="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}" Width="90"/>
-                <DataGridCheckBoxColumn Header="{Binding [Col.Ack], Source={x:Static loc:Loc.Strings}}" Binding="{Binding IsAcknowledged}" Width="50"/>
+                <!-- Cột DataGrid mặc định TwoWay — IsAcknowledged setter private nên PHẢI Mode=OneWay,
+                     nếu không nổ InvalidOperationException ngay khi list có alarm (S89 crash fix) -->
+                <DataGridCheckBoxColumn Header="{Binding [Col.Ack], Source={x:Static loc:Loc.Strings}}" Binding="{Binding IsAcknowledged, Mode=OneWay}" Width="50"/>
 
                 <!-- Action buttons -->
                 <DataGridTemplateColumn Header="" Width="170">
