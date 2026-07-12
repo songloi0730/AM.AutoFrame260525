@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-13
 **Session:** #90 — **Lịch sử cảnh báo + Pareto · fix danh sách user trống + audit quản trị user** (5 đề xuất của chủ dự án, chốt làm Gói A+B trước). **Gói A**: BUG danh sách user luôn TRỐNG — `UserAdminView` ListBox **thiếu `ItemsSource`** từ ngày viết màn (chủ dự án phát hiện qua ảnh) → đã bind + label LUÔN HIỆN cho mọi ô nhập (Tên đăng nhập/Mật khẩu/Quyền/Mật khẩu mới) + **audit 4 thao tác quản trị user** (Create/Delete/SetLevel/ResetPassword kèm NGƯỜI thực hiện — hiện trong màn Nhật ký audit, truy được "ai mượn phiên admin thêm user"). **Gói B**: màn Cảnh báo thêm sub-tab **"Lịch sử"** (AlarmHistory DB có sẵn từ P0 — xoá alarm active không mất lịch sử): lọc từ/đến ngày + text, bảng ≤500 dòng, export CSV, **Pareto tần suất theo mã** (top 15, đếm+%+bar, tính trên toàn kết quả lọc) — trả lời "lỗi nào hay xảy ra". Kiểm chứng UIA với DỮ LIỆU THẬT: 10 dòng lịch sử + Pareto hiện, 5 user hiện đủ, app sống (phát hiện thêm: UIA Select() không kích Command RadioButton — phải click chuột thật; sln build không refresh dll bin → luôn build Shell tường minh trước smoke). 159/159 Services tests pass. **Còn hàng đợi đã chốt**: Gói C giám sát analog (ngưỡng theo RECIPE + time settings van/xilanh, ~2 phiên) · Gói D phanh Z (toggle+confirm Engineer + banner đỏ khi nhả + tự đóng khi rời màn, ~1 phiên).
-**Commit:** *(điền sau khi commit)*  ·  (S89: hotfix crash `231ee0e`+`bcef5b3` · S88: P4 `abdcedc` · S87: RefUX-A `25ec2bf`)
+**Commit:** `31a8d47`  ·  (S89: hotfix crash `231ee0e`+`bcef5b3` · S88: P4 `abdcedc` · S87: RefUX-A `25ec2bf`)
 
 ---
 

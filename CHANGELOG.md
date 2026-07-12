@@ -6,7 +6,7 @@
 
 ## [Session 90] 2026-07-13 — Lịch sử cảnh báo + Pareto tần suất lỗi · fix danh sách user trống + label form + audit quản trị user
 
-**Commit:** *(điền sau)*
+**Commit:** `31a8d47`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án rà UI thực tế và nêu 5 đề xuất (kèm ảnh màn giám sát khí nén tham khảo). Chốt qua
 AskUserQuestion: đợt này làm **Gói A (User+Audit) + Gói B (Lịch sử cảnh báo)**; Gói C (giám sát analog
