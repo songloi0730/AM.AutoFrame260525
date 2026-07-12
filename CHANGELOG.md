@@ -6,7 +6,7 @@
 
 ## [Session 89] 2026-07-12 — HOTFIX: mở Vận hành tay / Cài đặt làm app thoát (Run.Text TwoWay bind vào Loc indexer)
 
-**Commit:** *(điền sau)*
+**Commit:** `231ee0e`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án báo: chọn tab Vận hành tay hoặc Cài đặt là chương trình thoát. Log app không có gì —
 truy ra qua Windows Event Log (.NET Runtime).

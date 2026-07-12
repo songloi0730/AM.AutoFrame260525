@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-12
 **Session:** #89 — **HOTFIX crash mở Vận hành tay / Cài đặt** (chủ dự án báo). Nguyên nhân: `Run.Text` là DP **mặc định TwoWay** (bẫy WPF) — S84 bind nó vào indexer chỉ-đọc `Loc.Strings[...]` trong `CalibrationPanelView.xaml` → XamlParseException ngay lúc load view; view nhúng ở CẢ Vận hành tay lẫn Cài đặt nên mở màn nào cũng thoát app. Log app sạch (crash trước khi kịp ghi) — truy bằng **Windows Event Log**. Sửa: `Mode=OneWay` (rà toàn repo đúng 1 chỗ thiếu) + App đăng ký `DispatcherUnhandledException`/`AppDomain.UnhandledException` → **Log.Fatal trước khi chết** (chỉ log, không nuốt lỗi — crash sau này có dấu vết ngay trong log app). Kiểm chứng bằng **UI Automation thật**: duyệt 7 tab trước đăng nhập → login `engineer` qua overlay → duyệt 8 tab (gồm Vận hành tay) — app sống toàn trình, 0 FTL. Bài học: smoke boot KHÔNG đủ cho thay đổi XAML — view tạo lười khi điều hướng, phải mở tới màn bị sửa.
-**Commit:** *(điền sau khi commit)*  ·  (S88: P4 `abdcedc` · S87: RefUX-A `25ec2bf` · S86: P3.3 `31da608`)
+**Commit:** `231ee0e`  ·  (S88: P4 `abdcedc` · S87: RefUX-A `25ec2bf` · S86: P3.3 `31da608`)
 
 ---
 
