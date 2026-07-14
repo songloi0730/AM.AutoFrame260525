@@ -43,4 +43,12 @@ public abstract class RecipeBase
     /// không có nữa thì dùng file mặc định của máy (config <c>AutoMachine:Sequence:File</c>).
     /// </summary>
     public string? SequenceFile { get; set; }
+
+    /// <summary>
+    /// Ngưỡng + thời gian van của từng kênh analog, key = <see cref="AnalogChannelConfig.Id"/>
+    /// (Gói C S91 — theo RECIPE: đổi sản phẩm là đổi ngưỡng). Kênh chưa có ngưỡng → mặc định 0.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only",
+        Justification = "Recipe là DTO — cần setter để deserialize/copy khi lưu")]
+    public Dictionary<string, AnalogLimits> AnalogLimits { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

@@ -4,6 +4,66 @@
 
 ---
 
+## [Session 91] 2026-07-14 — Gói C: Giám sát analog — ngưỡng 4 mức + time van theo RECIPE, alarm khoảng an toàn, module UI mới
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Thực hiện **Gói C** đã chốt S90 (đề xuất số 1+2 của chủ dự án, tham khảo màn giám sát khí nén
+công nghiệp trong ảnh): quản lý kênh analog (áp suất/chân không/nhiệt độ/lưu lượng) với 4 mức ngưỡng
+Lv Pick Up / On Check / Blow Off / Off Check + 3 thời gian trễ van/xilanh (On/Off/Blow ms), **lưu THEO RECIPE**
+(chốt AskUserQuestion: đổi sản phẩm là đổi bộ ngưỡng — không phải setting máy).
+
+### ✅ Model + Recipe (`AM.Core`)
+- `Models/AnalogModels.cs` **mới**: `AnalogChannelConfig` — kênh máy khai trong **`analog.map.json` cạnh exe**
+  (Id ổn định làm khoá ngưỡng, Name/Unit hiển thị, AiChannel vật lý, scale tuyến tính RawMin..RawMax →
+  EngMin..EngMax — thang ÂM cho chân không hoạt động đúng, `SafeMin/SafeMax` tuỳ chọn cho alarm);
+  `AnalogLimits` — 4 mức Lv* + OnTimeMs/OffTimeMs/BlowTimeMs (ngữ nghĩa màn khí nén điển hình).
+- `RecipeBase.AnalogLimits` **mới**: `Dictionary<string, AnalogLimits>` (OrdinalIgnoreCase) — station khi chạy
+  sequence đọc `recipe.AnalogLimits["VAC_PP1"]`; kênh chưa có ngưỡng → mặc định 0.
+- `AlarmCodes.IoAnalogOutOfRange = 30006` + catalog 3 ngữ.
+
+### ✅ Service giám sát (`AM.Core.Abstractions` + `AM.Services`)
+- `IAnalogMonitorService` / `AnalogMonitorService`: nạp map **tolerant** (không có file = máy không có analog —
+  hợp lệ, không poll; file hỏng = log lỗi + bỏ qua, app vẫn chạy); poll **200ms** PeriodicTimer; một kênh đọc
+  lỗi → giá trị kênh đó null nhưng KHÔNG giết vòng poll (kênh khác vẫn sống).
+- **Khoảng an toàn CHỈ xét khi máy Running** (máy đứng thì vacuum về 0 là bình thường — không alarm rác);
+  vượt liên tục **5 mẫu (1s) mới alarm** (debounce nhiễu); alarm **một lần cho mỗi đợt vượt**, re-arm khi
+  giá trị về trong khoảng; raise fire-and-forget, alarm lỗi không phá vòng poll.
+- `Scale(cfg, raw)` public static — tool/test dùng chung; span 0 → EngMin (không chia 0).
+
+### ✅ Module UI mới `AM.Modules.Analog` (project #30)
+- Tab **"Analog"** (`[ModuleNavigation("Nav.Analog", icon "io", order 30)]` — sau Cảnh báo, ai cũng xem được).
+- Trái: lưới **card kênh** — giá trị live F1 + đơn vị, bar vị trí trong thang Eng, dòng tóm tắt ngưỡng
+  "↑x · on y · blow z · ↓w"; mất tín hiệu → "—" xám. Poll UI 250ms (DispatcherTimer) từ service.
+- Phải: panel kênh đang chọn — 7 ô nhập **label luôn hiện** (RefUX-A §7), nút **"Ghi vào recipe"**:
+  gate **Engineer+** (dưới quyền: ô disable + hint lý do thay vì nút chết câm), chưa có recipe active →
+  báo "nạp recipe trước", parse số Invariant→CurrentCulture, ghi `recipe.AnalogLimits[id]` →
+  `SaveRecipeAsync` + **audit `Analog.WriteLimits.{id}`** kèm toàn bộ giá trị; đổi recipe (RecipeChanged) →
+  panel tự nạp lại ngưỡng của recipe mới.
+- Máy không có kênh analog → empty state có lối đi (hướng dẫn khai analog.map.json). Mọi binding hiển thị
+  Mode=OneWay (bài học S89).
+- i18n +18 key ×3 (417 chuỗi/ngữ).
+
+### ✅ Sim + demo + backup
+- `SimulatedIoModule`: AI 16 kênh có **giá trị nền 2–8V random lúc Connect + random-walk ±0.03V mỗi lần đọc**
+  (trước là random 0–10V mỗi lần — số nhảy loạn không nhìn được); helper `SetAnalogInput` cho test/demo.
+- `analog.map.json` demo 4 kênh: VAC_PP1/VAC_PP2 (0..-100 kPa, không safe-range) · PRESS_MAIN
+  (0..1000 kPa, safe 150–900 — nền sim 200–800 nên không alarm rác) · TEMP_HEAD (0..100°C, safe ≤95).
+- `BackupService.DefaultTargets` + `analog.map.json`; DI: service ở `AddCoreServices`, VM ở `AddUiViewModels`,
+  `Start()` trong `App.OnStartup`; Shell csproj reference + copy map; `dotnet sln add`.
+
+### 🧪 Kiểm chứng
+- **+12 test case → 317 pass toàn repo** (`AnalogMonitorServiceTests`: scale thang âm/span 0, map thiếu/hỏng/
+  comment + Id rỗng bị bỏ, poll ra đúng giá trị scale, **debounce 1s + chỉ khi Running + alarm đúng MỘT lần**,
+  kênh lỗi cô lập kênh lành).
+- **Smoke UIA end-to-end**: boot → tab Analog hiện 4 card giá trị live đúng scale (vd −55.1 kPa / 610.9 kPa) →
+  login engineer → **nạp recipe Default** (phát hiện đúng thiết kế: chưa nạp recipe thì ghi ngưỡng báo
+  "nạp recipe trước") → chọn Vacuum PP1 → nhập 7 giá trị → status "**Đã ghi ngưỡng Vacuum PP1 vào recipe
+  Default.**" + card cập nhật "↑-60 · on -55 · blow -5 · ↓-10" + **audit JSONL** đúng actor engineer + detail.
+- 2 lần S125 quen thuộc khi build (comment kết thúc bằng `;` / chứa `Start()`) — sửa lời comment.
+
+---
+
 ## [Session 90] 2026-07-13 — Lịch sử cảnh báo + Pareto tần suất lỗi · fix danh sách user trống + label form + audit quản trị user
 
 **Commit:** `31a8d47`

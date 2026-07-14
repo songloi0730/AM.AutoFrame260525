@@ -1,0 +1,39 @@
+// Kênh analog máy DemoPickPlace (Gói C, S91). Không có file này = máy không có analog — hợp lệ.
+// Scale tuyến tính: RawMin→EngMin, RawMax→EngMax. SafeMin/SafeMax (tuỳ chọn) chỉ giám sát khi
+// máy Running — ra ngoài liên tục >1s → alarm 30006. Ngưỡng vận hành 4 mức Lv* nằm trong RECIPE.
+[
+  {
+    "Id": "VAC_PP1",
+    "Name": "Vacuum PP1",
+    "Unit": "kPa",
+    "AiChannel": 0,
+    "RawMin": 0, "RawMax": 10,
+    "EngMin": 0, "EngMax": -100
+  },
+  {
+    "Id": "VAC_PP2",
+    "Name": "Vacuum PP2",
+    "Unit": "kPa",
+    "AiChannel": 1,
+    "RawMin": 0, "RawMax": 10,
+    "EngMin": 0, "EngMax": -100
+  },
+  {
+    "Id": "PRESS_MAIN",
+    "Name": "Áp khí nguồn",
+    "Unit": "kPa",
+    "AiChannel": 2,
+    "RawMin": 0, "RawMax": 10,
+    "EngMin": 0, "EngMax": 1000,
+    "SafeMin": 150, "SafeMax": 900
+  },
+  {
+    "Id": "TEMP_HEAD",
+    "Name": "Nhiệt độ đầu tool",
+    "Unit": "°C",
+    "AiChannel": 3,
+    "RawMin": 0, "RawMax": 10,
+    "EngMin": 0, "EngMax": 100,
+    "SafeMax": 95
+  }
+]

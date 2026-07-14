@@ -22,9 +22,12 @@ public sealed class SimulatedIoModule : IIoModule
     private const string StationName = "SIMULATED_IO";
 
     // ─── Private fields ─────────────────────────────────────────────────────────
+    private const int AnalogInputCount = 16;
+
     private readonly ILogger<SimulatedIoModule> _logger;
     private readonly bool[] _diStates;
     private readonly bool[] _doStates;
+    private readonly double[] _aiValues = new double[AnalogInputCount]; // giá trị nền AI (V)
     private readonly HashSet<int> _forcedDo = [];
     private readonly object _forceLock = new();
 
@@ -61,9 +64,15 @@ public sealed class SimulatedIoModule : IIoModule
     // ─── Public methods ──────────────────────────────────────────────────────────
 
     /// <inheritdoc/>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394:Do not use insecure randomness",
+        Justification = "Simulator only — giá trị nền AI giả lập")]
     public async Task ConnectAsync(CancellationToken ct = default)
     {
         await Task.Delay(100, ct).ConfigureAwait(false);
+        // Mỗi kênh AI một giá trị nền 2–8V để màn analog có dữ liệu nhìn được — S91.
+        // ReadAnalogAsync random-walk quanh giá trị này thay vì nhảy loạn 0–10V mỗi lần đọc.
+        for (int i = 0; i < _aiValues.Length; i++)
+            _aiValues[i] = 2.0 + _random.NextDouble() * 6.0;
         _isConnected = true;
         _logger.LogInformation("[SimIO] Connected (DI={DiCount}, DO={DoCount})",
             DigitalInputCount, DigitalOutputCount);
@@ -191,7 +200,11 @@ public sealed class SimulatedIoModule : IIoModule
     public Task<double> ReadAnalogAsync(int channel, CancellationToken ct = default)
     {
         EnsureConnected();
-        return Task.FromResult(_random.NextDouble() * 10.0); // 0–10V giả lập
+        if (channel < 0 || channel >= AnalogInputCount)
+            return Task.FromResult(0.0);
+        // Random-walk nhỏ quanh giá trị nền — nhìn "sống" nhưng ổn định (S91, thay vì nhảy 0–10V)
+        _aiValues[channel] = Math.Clamp(_aiValues[channel] + (_random.NextDouble() - 0.5) * 0.06, 0, 10);
+        return Task.FromResult(_aiValues[channel]);
     }
 
     // ─── Simulator helpers — chỉ dùng trong test ────────────────────────────────
@@ -201,6 +214,13 @@ public sealed class SimulatedIoModule : IIoModule
     {
         ValidateChannel(channel, DigitalInputCount, "DI");
         _diStates[channel] = value;
+    }
+
+    /// <summary>Đặt giá trị nền AI (V) — dùng cho unit test/demo kịch bản analog.</summary>
+    public void SetAnalogInput(int channel, double volts)
+    {
+        if (channel < 0 || channel >= AnalogInputCount) return;
+        _aiValues[channel] = Math.Clamp(volts, 0, 10);
     }
 
     // ─── IDisposable ─────────────────────────────────────────────────────────────

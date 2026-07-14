@@ -35,6 +35,7 @@ public static class AlarmCodes
     public const int IoClampFail           = 30002;
     public const int IoSensorFault         = 30003;
     public const int IoConnectionFail      = 30004;
+    public const int IoAnalogOutOfRange    = 30006;  // Kênh analog ra ngoài khoảng an toàn khi máy chạy (Gói C)
     public const int IoOutputFault         = 30005;
 
     // ─── 40000–40999  System / Application ───────────────────────────────────

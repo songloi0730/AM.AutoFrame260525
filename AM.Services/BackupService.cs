@@ -24,7 +24,7 @@ public sealed class BackupService : IBackupService, IDisposable
     private static readonly string[] DefaultTargets =
     [
         "automachine.db", "users.json", "points.json", "parameters.json",
-        "io.map.json", "machine.json", "axismap.json", "calibration-history.json",
+        "io.map.json", "analog.map.json", "machine.json", "axismap.json", "calibration-history.json",
         "recovery-actions.json", "override-actions.json", "appsettings.json", "recipes",
     ];
 

@@ -134,6 +134,7 @@ AM.WorkStation.{MachineName}/    — ⭐ PHẦN DUY NHẤT THAY ĐỔI KHI LÀM 
 
 AM.Modules.*/                    — Prism UI Modules (load theo cấu hình, tái sử dụng 100%)
   AM.Modules.Alarm               — Alarm list, history, export
+  AM.Modules.Analog              — Giám sát analog (áp/chân không/nhiệt/lưu lượng), ngưỡng Lv* theo RECIPE (S91)
   AM.Modules.Parameter           — Recipe, parameter, import/export
   AM.Modules.Production          — Dashboard UPH, yield, SPC chart
   AM.Modules.IO                  — Monitor DI/DO/AI/AO real-time

@@ -1,0 +1,253 @@
+<UserControl x:Class="AM.Modules.Analog.AnalogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             mc:Ignorable="d"
+             Background="{DynamicResource Screen.BackgroundBrush}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Margin="0,0,0,16"
+                   Text="{Binding [Nav.Analog], Source={x:Static loc:Loc.Strings}}"
+                   FontSize="18" FontWeight="Bold"
+                   Foreground="{DynamicResource Text.HeadingBrush}"/>
+
+        <!-- Máy không có kênh analog → hướng dẫn (empty state có next action) -->
+        <TextBlock Grid.Row="1" Margin="4,8,0,0" FontSize="14" TextWrapping="Wrap"
+                   Foreground="{DynamicResource Text.SecondaryBrush}"
+                   Text="{Binding [Analog.NoChannels], Source={x:Static loc:Loc.Strings}}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasChannels, Mode=OneWay}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <Grid Grid.Row="1">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasChannels, Mode=OneWay}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="340"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Lưới card kênh: giá trị live + bar + tóm tắt ngưỡng -->
+            <ListBox Grid.Column="0" ItemsSource="{Binding Cards}"
+                     SelectedItem="{Binding SelectedCard, Mode=TwoWay}"
+                     Background="Transparent" BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="4"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="CardBorder" CornerRadius="6" Padding="14" Width="270"
+                                            Background="{DynamicResource Panel.BackgroundBrush}"
+                                            BorderThickness="2"
+                                            BorderBrush="{DynamicResource Border.DefaultBrush}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="CardBorder" Property="BorderBrush"
+                                                    Value="{DynamicResource Button.PrimaryBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <DockPanel>
+                                <TextBlock Text="{Binding Name, Mode=OneWay}" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource Text.HeadingBrush}"/>
+                                <TextBlock Text="{Binding Unit, Mode=OneWay}" FontSize="12" HorizontalAlignment="Right"
+                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </DockPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <TextBlock Text="{Binding ValueText, Mode=OneWay}" FontSize="30" FontWeight="Bold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Text.LiveValueBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasValue, Mode=OneWay}" Value="False">
+                                                    <Setter Property="Foreground"
+                                                            Value="{DynamicResource Text.SecondaryBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="{Binding Unit, Mode=OneWay}" FontSize="13" Margin="6,0,0,4"
+                                           VerticalAlignment="Bottom"
+                                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            </StackPanel>
+                            <!-- Bar vị trí giá trị trong thang EngMin..EngMax -->
+                            <Border Height="8" Width="220" Margin="0,8,0,0" CornerRadius="4"
+                                    HorizontalAlignment="Left"
+                                    Background="{DynamicResource Panel.BackgroundAltBrush}">
+                                <Border Height="8" CornerRadius="4" HorizontalAlignment="Left"
+                                        Width="{Binding BarWidth, Mode=OneWay}"
+                                        Background="{DynamicResource Button.PrimaryBrush}"/>
+                            </Border>
+                            <TextBlock Text="{Binding LimitsText, Mode=OneWay}" FontSize="11" Margin="0,8,0,0"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Panel ngưỡng kênh đang chọn — ghi vào RECIPE active -->
+            <Border Grid.Column="1" Margin="8,4,4,4" CornerRadius="6" Padding="16"
+                    VerticalAlignment="Top"
+                    Background="{DynamicResource Panel.BackgroundBrush}">
+                <StackPanel>
+                    <!-- Chưa chọn kênh -->
+                    <TextBlock TextWrapping="Wrap" FontSize="13"
+                               Foreground="{DynamicResource Text.SecondaryBrush}"
+                               Text="{Binding [Analog.SelectHint], Source={x:Static loc:Loc.Strings}}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSelection, Mode=OneWay}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSelection, Mode=OneWay}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <TextBlock FontSize="14" FontWeight="SemiBold" Margin="0,0,0,2"
+                                   Foreground="{DynamicResource Text.HeadingBrush}">
+                            <Run Text="{Binding [Analog.Limits], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                            <Run Text=" — "/>
+                            <Run Text="{Binding SelectedCard.Name, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock FontSize="11" Margin="0,0,0,10" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"
+                                   Text="{Binding [Analog.LimitsHint], Source={x:Static loc:Loc.Strings}}"/>
+
+                        <!-- 4 mức + 3 thời gian: label luôn hiển thị (RefUX-A) -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="110"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="36"/>
+                                <RowDefinition Height="36"/>
+                                <RowDefinition Height="36"/>
+                                <RowDefinition Height="36"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="36"/>
+                                <RowDefinition Height="36"/>
+                                <RowDefinition Height="36"/>
+                            </Grid.RowDefinitions>
+                            <Grid.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+                                </Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Height" Value="30"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+                                    <Setter Property="Padding" Value="6,0"/>
+                                    <Setter Property="IsEnabled" Value="{Binding CanWrite, Mode=OneWay}"/>
+                                </Style>
+                            </Grid.Resources>
+
+                            <TextBlock Grid.Row="0" Text="{Binding [Analog.LvPickUp], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox   Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding LvPickUp, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="1" Text="{Binding [Analog.LvOnCheck], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox   Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding LvOnCheck, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="2" Text="{Binding [Analog.LvBlowOff], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox   Grid.Row="2" Grid.Column="1"
+                                       Text="{Binding LvBlowOff, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="3" Text="{Binding [Analog.LvOffCheck], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox   Grid.Row="3" Grid.Column="1"
+                                       Text="{Binding LvOffCheck, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <TextBlock Grid.Row="5" Text="{Binding [Analog.OnTime], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox   Grid.Row="5" Grid.Column="1"
+                                       Text="{Binding OnTimeMs, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="6" Text="{Binding [Analog.OffTime], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox   Grid.Row="6" Grid.Column="1"
+                                       Text="{Binding OffTimeMs, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Grid.Row="7" Text="{Binding [Analog.BlowTime], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBox   Grid.Row="7" Grid.Column="1"
+                                       Text="{Binding BlowTimeMs, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+
+                        <!-- Ghi vào recipe (Engineer+); dưới quyền → hint thay vì nút chết câm -->
+                        <Button Height="34" Margin="0,14,0,0"
+                                Content="{Binding [Analog.Write], Source={x:Static loc:Loc.Strings}}"
+                                Command="{Binding WriteLimitsCommand}"
+                                IsEnabled="{Binding CanWrite, Mode=OneWay}"
+                                Background="{DynamicResource Button.PrimaryBrush}"
+                                Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
+                        <TextBlock FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"
+                                   Text="{Binding [Analog.NeedEngineer], Source={x:Static loc:Loc.Strings}}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanWrite, Mode=OneWay}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding StatusText, Mode=OneWay}" FontSize="12" Margin="0,8,0,0"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

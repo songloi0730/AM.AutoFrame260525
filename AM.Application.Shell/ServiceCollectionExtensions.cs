@@ -150,6 +150,13 @@ internal static class ServiceCollectionExtensions
             sp.GetRequiredService<ILogger<CalibrationService>>(),
             sp.GetRequiredService<IAuditService>(),
             "calibration-history.json"));
+        // Giám sát analog (Gói C): kênh khai trong analog.map.json, ngưỡng Lv* nằm trong RECIPE.
+        // Khoảng an toàn chỉ xét khi Running → alarm 30006. App.OnStartup gọi Start lúc khởi động.
+        services.AddSingleton<IAnalogMonitorService>(sp => new AnalogMonitorService(
+            sp.GetRequiredService<IIoModule>(),
+            sp.GetRequiredService<IMasterController>(),
+            sp.GetRequiredService<ILogger<AnalogMonitorService>>(),
+            sp.GetRequiredService<IAlarmService>()));
         // Bus tín hiệu phần cứng (event-push) — nguồn cho guard tầng 3
         services.AddSingleton<IHardwareSignalBus, HardwareSignalBus>();
         // Guard engine: phân quyền per-action R0–R3 (state → role → điều kiện phần cứng) + audit log
@@ -197,6 +204,7 @@ internal static class ServiceCollectionExtensions
         services.AddSingleton<AM.Modules.Vision.VisionTeachViewModel>();
         services.AddSingleton<AM.Modules.Vision.VisionViewModel>();
         services.AddSingleton<AlarmListViewModel>();
+        services.AddSingleton<AM.Modules.Analog.AnalogViewModel>(); // màn Giám sát analog (Gói C)
         services.AddSingleton<IoMonitorViewModel>();
         services.AddSingleton<AM.Modules.Motion.StationOpsViewModel>();
         services.AddSingleton<AM.Modules.Motion.OverrideViewModel>();
