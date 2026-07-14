@@ -279,7 +279,9 @@
 
                 <!-- Phải: recipe + clock + heartbeat + ngôn ngữ + user -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource HeaderButton}" Click="RecipeButton_Click"
+                    <!-- Chip recipe = HIỂN THỊ danh tính phiên (không phải nút — S92: tránh 2 đường
+                         vào trùng với tab Recipe trên nav; quản lý recipe ở tab Recipe) -->
+                    <Border Padding="10,4" VerticalAlignment="Center"
                             ToolTip="{Binding [Shell.RecipeTip], Source={x:Static loc:Loc.Strings}}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding [Param.Recipe], Source={x:Static loc:Loc.Strings}}"
@@ -288,7 +290,7 @@
                             <TextBlock Text="{Binding RecipeText}" FontWeight="SemiBold" VerticalAlignment="Center"
                                        Foreground="{DynamicResource Text.PrimaryBrush}"/>
                         </StackPanel>
-                    </Button>
+                    </Border>
 
                     <!-- Clock MinWidth cố định để giây nhảy không làm xô layout -->
                     <StackPanel Orientation="Horizontal" Margin="14,0" VerticalAlignment="Center">

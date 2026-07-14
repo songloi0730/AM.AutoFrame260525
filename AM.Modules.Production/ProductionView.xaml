@@ -4,8 +4,39 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             xmlns:conv="clr-namespace:AM.Modules.Production.Converters"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
+
+    <UserControl.Resources>
+        <conv:IndexToVisibilityConverter x:Key="IndexToVis"/>
+        <!-- Sub-tab pill (giống màn Cảnh báo S90) -->
+        <Style x:Key="ProdTab" TargetType="RadioButton">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" CornerRadius="6" Padding="{TemplateBinding Padding}"
+                                Background="Transparent">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource Panel.BackgroundAltBrush}"/>
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource Text.PrimaryBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -14,11 +45,20 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header: title + chọn cửa sổ + refresh -->
+        <!-- Header: title + sub-tab + chọn cửa sổ + refresh -->
         <DockPanel Grid.Row="0" Margin="0,0,0,16">
             <TextBlock Text="{Binding [Nav.Production], Source={x:Static loc:Loc.Strings}}"
                        FontSize="18" FontWeight="Bold" VerticalAlignment="Center"
                        Foreground="{DynamicResource Text.HeadingBrush}"/>
+            <!-- Sub-tab Tổng quan / Chi tiết sản phẩm (S92) -->
+            <StackPanel Orientation="Horizontal" Margin="20,0,0,0" VerticalAlignment="Center">
+                <RadioButton Style="{StaticResource ProdTab}" GroupName="prodtab" IsChecked="True"
+                             Command="{Binding SelectSubTabCommand}" CommandParameter="0"
+                             Content="{Binding [Prod.TabOverview], Source={x:Static loc:Loc.Strings}}"/>
+                <RadioButton Style="{StaticResource ProdTab}" GroupName="prodtab" Margin="4,0,0,0"
+                             Command="{Binding SelectSubTabCommand}" CommandParameter="1"
+                             Content="{Binding [Prod.TabDetail], Source={x:Static loc:Loc.Strings}}"/>
+            </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <ComboBox Width="140" Height="30" VerticalContentAlignment="Center"
                           ItemsSource="{Binding WindowOptions}"
@@ -36,8 +76,9 @@
             </StackPanel>
         </DockPanel>
 
-        <!-- KPI cards -->
-        <UniformGrid Grid.Row="1" Columns="3" Rows="2">
+        <!-- KPI cards (pane Tổng quan) -->
+        <UniformGrid Grid.Row="1" Columns="3" Rows="2"
+                     Visibility="{Binding SubTab, Converter={StaticResource IndexToVis}, ConverterParameter=0}">
             <!-- Total -->
             <Border Margin="4" CornerRadius="6" Padding="16" Background="{DynamicResource Panel.BackgroundBrush}">
                 <StackPanel HorizontalAlignment="Center">
@@ -108,8 +149,9 @@
             </Border>
         </UniformGrid>
 
-        <!-- Trend theo giờ (P4.4 — SPC đơn giản): yield bar + X̄ cycle mỗi giờ trong cửa sổ -->
+        <!-- Trend theo giờ (P4.4 — SPC đơn giản, pane Tổng quan) -->
         <Border Grid.Row="2" Margin="4,12,4,0" CornerRadius="6" Padding="16"
+                Visibility="{Binding SubTab, Converter={StaticResource IndexToVis}, ConverterParameter=0}"
                 Background="{DynamicResource Panel.BackgroundBrush}">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"
@@ -183,5 +225,124 @@
                 </ScrollViewer>
             </DockPanel>
         </Border>
+
+        <!-- ═══ PANE Chi tiết sản phẩm (S92): lọc SN/KQ + bảng từng SP + Pareto NG theo lý do ═══ -->
+        <Grid Grid.Row="1" Grid.RowSpan="2" Margin="4,0,4,0"
+              Visibility="{Binding SubTab, Converter={StaticResource IndexToVis}, ConverterParameter=1}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Bộ lọc: SN + kết quả — label luôn hiện (RefUX-A) -->
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="{Binding [Prod.SnFilter], Source={x:Static loc:Loc.Strings}}"
+                           VerticalAlignment="Center" Margin="0,0,6,0"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <TextBox Width="180" Height="30" VerticalContentAlignment="Center" Padding="6,0"
+                         Text="{Binding SnFilter, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="{Binding [Prod.Result], Source={x:Static loc:Loc.Strings}}"
+                           VerticalAlignment="Center" Margin="16,0,6,0"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                <ComboBox Width="110" Height="30" VerticalContentAlignment="Center"
+                          SelectedIndex="{Binding ResultFilterIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="{Binding [Prod.ResultAll], Source={x:Static loc:Loc.Strings}}"/>
+                    <ComboBoxItem Content="OK"/>
+                    <ComboBoxItem Content="NG"/>
+                </ComboBox>
+                <TextBlock Text="{Binding DetailCountText}" VerticalAlignment="Center" Margin="16,0,0,0"
+                           FontSize="12" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+            </StackPanel>
+
+            <!-- Bảng chi tiết (virtualized 500 dòng, read-only — mọi cột OneWay) -->
+            <DataGrid Grid.Row="1" Grid.Column="0" ItemsSource="{Binding Records}"
+                      AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal" CanUserAddRows="False" CanUserResizeRows="False"
+                      EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                      Background="{DynamicResource Panel.BackgroundBrush}" BorderThickness="0"
+                      RowHeight="30" FontSize="13">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{Binding [Prod.ColTime], Source={x:Static loc:Loc.Strings}}"
+                                        Binding="{Binding TimeText, Mode=OneWay}" Width="130"/>
+                    <DataGridTextColumn Header="SN" Binding="{Binding SerialNumber, Mode=OneWay}" Width="170"/>
+                    <DataGridTextColumn Header="Recipe" Binding="{Binding RecipeName, Mode=OneWay}" Width="110"/>
+                    <DataGridTemplateColumn Header="{Binding [Prod.Result], Source={x:Static loc:Loc.Strings}}" Width="60">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ResultText, Mode=OneWay}" FontWeight="SemiBold"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Status.NormalBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPassed}" Value="False">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Status.AlarmBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Cycle" Binding="{Binding CycleText, Mode=OneWay}" Width="80"/>
+                    <DataGridTextColumn Header="Vision" Binding="{Binding ScoreText, Mode=OneWay}" Width="60"/>
+                    <DataGridTextColumn Header="{Binding [Prod.ColReason], Source={x:Static loc:Loc.Strings}}"
+                                        Binding="{Binding FailReason, Mode=OneWay}" Width="*"/>
+                    <DataGridTextColumn Header="{Binding [Prod.ColOperator], Source={x:Static loc:Loc.Strings}}"
+                                        Binding="{Binding OperatorId, Mode=OneWay}" Width="90"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Pareto NG theo lý do — trả lời "lỗi nào hay rớt" -->
+            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="12,0,0,0" CornerRadius="6"
+                    Padding="14" VerticalAlignment="Stretch"
+                    Background="{DynamicResource Panel.BackgroundBrush}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"
+                               Text="{Binding [Prod.FailPareto], Source={x:Static loc:Loc.Strings}}"
+                               Foreground="{DynamicResource Text.HeadingBrush}"/>
+                    <Grid>
+                        <TextBlock Text="{Binding [Prod.NoNg], Source={x:Static loc:Loc.Strings}}" FontSize="12"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding FailStats.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <ItemsControl ItemsSource="{Binding FailStats}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <DockPanel>
+                                            <TextBlock Text="{Binding Reason}" FontSize="12" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Reason}"
+                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" FontSize="12" FontFamily="Consolas"
+                                                       Foreground="{DynamicResource Text.SecondaryBrush}">
+                                                <Run Text="{Binding Count, Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding PercentText, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </DockPanel>
+                                        <Border Height="8" CornerRadius="3" Margin="0,3,0,0" HorizontalAlignment="Left"
+                                                Width="{Binding BarWidth}"
+                                                Background="{DynamicResource Status.AlarmBrush}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

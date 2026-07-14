@@ -21,7 +21,7 @@ namespace AM.Hardware.Motion;
 /// (bảng đèn 8 tín hiệu, servo on/off, phản hồi servo) khi chạy mô phỏng,
 /// và <see cref="IAxisJog"/> — jog giữ-để-chạy có deadman watchdog (P1.5).
 /// </summary>
-public sealed class SimulatedMotionController : IMotionController, IAxisDiagnostics, IAxisJog
+public sealed class SimulatedMotionController : IMotionController, IAxisDiagnostics, IAxisJog, IAxisBrake
 {
     // ─── Constants ─────────────────────────────────────────────────────────────
     private const int HomeTimeoutMs   = 10_000;
@@ -283,6 +283,39 @@ public sealed class SimulatedMotionController : IMotionController, IAxisDiagnost
         _servoOn[axisIndex] = enabled;
         _logger.LogDebug("[SimMotion] Servo axis={Axis} → {State}", axisIndex, enabled ? "ON" : "OFF");
         return Task.CompletedTask;
+    }
+
+    // ─── IAxisBrake — nhả/đóng phanh trục (Gói D S92) ────────────────────────────
+
+    private readonly HashSet<int> _releasedBrakes = [];
+    private readonly Lock _brakeSync = new();
+
+    /// <inheritdoc/>
+    public Task SetBrakeReleasedAsync(int axisIndex, bool released, CancellationToken ct = default)
+    {
+        ValidateAxis(axisIndex);
+        EnsureConnected();
+        lock (_brakeSync)
+        {
+            if (released) _releasedBrakes.Add(axisIndex);
+            else _releasedBrakes.Remove(axisIndex);
+        }
+        _logger.LogWarning("[SimMotion] Brake axis={Axis} → {State}", axisIndex,
+            released ? "NHẢ (trục tự do!)" : "ĐÓNG");
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public bool IsBrakeReleased(int axisIndex)
+    {
+        ValidateAxis(axisIndex);
+        lock (_brakeSync) return _releasedBrakes.Contains(axisIndex);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<int> ReleasedBrakes
+    {
+        get { lock (_brakeSync) return [.. _releasedBrakes]; }
     }
 
     // ─── IAxisJog — jog giữ-để-chạy với deadman watchdog (P1.5) ──────────────────

@@ -21,6 +21,7 @@
   "30004": { "name": "Mất kết nối I/O", "remedy": "Kiểm tra cáp và nguồn module I/O" },
   "30005": { "name": "Lỗi ngõ ra", "remedy": "Kiểm tra tải ngõ ra và cầu chì" },
   "30006": { "name": "Giá trị analog ngoài khoảng an toàn", "remedy": "Kiểm tra nguồn khí/cảm biến của kênh và khoảng an toàn trong analog.map.json" },
+  "10009": { "name": "Phanh trục Z đang nhả", "remedy": "Đóng phanh trong màn Vận hành tay trước khi vận hành máy" },
 
   "40001": { "name": "Lỗi cơ sở dữ liệu", "remedy": "Kiểm tra file/dịch vụ database và dung lượng đĩa" },
   "40002": { "name": "Lỗi hệ thống nghiêm trọng", "remedy": "Xem log hệ thống và khởi động lại ứng dụng" },

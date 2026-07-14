@@ -127,7 +127,7 @@ public sealed class UserService : IUserService
         }
         _logger.LogInformation("[User] Đăng nhập: {User} ({Level})", user!.Username, user.Level);
         _audit?.Record(user.Username, "Login", allowed: true);
-        UserChanged?.Invoke(this, new UserChangedEventArgs(user.Username, user.Level));
+        RaiseUserChanged(user.Username, user.Level);
         return true;
     }
 
@@ -185,7 +185,7 @@ public sealed class UserService : IUserService
         _audit?.Record(ServiceUsername, "Login.DayCode", allowed: true, detail: $"máy {_security.MachineId}");
         RaiseSecurityAlarm(AlarmCodes.SecurityServiceLogin,
             "Đăng nhập quyền dịch vụ bằng mã theo ngày (SuperUser tạm thời)");
-        UserChanged?.Invoke(this, new UserChangedEventArgs(ServiceUsername, UserLevel.SuperUser));
+        RaiseUserChanged(ServiceUsername, UserLevel.SuperUser);
         return true;
     }
 
@@ -208,7 +208,7 @@ public sealed class UserService : IUserService
         }
         _logger.LogWarning("[User] BREAK-GLASS: 'recovery' đăng nhập trong cửa sổ khôi phục → Administrator tạm");
         _audit?.Record(RecoveryUsername, "Login.RecoveryWindow", allowed: true);
-        UserChanged?.Invoke(this, new UserChangedEventArgs(RecoveryUsername, UserLevel.Administrator));
+        RaiseUserChanged(RecoveryUsername, UserLevel.Administrator);
         return true;
     }
 
@@ -254,6 +254,29 @@ public sealed class UserService : IUserService
         }
     }
 
+    // Gọi từng subscriber UserChanged CÔ LẬP: một VM lỗi (vd cross-thread) không được chặn các
+    // subscriber sau nó — nếu không nav/gate các màn khác đứng im sau khi đổi user (bug S92).
+    private void RaiseUserChanged(string? user, UserLevel level)
+    {
+        var handlers = UserChanged;
+        if (handlers is null) return;
+        var args = new UserChangedEventArgs(user, level);
+        foreach (var h in handlers.GetInvocationList().Cast<EventHandler<UserChangedEventArgs>>())
+        {
+            try
+            {
+                h(this, args);
+            }
+#pragma warning disable CA1031 // subscriber lỗi chỉ log — các subscriber còn lại vẫn phải chạy
+            catch (Exception ex)
+#pragma warning restore CA1031
+            {
+                _logger.LogError(ex, "[User] Subscriber UserChanged lỗi ({Target}) — bỏ qua",
+                    h.Target?.GetType().Name ?? "?");
+            }
+        }
+    }
+
     // Alarm bảo mật fire-and-forget — luồng đăng nhập không chờ pipeline alarm/DB.
     private void RaiseSecurityAlarm(int code, string message)
     {
@@ -283,7 +306,7 @@ public sealed class UserService : IUserService
             _currentLevel = UserLevel.Null;
         }
         _logger.LogInformation("[User] Đăng xuất");
-        UserChanged?.Invoke(this, new UserChangedEventArgs(null, UserLevel.Null));
+        RaiseUserChanged(null, UserLevel.Null);
     }
 
     /// <inheritdoc/>

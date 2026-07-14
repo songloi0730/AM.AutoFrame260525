@@ -7,6 +7,7 @@
              xmlns:diag="clr-namespace:AM.Modules.Diagnostics;assembly=AM.Modules.Diagnostics"
              xmlns:eng="clr-namespace:AM.Modules.Engineering;assembly=AM.Modules.Engineering"
              xmlns:calib="clr-namespace:AM.Modules.Calibration;assembly=AM.Modules.Calibration"
+             xmlns:logging="clr-namespace:AM.Modules.Logging;assembly=AM.Modules.Logging"
              xmlns:local="clr-namespace:AM.Modules.Settings"
              mc:Ignorable="d"
              Background="{DynamicResource Screen.BackgroundBrush}">
@@ -137,6 +138,14 @@
                             <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.BackupDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
+                    <!-- Nhật ký hệ thống (S92 — chuyển từ tab nav vào đây cho gọn thanh nav) -->
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE9D5;"
+                            Command="{Binding OpenCommand}" CommandParameter="logs">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Nav.Logging], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.LogsDesc], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
                 </UniformGrid>
 
                 <!-- Kiosk (P4.3 — Engineer+): nút chính thức; Ctrl+Shift+F11 vẫn là dự phòng -->
@@ -183,6 +192,8 @@
                                     Visibility="{Binding DataContext.ShowHardware, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <local:HostView DataContext="{Binding Host}"
                                 Visibility="{Binding DataContext.ShowHost, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
+                <logging:LoggingView DataContext="{Binding Logs}"
+                                     Visibility="{Binding DataContext.ShowLogs, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"

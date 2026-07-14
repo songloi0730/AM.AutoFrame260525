@@ -237,17 +237,31 @@ public partial class MainWindow : Window
         else if (firstButton is not null) firstButton.IsChecked = true;
     }
 
-    /// <summary>Điều hướng tới module theo tên View (vd: "ParameterView") — dùng cho nút header.</summary>
-    private void NavigateToView(string viewTypeName)
+    /// <summary>
+    /// Nút Manual (action bar) → màn Vận hành tay. Từ S92 màn này KHÔNG còn là tab nav
+    /// (đỡ dài thanh nav + hết trùng đường vào) — nút Manual là cửa vào duy nhất,
+    /// đứng cùng mạch nút chế độ (Dry run · Từng bước · Manual), enable theo quyền LineLead+.
+    /// </summary>
+    private void ManualButton_Click(object sender, RoutedEventArgs e)
+        => ShowStandaloneView(typeof(AM.Modules.Motion.MotionView));
+
+    /// <summary>
+    /// Hiện một view KHÔNG thuộc nav (vd Vận hành tay): cache view + VM như tab thường,
+    /// bỏ chọn mọi tab nav (nội dung hiện tại không phải tab nào).
+    /// </summary>
+    private void ShowStandaloneView(Type viewType)
     {
-        if (!_navByView.TryGetValue(viewTypeName, out var nav)) return;
-        nav.Button.IsChecked = true; // Checked handler gọi ShowEntry
+        if (!_viewCache.TryGetValue(viewType, out var view))
+        {
+            view = (UserControl)Activator.CreateInstance(viewType)!;
+            view.DataContext = ResolveViewModel(viewType);
+            _viewCache[viewType] = view;
+        }
+        MainContent.Content = view;
+        _currentViewType = viewType; // rebuild nav (đổi user) sẽ không thấy trong entries → về Home
+        foreach (var (_, button) in _navByView.Values)
+            button.IsChecked = false;
     }
-
-    private void RecipeButton_Click(object sender, RoutedEventArgs e) => NavigateToView("ParameterView");
-
-    /// <summary>Nút Manual (action bar) → tab Vận hành tay (MotionView — nav chỉ hiện LineLead+).</summary>
-    private void ManualButton_Click(object sender, RoutedEventArgs e) => NavigateToView("MotionView");
 
     // Login: overlay dialog (SEMI E95 — chỉ phủ vùng content, không che alarm/nav). Nút User mở.
     private void UserButton_Click(object sender, RoutedEventArgs e)

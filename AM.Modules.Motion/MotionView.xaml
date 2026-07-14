@@ -510,6 +510,79 @@
                                 </StackPanel>
                             </DockPanel>
 
+                            <!-- ═ Phanh trục Z (Gói D S92): nhả = confirm 2 bước Engineer;
+                                 đang nhả = banner đỏ + nút đóng; rời màn/đổi user = tự đóng ═ -->
+                            <Border Margin="0,8,0,4" CornerRadius="6" Padding="12,8"
+                                    Visibility="{Binding HasBrake, Converter={StaticResource BoolToVis}}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{DynamicResource Panel.BackgroundAltBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsBrakeReleased}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource Status.AlarmBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Grid>
+                                    <!-- Bình thường: mô tả + nút nhả (bước 1) -->
+                                    <DockPanel>
+                                        <DockPanel.Style>
+                                            <Style TargetType="DockPanel">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsBrakeReleased}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsConfirmingBrake}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DockPanel.Style>
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource MiniButton}" Margin="12,0,0,0"
+                                                Command="{Binding RequestReleaseBrakeCommand}"
+                                                BorderBrush="{StaticResource Status.WarningBrush}"
+                                                Foreground="{StaticResource Status.WarningBrush}"
+                                                Content="{Binding [Brake.Release], Source={x:Static loc:Loc.Strings}}"/>
+                                        <TextBlock VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap"
+                                                   Text="{Binding [Brake.Hint], Source={x:Static loc:Loc.Strings}}"
+                                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                    </DockPanel>
+
+                                    <!-- Bước 2: cảnh báo + Xác nhận/Hủy -->
+                                    <DockPanel Visibility="{Binding IsConfirmingBrake, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
+                                            <Button Style="{StaticResource MiniButton}"
+                                                    Command="{Binding ConfirmReleaseBrakeCommand}"
+                                                    BorderBrush="{StaticResource Status.AlarmBrush}"
+                                                    Foreground="{StaticResource Status.AlarmBrush}"
+                                                    Content="{Binding [Brake.Confirm], Source={x:Static loc:Loc.Strings}}"/>
+                                            <Button Style="{StaticResource MiniButton}" Margin="8,0,0,0"
+                                                    Command="{Binding CancelBrakeConfirmCommand}"
+                                                    Content="{Binding [Brake.Cancel], Source={x:Static loc:Loc.Strings}}"/>
+                                        </StackPanel>
+                                        <TextBlock VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"
+                                                   TextWrapping="Wrap"
+                                                   Text="{Binding [Brake.Warn], Source={x:Static loc:Loc.Strings}}"
+                                                   Foreground="{StaticResource Status.AlarmBrush}"/>
+                                    </DockPanel>
+
+                                    <!-- Đang nhả: banner đỏ + nút đóng (1 chạm) -->
+                                    <DockPanel Visibility="{Binding IsBrakeReleased, Converter={StaticResource BoolToVis}}">
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource MiniButton}" Margin="12,0,0,0"
+                                                Command="{Binding EngageBrakeCommand}"
+                                                BorderBrush="{DynamicResource Status.ForegroundBrush}"
+                                                Foreground="{DynamicResource Status.ForegroundBrush}"
+                                                Content="{Binding [Brake.Engage], Source={x:Static loc:Loc.Strings}}"/>
+                                        <TextBlock VerticalAlignment="Center" FontSize="13" FontWeight="Bold"
+                                                   TextWrapping="Wrap"
+                                                   Text="{Binding [Brake.ReleasedBanner], Source={x:Static loc:Loc.Strings}}"
+                                                   Foreground="{DynamicResource Status.ForegroundBrush}"/>
+                                    </DockPanel>
+                                </Grid>
+                            </Border>
+
                             <!-- Hàng mỗi trục -->
                             <ItemsControl ItemsSource="{Binding VisibleAxes}">
                                 <ItemsControl.ItemTemplate>

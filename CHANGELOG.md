@@ -4,6 +4,68 @@
 
 ---
 
+## [Session 92] 2026-07-14 — Gói D phanh Z · Sản xuất chi tiết SP · fix quyền không cập nhật · nav gọn 7 tab
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** 4 yêu cầu của chủ dự án: (1) thực hiện Gói D phanh Z (hybrid đã chốt S90); (2) tab Sản xuất
+chỉ có KPI cơ bản trùng Home, thiếu chi tiết từng sản phẩm; (3) đăng nhập thấp → đăng xuất → đăng nhập
+admin mà các màn gate vẫn đòi quyền cao hơn; (4) nav quá dài sau khi thêm Analog + 2 nút Recipe trùng +
+Manual/Vận hành tay trùng đường vào — "lên phương án phù hợp rồi tự chỉnh sửa".
+
+### 🐛 (1) Quyền không cập nhật sau đổi user — sửa 2 lớp
+- **Gốc rễ**: `AuditViewModel`/`BackupViewModel` đăng ký `UserChanged += (_,_) => RefreshGate()` mà
+  RefreshGate đụng `ObservableCollection` (Rows/Backups Clear+Add). `UserChanged` bắn trên **thread nền**
+  (LoginAsync Task.Run) → cross-thread exception → **các subscriber SAU trong invocation list không
+  chạy nữa** (BuildNavigation/gate các màn khác đứng im) → "tab vẫn yêu cầu quyền cao hơn".
+- Sửa: (a) 2 VM marshal `RunOnUIThread` qua SynchronizationContext (mẫu UserAdminViewModel đã đúng);
+  (b) phòng thủ tận gốc — `UserService.RaiseUserChanged` gọi **từng subscriber cô lập** try/catch + log
+  tên VM lỗi: về sau ai quên marshal cũng chỉ hỏng đúng màn đó, không lây cả app.
+
+### ✅ (2) Nav gọn: 9→7 tab, hết trùng đường vào (phương án chốt + lý do)
+- **2 nút Recipe** → chip Recipe trên header thành **hiển thị thuần** (Border, tooltip "quản lý trong tab
+  Recipe") — header là danh tính phiên (ISA-101), tab nav là đường vào duy nhất.
+- **Manual vs tab Vận hành tay** → bỏ tab nav (`MotionView` hết `[ModuleNavigation]`); nút **Manual**
+  action bar là cửa vào duy nhất — đứng cùng mạch nút chế độ (Dry run · Từng bước · Manual), đã enable
+  theo quyền + tooltip; MainWindow thêm `ShowStandaloneView` (cache view + bỏ chọn mọi tab nav; đổi user
+  khi đang đứng màn này → nav rebuild tự về Home — cũng là hành vi an toàn).
+- **Tab Nhật ký** → thẻ "Nhật ký" trong Cài đặt (`LoggingView` nhúng như Chẩn đoán/Audit — chất bảo trì,
+  không phải màn vận hành hằng ngày). Nav còn: Bảng điều khiển · Sản xuất · Vision · Cảnh báo · Analog ·
+  Recipe · Cài đặt cho MỌI role.
+
+### ✅ (3) Tab Sản xuất — sub-tab "Chi tiết sản phẩm"
+- Sub-tab **Tổng quan** (KPI + trend giờ, như cũ) / **Chi tiết sản phẩm** (mới): bảng từng SP trong cửa
+  sổ thời gian đã chọn — thời gian · SN · recipe · **KQ màu OK/NG** · cycle · điểm vision · lý do NG ·
+  người vận hành (virtualized, 500 dòng mới nhất, mọi cột OneWay — bài học S89).
+- Lọc **SN contains + kết quả OK/NG** — lọc client-side trên record đã nạp (đổi filter không truy vấn DB);
+  dòng đếm "Hiển thị x/y sản phẩm".
+- Panel **Pareto NG theo lý do** (top 10, đếm + % + bar — tính trên toàn kết quả lọc SN, không chỉ 500
+  dòng hiển thị) — cùng câu trả lời "lỗi nào hay rớt" như Pareto alarm S90.
+
+### ✅ (4) Gói D — phanh trục Z (design-notes/0013)
+- `IAxisBrake` (Abstractions/Hardware) — capability tuỳ chọn như `IAxisJog`: `SetBrakeReleasedAsync` /
+  `IsBrakeReleased` / `ReleasedBrakes`; controller không implement → UI ẩn hẳn khối phanh.
+  `SimulatedMotionController` implement (per-axis, thread-safe).
+- UI trong pane Điều khiển trục (Vận hành tay): **nhả = 2 bước** — bước 1 guard R2 (Engineer + máy dừng,
+  từ chối có lý do + audit DENIED) → bước 2 cảnh báo đỏ "trục Z có thể RƠI TỰ DO" + Xác nhận/Hủy;
+  **đang nhả** = dải đỏ trong màn + **alarm 10009 banner đỏ toàn app** (mẫu forced-IO);
+  **đóng = 1 chạm không cần quyền** (về trạng thái an toàn luôn được phép).
+- **Bất biến an toàn**: rời màn Vận hành tay (Unloaded) / đổi user / rớt dưới Engineer → phanh **TỰ ĐÓNG**
+  + clear alarm; audit `Brake.Release Z` / `Brake.Engage Z` kèm lý do ("tự đóng: rời màn Vận hành tay"…).
+- Phương án bị bác đã lưu 0013: giữ-để-nhả (chỉnh Z cần cả 2 tay) và SuperUser (người chỉnh là Engineer).
+- Alarm 10009 catalog ×3; `ZAxisIndex=2` demo — máy thật đưa vào machine.json (P5).
+
+### 🧪 Kiểm chứng
+- **+3 test → 320 pass toàn repo** (`SimAxisBrakeTests`: per-axis + idempotent + validate axis).
+- **Smoke UIA**: nav đúng 7/7 tab, không còn tab Vận hành tay/Nhật ký; login engineer → **Manual** mở màn;
+  **nhả phanh 2 bước** → banner đỏ trong màn + alarm toàn app; **về Home → mở lại: phanh ĐÃ TỰ ĐÓNG**;
+  audit JSONL ghi cả Release lẫn Engage kèm lý do; Sản xuất sub-tab chi tiết + lọc + Pareto render
+  (0/0 khi chưa có record — empty state); thẻ Nhật ký trong Cài đặt mở được; app sống toàn trình.
+- i18n +31 key ×3. Lưu ý UIA: nút action bar (content StackPanel) tên UIA rỗng — phải click chuột thật
+  vào label; mở màn nặng lần đầu cần chờ + retry.
+
+---
+
 ## [Session 91] 2026-07-14 — Gói C: Giám sát analog — ngưỡng 4 mức + time van theo RECIPE, alarm khoảng an toàn, module UI mới
 
 **Commit:** `a42c64e`

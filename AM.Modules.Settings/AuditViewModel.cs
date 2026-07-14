@@ -37,6 +37,8 @@ public sealed partial class AuditViewModel : ObservableObject
     [ObservableProperty] private bool _isAdmin;
     [ObservableProperty] private string _statusText = string.Empty;
 
+    private readonly SynchronizationContext? _uiContext;
+
     /// <summary>Tạo VM màn Audit.</summary>
     public AuditViewModel(IAuditService audit, IUserService user)
     {
@@ -44,8 +46,18 @@ public sealed partial class AuditViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(user);
         _audit = audit;
         _user = user;
+        _uiContext = SynchronizationContext.Current;
         RefreshGate();
-        _user.UserChanged += (_, _) => RefreshGate();
+        // UserChanged bắn trên thread nền (LoginAsync) — RefreshGate đụng ObservableCollection Rows
+        // nên PHẢI marshal về UI thread; nếu không handler ném cross-thread và CHẶN các subscriber
+        // sau nó (nav/gate các màn khác không cập nhật sau khi đổi user).
+        _user.UserChanged += (_, _) => RunOnUIThread(RefreshGate);
+    }
+
+    private void RunOnUIThread(Action action)
+    {
+        if (_uiContext is null || SynchronizationContext.Current == _uiContext) action();
+        else _uiContext.Post(_ => action(), null);
     }
 
     private void RefreshGate()

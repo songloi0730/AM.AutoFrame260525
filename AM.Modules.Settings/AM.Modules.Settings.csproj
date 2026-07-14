@@ -20,6 +20,7 @@
     <ProjectReference Include="..\AM.Modules.Diagnostics\AM.Modules.Diagnostics.csproj" />
     <ProjectReference Include="..\AM.Modules.Engineering\AM.Modules.Engineering.csproj" />
     <ProjectReference Include="..\AM.Modules.Calibration\AM.Modules.Calibration.csproj" />
+    <ProjectReference Include="..\AM.Modules.Logging\AM.Modules.Logging.csproj" />
   </ItemGroup>
 
 </Project>

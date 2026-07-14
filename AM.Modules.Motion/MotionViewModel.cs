@@ -39,6 +39,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private readonly IMotionController _motion;
     private readonly IAxisDiagnostics? _diag;  // null nếu controller không hỗ trợ
     private readonly IAxisJog? _jog;           // null → jog pad fallback inching (P1.5)
+    private readonly IAxisBrake? _brake;       // null → ẩn khối phanh Z (Gói D S92)
+    private readonly IAlarmService _alarm;     // alarm 10009 thường trực khi phanh đang nhả
     private readonly IPointTableService _pointTable;
     private readonly IMasterController _master;
     private readonly IUserService _user;
@@ -88,6 +90,17 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     /// <summary>True nếu controller có IAxisDiagnostics (hiện bảng đèn + servo + phản hồi).</summary>
     public bool HasDiagnostics => _diag is not null;
 
+    // ─── Phanh trục Z (Gói D S92 — design-notes/0013) ────────────────────────────
+
+    /// <summary>True nếu controller điều khiển được phanh (IAxisBrake) — mới hiện khối phanh Z.</summary>
+    public bool HasBrake => _brake is not null;
+
+    /// <summary>Phanh Z đang NHẢ (trục tự do — banner đỏ + alarm 10009 thường trực).</summary>
+    [ObservableProperty] private bool _isBrakeReleased;
+
+    /// <summary>Đang ở bước xác nhận thứ 2 của nhả phanh.</summary>
+    [ObservableProperty] private bool _isConfirmingBrake;
+
     // ─── Lựa chọn / jog ───────────────────────────────────────────────────────────
 
     [ObservableProperty] private int _selectedGroupIndex;
@@ -116,8 +129,10 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         IMasterController master, IUserService user, IoMonitorViewModel ioMonitor,
         StationOpsViewModel stationOps, OverrideViewModel overrideVm, IGuardEngine guard, IAuditService audit,
         AM.Modules.Calibration.RoutineCalibrationPanelViewModel calibration,
-        ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
+        IAlarmService alarm, ILogger<MotionViewModel> logger, int pollIntervalMs = 250)
     {
+        ArgumentNullException.ThrowIfNull(alarm);
+        _alarm = alarm;
         ArgumentNullException.ThrowIfNull(motion);
         ArgumentNullException.ThrowIfNull(pointTable);
         ArgumentNullException.ThrowIfNull(master);
@@ -133,6 +148,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         _motion = motion;
         _diag = motion as IAxisDiagnostics;
         _jog = motion as IAxisJog; // capability tuỳ chọn — null thì jog pad fallback inching
+        _brake = motion as IAxisBrake; // capability tuỳ chọn — null thì ẩn khối phanh Z (Gói D)
         _pointTable = pointTable;
         _master = master;
         _user = user;
@@ -188,7 +204,91 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         => RunOnUIThread(RefreshLockState);
 
     private void OnUserChanged(object? sender, UserChangedEventArgs e)
-        => RunOnUIThread(RefreshLockState);
+        => RunOnUIThread(() =>
+        {
+            RefreshLockState();
+            // Bất biến an toàn Gói D: đổi user / đăng xuất / rớt dưới Engineer → phanh TỰ ĐÓNG
+            if (_user.CurrentLevel < UserLevel.Engineer && IsBrakeReleased)
+                _ = EngageBrakeAsync("tự đóng: đổi user/đăng xuất");
+        });
+
+    // ─── Phanh trục Z (Gói D S92 — design-notes/0013: toggle + confirm 2 bước Engineer,
+    //     banner đỏ + alarm 10009 thường trực khi nhả, tự đóng khi rời màn/đổi user) ──
+
+    /// <summary>Bước 1 nhả phanh: kiểm quyền/trạng thái (R2) → mở xác nhận bước 2.</summary>
+    [RelayCommand]
+    private void RequestReleaseBrake()
+    {
+        if (_brake is null || IsBrakeReleased) return;
+        var r = _guard.Evaluate(RiskTier.R2); // Engineer + máy không chạy
+        if (!r.Allowed)
+        {
+            StatusMessage = GuardReasonText(r);
+            _audit.Record(_user.CurrentUser ?? "?", "Brake.Release Z", allowed: false,
+                detail: r.Block.ToString());
+            return;
+        }
+        IsConfirmingBrake = true;
+    }
+
+    /// <summary>Hủy bước xác nhận.</summary>
+    [RelayCommand]
+    private void CancelBrakeConfirm() => IsConfirmingBrake = false;
+
+    /// <summary>Bước 2: nhả phanh thật — alarm 10009 + audit; banner đỏ tới khi đóng lại.</summary>
+    [RelayCommand]
+    private async Task ConfirmReleaseBrake()
+    {
+        if (_brake is null || !IsConfirmingBrake) return;
+        IsConfirmingBrake = false;
+        try
+        {
+            await _brake.SetBrakeReleasedAsync(ZAxisIndex, released: true, _cts.Token).ConfigureAwait(true);
+            IsBrakeReleased = true;
+            _audit.Record(_user.CurrentUser ?? "?", "Brake.Release Z", allowed: true);
+            await _alarm.RaiseAsync(AM.Core.Constants.AlarmCodes.MotionBrakeReleased, "MOTION",
+                Loc.Strings["Brake.AlarmMsg"], _cts.Token).ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // lỗi hardware → báo status, không sập UI
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "[Motion] Nhả phanh Z thất bại");
+            StatusMessage = ex.Message;
+        }
+    }
+
+    /// <summary>Đóng phanh (1 chạm — về trạng thái an toàn, không cần quyền).</summary>
+    [RelayCommand]
+    private Task EngageBrake() => EngageBrakeAsync("nút Đóng phanh");
+
+    /// <summary>View gọi lúc Unloaded — rời màn Vận hành tay là phanh tự đóng (bất biến an toàn).</summary>
+    public void EngageBrakeOnLeave()
+    {
+        if (IsBrakeReleased) _ = EngageBrakeAsync("tự đóng: rời màn Vận hành tay");
+        IsConfirmingBrake = false;
+    }
+
+    private async Task EngageBrakeAsync(string reason)
+    {
+        if (_brake is null) return;
+        try
+        {
+            await _brake.SetBrakeReleasedAsync(ZAxisIndex, released: false, _cts.Token).ConfigureAwait(true);
+            IsBrakeReleased = false;
+            IsConfirmingBrake = false;
+            _audit.Record(_user.CurrentUser ?? "?", "Brake.Engage Z", allowed: true, detail: reason);
+            await _alarm.ClearAsync(AM.Core.Constants.AlarmCodes.MotionBrakeReleased, _cts.Token)
+                .ConfigureAwait(true);
+        }
+#pragma warning disable CA1031 // lỗi hardware → báo status; alarm 10009 giữ nguyên (còn nhả còn banner)
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "[Motion] Đóng phanh Z thất bại ({Reason})", reason);
+            StatusMessage = ex.Message;
+        }
+    }
 
     private void RefreshLockState()
     {
@@ -604,6 +704,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
                         if (_diag is not null) Axes[i].ApplySignals(signals[i]);
                     }
                     if (fb is not null) ApplyFeedback(fb);
+                    if (_brake is not null) IsBrakeReleased = _brake.IsBrakeReleased(ZAxisIndex);
                 });
             }
         }

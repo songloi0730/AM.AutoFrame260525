@@ -33,6 +33,8 @@ public sealed partial class ProductionViewModel : ObservableObject, IDisposable
     private const string WindowShift = "Ca hiện tại";
     private const string WindowToday = "Hôm nay";
     private const int MaxTrendHours = 24;
+    private const int MaxDetailRows = 500;
+    private const int MaxFailReasons = 10;
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMasterController _master;
@@ -47,6 +49,27 @@ public sealed partial class ProductionViewModel : ObservableObject, IDisposable
 
     /// <summary>Trend theo giờ trong cửa sổ (yield + cycle trung bình mỗi giờ, mới nhất cuối).</summary>
     public ObservableCollection<HourStatVm> HourStats { get; } = [];
+
+    /// <summary>Chi tiết từng sản phẩm trong cửa sổ (S92 — mới nhất trước, tối đa 500 dòng).</summary>
+    public ObservableCollection<RecordRowVm> Records { get; } = [];
+
+    /// <summary>Pareto NG theo lý do trong cửa sổ (S92 — "lỗi nào hay rớt").</summary>
+    public ObservableCollection<FailStatVm> FailStats { get; } = [];
+
+    /// <summary>Sub-tab: 0 = Tổng quan, 1 = Chi tiết sản phẩm (S92).</summary>
+    [ObservableProperty] private int _subTab;
+
+    /// <summary>Lọc theo SN (contains, không phân hoa thường).</summary>
+    [ObservableProperty] private string _snFilter = string.Empty;
+
+    /// <summary>Lọc kết quả: 0 = tất cả, 1 = chỉ OK, 2 = chỉ NG.</summary>
+    [ObservableProperty] private int _resultFilterIndex;
+
+    /// <summary>Số dòng đang hiển thị / tổng trong cửa sổ.</summary>
+    [ObservableProperty] private string _detailCountText = string.Empty;
+
+    // Record đã nạp của cửa sổ hiện tại — đổi filter chỉ lọc lại, không truy vấn DB
+    private IReadOnlyList<ProductionRecord> _lastRecords = [];
 
     [ObservableProperty] private string _selectedWindow = WindowShift;
     [ObservableProperty] private int _total;
@@ -124,6 +147,9 @@ public sealed partial class ProductionViewModel : ObservableObject, IDisposable
 
                 HourStats.Clear();
                 foreach (var h in hourly) HourStats.Add(h);
+
+                _lastRecords = records;
+                ApplyDetailFilter();
             });
         }
         catch (OperationCanceledException) { /* đóng app */ }
@@ -132,6 +158,52 @@ public sealed partial class ProductionViewModel : ObservableObject, IDisposable
 #pragma warning restore CA1031
         {
             _logger.LogError(ex, "[Production] Refresh stats thất bại");
+        }
+    }
+
+    partial void OnSnFilterChanged(string value) => ApplyDetailFilter();
+
+    partial void OnResultFilterIndexChanged(int value) => ApplyDetailFilter();
+
+    /// <summary>Chọn sub-tab (0 = Tổng quan, 1 = Chi tiết) — tham số string từ XAML.</summary>
+    [RelayCommand]
+    private void SelectSubTab(string? index)
+    {
+        if (int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out int i))
+            SubTab = i;
+    }
+
+    // Lọc _lastRecords theo SN + kết quả → Records (mới nhất trước, cắt 500) + Pareto NG theo lý do
+    // (tính trên TOÀN BỘ record NG khớp lọc SN, không chỉ 500 dòng hiển thị).
+    private void ApplyDetailFilter()
+    {
+        IEnumerable<ProductionRecord> q = _lastRecords;
+        if (!string.IsNullOrWhiteSpace(SnFilter))
+            q = q.Where(r => r.SerialNumber.Contains(SnFilter.Trim(), StringComparison.OrdinalIgnoreCase));
+        var bySn = q.ToList();
+
+        var filtered = ResultFilterIndex switch
+        {
+            1 => bySn.Where(r => r.IsPassed).ToList(),
+            2 => bySn.Where(r => !r.IsPassed).ToList(),
+            _ => bySn,
+        };
+
+        Records.Clear();
+        foreach (var r in filtered.OrderByDescending(r => r.Timestamp).Take(MaxDetailRows))
+            Records.Add(new RecordRowVm(r));
+        DetailCountText = string.Format(CultureInfo.CurrentCulture,
+            AM.UI.Localization.Loc.Strings["Prod.DetailCount"], Records.Count, filtered.Count);
+
+        // Pareto lý do NG (top N) — lý do trống gom thành "—"
+        var ngs = bySn.Where(r => !r.IsPassed).ToList();
+        FailStats.Clear();
+        foreach (var g in ngs
+            .GroupBy(r => string.IsNullOrWhiteSpace(r.FailReason) ? "—" : r.FailReason.Trim())
+            .OrderByDescending(g => g.Count())
+            .Take(MaxFailReasons))
+        {
+            FailStats.Add(new FailStatVm(g.Key, g.Count(), ngs.Count));
         }
     }
 
@@ -265,4 +337,56 @@ public sealed class HourStatVm(string hourLabel, int total, double yieldPercent,
 
     /// <summary>Mức màu yield giờ đó (0/1/2).</summary>
     public int YieldLevel { get; } = yieldLevel;
+}
+
+/// <summary>Một dòng chi tiết sản phẩm (S92) — mọi giá trị đã format sẵn để bind OneWay.</summary>
+public sealed class RecordRowVm(ProductionRecord r)
+{
+    /// <summary>Thời gian local "HH:mm:ss dd/MM".</summary>
+    public string TimeText { get; } = r.Timestamp.ToLocalTime()
+        .ToString("HH:mm:ss dd/MM", CultureInfo.InvariantCulture);
+
+    /// <summary>Serial number.</summary>
+    public string SerialNumber { get; } = r.SerialNumber;
+
+    /// <summary>Recipe lúc chạy.</summary>
+    public string RecipeName { get; } = r.RecipeName;
+
+    /// <summary>Đạt/lỗi (màu theo IsPassed).</summary>
+    public bool IsPassed { get; } = r.IsPassed;
+
+    /// <summary>"OK"/"NG".</summary>
+    public string ResultText { get; } = r.IsPassed ? "OK" : "NG";
+
+    /// <summary>Cycle time hiển thị (ms → giây khi lớn).</summary>
+    public string CycleText { get; } = r.CycleTimeMs >= 1000
+        ? string.Create(CultureInfo.InvariantCulture, $"{r.CycleTimeMs / 1000.0:F1} s")
+        : string.Create(CultureInfo.InvariantCulture, $"{r.CycleTimeMs:F0} ms");
+
+    /// <summary>Điểm vision (F2; trống khi 0).</summary>
+    public string ScoreText { get; } = r.VisionScore > 0
+        ? r.VisionScore.ToString("F2", CultureInfo.InvariantCulture) : string.Empty;
+
+    /// <summary>Lý do NG (trống nếu OK).</summary>
+    public string FailReason { get; } = r.FailReason;
+
+    /// <summary>Người vận hành lúc ghi record.</summary>
+    public string OperatorId { get; } = r.OperatorId;
+}
+
+/// <summary>Một dòng Pareto lý do NG (S92).</summary>
+public sealed class FailStatVm(string reason, int count, int totalNg)
+{
+    /// <summary>Lý do NG.</summary>
+    public string Reason { get; } = reason;
+
+    /// <summary>Số lần.</summary>
+    public int Count { get; } = count;
+
+    /// <summary>% trên tổng NG.</summary>
+    public string PercentText { get; } = totalNg == 0 ? "0%"
+        : string.Create(CultureInfo.InvariantCulture, $"{count * 100.0 / totalNg:F0}%");
+
+    /// <summary>Bar theo tỉ lệ (px, max 160).</summary>
+    public double BarWidth { get; } = totalNg == 0 ? 0 : count * 160.0 / totalNg;
 }

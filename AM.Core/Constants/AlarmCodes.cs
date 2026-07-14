@@ -21,6 +21,7 @@ public static class AlarmCodes
     public const int MotionHardLimit       = 10006;
     public const int MotionDriverFault     = 10007;
     public const int MotionConnectionFail  = 10008;
+    public const int MotionBrakeReleased   = 10009;  // Phanh trục đang NHẢ (chỉnh tay) — banner đỏ thường trực (Gói D)
 
     // ─── 20000–20999  Vision / Camera ────────────────────────────────────────
     public const int VisionGrabFail        = 20001;

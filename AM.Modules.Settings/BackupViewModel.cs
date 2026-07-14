@@ -48,8 +48,19 @@ public sealed partial class BackupViewModel : ObservableObject
         _backup = backup;
         _user = user;
         TargetsText = string.Join(" · ", backup.Targets);
+        _uiContext = SynchronizationContext.Current;
         RefreshGate();
-        _user.UserChanged += (_, _) => RefreshGate();
+        // UserChanged bắn trên thread nền — RefreshGate đụng ObservableCollection Backups nên PHẢI
+        // marshal về UI thread (như AuditViewModel), tránh cross-thread chặn các subscriber sau.
+        _user.UserChanged += (_, _) => RunOnUIThread(RefreshGate);
+    }
+
+    private readonly SynchronizationContext? _uiContext;
+
+    private void RunOnUIThread(Action action)
+    {
+        if (_uiContext is null || SynchronizationContext.Current == _uiContext) action();
+        else _uiContext.Post(_ => action(), null);
     }
 
     private void RefreshGate()
