@@ -9,7 +9,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
 
-    <Grid MaxWidth="820" HorizontalAlignment="Left">
+    <Grid MaxWidth="900" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -42,69 +42,103 @@
         <!-- Khu quản trị (chỉ Administrator) -->
         <StackPanel Grid.Row="1" Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}">
             <!-- Thêm tài khoản -->
-            <Border CornerRadius="6" Padding="12" Margin="0,0,0,10"
+            <Border CornerRadius="6" Padding="14" Margin="0,0,0,12"
                     Background="{DynamicResource Panel.BackgroundBrush}"
                     BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
-                <!-- Label luôn hiện trên mỗi ô (RefUX-A §7 — không chỉ tooltip/watermark) -->
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel Margin="0,0,8,0">
-                        <TextBlock Text="{Binding [UserAdmin.Username], Source={x:Static loc:Loc.Strings}}"
-                                   FontSize="11" Margin="0,0,0,2"
-                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <TextBox Width="160" Height="32" VerticalContentAlignment="Center"
-                                 Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding [UserAdmin.AddSection], Source={x:Static loc:Loc.Strings}}"
+                               FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"
+                               Foreground="{DynamicResource Text.HeadingBrush}"/>
+                    <!-- Label luôn hiện trên mỗi ô (RefUX-A §7 — không chỉ tooltip/watermark) -->
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="{Binding [UserAdmin.Username], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11" Margin="0,0,0,2"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <TextBox Width="180" Height="32" VerticalContentAlignment="Center"
+                                     Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="{Binding [UserAdmin.Password], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11" Margin="0,0,0,2"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <PasswordBox x:Name="NewPasswordBox" Width="180" Height="32"
+                                         VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="{Binding [UserAdmin.Level], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11" Margin="0,0,0,2"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <ComboBox Width="150" Height="32" VerticalContentAlignment="Center"
+                                      ItemsSource="{Binding AssignableLevels}" SelectedItem="{Binding NewLevel}"/>
+                        </StackPanel>
+                        <Button Height="32" Padding="18,0" Cursor="Hand" Click="Add_Click" VerticalAlignment="Bottom"
+                                Content="{Binding [UserAdmin.Add], Source={x:Static loc:Loc.Strings}}"
+                                Background="{DynamicResource Button.PrimaryBrush}"
+                                Foreground="{DynamicResource Status.ForegroundBrush}" BorderThickness="0"/>
                     </StackPanel>
-                    <StackPanel Margin="0,0,8,0">
-                        <TextBlock Text="{Binding [UserAdmin.Password], Source={x:Static loc:Loc.Strings}}"
-                                   FontSize="11" Margin="0,0,0,2"
-                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <PasswordBox x:Name="NewPasswordBox" Width="160" Height="32"
-                                     VerticalContentAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Margin="0,0,8,0">
-                        <TextBlock Text="{Binding [UserAdmin.Level], Source={x:Static loc:Loc.Strings}}"
-                                   FontSize="11" Margin="0,0,0,2"
-                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                        <ComboBox Width="140" Height="32" VerticalContentAlignment="Center"
-                                  ItemsSource="{Binding AssignableLevels}" SelectedItem="{Binding NewLevel}"/>
-                    </StackPanel>
-                    <Button Height="32" Padding="14,0" Cursor="Hand" Click="Add_Click" VerticalAlignment="Bottom"
-                            Content="{Binding [UserAdmin.Add], Source={x:Static loc:Loc.Strings}}"/>
                 </StackPanel>
             </Border>
+
+            <!-- Header cột của danh sách (thẳng hàng với template dòng bên dưới) -->
+            <Grid Margin="14,0,14,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="176"/>
+                </Grid.ColumnDefinitions>
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+                    </Style>
+                </Grid.Resources>
+                <TextBlock Grid.Column="0" Text="{Binding [UserAdmin.ColAccount], Source={x:Static loc:Loc.Strings}}"/>
+                <TextBlock Grid.Column="1" Text="{Binding [UserAdmin.Level], Source={x:Static loc:Loc.Strings}}"/>
+            </Grid>
         </StackPanel>
 
         <!-- Danh sách tài khoản (S90: thêm ItemsSource — trước đây THIẾU nên danh sách luôn trống) -->
-        <ListBox Grid.Row="2" Margin="0,0,0,10" ItemsSource="{Binding Users}"
+        <ListBox Grid.Row="2" Margin="0,0,0,12" ItemsSource="{Binding Users}"
                  SelectedItem="{Binding SelectedUser}"
                  Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"
                  Background="{DynamicResource Panel.BackgroundBrush}"
                  BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <!-- HorizontalContentAlignment=Stretch: KHÔNG có nó ListBoxItem co theo nội dung →
+                 cột * không giãn, combo/nút mỗi dòng dạt trái lệch nhau (bug căn chỉnh S93) -->
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="12,6"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="2">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="88"/>
+                            <ColumnDefinition Width="88"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Username}" FontWeight="SemiBold"
                                        Foreground="{DynamicResource Text.PrimaryBrush}"/>
                             <TextBlock Text="{Binding [UserAdmin.You], Source={x:Static loc:Loc.Strings}}"
                                        Margin="6,0,0,0" Foreground="{DynamicResource Status.InfoBrush}" FontSize="11"
+                                       VerticalAlignment="Center"
                                        Visibility="{Binding IsCurrent, Converter={StaticResource BoolToVis}}"/>
                         </StackPanel>
-                        <ComboBox Grid.Column="1" Width="140" Height="30" Margin="0,0,8,0" VerticalContentAlignment="Center"
+                        <ComboBox Grid.Column="1" Width="140" Height="30" HorizontalAlignment="Left"
+                                  VerticalContentAlignment="Center"
                                   ItemsSource="{Binding DataContext.AssignableLevels, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                   SelectedItem="{Binding SelectedLevel}"/>
-                        <Button Grid.Column="2" Height="30" Padding="10,0" Margin="0,0,8,0" Cursor="Hand"
+                        <Button Grid.Column="2" Height="30" Margin="0,0,8,0" Cursor="Hand"
                                 Content="{Binding [UserAdmin.SaveLevel], Source={x:Static loc:Loc.Strings}}"
                                 Command="{Binding DataContext.SetLevelCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                 CommandParameter="{Binding}"/>
-                        <Button Grid.Column="3" Height="30" Padding="10,0" Cursor="Hand"
+                        <Button Grid.Column="3" Height="30" Cursor="Hand"
                                 Content="{Binding [UserAdmin.Delete], Source={x:Static loc:Loc.Strings}}"
                                 Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                 CommandParameter="{Binding}"
@@ -116,26 +150,51 @@
         </ListBox>
 
         <!-- Đặt lại mật khẩu cho tài khoản đang chọn -->
-        <Border Grid.Row="3" CornerRadius="6" Padding="12" Margin="0,0,0,8"
+        <Border Grid.Row="3" CornerRadius="6" Padding="14" Margin="0,0,0,10"
                 Background="{DynamicResource Panel.BackgroundBrush}"
                 BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
                 Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" Margin="0,0,8,0"
-                           Text="{Binding [UserAdmin.ResetFor], Source={x:Static loc:Loc.Strings}}"
-                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                <TextBlock VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold"
-                           Text="{Binding SelectedUser.Username}"
-                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                <StackPanel Margin="0,0,8,0">
-                    <TextBlock Text="{Binding [UserAdmin.NewPassword], Source={x:Static loc:Loc.Strings}}"
-                               FontSize="11" Margin="0,0,0,2"
-                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                    <PasswordBox x:Name="ResetPasswordBox" Width="160" Height="32"
-                                 VerticalContentAlignment="Center"/>
+            <StackPanel>
+                <TextBlock FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"
+                           Foreground="{DynamicResource Text.HeadingBrush}">
+                    <Run Text="{Binding [UserAdmin.ResetFor], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
+                    <Run Text=" "/>
+                    <Run Text="{Binding SelectedUser.Username, Mode=OneWay}" Foreground="{StaticResource Status.InfoBrush}"/>
+                </TextBlock>
+                <!-- Chưa chọn tài khoản → hướng dẫn thay vì form câm -->
+                <TextBlock FontSize="12" Foreground="{DynamicResource Text.SecondaryBrush}"
+                           Text="{Binding [UserAdmin.SelectFirst], Source={x:Static loc:Loc.Strings}}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedUser}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedUser}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <StackPanel Margin="0,0,12,0">
+                        <TextBlock Text="{Binding [UserAdmin.NewPassword], Source={x:Static loc:Loc.Strings}}"
+                                   FontSize="11" Margin="0,0,0,2"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <PasswordBox x:Name="ResetPasswordBox" Width="180" Height="32"
+                                     VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <Button Height="32" Padding="18,0" Cursor="Hand" Click="Reset_Click" VerticalAlignment="Bottom"
+                            Content="{Binding [UserAdmin.Reset], Source={x:Static loc:Loc.Strings}}"/>
                 </StackPanel>
-                <Button Height="32" Padding="14,0" Cursor="Hand" Click="Reset_Click" VerticalAlignment="Bottom"
-                        Content="{Binding [UserAdmin.Reset], Source={x:Static loc:Loc.Strings}}"/>
             </StackPanel>
         </Border>
 

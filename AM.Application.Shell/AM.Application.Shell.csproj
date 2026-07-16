@@ -34,6 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- S93: appsettings PHẢI theo exe — trước đây thiếu nên app chạy toàn default,
+         config repo không có tác dụng (phát hiện khi làm trang Thông số máy) -->
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="io.map.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="analog.map.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="recovery-actions.json" CopyToOutputDirectory="PreserveNewest" />

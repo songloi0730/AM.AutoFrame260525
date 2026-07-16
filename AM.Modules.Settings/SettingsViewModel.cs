@@ -51,6 +51,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>VM thẻ Nhật ký hệ thống (S92 — chuyển từ tab nav vào Cài đặt cho gọn nav).</summary>
     public AM.Modules.Logging.LoggingViewModel Logs { get; }
 
+    /// <summary>VM thẻ Thông số máy (S93 — tên máy/line/IP + toàn vẹn cấu hình SHA-256).</summary>
+    public MachineConfigViewModel Machine { get; }
+
     /// <summary>Thông tin "Giới thiệu" (phiên bản app + .NET) — không localize từng dòng.</summary>
     public string AboutText { get; }
 
@@ -73,6 +76,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool ShowHardware    => Section == "hardware";
     public bool ShowHost        => Section == "host";
     public bool ShowLogs        => Section == "logs";
+    public bool ShowMachine     => Section == "machine";
 
     private readonly IKioskService _kiosk;
     private readonly IUserService _user;
@@ -87,10 +91,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     public SettingsViewModel(DiagnosticsViewModel diagnostics, EngineeringViewModel engineering,
         UserAdminViewModel users, AM.Modules.Calibration.RareCalibrationPanelViewModel calib,
         AuditViewModel audit, BackupViewModel backup, HardwareViewModel hardware, HostViewModel host,
-        AM.Modules.Logging.LoggingViewModel logs, IKioskService kiosk, IUserService user)
+        AM.Modules.Logging.LoggingViewModel logs, MachineConfigViewModel machine,
+        IKioskService kiosk, IUserService user)
     {
         ArgumentNullException.ThrowIfNull(logs);
+        ArgumentNullException.ThrowIfNull(machine);
         Logs = logs;
+        Machine = machine;
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(engineering);
         ArgumentNullException.ThrowIfNull(users);
@@ -160,5 +167,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowHardware));
         OnPropertyChanged(nameof(ShowHost));
         OnPropertyChanged(nameof(ShowLogs));
+        OnPropertyChanged(nameof(ShowMachine));
     }
 }

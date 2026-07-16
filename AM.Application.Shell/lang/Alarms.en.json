@@ -22,6 +22,7 @@
   "30005": { "name": "Output fault", "remedy": "Check output load and fuse" },
   "30006": { "name": "Analog value out of safe range", "remedy": "Check the channel's air supply/sensor and the safe range in analog.map.json" },
   "10009": { "name": "Z-axis brake released", "remedy": "Engage the brake in the Manual Operation screen before running" },
+  "40013": { "name": "Config file modified outside the app", "remedy": "Check Settings → Machine settings → Config integrity; re-sign if the change was intentional" },
 
   "40001": { "name": "Database error", "remedy": "Check database file/service and disk space" },
   "40002": { "name": "Critical system error", "remedy": "Review system log and restart application" },

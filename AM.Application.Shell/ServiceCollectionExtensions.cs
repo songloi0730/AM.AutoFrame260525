@@ -137,6 +137,12 @@ internal static class ServiceCollectionExtensions
         // Ca làm việc + ngưỡng màu yield (P4.4) — Dashboard và Production cùng một định nghĩa ca
         services.AddSingleton(config.GetSection("AutoMachine:Production").Get<ProductionOptions>()
             ?? new ProductionOptions());
+        // Toàn vẹn file cấu hình (S93, design-notes/0014): manifest SHA-256, boot verify → alarm 40013.
+        // App.OnStartup gọi VerifyAtBoot; trang Thông số máy hiển thị + Ký lại (Administrator).
+        services.AddSingleton<IConfigIntegrityService>(sp => new ConfigIntegrityService(
+            sp.GetRequiredService<ILogger<ConfigIntegrityService>>(),
+            sp.GetRequiredService<IAuditService>(),
+            sp.GetRequiredService<IAlarmService>()));
         // Sao lưu & phục hồi (P3.3) — auto-backup hàng ngày Start() ở App.OnStartup
         services.AddSingleton<IBackupService>(sp => new BackupService(
             sp.GetRequiredService<ILogger<BackupService>>(),
@@ -239,6 +245,13 @@ internal static class ServiceCollectionExtensions
                 new("Database (SQLite local)", config.GetValue<string>("AutoMachine:DatabasePath") ?? "automachine.db",
                     Category: null),
             }));
+        // Thẻ Thông số máy (S93) — Shell bơm machineId từ config, module không đụng IConfiguration
+        services.AddSingleton(sp => new AM.Modules.Settings.MachineConfigViewModel(
+            sp.GetRequiredService<IUserService>(),
+            sp.GetRequiredService<IAuditService>(),
+            sp.GetRequiredService<IConfigIntegrityService>(),
+            sp.GetRequiredService<ILogger<AM.Modules.Settings.MachineConfigViewModel>>(),
+            config.GetValue<string>("AutoMachine:Security:MachineId") ?? string.Empty));
         services.AddSingleton<AM.Modules.Settings.SettingsViewModel>(); // gom Chẩn đoán + Kỹ thuật + Người dùng
         services.AddSingleton<LoggingViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips

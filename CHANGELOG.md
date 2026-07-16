@@ -4,9 +4,74 @@
 
 ---
 
-## [Session 92] 2026-07-14 — Gói D phanh Z · Sản xuất chi tiết SP · fix quyền không cập nhật · nav gọn 7 tab
+## [Session 93] 2026-07-16 — Trang "Thông số máy" · toàn vẹn cấu hình SHA-256 (không gộp file) · layout Người dùng · fix appsettings không vào bin
 
 **Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** 3 yêu cầu của chủ dự án: (1) app chưa có trang cấu hình thông số máy (tên máy/line/IP…);
+(2) nhiều file config rời rạc — có nên gộp 1–2 file + SHA-256 kiểm tra file bị chỉnh sửa; (3) màn
+Người dùng & phân quyền căn chỉnh chưa hợp lý.
+
+### ✅ (1) Thẻ "Thông số máy" trong Cài đặt (Administrator + audit)
+- `MachineConfigView(Model)` mới — 3 khối:
+  - **Nhận diện máy**: tên máy · line · vị trí → ghi `machine.json` qua JsonNode (GIỮ NGUYÊN `stations`);
+    mã máy (day-code) chỉ hiển thị (đổi trong appsettings vì gắn break-glass).
+  - **Kết nối thiết bị**: UseSimulation + host/cổng Modbus · PLC · Robot · Scanner · ADAM + OPC-UA
+    endpoint + EtherNet/IP host → ghi thẳng `appsettings.json` (chỉ set key màn này quản, phần khác
+    giữ nguyên; ô trống = không ghi); validate cổng 1–65535.
+  - **Toàn vẹn file cấu hình** (xem mục 2).
+- Lưu = audit `Machine.SaveConfig` (kèm giá trị) + **tự ký lại manifest** + banner vàng
+  "KHỞI ĐỘNG LẠI để áp dụng" (DI đọc config lúc boot — trung thực về giới hạn).
+- Dưới quyền Administrator: form disable + giải thích (mẫu quen mọi màn gate).
+
+### ✅ (2) Câu hỏi "gộp config?": KHÔNG gộp — thay bằng manifest SHA-256 (design-notes/0014)
+- Phân tích 3 phương án trong 0014. Gộp 1–2 file bị BÁC vì file khác nhau về **vòng đời/người ghi**:
+  nhóm app-tự-ghi (points/parameters/users/recipes — ghi liên tục) trộn với nhóm chỉnh-khi-deploy
+  (machine/axismap/io.map/analog.map/appsettings) → app save đè tay sửa, hỏng 1 file mất tất,
+  và hash toàn cục đổi liên tục làm kiểm toàn vẹn vô nghĩa.
+- **`IConfigIntegrityService`/`ConfigIntegrityService`**: SHA-256 từng file nhóm cấu-hình-máy (7 file)
+  vào `config.manifest.json` (kèm SignedBy/SignedAt); **boot đối chiếu → Modified/Missing = alarm
+  40013** liệt kê đúng file (phát hiện + ồn ào, KHÔNG chặn máy chạy — chính sách 0012); manifest
+  hỏng = coi như chưa ký (app vẫn chạy). Bảng trạng thái Khớp/ĐÃ SỬA/MẤT FILE/Chưa ký + nút
+  **"Ký lại (chấp nhận thay đổi)"** (Administrator, audit `Config.Resign`).
+- Giới hạn ghi thẳng vào doc + XML doc: manifest thường là **tamper-evident với thao tác thường**,
+  không chống được kẻ sửa cả manifest — cần chống giả mạo thật sự thì HMAC bằng DayCodeSecret (P5).
+- Backup targets + `config.manifest.json`; alarm 40013 catalog ×3.
+
+### ✅ (3) Layout "Người dùng & phân quyền"
+- **Bug chính**: `ListBoxItem` mặc định `HorizontalContentAlignment=Left` → cột `*` trong template
+  KHÔNG giãn → combo Quyền/nút mỗi dòng co theo độ dài tên user, dạt trái lệch nhau. Sửa
+  `HorizontalContentAlignment=Stretch` + padding dòng 12,6.
+- **Header cột** (Tài khoản · Quyền) thẳng hàng cột template (150/88/88); tiêu đề khối
+  "Thêm tài khoản" và "Đặt lại mật khẩu cho: <user>"; khối reset khi CHƯA chọn tài khoản hiện
+  hint "Chọn một tài khoản trước" thay vì form câm; nút Thêm màu primary; spacing 12 thống nhất;
+  MaxWidth 820→900.
+
+### 🐛 (4) Phát hiện nhân tiện — appsettings.json KHÔNG vào bin từ trước tới nay
+- Shell csproj thiếu `CopyToOutputDirectory` cho `appsettings.json`; App nạp config
+  `optional: true` từ `AppContext.BaseDirectory` → **app luôn chạy giá trị DEFAULT trong code,
+  appsettings của repo không có tác dụng** (không ai phát hiện vì default trùng config demo).
+  Đã thêm copy — từ giờ sửa config mới thật sự ăn; đây cũng là điều kiện để trang Thông số máy
+  ghi appsettings có ý nghĩa.
+
+### 🧪 Kiểm chứng
+- **+7 test → 339 pass toàn repo** (`ConfigIntegrityServiceTests`: chưa ký/ký-rồi-khớp/sửa file/
+  mất file/manifest hỏng/boot-alarm-40013/boot-sạch-không-alarm). Số 339 là đếm lại chuẩn sau khi
+  phát hiện dll test trong bin stale làm S91/S92 báo thiếu (bẫy bin dùng chung, lần thứ 5).
+- **Smoke UIA end-to-end**: mở thẻ Thông số máy → 7 file "Chưa ký" → form nạp đúng tên máy + IP
+  (sau fix appsettings) → sửa tên + line → Lưu → status + banner restart + **7 file "Khớp"** +
+  `config.manifest.json` sinh ra + audit `Machine.SaveConfig`+`Config.Resign` + machine.json
+  GIỮ stations; màn Người dùng đủ 3/3 (khối Thêm tài khoản · header Tài khoản · hint chọn);
+  **tamper `io.map.json` ngoài app → khởi động lại → alarm 40013 nêu đúng file trên banner**.
+- Bẫy UIA mới ghi nhận: cửa sổ khác đè lên app làm `GetClickablePoint` ném NoClickablePoint —
+  dùng `SetForegroundWindow` + click tâm `BoundingRectangle` thay vì GetClickablePoint.
+- i18n +26 key ×3 (Machine.* + UserAdmin.AddSection/ColAccount).
+
+---
+
+## [Session 92] 2026-07-14 — Gói D phanh Z · Sản xuất chi tiết SP · fix quyền không cập nhật · nav gọn 7 tab
+
+**Commit:** `e27ba92`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** 4 yêu cầu của chủ dự án: (1) thực hiện Gói D phanh Z (hybrid đã chốt S90); (2) tab Sản xuất
 chỉ có KPI cơ bản trùng Home, thiếu chi tiết từng sản phẩm; (3) đăng nhập thấp → đăng xuất → đăng nhập

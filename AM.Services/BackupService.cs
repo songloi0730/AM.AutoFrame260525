@@ -25,7 +25,7 @@ public sealed class BackupService : IBackupService, IDisposable
     [
         "automachine.db", "users.json", "points.json", "parameters.json",
         "io.map.json", "analog.map.json", "machine.json", "axismap.json", "calibration-history.json",
-        "recovery-actions.json", "override-actions.json", "appsettings.json", "recipes",
+        "recovery-actions.json", "override-actions.json", "appsettings.json", "config.manifest.json", "recipes",
     ];
 
     private readonly ILogger<BackupService> _logger;

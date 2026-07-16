@@ -93,6 +93,8 @@ public partial class App
             _serviceProvider.GetRequiredService<InactivityMonitor>().Start(); // P3.2 — tự đăng xuất khi idle
             _serviceProvider.GetRequiredService<IBackupService>().Start();   // P3.3 — auto-backup hàng ngày
             _serviceProvider.GetRequiredService<IAnalogMonitorService>().Start(); // Gói C — poll kênh analog
+            // S93 — file cấu hình lệch manifest SHA-256 → alarm 40013 (phát hiện sửa tay ngoài app)
+            _serviceProvider.GetRequiredService<IConfigIntegrityService>().VerifyAtBoot();
 
             // 4b''''. Đăng ký handler thao tác trạm máy Demo (Approach C — composition root biết máy cụ thể).
             //         ClampRelease CỐ TÌNH không đăng ký → minh hoạ UI "chưa cấu hình HAL" của mô hình hybrid.

@@ -50,6 +50,7 @@ public static class AlarmCodes
     public const int SecurityLoginFailures = 40010;  // Sai mật khẩu nhiều lần liên tiếp
     public const int SecurityServiceLogin  = 40011;  // Đăng nhập quyền dịch vụ bằng mã theo ngày
     public const int SecurityRecoveryUsed  = 40012;  // File khôi phục break-glass được kích hoạt
+    public const int SystemConfigModified  = 40013;  // File cấu hình bị sửa ngoài app (manifest SHA-256 lệch — S93)
 
     // ─── 50000–50999  Communication / Network ────────────────────────────────
     public const int CommConnectionFail    = 50001;  // Generic: kết nối thất bại
