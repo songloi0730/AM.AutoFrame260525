@@ -6,7 +6,7 @@
 
 ## [Session 93] 2026-07-16 — Trang "Thông số máy" · toàn vẹn cấu hình SHA-256 (không gộp file) · layout Người dùng · fix appsettings không vào bin
 
-**Commit:** `(điền sau)`
+**Commit:** `4073c4c`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** 3 yêu cầu của chủ dự án: (1) app chưa có trang cấu hình thông số máy (tên máy/line/IP…);
 (2) nhiều file config rời rạc — có nên gộp 1–2 file + SHA-256 kiểm tra file bị chỉnh sửa; (3) màn
