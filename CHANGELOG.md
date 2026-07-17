@@ -6,7 +6,7 @@
 
 ## [Session 96] 2026-07-17 — Trục & Điểm vừa MỘT màn: bỏ bảng đèn trùng lặp, gộp phản hồi, hết cuộn dọc
 
-**Commit:** `(điền sau)`
+**Commit:** `598ce82`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án yêu cầu rà pane Trục & Điểm: nội dung nào trùng thì bỏ, và cố gắng vừa
 1 màn hình không dùng thanh cuộn dọc.
