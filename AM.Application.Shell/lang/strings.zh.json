@@ -322,8 +322,6 @@
   "Motion.Moving": "运动中",
   "Motion.PointName": "点位名称",
 
-  "Axis.SignalTable": "轴信号状态 — 工业信号灯表",
-  "Axis.Col": "轴",
   "Axis.PerAxis": "单轴控制 — 励磁 · 回原点 · 清错 · 目标 · 速度",
   "Axis.ClearAll": "⚠ 清除所有错误",
   "Axis.HomeAll": "⌂ 全部回原点 · 长按1秒",

@@ -322,8 +322,6 @@
   "Motion.Moving": "Đang chạy",
   "Motion.PointName": "Tên điểm",
 
-  "Axis.SignalTable": "Trạng thái tín hiệu trục — theo chuẩn bảng đèn công nghiệp",
-  "Axis.Col": "Trục",
   "Axis.PerAxis": "Điều khiển từng trục — servo · home · clear error · đích · tốc độ",
   "Axis.ClearAll": "⚠ Clear all errors",
   "Axis.HomeAll": "⌂ Home tất cả · giữ 1s",

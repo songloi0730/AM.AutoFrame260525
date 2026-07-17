@@ -4,6 +4,40 @@
 
 ---
 
+## [Session 96] 2026-07-17 — Trục & Điểm vừa MỘT màn: bỏ bảng đèn trùng lặp, gộp phản hồi, hết cuộn dọc
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án yêu cầu rà pane Trục & Điểm: nội dung nào trùng thì bỏ, và cố gắng vừa
+1 màn hình không dùng thanh cuộn dọc.
+
+### 🔍 Trùng lặp tìm thấy
+| Khối | Vấn đề | Xử lý |
+|---|---|---|
+| Card "Bảng đèn 8 tín hiệu" (~240px) | Alarm đã hiện bằng tên trục ĐỎ, Servo đã có nút ON/OFF ngay hàng trục — 2/8 tín hiệu hiển thị HAI nơi | BỎ card; 6 tín hiệu còn lại thành dải LED 11px trong TỪNG hàng trục (tooltip song ngữ) + 1 dòng chú thích |
+| Card "Phản hồi servo" riêng (~140px) | Không trùng nhưng chiếm nguyên card cho 4 con số | Gộp vào cuối card Jog dạng lưới 2×2 compact |
+| Hint 2-chạm + thanh chọn cùng hiện | Thanh chọn đã tự giải thích khi có chọn | Hint tự ẩn khi HasSelection |
+| JogHint chiếm 2 dòng | Thông tin phụ | Chuyển thành tooltip trên jog pad |
+
+### ✅ Hết cuộn dọc
+- Khung pane: ScrollViewer-cả-trang → **Grid 2 hàng cố định** (trên = trục + jog/phản hồi;
+  dưới = bảng điểm). **Bảng điểm cuộn NỘI BỘ** (MaxHeight 140 ≈ 4 hàng) khi máy nhiều điểm —
+  trang ngoài không bao giờ cuộn (mẫu chuẩn: bảng dữ liệu cuộn trong khung của nó).
+- Nén: hàng trục padding 8→6, hàng điểm 40→33px.
+- Key i18n mồ côi (`Axis.SignalTable`, `Axis.Col`) xoá khỏi 3 file ngữ.
+
+### 🧪 Kiểm chứng
+- **Smoke UIA**: card bảng đèn cũ = 0 · legend LED + phản hồi gộp hiện · **khối Chạy lặp 2 điểm và
+  các điểm Home/PickUp on-screen NGAY không cần cuộn** (trước S96 phải cuộn 100% mới thấy bảng
+  điểm) · jog + phanh Z + bảng điểm cùng một màn · chọn PickUp → thanh chọn + 3 nút Tới/Teach/Lưu
+  on-screen bấm được (probe xác nhận toạ độ y=982 trong cửa sổ 1048px — trên IPC 1080 còn dư hơn).
+- Build 0 warning; thay đổi XAML-only — 340 test giữ nguyên.
+- **Bẫy môi trường (lần 2 dạng mới)**: app instance cũ còn chạy GIỮ KHOÁ dll bin → `dotnet build`
+  báo succeeded nhưng dll KHÔNG được copy (MSB3026 retry chỉ hiện ở lần build sau) → smoke chạy
+  bản cũ, suýt kết luận sai. Quy tắc: **taskkill AM.Application.Shell TRƯỚC mọi lần build trước smoke**.
+
+---
+
 ## [Session 95] 2026-07-17 — Học màn manual RefSeq-A: backup bảng điểm khi lưu + chạy lặp 2 điểm
 
 **Commit:** `ea31a51`

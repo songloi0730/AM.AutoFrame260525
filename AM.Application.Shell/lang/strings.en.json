@@ -322,8 +322,6 @@
   "Motion.Moving": "Moving",
   "Motion.PointName": "Point name",
 
-  "Axis.SignalTable": "Axis signal status — industrial signal-lamp table",
-  "Axis.Col": "Axis",
   "Axis.PerAxis": "Per-axis control — servo · home · clear error · target · speed",
   "Axis.ClearAll": "⚠ Clear all errors",
   "Axis.HomeAll": "⌂ Home all · hold 1s",
