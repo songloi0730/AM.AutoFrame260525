@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-17
 **Session:** #94 — **Gộp Bảng điểm vào pane Điều khiển trục → sub-tab "Trục & Điểm" (yêu cầu chủ dự án)**. Vấn đề: muốn "trục di chuyển đến điểm đã cài" phải nhảy giữa 2 sub-tab (Điều khiển trục ↔ Bảng điểm); luồng teach thực tế còn nặng hơn (jog → teach → jog tinh chỉnh → teach lại → thử Tới — ping-pong liên tục). Rà 6 sub-tab màn Vận hành tay, đưa 3 phương án qua AskUserQuestion (A gộp hẳn 1 tab / B giữ 2 tab + khối điểm nhanh / C hai cột) — **chốt A**: bảng điểm (bảng X/Y/Z/U + chọn 2 chạm + thanh Tới/Teach/Lưu + hint) chuyển nguyên khối xuống DƯỚI khu điều khiển trục trong cùng pane, full-width; bỏ sub-tab "Bảng điểm" → còn 5 sub-tab; tab đầu đổi nhãn **"Trục & Điểm"** (Axes & Points / 轴与点位). Index sub-tab GIỮ NGUYÊN số cũ (1 bỏ trống — không đánh lại 2..5, tránh đụng mọi ConverterParameter). **Fix kèm theo**: `StatusMessage` (lý do guard chặn jog/move) trước giờ CHỈ hiển thị ở pane Bảng điểm — jog bị từ chối ở pane trục không thấy lý do; gộp xong hiển thị ngay trên pane thao tác. Key `Manual.Tab.Points` bỏ (3 ngữ). **Smoke UIA** (tạo `bin/points.json` 3 điểm demo Home/PickUp/Place — bài học test-với-dữ-liệu): tab đầu "Trục & Điểm" hiện đúng, sub-tab Bảng điểm biến mất, bảng điểm + 3 điểm hiện ngay trên pane trục, chạm "Home" → thanh chọn "Đang chọn: Điểm · Home" hiện. Build 0 warning; không đổi logic VM (GoToSelection/Teach/Save giữ nguyên) nên không cần test mới — 339 pass giữ nguyên. **Còn hàng đợi**: P5 máy thật.
-**Commit:** `(điền sau)`  ·  (S93: `4073c4c` · S92: `e27ba92` · S91: `a42c64e`)
+**Commit:** `bbdce33`  ·  (S93: `4073c4c` · S92: `e27ba92` · S91: `a42c64e`)
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## [Session 94] 2026-07-17 — Vận hành tay: gộp Bảng điểm vào pane Điều khiển trục → "Trục & Điểm"
 
-**Commit:** `(điền sau)`
+**Commit:** `bbdce33`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án: "để bảng điểm và điều khiển trục không cùng 1 trang khó chọn khi muốn trục
 di chuyển đến điểm đã cài" — rà toàn bộ màn Vận hành tay và đưa hướng sửa.
