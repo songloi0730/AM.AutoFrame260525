@@ -6,7 +6,7 @@
 
 ## [Session 95] 2026-07-17 — Học màn manual RefSeq-A: backup bảng điểm khi lưu + chạy lặp 2 điểm
 
-**Commit:** `(điền sau)`
+**Commit:** `ea31a51`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án yêu cầu tham khảo form template màn manual trạm của máy tham khảo **RefSeq-A**
 (WinForms) xem cải thiện được gì cho màn Trục & Điểm.

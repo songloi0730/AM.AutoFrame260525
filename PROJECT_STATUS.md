@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-17
 **Session:** #95 — **Học màn manual máy tham khảo RefSeq-A (form template trạm): backup bảng điểm khi lưu + chạy lặp 2 điểm**. Chủ dự án yêu cầu đối chiếu form template màn manual của RefSeq-A với màn Trục & Điểm — kết quả rà: các chức năng chính (bảng điểm move/teach 1 trục hoặc cả điểm, bảng đèn tín hiệu, jog abs/rel, gate quyền từng khối) ta ĐÃ CÓ tương đương (mẫu 2 chạm + guard thay confirm dialog); 2 thứ đáng học đã làm: **(1) Backup bảng điểm mỗi lần lưu** — `PointTableService.SaveAsync` snapshot file cũ vào `points-backup/points_{timestamp}.json` TRƯỚC khi ghi đè (giữ 20 bản mới nhất; backup lỗi không chặn lưu chính) → teach nhầm có đường lùi; **(2) Chạy lặp 2 điểm** (kiểm độ lặp lại khi cân máy bằng đồng hồ so): khối mới trong card Bảng điểm — combo A ⇄ combo B + số vòng (1–100) + nút ▶ Chạy lặp/■ Dừng + tiến độ "vòng i/n"; guard R2 (Engineer + máy dừng) + audit `RepeatRun A <-> B xN`; **STOP đỏ và rời màn đều hủy vòng lặp**; combo/ô vòng khóa khi đang chạy. Chưa làm (ghi nhận): ảnh trạm minh hoạ per-station (cần asset thật — P5). i18n +8 key ×3. **+1 test → 340 pass**. **Smoke UIA end-to-end**: Home tất cả → chọn Home⇄PickUp ×2 → tiến độ "vòng 1/2" hiện → "Chạy lặp xong" + audit đúng; phát hiện đúng thiết kế: trục CHƯA home thì chạy lặp bị chặn alarm 10002; bấm Lưu → `points-backup/` sinh snapshot. **Còn hàng đợi**: P5 máy thật.
-**Commit:** `(điền sau)`  ·  (S94: `bbdce33` · S93: `4073c4c` · S92: `e27ba92`)
+**Commit:** `ea31a51`  ·  (S94: `bbdce33` · S93: `4073c4c` · S92: `e27ba92`)
 
 ---
 
