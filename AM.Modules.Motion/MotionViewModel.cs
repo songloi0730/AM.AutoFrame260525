@@ -191,7 +191,8 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     /// <summary>Thông điệp dải khóa.</summary>
     [ObservableProperty] private string _lockText = string.Empty;
 
-    /// <summary>Sub-tab đang chọn: 0=Điều khiển trục, 1=Bảng điểm, 2=Thao tác trạm, 3=Override.</summary>
+    /// <summary>Sub-tab đang chọn: 0=Trục &amp; Điểm (S94 gộp bảng điểm vào), 2=Giám sát I/O,
+    /// 3=Thao tác trạm, 4=Override, 5=Hiệu chỉnh. Index 1 bỏ trống (bảng điểm cũ) — không đánh lại số.</summary>
     [ObservableProperty] private int _subTabIndex;
 
     [RelayCommand] private void SelectSubTab(string? index)

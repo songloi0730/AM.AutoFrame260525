@@ -244,7 +244,8 @@
             </TextBlock>
         </Border>
 
-        <!-- ═══ Thanh sub-tab: Điều khiển trục · Bảng điểm · Thao tác trạm · Override ═ -->
+        <!-- ═══ Thanh sub-tab: Trục & Điểm · I/O · Thao tác trạm · Override · Hiệu chỉnh
+             (S94: Bảng điểm GỘP vào pane Điều khiển trục — index 1 bỏ trống, không đánh lại số) ═ -->
         <Border Grid.Row="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Border.DefaultBrush}"
                 Margin="0,0,0,10">
             <StackPanel Orientation="Horizontal">
@@ -280,9 +281,6 @@
                 <RadioButton Style="{StaticResource SubTab}" GroupName="mtab" IsChecked="True"
                              Command="{Binding SelectSubTabCommand}" CommandParameter="0"
                              Content="{Binding [Manual.Tab.Axis], Source={x:Static loc:Loc.Strings}}"/>
-                <RadioButton Style="{StaticResource SubTab}" GroupName="mtab"
-                             Command="{Binding SelectSubTabCommand}" CommandParameter="1"
-                             Content="{Binding [Manual.Tab.Points], Source={x:Static loc:Loc.Strings}}"/>
                 <RadioButton Style="{StaticResource SubTab}" GroupName="mtab"
                              Command="{Binding SelectSubTabCommand}" CommandParameter="2"
                              Content="{Binding [Manual.Tab.Io], Source={x:Static loc:Loc.Strings}}"/>
@@ -865,13 +863,10 @@
                     </Border>
                 </StackPanel>
             </Grid>
-                </StackPanel>
-            </ScrollViewer>
 
-            <!-- ══ PANE 1: Bảng điểm ══ -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          Visibility="{Binding SubTabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=1}">
-            <Border Style="{StaticResource Card}" IsEnabled="{Binding IsAdjustAllowed}">
+            <!-- ═══ Bảng điểm — CÙNG MÀN với điều khiển trục (S94): jog → Teach → Tới vị trí
+                 trọn vòng không đổi tab (trước đây là sub-tab riêng, chọn điểm phải nhảy qua lại) ═══ -->
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0" IsEnabled="{Binding IsAdjustAllowed}">
                 <StackPanel>
                     <TextBlock Style="{StaticResource CardTitle}"
                                Text="{Binding [Axis.PointTable], Source={x:Static loc:Loc.Strings}}"/>
@@ -987,6 +982,7 @@
                                Foreground="{StaticResource Status.AlarmBrush}"/>
                 </StackPanel>
             </Border>
+                </StackPanel>
             </ScrollViewer>
 
             <!-- ══ PANE 2: Giám sát I/O (nhúng IoMonitorView — gộp Motion/IO) ══ -->

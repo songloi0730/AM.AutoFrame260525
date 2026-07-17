@@ -4,6 +4,48 @@
 
 ---
 
+## [Session 94] 2026-07-17 — Vận hành tay: gộp Bảng điểm vào pane Điều khiển trục → "Trục & Điểm"
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án: "để bảng điểm và điều khiển trục không cùng 1 trang khó chọn khi muốn trục
+di chuyển đến điểm đã cài" — rà toàn bộ màn Vận hành tay và đưa hướng sửa.
+
+### 🔍 Đánh giá
+- 6 sub-tab hiện tại: Điều khiển trục · Bảng điểm · Giám sát I/O · Thao tác trạm · Override · Hiệu chỉnh.
+  4 tab sau hợp lý; 2 tab đầu tách nhau làm hỏng luồng teach kinh điển
+  (jog → teach → jog tinh chỉnh → teach lại → thử "Tới") — mỗi vòng phải chuyển tab 2 lần.
+- Phát hiện kèm: `StatusMessage` (lý do guard từ chối) chỉ được hiển thị ở pane Bảng điểm —
+  jog/move bị chặn ở pane Điều khiển trục KHÔNG thấy lý do (vi phạm RefUX-A "không im lặng").
+
+### ✅ Phương án (chốt qua AskUserQuestion — A)
+| PA | Nội dung | Kết luận |
+|---|---|---|
+| **A. Gộp hẳn 1 tab (CHỌN)** | Bảng điểm chuyển nguyên khối xuống DƯỚI khu điều khiển trục, full-width, cùng ScrollViewer | Jog → Teach → Tới trọn vòng MỘT màn, đúng mẫu màn teach công nghiệp |
+| B. Giữ 2 tab + khối "Điểm nhanh" ở cột jog | Ít xáo trộn nhưng chức năng điểm tồn tại 2 nơi, lâu dài lệch nhau | bác |
+| C. Hai cột "Trục \| Điểm" trong 1 tab | Nhìn đồng thời không cuộn nhưng cả hai khối bị bóp ngang, jog phải dời chỗ | bác |
+
+### ✅ Thực hiện
+- `MotionView.xaml`: khối Card bảng điểm (bảng X/Y/Z/U + chọn 2 chạm + thanh Tới/Teach/Lưu + hint +
+  StatusMessage) chuyển từ PANE 1 vào cuối PANE 0; bỏ RadioButton "Bảng điểm" + PANE 1.
+  **Không đánh lại số sub-tab** (index 1 bỏ trống, 2..5 giữ nguyên — tránh sửa hàng loạt
+  ConverterParameter/CommandParameter dễ sót).
+- Nhãn tab đầu: "Điều khiển trục" → **"Trục & Điểm"** (Axes & Points / 轴与点位); xoá key
+  `Manual.Tab.Points` ×3; VM chỉ sửa doc-comment `SubTabIndex` — logic (GoToSelection/Teach/Save,
+  chọn 2 chạm, guard R2/R3) GIỮ NGUYÊN.
+- StatusMessage giờ nằm trên pane thao tác → jog bị guard chặn thấy lý do ngay.
+
+### 🧪 Kiểm chứng
+- Build 0 warning; logic VM không đổi → không cần test mới (339 pass giữ nguyên).
+- **Smoke UIA với DỮ LIỆU** (tạo `bin/points.json` 3 điểm Home/PickUp/Place — máy demo trước đó
+  KHÔNG có file điểm nên bảng luôn trống, bài học S89 test-với-dữ-liệu): login engineer → Manual →
+  tab đầu "Trục & Điểm", sub-tab "Bảng điểm" biến mất, bảng 3 điểm hiện NGAY dưới khu điều khiển
+  trục, chạm "Home" → thanh chọn "Đang chọn: … Home" + bộ nút Tới/Teach/Lưu hiện; app sống.
+- Bẫy UIA ghi thêm: file .ps1 bị Edit sau khi đã thêm BOM sẽ MẤT BOM → chuỗi tiếng Việt/ký tự "→"
+  trong script hoá mojibake, match fail im lặng — luôn re-save BOM trước khi chạy.
+
+---
+
 ## [Session 93] 2026-07-16 — Trang "Thông số máy" · toàn vẹn cấu hình SHA-256 (không gộp file) · layout Người dùng · fix appsettings không vào bin
 
 **Commit:** `4073c4c`
