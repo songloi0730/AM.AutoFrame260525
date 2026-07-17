@@ -10,6 +10,12 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-07-17
+**Session:** #95 — **Học màn manual máy tham khảo RefSeq-A (form template trạm): backup bảng điểm khi lưu + chạy lặp 2 điểm**. Chủ dự án yêu cầu đối chiếu form template màn manual của RefSeq-A với màn Trục & Điểm — kết quả rà: các chức năng chính (bảng điểm move/teach 1 trục hoặc cả điểm, bảng đèn tín hiệu, jog abs/rel, gate quyền từng khối) ta ĐÃ CÓ tương đương (mẫu 2 chạm + guard thay confirm dialog); 2 thứ đáng học đã làm: **(1) Backup bảng điểm mỗi lần lưu** — `PointTableService.SaveAsync` snapshot file cũ vào `points-backup/points_{timestamp}.json` TRƯỚC khi ghi đè (giữ 20 bản mới nhất; backup lỗi không chặn lưu chính) → teach nhầm có đường lùi; **(2) Chạy lặp 2 điểm** (kiểm độ lặp lại khi cân máy bằng đồng hồ so): khối mới trong card Bảng điểm — combo A ⇄ combo B + số vòng (1–100) + nút ▶ Chạy lặp/■ Dừng + tiến độ "vòng i/n"; guard R2 (Engineer + máy dừng) + audit `RepeatRun A <-> B xN`; **STOP đỏ và rời màn đều hủy vòng lặp**; combo/ô vòng khóa khi đang chạy. Chưa làm (ghi nhận): ảnh trạm minh hoạ per-station (cần asset thật — P5). i18n +8 key ×3. **+1 test → 340 pass**. **Smoke UIA end-to-end**: Home tất cả → chọn Home⇄PickUp ×2 → tiến độ "vòng 1/2" hiện → "Chạy lặp xong" + audit đúng; phát hiện đúng thiết kế: trục CHƯA home thì chạy lặp bị chặn alarm 10002; bấm Lưu → `points-backup/` sinh snapshot. **Còn hàng đợi**: P5 máy thật.
+**Commit:** `(điền sau)`  ·  (S94: `bbdce33` · S93: `4073c4c` · S92: `e27ba92`)
+
+---
+
+## 🗓️ Session #94
 **Session:** #94 — **Gộp Bảng điểm vào pane Điều khiển trục → sub-tab "Trục & Điểm" (yêu cầu chủ dự án)**. Vấn đề: muốn "trục di chuyển đến điểm đã cài" phải nhảy giữa 2 sub-tab (Điều khiển trục ↔ Bảng điểm); luồng teach thực tế còn nặng hơn (jog → teach → jog tinh chỉnh → teach lại → thử Tới — ping-pong liên tục). Rà 6 sub-tab màn Vận hành tay, đưa 3 phương án qua AskUserQuestion (A gộp hẳn 1 tab / B giữ 2 tab + khối điểm nhanh / C hai cột) — **chốt A**: bảng điểm (bảng X/Y/Z/U + chọn 2 chạm + thanh Tới/Teach/Lưu + hint) chuyển nguyên khối xuống DƯỚI khu điều khiển trục trong cùng pane, full-width; bỏ sub-tab "Bảng điểm" → còn 5 sub-tab; tab đầu đổi nhãn **"Trục & Điểm"** (Axes & Points / 轴与点位). Index sub-tab GIỮ NGUYÊN số cũ (1 bỏ trống — không đánh lại 2..5, tránh đụng mọi ConverterParameter). **Fix kèm theo**: `StatusMessage` (lý do guard chặn jog/move) trước giờ CHỈ hiển thị ở pane Bảng điểm — jog bị từ chối ở pane trục không thấy lý do; gộp xong hiển thị ngay trên pane thao tác. Key `Manual.Tab.Points` bỏ (3 ngữ). **Smoke UIA** (tạo `bin/points.json` 3 điểm demo Home/PickUp/Place — bài học test-với-dữ-liệu): tab đầu "Trục & Điểm" hiện đúng, sub-tab Bảng điểm biến mất, bảng điểm + 3 điểm hiện ngay trên pane trục, chạm "Home" → thanh chọn "Đang chọn: Điểm · Home" hiện. Build 0 warning; không đổi logic VM (GoToSelection/Teach/Save giữ nguyên) nên không cần test mới — 339 pass giữ nguyên. **Còn hàng đợi**: P5 máy thật.
 **Commit:** `bbdce33`  ·  (S93: `4073c4c` · S92: `e27ba92` · S91: `a42c64e`)
 
@@ -126,7 +132,7 @@
 
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|-----------|---------|
-| Solution structure | ✅ Hoàn thành | **30 projects** (CPM, +AM.Modules.Analog S91), production 0 warning, **339 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
+| Solution structure | ✅ Hoàn thành | **30 projects** (CPM, +AM.Modules.Analog S91), production 0 warning, **340 tests pass** · light theme + i18n toàn module (AM.UI.Localization) + cửa sổ cố định |
 | AM.Core | ✅ Hoàn thành | Enums (+PixelFormat) + 5 Attributes + Models (+RobotPose +FrameData +MotionStatus) + EventArgs |
 | AM.Core.Abstractions | ✅ Hoàn thành | Hardware (16 ifaces, **+IHardwareDevice base**: mọi device kế thừa → ConnectAll generic) + Machine + Services |
 | AM.Core.Sequencing | ✅ Hoàn thành | **Mới (S77, ADR 0011)** — sequence engine khai báo: contracts (`IStation`/`StepContext`/`StationResult`/`IStationResolver`/`IResumeVerifiable`/`IOperatorPrompt`), `SequenceLoader` 2 pha gom lỗi, `SequenceEngine` (order song song, timeout linked-CTS, onError/retry/prompt, pause ranh giới bước + resume-check). Standalone — không reference DryIoc/hardware/UI |

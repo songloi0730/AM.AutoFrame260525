@@ -124,6 +124,17 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _selectionScope = string.Empty;
     [ObservableProperty] private bool _hasSelection;
 
+    // Chạy lặp 2 điểm (S95 — học màn manual máy tham khảo RefSeq-A: kiểm độ lặp lại khi cân máy)
+    /// <summary>Tên các điểm cho combo chạy lặp (đồng bộ với bảng điểm).</summary>
+    public ObservableCollection<string> PointNames { get; } = [];
+
+    [ObservableProperty] private string? _repeatPointA;
+    [ObservableProperty] private string? _repeatPointB;
+    [ObservableProperty] private string _repeatCount = "5";
+    [ObservableProperty] private bool _isRepeatRunning;
+    [ObservableProperty] private string _repeatProgress = string.Empty;
+    private CancellationTokenSource? _repeatCts;
+
     /// <summary>Tạo VM, dựng trục/nhóm + nạp Point Table + bắt đầu poll.</summary>
     public MotionViewModel(IMotionController motion, IPointTableService pointTable,
         IMasterController master, IUserService user, IoMonitorViewModel ioMonitor,
@@ -268,6 +279,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     {
         if (IsBrakeReleased) _ = EngageBrakeAsync("tự đóng: rời màn Vận hành tay");
         IsConfirmingBrake = false;
+        StopRepeatRun(); // rời màn cũng dừng chạy lặp 2 điểm (S95)
     }
 
     private async Task EngageBrakeAsync(string reason)
@@ -484,6 +496,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     private async Task StopMotion()
     {
         CancelHold();
+        StopRepeatRun(); // STOP đỏ hủy cả vòng chạy lặp 2 điểm (S95)
         await RunMotionAsync(() => _motion.StopAllAxesAsync(_cts.Token)).ConfigureAwait(true);
     }
 
@@ -642,6 +655,88 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         _audit.Record(_user.CurrentUser ?? "?", $"Teach {SelectionScope}", allowed: true);
     }
 
+    // ─── Chạy lặp 2 điểm (S95 — RefSeq-A): A↔B nhiều vòng để kiểm độ lặp lại bằng đồng hồ so ───
+
+    /// <summary>Bắt đầu chạy lặp A↔B (guard R2: Engineer + máy dừng; audit; nút Dừng/STOP hủy được).</summary>
+    [RelayCommand]
+    private async Task StartRepeatRun()
+    {
+        if (IsRepeatRunning) return;
+        var a = RepeatPointA is null ? null : _pointTable.Find(RepeatPointA);
+        var b = RepeatPointB is null ? null : _pointTable.Find(RepeatPointB);
+        if (a is null || b is null || string.Equals(a.Name, b.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            StatusMessage = Loc.Strings["Axis.RepeatNeedPoints"];
+            return;
+        }
+        if (!int.TryParse(RepeatCount, NumberStyles.Integer, CultureInfo.InvariantCulture, out int rounds)
+            || rounds is < 1 or > 100)
+        {
+            StatusMessage = Loc.Strings["Axis.RepeatBadCount"];
+            return;
+        }
+
+        string who = _user.CurrentUser ?? "?";
+        string action = $"RepeatRun {a.Name} <-> {b.Name} x{rounds}";
+        var r = _guard.Evaluate(RiskTier.R2);
+        if (!r.Allowed)
+        {
+            StatusMessage = GuardReasonText(r);
+            _audit.Record(who, action, allowed: false, GuardReasonText(r));
+            return;
+        }
+        _audit.Record(who, action, allowed: true);
+
+        _repeatCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+        IsRepeatRunning = true;
+        StatusMessage = string.Empty;
+        try
+        {
+            for (int i = 1; i <= rounds; i++)
+            {
+                _repeatCts.Token.ThrowIfCancellationRequested();
+                RepeatProgress = string.Format(CultureInfo.CurrentCulture,
+                    Loc.Strings["Axis.RepeatProgress"], i, rounds);
+                await MoveToPointAsync(a, _repeatCts.Token).ConfigureAwait(true);
+                await MoveToPointAsync(b, _repeatCts.Token).ConfigureAwait(true);
+            }
+            StatusMessage = Loc.Strings["Axis.RepeatDone"];
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = Loc.Strings["Axis.RepeatStopped"];
+        }
+        catch (AlarmException ex)
+        {
+            _logger.LogError(ex, "[Motion] Chạy lặp lỗi alarm {Code}", ex.AlarmCode);
+            StatusMessage = ex.Message;
+        }
+#pragma warning disable CA1031 // lỗi bất ngờ khi chạy lặp → dừng + báo status, không sập UI
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogError(ex, "[Motion] Chạy lặp lỗi bất ngờ");
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsRepeatRunning = false;
+            RepeatProgress = string.Empty;
+            _repeatCts.Dispose();
+            _repeatCts = null;
+        }
+    }
+
+    /// <summary>Dừng chạy lặp (idempotent; STOP đỏ và rời màn cũng gọi).</summary>
+    [RelayCommand]
+    private void StopRepeatRun() => _repeatCts?.Cancel();
+
+    private async Task MoveToPointAsync(MotionPoint point, CancellationToken ct)
+    {
+        for (int i = 0; i < point.Positions.Count && i < _motion.AxisCount; i++)
+            await _motion.MoveAbsAsync(i, point.Positions[i], point.Velocity, ct).ConfigureAwait(true);
+    }
+
     /// <summary>Lưu toàn bộ bảng điểm vào recipe (file).</summary>
     [RelayCommand]
     private async Task SavePoints()
@@ -656,6 +751,13 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         int n = 1;
         foreach (var p in _pointTable.Points)
             PointRows.Add(new PointRowVm(n++, p, _motion.AxisCount));
+
+        // Combo chạy lặp 2 điểm dùng cùng danh sách; giữ lựa chọn nếu điểm còn tồn tại
+        string? keepA = RepeatPointA, keepB = RepeatPointB;
+        PointNames.Clear();
+        foreach (var p in _pointTable.Points) PointNames.Add(p.Name);
+        RepeatPointA = keepA is not null && PointNames.Contains(keepA) ? keepA : null;
+        RepeatPointB = keepB is not null && PointNames.Contains(keepB) ? keepB : null;
         // Khôi phục highlight chọn nếu điểm còn tồn tại
         if (SelectedPoint is not null)
         {
@@ -763,6 +865,9 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         _master.StateChanged -= OnMasterStateChanged;
         _user.UserChanged -= OnUserChanged;
         Loc.Strings.PropertyChanged -= OnLanguageChanged;
+        _repeatCts?.Cancel();
+        _repeatCts?.Dispose();
+        _repeatCts = null;
         _cts.Cancel();
         _cts.Dispose();
     }

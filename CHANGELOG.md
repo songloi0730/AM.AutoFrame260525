@@ -4,6 +4,45 @@
 
 ---
 
+## [Session 95] 2026-07-17 — Học màn manual RefSeq-A: backup bảng điểm khi lưu + chạy lặp 2 điểm
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án yêu cầu tham khảo form template màn manual trạm của máy tham khảo **RefSeq-A**
+(WinForms) xem cải thiện được gì cho màn Trục & Điểm.
+
+### 🔍 Đối chiếu
+- Đã tương đương (không cần đổi): bảng điểm + move/teach 1 trục hoặc cả điểm + lưu (RefSeq-A dùng
+  confirm dialog mỗi thao tác; ta dùng mẫu 2 chạm + guard R2/R3 + audit — đã chốt trong HMI doc);
+  bảng đèn tín hiệu trục; jog abs/rel; trang trục 4-một-nhóm; gate quyền từng khối; quét trạng thái.
+- Đáng học và ĐÃ làm: backup điểm khi lưu (RefSeq-A xuất snapshot Excel + XML mỗi lần lưu);
+  chạy lặp 2 điểm (RefSeq-A "RepeatRun" — kiểm độ lặp lại bằng đồng hồ so khi cân máy).
+- Ghi nhận chưa làm: ảnh trạm minh hoạ per-station (cần asset thật từng máy — P5).
+
+### ✅ (1) Backup bảng điểm mỗi lần lưu
+- `PointTableService.SaveAsync`: TRƯỚC khi ghi đè `points.json`, copy bản cũ vào
+  `points-backup/points_{yyyyMMdd_HHmmss_fff}.json`; giữ `BackupKeepCount = 20` bản mới nhất;
+  backup lỗi chỉ log warning — KHÔNG chặn việc lưu chính. Teach nhầm → có đường lùi.
+
+### ✅ (2) Chạy lặp 2 điểm (kiểm độ lặp lại)
+- Khối mới cuối card Bảng điểm: combo điểm A ⇄ combo điểm B (danh sách đồng bộ bảng điểm) +
+  số vòng (1–100, mặc định 5) + nút ▶ Chạy lặp / ■ Dừng lặp + tiến độ "vòng i/n".
+- An toàn: guard **R2** (Engineer + máy dừng) + audit `RepeatRun A <-> B xN` (cả DENIED);
+  **STOP đỏ và rời màn Vận hành tay đều hủy vòng lặp** (CTS riêng link với CTS màn);
+  combo/ô số vòng khóa khi đang chạy (chống đổi giữa chừng); trục chưa home → alarm 10002
+  chặn ngay vòng đầu (kế thừa guard của MoveAbs — đúng thiết kế).
+- Validate: 2 điểm phải KHÁC nhau; vòng 1–100; lỗi alarm/bất ngờ → dừng + báo status.
+
+### 🧪 Kiểm chứng
+- **+1 test → 340 pass** (`Save_BacksUpPreviousFile`: lần lưu đầu không backup, lần 2 sinh đúng 1 file).
+- **Smoke UIA end-to-end**: login engineer → Manual → **Home tất cả** (phát hiện đúng thiết kế:
+  chưa home thì chạy lặp bị alarm 10002 chặn ngay) → cuộn xuống khối chạy lặp → combo A=Home,
+  B=PickUp, vòng=2 → ▶ → tiến độ "vòng 1/2" hiện → "Chạy lặp xong" + audit
+  `RepeatRun Home <-> PickUp x2` → chọn điểm + Lưu → `points-backup/` sinh snapshot; app sống.
+- i18n +8 key ×3 (Axis.Repeat*).
+
+---
+
 ## [Session 94] 2026-07-17 — Vận hành tay: gộp Bảng điểm vào pane Điều khiển trục → "Trục & Điểm"
 
 **Commit:** `bbdce33`

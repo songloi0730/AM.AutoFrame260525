@@ -87,6 +87,9 @@ public sealed class PointTableService : IPointTableService, IDisposable
         return removed;
     }
 
+    /// <summary>Số bản backup bảng điểm giữ lại (học từ máy tham khảo RefSeq-A — teach nhầm có đường lùi).</summary>
+    public const int BackupKeepCount = 20;
+
     /// <inheritdoc/>
     public async Task SaveAsync(CancellationToken ct = default)
     {
@@ -96,6 +99,7 @@ public sealed class PointTableService : IPointTableService, IDisposable
         await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            BackupCurrentFile(); // snapshot bản CŨ trước khi ghi đè — mỗi lần lưu có đường lùi
             string json = JsonSerializer.Serialize(snapshot, JsonOptions);
             await File.WriteAllTextAsync(_storePath, json, ct).ConfigureAwait(false);
             _logger.LogDebug("[PointTable] Lưu {Count} điểm → '{Path}'", snapshot.Count, _storePath);
@@ -109,6 +113,32 @@ public sealed class PointTableService : IPointTableService, IDisposable
         finally
         {
             _saveLock.Release();
+        }
+    }
+
+    // Copy points.json hiện tại vào points-backup/points_{timestamp}.json, giữ BackupKeepCount
+    // bản mới nhất (mẫu backup-khi-lưu của màn manual máy tham khảo RefSeq-A).
+    private void BackupCurrentFile()
+    {
+        try
+        {
+            if (!File.Exists(_storePath)) return;
+            string dir = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(_storePath)) ?? ".", "points-backup");
+            Directory.CreateDirectory(dir);
+            string name = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                $"points_{DateTime.Now:yyyyMMdd_HHmmss_fff}.json");
+            File.Copy(_storePath, Path.Combine(dir, name), overwrite: true);
+
+            var old = new DirectoryInfo(dir).GetFiles("points_*.json")
+                .OrderByDescending(f => f.Name)
+                .Skip(BackupKeepCount);
+            foreach (var f in old) f.Delete();
+        }
+#pragma warning disable CA1031 // backup lỗi không được chặn việc LƯU chính — log là đủ
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            _logger.LogWarning(ex, "[PointTable] Không backup được bảng điểm trước khi lưu");
         }
     }
 

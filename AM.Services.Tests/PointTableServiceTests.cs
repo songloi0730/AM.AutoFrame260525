@@ -90,4 +90,30 @@ public sealed class PointTableServiceTests : IDisposable
         sut.Find("Unsaved").Should().BeNull();
         sut.Find("Saved").Should().NotBeNull();
     }
+
+    [Fact]
+    public async Task Save_BacksUpPreviousFile()
+    {
+        // Thư mục riêng để kiểm points-backup (S95 — học RefSeq-A: teach nhầm có đường lùi)
+        string dir = Path.Combine(Path.GetTempPath(), $"points-bk-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var sut = new PointTableService(NullLogger<PointTableService>.Instance,
+                Path.Combine(dir, "points.json"));
+            sut.AddOrUpdate(Point("A", 1));
+            await sut.SaveAsync();   // lần 1: chưa có file cũ → không backup
+            string backupDir = Path.Combine(dir, "points-backup");
+            (Directory.Exists(backupDir) ? Directory.GetFiles(backupDir).Length : 0).Should().Be(0);
+
+            sut.AddOrUpdate(Point("B", 2));
+            await sut.SaveAsync();   // lần 2: file cũ được snapshot trước khi đè
+
+            Directory.GetFiles(backupDir, "points_*.json").Should().HaveCount(1);
+        }
+        finally
+        {
+            try { Directory.Delete(dir, recursive: true); } catch (IOException) { /* best-effort */ }
+        }
+    }
 }
