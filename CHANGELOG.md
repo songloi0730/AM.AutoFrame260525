@@ -6,7 +6,7 @@
 
 ## [Session 97] 2026-07-18 — Thiết kế lại điều khiển trục: bảng trạng thái ↔ dock jog, interlock nêu lý do, bỏ panel Phản hồi
 
-**Commit:** `(điền sau)`
+**Commit:** `0dd1ef1`
 **Người thực hiện:** Claude (Cowork) + Nhan
 **Bối cảnh:** Chủ dự án chê bố cục gộp S96, gửi 3 ảnh màn manual máy công nghiệp tham khảo (trong đó
 có màn của RefSeq-A) + mockup HTML tương tác đã chốt các quyết định thiết kế → chuyển thành WPF.
