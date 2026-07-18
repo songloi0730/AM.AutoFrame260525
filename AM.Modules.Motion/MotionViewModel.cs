@@ -403,7 +403,42 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
     [RelayCommand] private void StepFine()   => CurrentStep = 0.001;
     [RelayCommand] private void StepMedium() => CurrentStep = 0.01;
     [RelayCommand] private void StepCoarse() => CurrentStep = 0.1;
+    [RelayCommand] private void StepOne()    => CurrentStep = 1;
     [RelayCommand] private void StepCustom() => CurrentStep = CustomStep > 0 ? CustomStep : CurrentStep;
+
+    // ─── Dock jog (S97 — thiết kế lại theo mẫu đã chốt): chế độ + interlock ───────
+
+    /// <summary>Chế độ jog của dock: false = liên tục (giữ-để-chạy), true = bước (mỗi bấm 1 bước).</summary>
+    [ObservableProperty] private bool _isStepMode;
+
+    /// <summary>Lý do khoá jog theo TRỤC đang chọn (chuỗi rỗng = được jog) — banner đỏ trên dock.</summary>
+    [ObservableProperty] private string _jogInterlockText = string.Empty;
+
+    /// <summary>True khi trục đang chọn không jog được (alarm / servo OFF).</summary>
+    [ObservableProperty] private bool _isJogInterlocked;
+
+    [RelayCommand] private void SetContinuousMode() => IsStepMode = false;
+    [RelayCommand] private void SetStepMode() => IsStepMode = true;
+
+    partial void OnSelectedAxisChanged(AxisVm? value) => RefreshJogInterlock();
+
+    // Interlock CỦA TRỤC (khác dải khoá máy IsAdjustAllowed): alarm thì phải Clear trước,
+    // servo OFF (khi HAL có servo) thì phải bật trước. Gọi mỗi tick poll + khi đổi trục chọn.
+    private void RefreshJogInterlock()
+    {
+        var a = SelectedAxis;
+        string text = string.Empty;
+        if (a is not null)
+        {
+            if (a.Alarm)
+                text = Loc.Strings["Axis.LockAlarm"];
+            else if (a.HasDiagnostics && !a.ServoOn)
+                text = Loc.Strings["Axis.LockServoOff"];
+        }
+        if (text != JogInterlockText) JogInterlockText = text;
+        bool locked = text.Length > 0;
+        if (locked != IsJogInterlocked) IsJogInterlocked = locked;
+    }
 
     /// <summary>Nhích trục đang chọn +1 bước inching.</summary>
     [RelayCommand]
@@ -808,6 +843,7 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
                     }
                     if (fb is not null) ApplyFeedback(fb);
                     if (_brake is not null) IsBrakeReleased = _brake.IsBrakeReleased(ZAxisIndex);
+                    RefreshJogInterlock(); // servo/alarm trục chọn đổi → banner dock cập nhật
                 });
             }
         }

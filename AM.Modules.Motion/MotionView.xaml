@@ -330,12 +330,16 @@
                 <!-- ── Cột trái ─────────────────────────────────────────────────── -->
                 <StackPanel Grid.Column="0">
 
-                    <!-- Điều khiển từng trục — khóa khi máy đang chạy (IsAdjustAllowed) -->
+                    <!-- Trạng thái trục (S97 — thiết kế lại theo mẫu đã chốt): bảng = trạng thái + an toàn
+                         (LED có tiêu đề cột, SVO/Home/Clear); MỌI chuyển động dồn về dock phải -->
                     <Border Style="{StaticResource Card}" IsEnabled="{Binding IsAdjustAllowed}">
                         <StackPanel>
                             <DockPanel Margin="0,0,0,8">
                                 <TextBlock Style="{StaticResource CardTitle}" Margin="0"
-                                           Text="{Binding [Axis.PerAxis], Source={x:Static loc:Loc.Strings}}"/>
+                                           Text="{Binding [Axis.StatusTable], Source={x:Static loc:Loc.Strings}}"/>
+                                <TextBlock Margin="10,2,0,0" FontSize="11.5" VerticalAlignment="Center"
+                                           Text="{Binding [Axis.SelHint], Source={x:Static loc:Loc.Strings}}"
+                                           Foreground="{DynamicResource Text.PlaceholderBrush}"/>
                             </DockPanel>
 
                             <!-- Thanh nhóm + lệnh toàn cục -->
@@ -439,124 +443,198 @@
                                 </Grid>
                             </Border>
 
-                            <!-- Hàng mỗi trục -->
+                            <!-- Header cột LED (S97 — học bảng có tiêu đề của máy tham khảo,
+                                 thay 7 chấm không nhãn phải tra chú thích) -->
+                            <Grid Margin="0,4,0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="84"/>
+                                    <ColumnDefinition Width="118"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="46"/>
+                                    <ColumnDefinition Width="46"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource SigHeader}">
+                                        <Setter Property="FontSize" Value="10.5"/>
+                                    </Style>
+                                </Grid.Resources>
+                                <TextBlock Grid.Column="0" HorizontalAlignment="Left"
+                                           Text="{Binding [Axis.ColAxis], Source={x:Static loc:Loc.Strings}}"/>
+                                <TextBlock Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,12,0"
+                                           Text="{Binding [Axis.ColPos], Source={x:Static loc:Loc.Strings}}"/>
+                                <TextBlock Grid.Column="2" Text="ALM"/>
+                                <TextBlock Grid.Column="3" Text="+LIM"/>
+                                <TextBlock Grid.Column="4" Text="−LIM"/>
+                                <TextBlock Grid.Column="5" Text="ORG"/>
+                                <TextBlock Grid.Column="6" Text="E-STOP"/>
+                                <TextBlock Grid.Column="7" Text="IN-POS"/>
+                                <TextBlock Grid.Column="8" Text="SVO"/>
+                                <TextBlock Grid.Column="9" HorizontalAlignment="Right"
+                                           Text="{Binding [Axis.ColOps], Source={x:Static loc:Loc.Strings}}"/>
+                            </Grid>
+
+                            <!-- Hàng mỗi trục: bấm vùng trạng thái = chọn trục; thao tác SVO/Home/Clear bên phải -->
                             <ItemsControl ItemsSource="{Binding VisibleAxes}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Card.BorderBrush}"
-                                                Padding="0,6" Background="Transparent">
+                                                Padding="0,7">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource Info.BackgroundBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="84"/>
+                                                    <ColumnDefinition Width="118"/>
+                                                    <ColumnDefinition Width="40"/>
+                                                    <ColumnDefinition Width="40"/>
+                                                    <ColumnDefinition Width="40"/>
+                                                    <ColumnDefinition Width="40"/>
+                                                    <ColumnDefinition Width="46"/>
+                                                    <ColumnDefinition Width="46"/>
+                                                    <ColumnDefinition Width="40"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <!-- Trái: tên + vị trí + LED + servo/home/clear -->
-                                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                                    <TextBlock Width="92" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Alarm}" Value="True">
-                                                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                        <Run Text="{Binding Name, Mode=OneWay}"/>
-                                                    </TextBlock>
-                                                    <TextBlock Width="104" VerticalAlignment="Center" FontFamily="Consolas"
-                                                               FontSize="17" TextAlignment="Right" Margin="0,0,10,0"
-                                                               Text="{Binding Position, StringFormat={}{0:F3}}">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Text.LiveValueBrush}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsMoving}" Value="True">
-                                                                        <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Alarm}" Value="True">
-                                                                        <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
+                                                <!-- Lớp nền: bấm vùng trạng thái (tên→LED) = chọn trục -->
+                                                <Button Grid.ColumnSpan="9" Cursor="Hand"
+                                                        Command="{Binding DataContext.SelectAxisCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="Transparent"/>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
 
-                                                    <!-- Dải LED tín hiệu (S96 — thay bảng đèn riêng): +L/−L/Org/EStop/Zero/InPos.
-                                                         Alarm = tên trục đỏ, Servo = nút ON/OFF cạnh đây (không hiển thị lặp) -->
-                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0"
-                                                                Visibility="{Binding HasDiagnostics, Converter={StaticResource BoolToVis}}">
-                                                        <Ellipse ToolTip="+Limit 正限位">
-                                                            <Ellipse.Style>
-                                                                <Style TargetType="Ellipse" BasedOn="{StaticResource LedInline}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding PlusLimit}" Value="True">
-                                                                            <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Ellipse.Style>
-                                                        </Ellipse>
-                                                        <Ellipse ToolTip="−Limit 负限位">
-                                                            <Ellipse.Style>
-                                                                <Style TargetType="Ellipse" BasedOn="{StaticResource LedInline}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding MinusLimit}" Value="True">
-                                                                            <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Ellipse.Style>
-                                                        </Ellipse>
-                                                        <Ellipse ToolTip="Origin 原点">
-                                                            <Ellipse.Style>
-                                                                <Style TargetType="Ellipse" BasedOn="{StaticResource LedInline}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding Origin}" Value="True">
-                                                                            <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Ellipse.Style>
-                                                        </Ellipse>
-                                                        <Ellipse ToolTip="E-Stop 急停">
-                                                            <Ellipse.Style>
-                                                                <Style TargetType="Ellipse" BasedOn="{StaticResource LedInline}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding EStop}" Value="True">
-                                                                            <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Ellipse.Style>
-                                                        </Ellipse>
-                                                        <Ellipse ToolTip="Zero 零位">
-                                                            <Ellipse.Style>
-                                                                <Style TargetType="Ellipse" BasedOn="{StaticResource LedInline}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding Zero}" Value="True">
-                                                                            <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Ellipse.Style>
-                                                        </Ellipse>
-                                                        <Ellipse ToolTip="In-Pos 到位">
-                                                            <Ellipse.Style>
-                                                                <Style TargetType="Ellipse" BasedOn="{StaticResource LedInline}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding InPosition}" Value="True">
-                                                                            <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Ellipse.Style>
-                                                        </Ellipse>
-                                                    </StackPanel>
+                                                <!-- Nội dung trạng thái (không bắt chuột — click rơi xuống nút chọn) -->
+                                                <TextBlock Grid.Column="0" IsHitTestVisible="False" VerticalAlignment="Center"
+                                                           FontWeight="SemiBold" FontSize="14">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Text.PrimaryBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Alarm}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                    <Run Text="{Binding Name, Mode=OneWay}"/>
+                                                </TextBlock>
+                                                <TextBlock Grid.Column="1" IsHitTestVisible="False" VerticalAlignment="Center"
+                                                           FontFamily="Consolas" FontSize="18" TextAlignment="Right" Margin="0,0,12,0"
+                                                           Text="{Binding Position, StringFormat={}{0:F3}}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Text.LiveValueBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsMoving}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource Status.InfoBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Alarm}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
 
-                                                    <!-- Servo ON (chỉ khi có IAxisDiagnostics) -->
+                                                <!-- 7 LED khớp tiêu đề cột: đỏ = nguy (ALM/±LIM/E-STOP), xanh = tốt (ORG/IN-POS/SVO) -->
+                                                <Ellipse Grid.Column="2" IsHitTestVisible="False" VerticalAlignment="Center">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Alarm}" Value="True">
+                                                                    <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <Ellipse Grid.Column="3" IsHitTestVisible="False" VerticalAlignment="Center">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding PlusLimit}" Value="True">
+                                                                    <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <Ellipse Grid.Column="4" IsHitTestVisible="False" VerticalAlignment="Center">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding MinusLimit}" Value="True">
+                                                                    <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <Ellipse Grid.Column="5" IsHitTestVisible="False" VerticalAlignment="Center">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Origin}" Value="True">
+                                                                    <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <Ellipse Grid.Column="6" IsHitTestVisible="False" VerticalAlignment="Center">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding EStop}" Value="True">
+                                                                    <Setter Property="Fill" Value="{StaticResource Status.AlarmBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <Ellipse Grid.Column="7" IsHitTestVisible="False" VerticalAlignment="Center">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding InPosition}" Value="True">
+                                                                    <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+                                                <Ellipse Grid.Column="8" IsHitTestVisible="False" VerticalAlignment="Center">
+                                                    <Ellipse.Style>
+                                                        <Style TargetType="Ellipse" BasedOn="{StaticResource Led}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ServoOn}" Value="True">
+                                                                    <Setter Property="Fill" Value="{StaticResource Status.NormalBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Ellipse.Style>
+                                                </Ellipse>
+
+                                                <!-- Thao tác an toàn của TRỤC (không phải chuyển động) -->
+                                                <StackPanel Grid.Column="9" Orientation="Horizontal" HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center">
                                                     <Button Visibility="{Binding HasDiagnostics, Converter={StaticResource BoolToVis}}"
                                                             Command="{Binding DataContext.ToggleServoCommand,
                                                                       RelativeSource={RelativeSource AncestorType=ItemsControl}}"
@@ -575,10 +653,10 @@
                                                         <TextBlock>
                                                             <TextBlock.Style>
                                                                 <Style TargetType="TextBlock">
-                                                                    <Setter Property="Text" Value="OFF"/>
+                                                                    <Setter Property="Text" Value="SVO OFF"/>
                                                                     <Style.Triggers>
                                                                         <DataTrigger Binding="{Binding ServoOn}" Value="True">
-                                                                            <Setter Property="Text" Value="ON"/>
+                                                                            <Setter Property="Text" Value="SVO ON"/>
                                                                         </DataTrigger>
                                                                     </Style.Triggers>
                                                                 </Style>
@@ -590,7 +668,7 @@
                                                             Command="{Binding DataContext.HomeAxisCommand,
                                                                       RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                             CommandParameter="{Binding}"/>
-                                                    <Button Style="{StaticResource MiniButton}"
+                                                    <Button Style="{StaticResource MiniButton}" Margin="0,0,4,0"
                                                             BorderBrush="{StaticResource Status.WarningBrush}"
                                                             Foreground="{StaticResource Status.WarningBrush}"
                                                             Content="{Binding [Axis.Clear], Source={x:Static loc:Loc.Strings}}"
@@ -598,208 +676,220 @@
                                                                       RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                             CommandParameter="{Binding}"/>
                                                 </StackPanel>
-
-                                                <!-- Phải: đích + di chuyển + tốc độ (ẩn khi alarm) -->
-                                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center">
-                                                    <StackPanel Orientation="Horizontal"
-                                                                Visibility="{Binding Alarm, Converter={StaticResource BoolToVis}}">
-                                                        <TextBlock Text="{Binding [Axis.ServoAlarmClear], Source={x:Static loc:Loc.Strings}}"
-                                                                   VerticalAlignment="Center" FontSize="12"
-                                                                   Foreground="{StaticResource Status.AlarmBrush}"/>
-                                                    </StackPanel>
-                                                    <TextBlock Text="{Binding [Axis.MoveTo], Source={x:Static loc:Loc.Strings}}"
-                                                               VerticalAlignment="Center" Margin="0,0,6,0"
-                                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                                    <TextBox Style="{StaticResource NumBox}"
-                                                             Text="{Binding MoveTarget, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F3}}"/>
-                                                    <Button Style="{StaticResource MiniButton}" Margin="6,0,6,0"
-                                                            BorderBrush="{StaticResource Status.InfoBrush}"
-                                                            Foreground="{StaticResource Status.InfoBrush}"
-                                                            Content="{Binding [Axis.Move], Source={x:Static loc:Loc.Strings}}"
-                                                            Command="{Binding DataContext.MoveAbsCommand,
-                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                            CommandParameter="{Binding}"/>
-                                                    <TextBlock Text="{Binding [Axis.Speed], Source={x:Static loc:Loc.Strings}}"
-                                                               VerticalAlignment="Center" Margin="0,0,4,0" FontSize="12"
-                                                               Foreground="{DynamicResource Text.PlaceholderBrush}"/>
-                                                    <TextBox Style="{StaticResource NumBox}" Width="56"
-                                                             Text="{Binding SpeedPercent, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F0}}"/>
-                                                    <TextBlock Text="%" VerticalAlignment="Center" Margin="4,0,0,0"
-                                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <!-- Chú thích dải LED (S96) — tooltip từng đèn có tên đầy đủ -->
-                            <TextBlock FontSize="10.5" Margin="0,6,0,0"
-                                       Visibility="{Binding HasDiagnostics, Converter={StaticResource BoolToVis}}"
-                                       Foreground="{DynamicResource Text.PlaceholderBrush}"
-                                       Text="LED: +Limit · −Limit · Origin · E-Stop · Zero · In-Pos"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
-                <!-- ── Cột phải: jog (khóa khi chạy) + phản hồi (luôn xem) ──────── -->
+                <!-- ── Cột phải: DOCK JOG (S97) — mọi chuyển động cho TRỤC ĐANG CHỌN:
+                     liên tục/bước, STOP, tốc độ, đi tới vị trí tuyệt đối; interlock nêu lý do.
+                     Panel Phản hồi 4 đại lượng BỎ theo yêu cầu — vị trí hiện tại đủ. ── -->
                 <StackPanel Grid.Column="2">
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" IsEnabled="{Binding IsAdjustAllowed}">
+                    <Border Style="{StaticResource Card}" IsEnabled="{Binding IsAdjustAllowed}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource CardTitle}">
-                                <Run Text="{Binding [Axis.Jog], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
-                                <Run Text="{Binding SelectedAxis.Name, Mode=OneWay}"
-                                     Foreground="{StaticResource Status.InfoBrush}"/>
-                            </TextBlock>
+                            <TextBlock Style="{StaticResource CardTitle}" Margin="0,0,0,2"
+                                       Text="{Binding [Axis.Jog], Source={x:Static loc:Loc.Strings}}"/>
 
-            <!-- Mode tương đối / tuyệt đối (Absolute radio TwoWay; Relative là trạng thái còn lại của nhóm) -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <!-- Trục đang chọn + vị trí hiện tại -->
+                            <DockPanel Margin="0,4,0,10">
+                                <TextBlock FontSize="22" FontWeight="Bold" VerticalAlignment="Center"
+                                           Text="{Binding SelectedAxis.Name}"
+                                           Foreground="{StaticResource Status.InfoBrush}"/>
+                                <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                           FontFamily="Consolas" FontSize="16"
+                                           Foreground="{DynamicResource Text.LiveValueBrush}">
+                                    <Run Text="{Binding SelectedAxis.Position, Mode=OneWay, StringFormat={}{0:F3}}"/><Run Text=" mm"/>
+                                </TextBlock>
+                            </DockPanel>
+
+                            <!-- Interlock CỦA TRỤC: nêu lý do phải làm gì trước (ISA-101 — không im lặng) -->
+                            <Border CornerRadius="6" Padding="10,7" Margin="0,0,0,10"
+                                    Background="{StaticResource Ng.BackgroundBrush}"
+                                    Visibility="{Binding IsJogInterlocked, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{Binding JogInterlockText}" TextWrapping="Wrap"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{StaticResource Status.AlarmBrush}"/>
+                            </Border>
+
+                            <!-- Chế độ: Jog liên tục (giữ-để-chạy deadman) / Jog bước -->
+                            <UniformGrid Columns="2" Margin="0,0,0,8">
                                 <RadioButton Style="{StaticResource SegButton}" GroupName="jogmode" IsChecked="True"
-                                             Content="{Binding [Axis.Relative], Source={x:Static loc:Loc.Strings}}"/>
+                                             Command="{Binding SetContinuousModeCommand}"
+                                             Content="{Binding [Axis.JogCont], Source={x:Static loc:Loc.Strings}}"/>
                                 <RadioButton Style="{StaticResource SegButton}" GroupName="jogmode"
-                                             IsChecked="{Binding AbsoluteJog, Mode=TwoWay}"
-                                             Content="{Binding [Axis.Absolute], Source={x:Static loc:Loc.Strings}}"/>
-                            </StackPanel>
-
-                            <!-- Jog pad 3×3 (slot0=X giữa, slot1=Y, slot2=Z, slot3=U).
-                                 GIỮ-ĐỂ-CHẠY (P1.5): nhấn giữ = velocity-jog + KeepAlive deadman;
-                                 nhả/rời nút = dừng. HAL không hỗ trợ IAxisJog → mỗi nhấn = 1 bước inching. -->
-                            <UniformGrid Rows="3" Columns="3" HorizontalAlignment="Center"
-                                         ToolTip="{Binding [Axis.JogHint], Source={x:Static loc:Loc.Strings}}">
-                                <Button Style="{StaticResource JogButton}" Content="U +"
-                                        Visibility="{Binding JogSlots[3], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[3]}"/>
-                                <Button Style="{StaticResource JogButton}" Content="Y ↑"
-                                        Visibility="{Binding JogSlots[1], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[1]}"/>
-                                <Button Style="{StaticResource JogButton}" Content="Z ↑"
-                                        Visibility="{Binding JogSlots[2], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[2]}"/>
-
-                                <Button Style="{StaticResource JogButton}" Content="X −"
-                                        Visibility="{Binding JogSlots[0], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[0]}"/>
-                                <Button Style="{StaticResource JogButton}" Content="STOP" Command="{Binding StopMotionCommand}"
-                                        BorderBrush="{StaticResource Status.AlarmBrush}"
-                                        Foreground="{StaticResource Status.AlarmBrush}" FontWeight="Bold"/>
-                                <Button Style="{StaticResource JogButton}" Content="X +"
-                                        Visibility="{Binding JogSlots[0], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[0]}"/>
-
-                                <Button Style="{StaticResource JogButton}" Content="U −"
-                                        Visibility="{Binding JogSlots[3], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[3]}"/>
-                                <Button Style="{StaticResource JogButton}" Content="Y ↓"
-                                        Visibility="{Binding JogSlots[1], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[1]}"/>
-                                <Button Style="{StaticResource JogButton}" Content="Z ↓"
-                                        Visibility="{Binding JogSlots[2], Converter={StaticResource NullToVis}}"
-                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
-                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
-                                        local:JogHold.Parameter="{Binding JogSlots[2]}"/>
+                                             IsChecked="{Binding IsStepMode, Mode=TwoWay}"
+                                             Content="{Binding [Axis.JogStep], Source={x:Static loc:Loc.Strings}}"/>
                             </UniformGrid>
 
-                            <!-- Bước inching -->
-                            <TextBlock Text="{Binding [Axis.InchingStep], Source={x:Static loc:Loc.Strings}}"
-                                       FontSize="12" Margin="0,12,0,4"
-                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                            <UniformGrid Columns="3">
-                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" Command="{Binding StepFineCommand}">
-                                    <StackPanel><TextBlock Text="0.001" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding [Axis.Fine], Source={x:Static loc:Loc.Strings}}" FontSize="10"
-                                                   HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/></StackPanel>
-                                </RadioButton>
-                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" IsChecked="True" Command="{Binding StepMediumCommand}">
-                                    <StackPanel><TextBlock Text="0.01" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding [Axis.Med], Source={x:Static loc:Loc.Strings}}" FontSize="10"
-                                                   HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/></StackPanel>
-                                </RadioButton>
-                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" Command="{Binding StepCoarseCommand}">
-                                    <StackPanel><TextBlock Text="0.1" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding [Axis.Coarse], Source={x:Static loc:Loc.Strings}}" FontSize="10"
-                                                   HorizontalAlignment="Center" Foreground="{DynamicResource Text.PlaceholderBrush}"/></StackPanel>
-                                </RadioButton>
-                            </UniformGrid>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
-                                <RadioButton Style="{StaticResource SegButton}" GroupName="step" MinWidth="56"
-                                             Command="{Binding StepCustomCommand}"
-                                             Content="{Binding [Axis.Custom], Source={x:Static loc:Loc.Strings}}"/>
-                                <TextBox Style="{StaticResource NumBox}" Width="80" Margin="6,0"
-                                         Text="{Binding CustomStep, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F3}}"/>
-                                <TextBlock Text="mm" VerticalAlignment="Center"
-                                           Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                            <!-- Bước jog — chỉ hiện ở chế độ bước (gộp phần Bước inching cũ) -->
+                            <StackPanel Visibility="{Binding IsStepMode, Converter={StaticResource BoolToVis}}">
+                                <UniformGrid Columns="4" Margin="0,0,0,6">
+                                    <RadioButton Style="{StaticResource SegButton}" GroupName="step" Content="0.001"
+                                                 Command="{Binding StepFineCommand}"/>
+                                    <RadioButton Style="{StaticResource SegButton}" GroupName="step" Content="0.01"
+                                                 IsChecked="True" Command="{Binding StepMediumCommand}"/>
+                                    <RadioButton Style="{StaticResource SegButton}" GroupName="step" Content="0.1"
+                                                 Command="{Binding StepCoarseCommand}"/>
+                                    <RadioButton Style="{StaticResource SegButton}" GroupName="step" Content="1"
+                                                 Command="{Binding StepOneCommand}"/>
+                                </UniformGrid>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <RadioButton Style="{StaticResource SegButton}" GroupName="step" MinWidth="56"
+                                                 Command="{Binding StepCustomCommand}"
+                                                 Content="{Binding [Axis.Custom], Source={x:Static loc:Loc.Strings}}"/>
+                                    <TextBox Style="{StaticResource NumBox}" Width="76" Margin="6,0"
+                                             Text="{Binding CustomStep, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F3}}"/>
+                                    <TextBlock Text="mm" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Text.PlaceholderBrush}"/>
+                                    <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontFamily="Consolas"
+                                               Text="{Binding CurrentStep, StringFormat='= {0:F3}'}"
+                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                </StackPanel>
                             </StackPanel>
 
-                            <!-- Nudge +/− -->
-                            <Grid Margin="0,8,0,0">
+                            <!-- JOG− · STOP · JOG+ : liên tục = giữ-để-chạy (deadman P1.5), bước = mỗi bấm 1 bước -->
+                            <Grid Margin="0,0,0,10"
+                                  ToolTip="{Binding [Axis.JogHint], Source={x:Static loc:Loc.Strings}}">
+                                <Grid.Resources>
+                                    <!-- Khoá theo interlock trục; Width NaN để giãn hết cột (JogButton gốc cứng 72px) -->
+                                    <Style x:Key="JogEnable" TargetType="Button" BasedOn="{StaticResource JogButton}">
+                                        <Setter Property="Width" Value="NaN"/>
+                                        <Setter Property="Height" Value="56"/>
+                                        <Setter Property="Margin" Value="0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsJogInterlocked}" Value="True">
+                                                <Setter Property="IsEnabled" Value="False"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Resources>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="0.8*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Style="{StaticResource MiniButton}" Content="−" FontSize="18"
-                                        Command="{Binding NudgeMinusCommand}"/>
-                                <TextBlock Grid.Column="1" Text="{Binding CurrentStep, StringFormat={}{0:F3}}"
-                                           FontFamily="Consolas" FontSize="14" HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                                <Button Grid.Column="2" Style="{StaticResource MiniButton}" Margin="0" Content="+" FontSize="18"
-                                        Command="{Binding NudgePlusCommand}"/>
+
+                                <!-- Cặp nút LIÊN TỤC (giữ-để-chạy) -->
+                                <Button Grid.Column="0" Content="− JOG" Margin="0,0,8,0"
+                                        local:JogHold.DownCommand="{Binding JogHoldMinusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding SelectedAxis}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource JogEnable}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsStepMode}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Grid.Column="2" Content="JOG +" Margin="8,0,0,0"
+                                        local:JogHold.DownCommand="{Binding JogHoldPlusCommand}"
+                                        local:JogHold.UpCommand="{Binding JogHoldStopCommand}"
+                                        local:JogHold.Parameter="{Binding SelectedAxis}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource JogEnable}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsStepMode}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- Cặp nút BƯỚC (mỗi bấm 1 bước) -->
+                                <Button Grid.Column="0" Margin="0,0,8,0"
+                                        Command="{Binding NudgeMinusCommand}">
+                                    <Button.Content>
+                                        <TextBlock TextAlignment="Center"><Run Text="−"/><LineBreak/><Run
+                                            Text="{Binding CurrentStep, Mode=OneWay, StringFormat={}{0:F3}}" FontSize="10"/></TextBlock>
+                                    </Button.Content>
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource JogEnable}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsStepMode}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Grid.Column="2" Margin="8,0,0,0"
+                                        Command="{Binding NudgePlusCommand}">
+                                    <Button.Content>
+                                        <TextBlock TextAlignment="Center"><Run Text="+"/><LineBreak/><Run
+                                            Text="{Binding CurrentStep, Mode=OneWay, StringFormat={}{0:F3}}" FontSize="10"/></TextBlock>
+                                    </Button.Content>
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource JogEnable}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsStepMode}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- STOP luôn bấm được (không khoá theo interlock) -->
+                                <Button Grid.Column="1" Style="{StaticResource JogButton}" Content="STOP"
+                                        Width="NaN" Height="56" Margin="0"
+                                        Command="{Binding StopMotionCommand}"
+                                        BorderBrush="{StaticResource Status.AlarmBrush}"
+                                        Foreground="{StaticResource Status.AlarmBrush}" FontWeight="Bold"/>
                             </Grid>
 
-                            <!-- Phản hồi servo trục đang chọn — gộp vào card jog dạng 2×2 (S96:
-                                 bỏ card riêng để cả pane vừa 1 màn; vẫn đủ 4 đại lượng) -->
-                            <Border BorderThickness="0,1,0,0" Margin="0,10,0,0" Padding="0,8,0,0"
+                            <!-- Tốc độ jog (theo trục đang chọn) -->
+                            <TextBlock Text="{Binding [Axis.JogSpeed], Source={x:Static loc:Loc.Strings}}"
+                                       FontSize="11" FontWeight="SemiBold" Margin="0,0,0,3"
+                                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                            <DockPanel Margin="0,0,0,10">
+                                <TextBlock DockPanel.Dock="Right" Width="46" TextAlignment="Right" VerticalAlignment="Center"
+                                           FontFamily="Consolas" FontWeight="Bold"
+                                           Foreground="{DynamicResource Text.PrimaryBrush}">
+                                    <Run Text="{Binding SelectedAxis.SpeedPercent, Mode=OneWay, StringFormat={}{0:F0}}"/><Run Text="%"/>
+                                </TextBlock>
+                                <Slider Minimum="1" Maximum="100" VerticalAlignment="Center"
+                                        Value="{Binding SelectedAxis.SpeedPercent, Mode=TwoWay}"/>
+                            </DockPanel>
+
+                            <!-- Đi tới vị trí tuyệt đối (dồn từ từng hàng trục về đây) -->
+                            <Border BorderThickness="0,1,0,0" Padding="0,10,0,0"
                                     BorderBrush="{DynamicResource Card.BorderBrush}">
                                 <StackPanel>
-                                    <TextBlock FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"
-                                               Foreground="{DynamicResource Text.SecondaryBrush}">
-                                        <Run Text="{Binding [Axis.Feedback], Source={x:Static loc:Loc.Strings}, Mode=OneWay}"/>
-                                        <Run Text="{Binding SelectedAxis.Name, Mode=OneWay}"
-                                             Foreground="{StaticResource Status.InfoBrush}"/>
-                                    </TextBlock>
-                                    <UniformGrid Columns="2">
-                                        <UniformGrid.Resources>
-                                            <Style TargetType="DockPanel">
-                                                <Setter Property="Margin" Value="0,2,10,2"/>
-                                            </Style>
-                                        </UniformGrid.Resources>
-                                        <DockPanel>
-                                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackFollowingError}"
-                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                                            <TextBlock Text="Follow err" FontSize="11" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                        </DockPanel>
-                                        <DockPanel>
-                                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackVelocity}"
-                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                                            <TextBlock Text="Velocity" FontSize="11" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                        </DockPanel>
-                                        <DockPanel>
-                                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackTorque}"
-                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                                            <TextBlock Text="Torque" FontSize="11" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                        </DockPanel>
-                                        <DockPanel>
-                                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource Mono}" Text="{Binding FeedbackMotorLoad}"
-                                                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
-                                            <TextBlock Text="Motor load" FontSize="11" Foreground="{DynamicResource Text.SecondaryBrush}"/>
-                                        </DockPanel>
-                                    </UniformGrid>
+                                    <TextBlock Text="{Binding [Axis.GoAbs], Source={x:Static loc:Loc.Strings}}"
+                                               FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"
+                                               Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Margin="8,0,0,0"
+                                                Height="34" Padding="14,0"
+                                                BorderBrush="{StaticResource Status.InfoBrush}"
+                                                Foreground="{StaticResource Status.InfoBrush}"
+                                                Command="{Binding MoveAbsCommand}"
+                                                CommandParameter="{Binding SelectedAxis}"
+                                                Content="{Binding [Axis.Move], Source={x:Static loc:Loc.Strings}}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource MiniButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsJogInterlocked}" Value="True">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <TextBox Style="{StaticResource NumBox}" Height="34" Width="Auto"
+                                                 HorizontalAlignment="Stretch"
+                                                 Text="{Binding SelectedAxis.MoveTarget, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:F3}}"/>
+                                    </DockPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

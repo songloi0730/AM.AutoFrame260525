@@ -4,6 +4,47 @@
 
 ---
 
+## [Session 97] 2026-07-18 — Thiết kế lại điều khiển trục: bảng trạng thái ↔ dock jog, interlock nêu lý do, bỏ panel Phản hồi
+
+**Commit:** `(điền sau)`
+**Người thực hiện:** Claude (Cowork) + Nhan
+**Bối cảnh:** Chủ dự án chê bố cục gộp S96, gửi 3 ảnh màn manual máy công nghiệp tham khảo (trong đó
+có màn của RefSeq-A) + mockup HTML tương tác đã chốt các quyết định thiết kế → chuyển thành WPF.
+
+### ✅ Tách vai trò: bảng TRÁI = trạng thái + an toàn, dock PHẢI = mọi chuyển động
+- **Bảng "Trạng thái trục"**: mỗi hàng = tên trục · vị trí mono 18px (đỏ khi alarm, xanh khi đang
+  chạy) · **7 LED CÓ TIÊU ĐỀ CỘT** ALM / +LIM / −LIM / ORG / E-STOP / IN-POS / SVO (học màn máy
+  tham khảo — thay dải chấm không nhãn S96 phải tra chú thích; đỏ = nguy, xanh = tốt) ·
+  3 nút **SVO ON/OFF** (nền xanh khi ON) / **Home** / **Clear**.
+- **Bấm vùng trạng thái của hàng = chọn trục** (Button nền transparent ColumnSpan + nội dung
+  IsHitTestVisible=False — nút thao tác bên phải vẫn bấm độc lập); hàng đang chọn nền xanh nhạt.
+- Per-row ô đích + "Tới" + tốc **BỎ** — hết cảnh ô "Tới" rải trên từng hàng còn pad jog lại điều
+  khiển trục khác.
+
+### ✅ Dock jog cho TRỤC ĐANG CHỌN (thay pad 9 nút)
+- Tên trục to + vị trí hiện tại live; **banner interlock ĐỎ nêu đúng lý do** (ISA-101 không im
+  lặng): trục alarm → "Clear lỗi rồi bật servo trước khi jog"; servo OFF → "bật servo ở bảng
+  Trạng thái trục" — jog/move tự disable, hết interlock banner tự tắt (VM refresh mỗi tick poll).
+- Segmented **Jog liên tục** (giữ-để-chạy deadman P1.5 — JogHold behavior giữ nguyên, deadman
+  200ms không đổi) / **Jog bước** (chip 0.001 / 0.01 / 0.1 / **1** (mới) / tùy ý — gộp phần
+  "Bước inching" cũ); JOG− · **STOP** · JOG+ (STOP không bao giờ bị khoá); **slider tốc độ** theo
+  trục đang chọn; ô **"Đi tới vị trí tuyệt đối"** + → Di chuyển (dồn từ từng hàng về đây).
+- **Panel "Phản hồi" 4 đại lượng BỎ HẲN** theo yêu cầu — vị trí hiện tại trên dock là đủ.
+- VM mới: `IsStepMode`, `StepOne`, `JogInterlockText`/`IsJogInterlocked` + `RefreshJogInterlock()`
+  (gọi mỗi tick poll + khi đổi trục chọn). `AbsoluteJog` không còn UI (jog luôn tương đối; tuyệt
+  đối = ô Đi tới).
+
+### 🧪 Kiểm chứng
+- **Smoke UIA**: bảng Trạng thái trục + **7/7 tiêu đề LED** + dock hiện · panel Phản hồi = 0 ·
+  **chọn AX_1 → banner "Servo đang OFF — bật servo…" → bấm SVO → banner tự tắt** (interlock sống
+  đúng theo trục) · đủ Liên tục/Bước/Tốc độ jog/Đi tới tuyệt đối · bảng điểm + chạy lặp 2 điểm
+  vẫn cùng màn không cuộn dọc (giữ thành quả S96) · app sống.
+- Build 0 warning; 340 test giữ nguyên (thay đổi VM thuần UI-state, không đụng luồng motion/guard).
+- i18n +12 key ×3; dọn 11 key mồ côi (Axis.PerAxis/Relative/Absolute/InchingStep/Fine/Med/Coarse/
+  Feedback/MoveTo/Speed/ServoAlarmClear).
+
+---
+
 ## [Session 96] 2026-07-17 — Trục & Điểm vừa MỘT màn: bỏ bảng đèn trùng lặp, gộp phản hồi, hết cuộn dọc
 
 **Commit:** `598ce82`
