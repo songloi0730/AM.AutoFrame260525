@@ -6,7 +6,7 @@
 
 ## [Session 99] 2026-11-12 — Đ1 chống va chạm phía PC (MoveGuard) + giới hạn mềm từ chối thay vì kẹp
 
-**Commit:** (điền sau)
+**Commit:** `98321bf`
 **Người thực hiện:** Claude Code + Nhan
 **Bối cảnh:** Chủ dự án chọn Đ1 trong khảo sát S98 và cho đi tiếp với lựa chọn khuyến nghị (phương án A, giới hạn mềm từ
 chối ở mọi đường, bypass Administrator ồn ào, luật trong JSON). Rà mã tìm ra 3 lỗ hổng: màn Vận hành tay gọi thẳng card
