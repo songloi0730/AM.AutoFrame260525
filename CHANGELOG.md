@@ -6,6 +6,7 @@
 
 ## [Session 98] 2026-11-12 — Khảo sát 18 phần mềm máy tự động hoá C#/C++ công khai (RefAuto-A…R)
 
+**Commit:** `3adbb7b`
 **Người thực hiện:** Claude Code + Nhan
 **Bối cảnh:** Chủ dự án yêu cầu tìm trên GitHub các dự án máy tự động hoá viết bằng C#/C++ theo cách đã dùng cho
 MeoVision (tải rút gọn + đọc tĩnh + bí danh), tải về thư mục `VS`, phân tích chi tiết làm tài liệu tham khảo giao diện
