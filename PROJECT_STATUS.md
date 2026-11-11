@@ -10,6 +10,12 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-11-12
+**Session:** #99 — **Đ1 chống va chạm phía PC (`MoveGuard`, design-notes/0015)**. Mọi lệnh MoveAbs/MoveRel/HomeAxis/Jog (màn tay, Mechanism, IAxis adapter) đi qua lớp bọc `IMotionController` đăng ký DI: **giới hạn mềm TỪ CHỐI + alarm 10005** (trước: màn tay không kiểm, sequence kẹp im lặng) + luật `move-protection.json` ("trục di chuyển [qua vùng] ⇒ cần trục khác trong khoảng / DI") → chặn kèm lý do, alarm 70011; jog liên tục giám sát nhìn trước mỗi 20 ms, vi phạm tự dừng; trục kia chưa về gốc ⇒ chặn; file hỏng ⇒ không luật nào + alarm 40014; bypass Administrator (API) + alarm 70012, tự bật lại khi đổi user. Demo: X/Y chỉ chạy khi Z ≥ −0,5; `axismap.json` đổi tên trục → X/Y/Z/U. **361/361 test pass**, app chạy nạp 2 luật. **Còn**: nút bypass trên UI, smoke UIA màn tay; Đ2–Đ7 chờ chọn.
+**Commit:** (điền sau)
+
+---
+
+## 🗓️ Session #98
 **Session:** #98 — **Khảo sát 18 phần mềm máy tự động hoá C#/C++ công khai trên GitHub (RefAuto-A…R) làm tài liệu tham khảo giao diện + chức năng**. Tìm bằng code search tên hàm SDK card chuyển động/PLC (lọc ra phần mềm máy thật) → 208 repo → chọn 18; tải rút gọn vào `OneDrive\C\VS\AutoRefs\` (ngoài repo, chỉ đọc tĩnh). Kết quả: **`docs/Reference_Automation_Software_Survey.md`** (ẩn danh) — 10 chủ đề, ma trận 30 năng lực đối chiếu, **7 đề xuất Đ1–Đ7 chờ chọn phương án**: Đ1 chống va chạm/vùng cấm phía PC · Đ2 nút mềm không chạy chu trình (chỉ ARM, chạy bằng nút cứng) · Đ3 alarm lỗi gốc + nguyên nhân + chi tiết động + hoà mã mới + RESET nói lý do · Đ4 dọn liệu/chờ người (thêm trạng thái hay PauseReason) · Đ5 đóng băng snapshot recipe + hiệu chuẩn mỗi chu kỳ · Đ6 thành phần lưới khay/ô · Đ7 việc nhỏ (dừng poll khi trang ẩn, màn ma trận đèn tháp, chạy từng bước station, mô phỏng 1 chu kỳ, xem trước theo cấp, test luật kiến trúc, checklist P5 độ tụt phanh Z). Bản tên thật: `docs/private/RefAuto_GitHub_Analysis.local.md`. Không đổi mã nguồn.
 **Commit:** `3adbb7b`  ·  (S97: `0dd1ef1` · S96: `598ce82` · S95: `ea31a51`)
 

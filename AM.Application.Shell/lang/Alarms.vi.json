@@ -23,6 +23,7 @@
   "30006": { "name": "Giá trị analog ngoài khoảng an toàn", "remedy": "Kiểm tra nguồn khí/cảm biến của kênh và khoảng an toàn trong analog.map.json" },
   "10009": { "name": "Phanh trục Z đang nhả", "remedy": "Đóng phanh trong màn Vận hành tay trước khi vận hành máy" },
   "40013": { "name": "File cấu hình bị sửa ngoài phần mềm", "remedy": "Kiểm tra Cài đặt → Thông số máy → Toàn vẹn cấu hình; nếu thay đổi có chủ đích thì Ký lại" },
+  "40014": { "name": "File luật chống va chạm không hợp lệ", "remedy": "Sửa move-protection.json theo lỗi trong log rồi khởi động lại — đang KHÔNG có luật chống va chạm nào" },
 
   "40001": { "name": "Lỗi cơ sở dữ liệu", "remedy": "Kiểm tra file/dịch vụ database và dung lượng đĩa" },
   "40002": { "name": "Lỗi hệ thống nghiêm trọng", "remedy": "Xem log hệ thống và khởi động lại ứng dụng" },
@@ -58,5 +59,7 @@
   "70002": { "name": "Cửa an toàn mở", "remedy": "Đóng cửa và xác nhận interlock" },
   "70003": { "name": "Rèm sáng bị che", "remedy": "Loại vật cản khỏi vùng rèm sáng và reset" },
   "70004": { "name": "Vi phạm interlock", "remedy": "Kiểm tra chuỗi an toàn và xác nhận reset" },
-  "70010": { "name": "Còn ngõ ra bị Force", "remedy": "Vào Giám sát I/O, gỡ Force mọi ngõ ra trước khi chạy máy" }
+  "70010": { "name": "Còn ngõ ra bị Force", "remedy": "Vào Giám sát I/O, gỡ Force mọi ngõ ra trước khi chạy máy" },
+  "70011": { "name": "Luật chống va chạm chặn chuyển động", "remedy": "Đọc lý do trên banner; đưa trục liên quan về vị trí an toàn (vd. nhấc Z) rồi ra lệnh lại" },
+  "70012": { "name": "Luật chống va chạm đang bị tắt", "remedy": "Bật lại luật ngay khi xong việc cứu máy; luật tự bật lại khi đổi người dùng hoặc khởi động lại" }
 }

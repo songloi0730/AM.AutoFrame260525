@@ -369,9 +369,47 @@ internal static class ServiceCollectionExtensions
             Log.Information(">>> REAL hardware mode ENABLED <<<");
         }
 
+        DecorateMotionWithGuard(services); // 0015 — mọi lệnh chuyển động qua MoveGuard (giới hạn mềm + luật va chạm)
         services.AddDemoMachine(config);
         HardwareFactory.RegisterPeripherals(services, config, useSimulation); // vision/scanner/safety/io-tagmap
         return services;
+    }
+
+    // Controller thật (bên trong lớp bọc) — singleton duy nhất, MoveGuard đọc vị trí từ đây.
+    private sealed record RawMotionController(IMotionController Controller);
+
+    /// <summary>
+    /// Thay đăng ký <see cref="IMotionController"/> bằng lớp bọc <see cref="GuardedMotionController"/> (design-notes/0015):
+    /// màn tay, Mechanism, IAxis adapter, HardwareManager đều nhận bản bọc ⇒ một điểm chặn cho mọi đường.
+    /// Controller có jog ⇒ bọc bằng <see cref="GuardedJogMotionController"/> (giữ ngữ nghĩa "cast được thì có jog").
+    /// </summary>
+    private static void DecorateMotionWithGuard(IServiceCollection services)
+    {
+        var original = services.Last(d => d.ServiceType == typeof(IMotionController));
+        var factory = original.ImplementationFactory
+            ?? throw new InvalidOperationException("IMotionController phải đăng ký bằng factory để bọc MoveGuard");
+        services.Remove(original);
+
+        services.AddSingleton(sp => new RawMotionController((IMotionController)factory(sp)));
+        services.AddSingleton(sp => new MoveGuard(
+            sp.GetRequiredService<ILogger<MoveGuard>>(),
+            sp.GetRequiredService<RawMotionController>().Controller,
+            sp.GetRequiredService<IAxisMap>().All.Where(a =>
+                string.IsNullOrEmpty(a.Controller) || a.Controller == AM.Core.Constants.DeviceNames.MainMotion),
+            Path.Combine(AppContext.BaseDirectory, "move-protection.json"),
+            sp.GetRequiredService<IIoModule>(),
+            sp.GetRequiredService<IIoTagMap>(),
+            sp.GetRequiredService<IAlarmService>(),
+            sp.GetRequiredService<IUserService>()));
+        services.AddSingleton<IMoveGuard>(sp => sp.GetRequiredService<MoveGuard>());
+        services.AddSingleton<IMotionController>(sp =>
+        {
+            var raw = sp.GetRequiredService<RawMotionController>().Controller;
+            var guard = sp.GetRequiredService<MoveGuard>();
+            return raw is IAxisJog
+                ? new GuardedJogMotionController(raw, guard, sp.GetRequiredService<ILogger<GuardedJogMotionController>>())
+                : new GuardedMotionController(raw, guard, sp.GetRequiredService<ILogger<GuardedMotionController>>());
+        });
     }
 
     // ─── Vendor parsing helper (type-safe, thay magic string) ─────────────────

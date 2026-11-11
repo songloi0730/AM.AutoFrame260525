@@ -42,6 +42,7 @@
     <None Update="recovery-actions.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="override-actions.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="axismap.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="move-protection.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="machine.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="lang\*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="recipes\*.json" CopyToOutputDirectory="PreserveNewest" />

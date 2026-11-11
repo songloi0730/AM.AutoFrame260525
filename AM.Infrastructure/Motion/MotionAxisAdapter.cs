@@ -11,7 +11,8 @@ namespace AM.Infrastructure.Motion;
 
 /// <summary>
 /// <see cref="IAxis"/> bind vào một trục cụ thể của <see cref="IMotionController"/> theo
-/// <see cref="AxisConfig"/>: áp vận tốc mặc định, clamp soft-limit. Trạng thái (Position/IsMoving/
+/// <see cref="AxisConfig"/>: áp vận tốc mặc định. Giới hạn mềm do lớp bọc controller (MoveGuard, 0015)
+/// TỪ CHỐI — không còn kẹp im lặng. Trạng thái (Position/IsMoving/
 /// IsHomed) cache theo lệnh gần nhất — đủ cho logic Mechanism; HMI live đọc trực tiếp controller.
 /// </summary>
 internal sealed class MotionAxisAdapter : IAxis
@@ -62,7 +63,7 @@ internal sealed class MotionAxisAdapter : IAxis
     public async Task MoveAbsAsync(double position, double velocity = 0, CancellationToken ct = default)
     {
         double v = velocity <= 0 ? _config.DefaultVelocity : velocity;
-        double target = Clamp(position);
+        double target = position;
         _isMoving = true;
         try
         {
@@ -82,10 +83,4 @@ internal sealed class MotionAxisAdapter : IAxis
         await _controller.StopAxisAsync(_config.Index, ct).ConfigureAwait(false);
         _isMoving = false;
     }
-
-    // Clamp soft-limit nếu cấu hình hợp lệ (Min < Max), ngược lại không giới hạn.
-    private double Clamp(double position)
-        => _config.SoftLimitMin < _config.SoftLimitMax
-            ? Math.Clamp(position, _config.SoftLimitMin, _config.SoftLimitMax)
-            : position;
 }

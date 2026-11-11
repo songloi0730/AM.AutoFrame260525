@@ -3,7 +3,7 @@
   "stations": [
     {
       "name": "DemoStation",
-      "axes": [ "PickX", "PickZ", "PlaceX", "PlaceZ" ],
+      "axes": [ "X", "Y", "Z", "U" ],
       "devices": [ "MainMotion", "MainCamera", "MainIO" ]
     }
   ]

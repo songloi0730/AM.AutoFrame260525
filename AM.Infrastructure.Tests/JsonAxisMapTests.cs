@@ -90,15 +90,17 @@ public sealed class JsonAxisMapTests : IDisposable
     }
 
     [Fact]
-    public async Task Adapter_MoveAbs_ClampsToSoftLimit()
+    public async Task Adapter_MoveAbs_DoesNotClamp_SoftLimitIsGuardsJob()
     {
+        // 0015: adapter KHÔNG còn kẹp im lặng — giới hạn mềm do MoveGuard (lớp bọc controller) từ chối,
+        // xem MoveGuardTests.SoftLimit_OutOfRange_IsRejected_NotClamped. Ở đây controller trần ⇒ lệnh đi nguyên đích.
         await _motion.ConnectAsync();
         var sut = Create();
         var axis = sut.ResolveAxis("PickZ"); // soft limit [-100, 100]
 
         await axis.HomeAsync();
-        await axis.MoveAbsAsync(250); // vượt giới hạn → clamp về 100
+        await axis.MoveAbsAsync(250);
 
-        axis.Position.Should().Be(100);
+        axis.Position.Should().Be(250);
     }
 }

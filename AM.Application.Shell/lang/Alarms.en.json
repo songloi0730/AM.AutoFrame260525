@@ -23,6 +23,7 @@
   "30006": { "name": "Analog value out of safe range", "remedy": "Check the channel's air supply/sensor and the safe range in analog.map.json" },
   "10009": { "name": "Z-axis brake released", "remedy": "Engage the brake in the Manual Operation screen before running" },
   "40013": { "name": "Config file modified outside the app", "remedy": "Check Settings → Machine settings → Config integrity; re-sign if the change was intentional" },
+  "40014": { "name": "Collision-protection rule file invalid", "remedy": "Fix move-protection.json per the log error and restart — NO collision rules are active" },
 
   "40001": { "name": "Database error", "remedy": "Check database file/service and disk space" },
   "40002": { "name": "Critical system error", "remedy": "Review system log and restart application" },
@@ -58,5 +59,7 @@
   "70002": { "name": "Safety door open", "remedy": "Close door and confirm interlock" },
   "70003": { "name": "Light curtain broken", "remedy": "Clear obstruction from light curtain and reset" },
   "70004": { "name": "Interlock breach", "remedy": "Check safety chain and confirm reset" },
-  "70010": { "name": "Outputs still forced", "remedy": "Open I/O Monitor and release all forced outputs before running" }
+  "70010": { "name": "Outputs still forced", "remedy": "Open I/O Monitor and release all forced outputs before running" },
+  "70011": { "name": "Collision rule blocked motion", "remedy": "Read the reason on the banner; move the related axis to a safe position (e.g. raise Z) and retry" },
+  "70012": { "name": "Collision rule disabled", "remedy": "Re-enable the rule as soon as recovery is done; rules re-enable automatically on user change or restart" }
 }

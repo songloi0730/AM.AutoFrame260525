@@ -281,7 +281,7 @@ script tự do. Kiểu "khai báo tài nguyên bằng attribute" của RefAuto-G
 | 8 | Chế độ Dry run / từng bước | ✅ | A, F |
 | 9 | Chế độ chỉ chạy vision / rodage | ❌ | F, I |
 | 10 | Nút mềm không chạy chu trình (chỉ ARM) | ❌ (Start trên action bar) | A |
-| 11 | Chống va chạm / vùng cấm cấu hình được | ❌ | B, C |
+| 11 | Chống va chạm / vùng cấm cấu hình được | ✅ S99 (`MoveGuard`, design-notes/0015) | B, C |
 | 12 | Watchdog vòng điều khiển | ❌ (chưa thấy) | A |
 | 13 | Rèm sáng phải RESET mới chạy lại | 🟡 (chưa thành văn) | A |
 | 14 | Về gốc chỉ thành công khi thấy cảm biến thật | 🟡 (tuỳ driver) | A, B |
@@ -300,7 +300,7 @@ script tự do. Kiểu "khai báo tài nguyên bằng attribute" của RefAuto-G
 | 27 | Chạy từng bước một station từ màn tay | ❌ | A, N |
 | 28 | Mô phỏng một chu kỳ từ UI | ❌ | L |
 | 29 | Hướng dẫn "sai ở hiện trường thì sửa lớp nào" | ❌ | D |
-| 30 | Test luật kiến trúc | ❌ | B |
+| 30 | Test luật kiến trúc | ✅ (`AM.Architecture.Tests` — S98 ghi nhầm ❌, đính chính S99) | B |
 
 ---
 
@@ -308,7 +308,7 @@ script tự do. Kiểu "khai báo tài nguyên bằng attribute" của RefAuto-G
 
 Xếp theo giá trị cho máy thật (P5). Mỗi đề xuất là một việc riêng; chưa làm việc nào trong session này.
 
-### Đ1. Chống va chạm / vùng cấm phía PC (ma trận #11) — giá trị cao nhất
+### Đ1. Chống va chạm / vùng cấm phía PC (ma trận #11) — giá trị cao nhất · ✅ ĐÃ LÀM S99 (phương án A, design-notes/0015)
 
 | Phương án | Mô tả | Đánh đổi |
 |---|---|---|
@@ -355,7 +355,7 @@ mới có màu mạnh), chọn ô để giới hạn phạm vi chạy (Engineer+
 - Chạy từng bước một station từ màn tay (#27); nút "mô phỏng một chu kỳ" ở chế độ simulation (#28).
 - "Xem trước như cấp X" cho Admin (#22).
 - Tài liệu "sai ở hiện trường thì sửa lớp nào" cho các interface chính (#29) — ghép vào `QUICK_REFERENCE.md`.
-- Test luật kiến trúc: WorkStation chỉ tham chiếu Core.Abstractions, Station không gọi hardware (#30).
+- ~~Test luật kiến trúc (#30)~~ — đã có sẵn `AM.Architecture.Tests` (đính chính S99).
 - Checklist nghiệm thu P5: đo độ tụt phanh Z (Servo OFF 10 lần, < 0,5 mm), rèm sáng phải RESET, mất kết nối IO = dừng khẩn.
 
 ---

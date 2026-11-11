@@ -1,0 +1,18 @@
+{
+  "_comment": "Luật chống va chạm phía PC (design-notes/0015). Bảo vệ quy hoạch — KHÔNG thay limit cứng/relay an toàn/STO. Sửa xong phải Ký lại trong Cài đặt → Thông số máy.",
+  "jogLookaheadMm": 2.0,
+  "rules": [
+    {
+      "id": "X_NEEDS_Z_SAFE",
+      "description": "Trục X chỉ chạy khi Z ở cao độ an toàn (0 ± 0.5 mm trở lên)",
+      "moving": "X",
+      "require": [ { "axis": "Z", "min": -0.5 } ]
+    },
+    {
+      "id": "Y_NEEDS_Z_SAFE",
+      "description": "Trục Y chỉ chạy khi Z ở cao độ an toàn (0 ± 0.5 mm trở lên)",
+      "moving": "Y",
+      "require": [ { "axis": "Z", "min": -0.5 } ]
+    }
+  ]
+}

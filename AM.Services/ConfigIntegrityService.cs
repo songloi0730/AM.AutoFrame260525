@@ -30,7 +30,7 @@ public sealed class ConfigIntegrityService : IConfigIntegrityService
     // (points/parameters/users/recipes — app ghi liên tục, ký sẽ báo lệch giả).
     private static readonly string[] DefaultTargets =
     [
-        "appsettings.json", "machine.json", "axismap.json", "io.map.json",
+        "appsettings.json", "machine.json", "axismap.json", "move-protection.json", "io.map.json",
         "analog.map.json", "recovery-actions.json", "override-actions.json",
     ];
 

@@ -51,6 +51,7 @@ public static class AlarmCodes
     public const int SecurityServiceLogin  = 40011;  // Đăng nhập quyền dịch vụ bằng mã theo ngày
     public const int SecurityRecoveryUsed  = 40012;  // File khôi phục break-glass được kích hoạt
     public const int SystemConfigModified  = 40013;  // File cấu hình bị sửa ngoài app (manifest SHA-256 lệch — S93)
+    public const int SystemMoveProtectionInvalid = 40014; // move-protection.json hỏng → KHÔNG luật chống va chạm nào được nạp (0015)
 
     // ─── 50000–50999  Communication / Network ────────────────────────────────
     public const int CommConnectionFail    = 50001;  // Generic: kết nối thất bại
@@ -82,4 +83,6 @@ public static class AlarmCodes
     public const int SafetyLightCurtain    = 70003;
     public const int SafetyInterlockBreach = 70004;
     public const int SafetyIoForced        = 70010;  // còn ngõ ra bị Force (đóng băng) — nhớ gỡ trước khi chạy
+    public const int SafetyCollisionBlocked = 70011; // Luật chống va chạm chặn lệnh / dừng jog (0015)
+    public const int SafetyCollisionRuleBypassed = 70012; // Luật chống va chạm đang bị TẮT tạm — banner thường trực (0015)
 }

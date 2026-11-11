@@ -4,6 +4,41 @@
 
 ---
 
+## [Session 99] 2026-11-12 — Đ1 chống va chạm phía PC (MoveGuard) + giới hạn mềm từ chối thay vì kẹp
+
+**Commit:** (điền sau)
+**Người thực hiện:** Claude Code + Nhan
+**Bối cảnh:** Chủ dự án chọn Đ1 trong khảo sát S98 và cho đi tiếp với lựa chọn khuyến nghị (phương án A, giới hạn mềm từ
+chối ở mọi đường, bypass Administrator ồn ào, luật trong JSON). Rà mã tìm ra 3 lỗ hổng: màn Vận hành tay gọi thẳng card
+KHÔNG kiểm giới hạn mềm; `MotionAxisAdapter` KẸP đích im lặng; interlock "Z an toàn" chỉ có trong guard màn tay.
+
+**Đã làm:**
+- `docs/design-notes/0015-chong-va-cham-phia-pc.md` (MỚI) — phương án mô hình luật / chỗ đặt / giới hạn mềm / bypass + lý do;
+  index README cập nhật.
+- `AM.Core/Models/MoveProtectionRule.cs` (MỚI): `AxisRange`, `MoveRequirement` (trục trong khoảng hoặc DI), `MoveProtectionRule`
+  (moving + zone tuỳ chọn + require AND), `MoveProtectionConfig` (jogLookaheadMm).
+- `AM.Core.Abstractions`: `IMoveGuard` + `MoveCheckResult` (MỚI), `IMotionControllerDecorator` (MỚI).
+- `AM.Infrastructure/Motion/MoveGuard.cs` (MỚI): giới hạn mềm → 10005; luật → 70011 kèm lý do đọc được; trục kia chưa về gốc
+  ⇒ không đạt; trục kia đang chạy ⇒ xét cả đoạn tới đích; file luật validate (id trùng, trục lạ, điều kiện tự tham chiếu…)
+  hỏng ⇒ không nạp luật nào + alarm 40014 lúc khởi động; bypass Administrator + alarm 70012, tự bật lại khi đổi user.
+- `AM.Infrastructure/Motion/GuardedMotionController.cs` (MỚI): bọc MoveAbs/MoveRel/HomeAxis; `GuardedJogMotionController` kiểm
+  jog lúc bắt đầu (đích nhìn trước) + vòng 20 ms trong lúc jog, vi phạm ⇒ dừng jog + alarm.
+- `ServiceCollectionExtensions.cs`: `DecorateMotionWithGuard` thay đăng ký `IMotionController` (sim + thật) bằng lớp bọc;
+  `App.xaml.cs`: báo trạng thái luật lúc khởi động.
+- `MotionAxisAdapter.cs`: bỏ kẹp giới hạn mềm. `MotionViewModel.cs`: diag/phanh lấy từ controller thật (`Inner`), jog qua lớp bọc.
+- `AlarmCodes.cs` + `lang/Alarms.{vi,en,zh}.json`: 40014, 70011, 70012.
+- Cấu hình demo: `move-protection.json` (MỚI — X, Y chỉ chạy khi Z ≥ −0,5), `axismap.json` + `machine.json` đổi tên trục
+  `PickX/PickZ/PlaceX/PlaceZ` → `X/Y/Z/U` cho khớp chỉ số Mechanism/màn tay thực dùng; csproj copy; thêm vào danh sách ký
+  SHA-256 (`ConfigIntegrityService`) và sao lưu (`BackupService`).
+- Test: `MoveGuardTests.cs` (MỚI, 21 case: giới hạn mềm, luật trục/zone/DI, chưa về gốc, file hỏng, bypass, lớp bọc chặn
+  không phát lệnh, jog dừng ở giới hạn mềm); `JsonAxisMapTests` đổi test kẹp → adapter chuyển nguyên đích. **361/361 pass.**
+- `docs/Reference_Automation_Software_Survey.md`: đánh dấu Đ1 đã làm; **đính chính** mục #30 — repo đã có `AM.Architecture.Tests`.
+
+**Kiểm chứng:** build 0 warning; 361 test pass; chạy app thật: log "2 luật chống va chạm đang hiệu lực", không lỗi DI.
+**Chưa làm:** nút bypass trên UI (mới có API); chưa smoke UIA màn Vận hành tay (jog X khi Z thấp → thấy lý do chặn).
+
+---
+
 ## [Session 98] 2026-11-12 — Khảo sát 18 phần mềm máy tự động hoá C#/C++ công khai (RefAuto-A…R)
 
 **Commit:** `3adbb7b`

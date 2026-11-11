@@ -95,6 +95,8 @@ public partial class App
             _serviceProvider.GetRequiredService<IAnalogMonitorService>().Start(); // Gói C — poll kênh analog
             // S93 — file cấu hình lệch manifest SHA-256 → alarm 40013 (phát hiện sửa tay ngoài app)
             _serviceProvider.GetRequiredService<IConfigIntegrityService>().VerifyAtBoot();
+            // S99 — move-protection.json hỏng → alarm 40014 (đang KHÔNG có luật chống va chạm nào, design-notes/0015)
+            _serviceProvider.GetRequiredService<AM.Infrastructure.Motion.MoveGuard>().ReportStatusAtBoot();
 
             // 4b''''. Đăng ký handler thao tác trạm máy Demo (Approach C — composition root biết máy cụ thể).
             //         ClampRelease CỐ TÌNH không đăng ký → minh hoạ UI "chưa cấu hình HAL" của mô hình hybrid.

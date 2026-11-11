@@ -157,9 +157,12 @@ public sealed partial class MotionViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(logger);
         Calibration = calibration;
         _motion = motion;
-        _diag = motion as IAxisDiagnostics;
+        // Lớp bọc chống va chạm (0015): jog đi qua lớp bọc (được giám sát); diag/phanh không phải lệnh chuyển động
+        // nên lấy từ controller thật bên trong.
+        var raw = (motion as IMotionControllerDecorator)?.Inner ?? motion;
+        _diag = raw as IAxisDiagnostics;
         _jog = motion as IAxisJog; // capability tuỳ chọn — null thì jog pad fallback inching
-        _brake = motion as IAxisBrake; // capability tuỳ chọn — null thì ẩn khối phanh Z (Gói D)
+        _brake = raw as IAxisBrake; // capability tuỳ chọn — null thì ẩn khối phanh Z (Gói D)
         _pointTable = pointTable;
         _master = master;
         _user = user;
