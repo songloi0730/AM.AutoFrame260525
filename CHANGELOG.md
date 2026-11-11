@@ -4,6 +4,30 @@
 
 ---
 
+## [Session 98] 2026-11-12 — Khảo sát 18 phần mềm máy tự động hoá C#/C++ công khai (RefAuto-A…R)
+
+**Người thực hiện:** Claude Code + Nhan
+**Bối cảnh:** Chủ dự án yêu cầu tìm trên GitHub các dự án máy tự động hoá viết bằng C#/C++ theo cách đã dùng cho
+MeoVision (tải rút gọn + đọc tĩnh + bí danh), tải về thư mục `VS`, phân tích chi tiết làm tài liệu tham khảo giao diện
+và chức năng.
+
+**Đã làm:**
+- Tìm bằng code search tên hàm SDK của 6 hãng card chuyển động/PLC (lọc ra phần mềm máy thật) → 208 repo → probe
+  README/cây file qua API → chọn 18 (14 C#, 4 C++; loại repo đã có sẵn). Tải rút gọn (1 commit, sparse chỉ mã/giao
+  diện/cấu hình/tài liệu/ảnh docs, ~230 MB) vào `OneDrive\C\VS\AutoRefs\` (NGOÀI repo, có `_INDEX.md`). Chỉ đọc tĩnh,
+  không build/chạy mã lạ.
+- **`docs/Reference_Automation_Software_Survey.md` (MỚI, đã ẩn danh)**: danh mục 18 nguồn; phân tích 10 chủ đề
+  (shell, máy trạng thái, an toàn, alarm, quyền, recipe/cấu hình/hiệu chuẩn, vận hành tay, trình soạn luồng, dữ liệu/MES,
+  tài liệu/test); ma trận 30 năng lực đối chiếu AM.AutoFrame; 7 đề xuất kèm phương án A/B/C (chống va chạm, nút mềm
+  không chạy chu trình, alarm lỗi gốc, dọn liệu/chờ người, snapshot mỗi chu kỳ, lưới khay, việc nhỏ); bảng anti-pattern.
+- `docs/private/RefAuto_GitHub_Analysis.local.md` (local, không commit): bí danh ↔ repo ↔ commit, cách tìm, ghi chú
+  đọc từng repo; `docs/private/alias.local.md` thêm dòng RefAuto.
+- `CLAUDE.md`: thêm tài liệu khảo sát vào bảng tài liệu tham khảo.
+
+**Chưa làm:** không đổi mã nguồn; các đề xuất Đ1–Đ7 chờ chủ dự án chọn phương án.
+
+---
+
 ## [Session 97] 2026-07-18 — Thiết kế lại điều khiển trục: bảng trạng thái ↔ dock jog, interlock nêu lý do, bỏ panel Phản hồi
 
 **Commit:** `0dd1ef1`

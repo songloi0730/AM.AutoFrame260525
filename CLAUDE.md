@@ -351,6 +351,7 @@ Luôn check `_userService.CurrentLevel >= UserLevel.X` trước thao tác quan t
 | `docs/private/Sequence_Requirements_RefSeqA.md` *(local, không commit)* | **Sequence — YÊU CẦU THAM KHẢO** rút từ máy tham khảo **RefSeq-A**: 8 trạm, vòng đời, ngữ nghĩa Pause/Stop/EMG/Reset, chính sách lỗi, anti-pattern KHÔNG bắt chước + hành vi đáng học |
 | `docs/DemoMachine_IO_Map.md` | **Sequence** — IO map máy mẫu DemoPickPlace (DI/DO/AI/trục + hằng IoMap + SimIoService) |
 | `docs/Sequence_Requirements_Template.md` | **Sequence** — template trống để điền khi khảo sát máy tham khảo khác |
+| `docs/Reference_Automation_Software_Survey.md` | **KHẢO SÁT** 18 phần mềm máy C#/C++ công khai (RefAuto-A…R, ẩn danh): shell, máy trạng thái, an toàn, alarm, quyền, recipe — ma trận 30 năng lực + đề xuất Đ1–Đ7 có phương án; bản tải ở `OneDrive\C\VS\AutoRefs\` |
 | `docs/ROADMAP_HOAN_THIEN.md` | **KẾ HOẠCH HOÀN THIỆN** — đánh giá toàn diện (an toàn/bảo mật/chức năng/hiệu chỉnh/UI) + roadmap P0–P5 có DoD; đọc khi chọn việc cho session mới |
 | `CLAUDE.md` | File này — project instructions cho Claude |
 | `README.md` | Tổng quan kiến trúc solution (đã có từ CI/CD session) |
