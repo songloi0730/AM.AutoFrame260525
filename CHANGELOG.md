@@ -6,7 +6,7 @@
 
 ## [Session 103] 2026-11-13 — Nút giả lập E-Stop (chế độ mô phỏng) + Reset bị từ chối khi mạch an toàn chưa đạt
 
-**Commit:** (điền sau)
+**Commit:** `234a752`
 **Người thực hiện:** Claude Code + Nhan
 **Bối cảnh:** S102 chưa smoke được Reset trên app vì mô phỏng không có cách đưa máy vào lỗi từ giao diện; chủ dự án chọn thêm nút
 giả lập.

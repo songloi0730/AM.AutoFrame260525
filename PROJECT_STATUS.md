@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-11-13
 **Session:** #103 — **Nút giả lập E-Stop** trên action bar (chỉ khi `UseSimulation=true` VÀ safety là bản mô phỏng — bản phần cứng thật hiện vẫn đăng ký SimulatedSafetyInput nên phải gate cả cờ) + **Reset bị TỪ CHỐI khi mạch an toàn chưa đạt** (lỗi lộ ra khi smoke: trước đó Reset về Idle rồi khoá ⇒ 70001 kẹt). Smoke UIA đạt trọn kịch bản E-Stop → Reset từ chối → nhả → Reset sạch. 370/370 test. **Lưu ý P5**: chưa có driver an toàn thật (TwinSAFE) — `ISafetyInput` vẫn là mô phỏng ở chế độ phần cứng. Đ2, Đ4–Đ7 chờ chọn.
-**Commit:** (điền sau)
+**Commit:** `234a752`  ·  (S102: `17df4fa` · S101: `0de62ab`)
 
 ---
 
