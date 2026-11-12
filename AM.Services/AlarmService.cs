@@ -25,9 +25,27 @@ public sealed class AlarmService : IAlarmService
     private readonly List<AlarmModel> _activeAlarms = new();
     private readonly Lock _lockObj = new();
 
+    /// <summary>Cửa sổ mặc định gom chùm alarm (alarm raise trong khoảng này sau gốc = hệ quả) — design-notes/0016.</summary>
+    public static readonly TimeSpan DefaultRootCauseWindow = TimeSpan.FromMilliseconds(200);
+
+    private readonly long _rootCauseWindowMs;
+    private int? _burstRootCode;   // gốc của chùm đang mở (null = chưa có chùm)
+    private long _burstStartTick;  // Environment.TickCount64 lúc gốc được raise
+
     // ─── Constructor ─────────────────────────────────────────────────────────────
     public AlarmService(IAlarmRepository repository, ILogger<AlarmService> logger)
+        : this(repository, logger, DefaultRootCauseWindow)
     {
+    }
+
+    /// <summary>Tạo service với cửa sổ gom chùm tuỳ chỉnh (test / máy có chuỗi lỗi chậm hơn).</summary>
+    /// <param name="repository">Kho lịch sử alarm.</param>
+    /// <param name="logger">Logger.</param>
+    /// <param name="rootCauseWindow">Alarm raise trong khoảng này kể từ gốc (gốc còn active) bị đánh dấu là hệ quả.</param>
+    public AlarmService(IAlarmRepository repository, ILogger<AlarmService> logger, TimeSpan rootCauseWindow)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(rootCauseWindow.Ticks);
+        _rootCauseWindowMs = (long)rootCauseWindow.TotalMilliseconds;
         ArgumentNullException.ThrowIfNull(repository);
         ArgumentNullException.ThrowIfNull(logger);
         _repository = repository;
@@ -68,21 +86,23 @@ public sealed class AlarmService : IAlarmService
             nameof(RaiseAsync), alarmCode, station);
 
         var level = AlarmPolicy.ResolveLevel(alarmCode);
-        var alarm = new AlarmModel
-        {
-            AlarmCode = alarmCode,
-            Station   = station,
-            Message   = message ?? $"Alarm {alarmCode} at {station}",
-            Level     = level,
-            Category  = AlarmPolicy.ResolveCategory(alarmCode),
-            Action    = AlarmPolicy.ResolveAction(alarmCode, level),
-            RaisedAt  = DateTime.UtcNow
-        };
-
+        AlarmModel alarm;
         bool isNew;
         lock (_lockObj)
         {
             isNew = !_activeAlarms.Exists(a => a.AlarmCode == alarmCode); // RSPEC-6605
+            int? rootCause = isNew ? AssignRootCause(alarmCode) : null;
+            alarm = new AlarmModel
+            {
+                AlarmCode     = alarmCode,
+                Station       = station,
+                Message       = message ?? $"Alarm {alarmCode} at {station}",
+                Level         = level,
+                Category      = AlarmPolicy.ResolveCategory(alarmCode),
+                Action        = AlarmPolicy.ResolveAction(alarmCode, level),
+                RaisedAt      = DateTime.UtcNow,
+                RootCauseCode = rootCause,
+            };
             if (isNew) _activeAlarms.Add(alarm);
         }
 
@@ -100,8 +120,9 @@ public sealed class AlarmService : IAlarmService
                 // Không ném — lỗi persist không được block sequence
             }
 
-            _logger.LogError("[ALARM RAISED] Code={AlarmCode} Level={Level} Station={Station} Message={Message}",
-                alarm.AlarmCode, alarm.Level, alarm.Station, alarm.Message);
+            _logger.LogError("[ALARM RAISED] Code={AlarmCode} Level={Level} Station={Station} Message={Message} RootCause={Root}",
+                alarm.AlarmCode, alarm.Level, alarm.Station, alarm.Message,
+                alarm.RootCauseCode?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "self");
 
             AlarmRaised?.Invoke(this, new AlarmEventArgs(alarm));
         }
@@ -109,6 +130,22 @@ public sealed class AlarmService : IAlarmService
         {
             _logger.LogDebug("Alarm {AlarmCode} already active — skipped duplicate raise", alarmCode);
         }
+    }
+
+    // Gọi trong lock. Không có chùm mở, gốc đã hết hoặc quá cửa sổ thì alarm này thành gốc mới,
+    // còn lại là hệ quả của gốc hiện tại (design-notes/0016, gợi ý theo thời gian).
+    private int? AssignRootCause(int alarmCode)
+    {
+        long now = Environment.TickCount64;
+        if (_burstRootCode is int root
+            && now - _burstStartTick <= _rootCauseWindowMs
+            && _activeAlarms.Exists(a => a.AlarmCode == root))
+        {
+            return root;
+        }
+        _burstRootCode = alarmCode;
+        _burstStartTick = now;
+        return null;
     }
 
     /// <inheritdoc/>

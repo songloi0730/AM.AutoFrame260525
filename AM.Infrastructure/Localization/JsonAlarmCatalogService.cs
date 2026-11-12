@@ -63,6 +63,10 @@ public sealed class JsonAlarmCatalogService : IAlarmCatalogService
     public string GetRemedy(int alarmCode)
         => Lookup(alarmCode)?.Remedy ?? string.Empty;
 
+    /// <inheritdoc/>
+    public string GetCause(int alarmCode)
+        => Lookup(alarmCode)?.Cause ?? string.Empty;
+
     // Tra theo culture hiện tại, fallback về culture mặc định.
     private AlarmEntry? Lookup(int alarmCode)
     {
@@ -118,5 +122,6 @@ public sealed class JsonAlarmCatalogService : IAlarmCatalogService
     {
         [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
         [JsonPropertyName("remedy")] public string Remedy { get; init; } = string.Empty;
+        [JsonPropertyName("cause")] public string Cause { get; init; } = string.Empty;
     }
 }

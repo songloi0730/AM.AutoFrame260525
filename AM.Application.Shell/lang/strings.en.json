@@ -178,6 +178,13 @@
   "Shell.DefaultPwdWarn": "⚠ Accounts still using default passwords — change them in Settings → Users & permissions",
 
   "Col.Code": "Code",
+  "Shell.RootCause": "root cause · {0} follow-on alarm(s)",
+  "Col.Root": "Root",
+  "Alarm.SelectHint": "Select an alarm to see common causes and how to fix it.",
+  "Alarm.Cause": "Common causes: ",
+  "Alarm.Remedy": "How to fix: ",
+  "Alarm.CausedBy": "Follow-on of [{0}] — fix the root cause first",
+  "Alarm.IsRoot": "Root cause",
   "Col.Level": "Level",
   "Col.Station": "Station",
   "Col.Message": "Message",

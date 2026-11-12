@@ -25,6 +25,15 @@ public sealed class AlarmModel
 
     public string Message { get; init; } = string.Empty;
     public DateTime RaisedAt { get; init; } = DateTime.UtcNow;
+    /// <summary>
+    /// Mã alarm GỐC của chùm mà alarm này là hệ quả (raise trong cửa sổ ngắn sau gốc — design-notes/0016);
+    /// null = chính nó là gốc. Gợi ý theo thời gian, không phải chẩn đoán nhân quả.
+    /// </summary>
+    public int? RootCauseCode { get; init; }
+
+    /// <summary>Alarm này là gốc của chùm (không phải hệ quả).</summary>
+    public bool IsRootCause => RootCauseCode is null;
+
     public bool IsAcknowledged { get; private set; }
     public DateTime? AcknowledgedAt { get; private set; }
     public string? AcknowledgedBy { get; private set; }

@@ -11,6 +11,7 @@
     <UserControl.Resources>
         <conv:AlarmLevelToColorConverter x:Key="LevelToColor"/>
         <conv:IndexToVisibilityConverter x:Key="IndexToVis"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
 
     <Grid Margin="16">
@@ -74,9 +75,48 @@
         </Grid>
 
         <!-- PANE 0: Alarm đang active -->
-        <DataGrid Grid.Row="1"
-                  Visibility="{Binding TabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=0}"
-                  ItemsSource="{Binding ActiveAlarms}"
+        <DockPanel Grid.Row="1"
+                   Visibility="{Binding TabIndex, Converter={StaticResource IndexToVis}, ConverterParameter=0}">
+        <!-- Chi tiết alarm đang chọn (0016): tên + quan hệ lỗi gốc + Nguyên nhân + Cách xử lý từ catalog -->
+        <Border DockPanel.Dock="Bottom" Margin="0,8,0,0" Padding="14,10" CornerRadius="6"
+                Background="{DynamicResource Panel.BackgroundAltBrush}"
+                BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1">
+            <Grid>
+                <TextBlock Text="{Binding [Alarm.SelectHint], Source={x:Static loc:Loc.Strings}}"
+                           Foreground="{DynamicResource Text.SecondaryBrush}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasSelection}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <StackPanel Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding SelectedRootText}" FontSize="12"
+                                   Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                        <TextBlock Text="{Binding SelectedTitle}" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Text.HeadingBrush}"/>
+                    </DockPanel>
+                    <TextBlock TextWrapping="Wrap" Margin="0,6,0,0"
+                               Visibility="{Binding HasSelectedCause, Converter={StaticResource BoolToVis}}"
+                               Foreground="{DynamicResource Text.PrimaryBrush}">
+                        <Run Text="{Binding [Alarm.Cause], Source={x:Static loc:Loc.Strings}, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding SelectedCause, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{DynamicResource Text.PrimaryBrush}">
+                        <Run Text="{Binding [Alarm.Remedy], Source={x:Static loc:Loc.Strings}, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="{Binding SelectedRemedy, Mode=OneWay}"/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <DataGrid ItemsSource="{Binding ActiveAlarms}"
+                  SelectedItem="{Binding SelectedAlarm}" SelectionMode="Single"
                   AutoGenerateColumns="False" IsReadOnly="True"
                   CanUserAddRows="False" GridLinesVisibility="Horizontal"
                   HeadersVisibility="Column"
@@ -111,6 +151,9 @@
                 </DataGridTemplateColumn>
 
                 <DataGridTextColumn Header="{Binding [Col.Code], Source={x:Static loc:Loc.Strings}}" Binding="{Binding AlarmCode}" Width="80"/>
+                <!-- 0016: hệ quả ghi "↳ mã gốc"; gốc để trống (yên tĩnh) -->
+                <DataGridTextColumn Header="{Binding [Col.Root], Source={x:Static loc:Loc.Strings}}"
+                                    Binding="{Binding RootCauseCode, StringFormat={}↳ {0}, TargetNullValue=''}" Width="80"/>
                 <DataGridTextColumn Header="{Binding [Col.Station], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Station}" Width="130"/>
                 <DataGridTextColumn Header="{Binding [Col.Message], Source={x:Static loc:Loc.Strings}}" Binding="{Binding Message}" Width="*"/>
                 <DataGridTextColumn Header="{Binding [Col.Time], Source={x:Static loc:Loc.Strings}}" Binding="{Binding RaisedAt, StringFormat=HH:mm:ss}" Width="90"/>
@@ -141,6 +184,7 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
+        </DockPanel>
 
         <!-- PANE 1: LỊCH SỬ cảnh báo (S90) — đọc AlarmHistory DB; xoá alarm active KHÔNG mất lịch sử -->
         <Grid Grid.Row="1"

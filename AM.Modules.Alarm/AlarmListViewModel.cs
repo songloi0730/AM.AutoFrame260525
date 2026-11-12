@@ -32,6 +32,7 @@ public sealed partial class AlarmListViewModel : ObservableObject, IDisposable
     private const int MaxHistoryRows = 500;
 
     private readonly IAlarmService _alarmService;
+    private readonly IAlarmCatalogService _catalog;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<AlarmListViewModel> _logger;
     private readonly SynchronizationContext? _uiContext;
@@ -42,6 +43,37 @@ public sealed partial class AlarmListViewModel : ObservableObject, IDisposable
     public ObservableCollection<AlarmModel> ActiveAlarms { get; } = [];
 
     [ObservableProperty] private int _activeCount;
+
+    // ─── Chi tiết alarm đang chọn (0016): tên + Nguyên nhân + Cách xử lý từ catalog, quan hệ lỗi gốc ──
+    /// <summary>Alarm đang chọn ở danh sách active.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSelection), nameof(SelectedTitle), nameof(SelectedCause),
+        nameof(HasSelectedCause), nameof(SelectedRemedy), nameof(SelectedRootText))]
+    private AlarmModel? _selectedAlarm;
+
+    /// <summary>Đang chọn một alarm.</summary>
+    public bool HasSelection => SelectedAlarm is not null;
+
+    /// <summary>"[mã] tên alarm" theo ngôn ngữ hiện tại.</summary>
+    public string SelectedTitle => SelectedAlarm is null ? string.Empty
+        : $"[{SelectedAlarm.AlarmCode}] {_catalog.GetName(SelectedAlarm.AlarmCode)}";
+
+    /// <summary>Nguyên nhân thường gặp (rỗng nếu catalog chưa khai).</summary>
+    public string SelectedCause => SelectedAlarm is null ? string.Empty : _catalog.GetCause(SelectedAlarm.AlarmCode);
+
+    /// <summary>Có nguyên nhân để hiện.</summary>
+    public bool HasSelectedCause => SelectedCause.Length > 0;
+
+    /// <summary>Cách xử lý.</summary>
+    public string SelectedRemedy => SelectedAlarm is null ? string.Empty : _catalog.GetRemedy(SelectedAlarm.AlarmCode);
+
+    /// <summary>"Lỗi gốc" hoặc "Hệ quả của [mã gốc]".</summary>
+    public string SelectedRootText => SelectedAlarm switch
+    {
+        null => string.Empty,
+        { RootCauseCode: int root } => string.Format(CultureInfo.CurrentCulture, Loc.Strings["Alarm.CausedBy"], root),
+        _ => Loc.Strings["Alarm.IsRoot"],
+    };
 
     // ─── Tab Lịch sử (S90) ─────────────────────────────────────────────────────
 
@@ -60,10 +92,12 @@ public sealed partial class AlarmListViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _historyStatus = string.Empty;
 
     /// <summary>Gọi từ UI thread để capture SynchronizationContext đúng.</summary>
-    public AlarmListViewModel(IAlarmService alarmService, IServiceScopeFactory scopeFactory,
-        ILogger<AlarmListViewModel> logger)
+    public AlarmListViewModel(IAlarmService alarmService, IAlarmCatalogService catalog,
+        IServiceScopeFactory scopeFactory, ILogger<AlarmListViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(alarmService);
+        ArgumentNullException.ThrowIfNull(catalog);
+        _catalog = catalog;
         ArgumentNullException.ThrowIfNull(scopeFactory);
         ArgumentNullException.ThrowIfNull(logger);
         _alarmService = alarmService;
@@ -224,10 +258,12 @@ public sealed partial class AlarmListViewModel : ObservableObject, IDisposable
 
     private void SyncFromService()
     {
+        int? selectedCode = SelectedAlarm?.AlarmCode; // giữ dòng đang chọn qua lần dựng lại danh sách
         ActiveAlarms.Clear();
         foreach (var a in _alarmService.ActiveAlarms)
             ActiveAlarms.Add(a);
         ActiveCount = ActiveAlarms.Count;
+        SelectedAlarm = selectedCode is int code ? ActiveAlarms.FirstOrDefault(a => a.AlarmCode == code) : null;
     }
 
     private void RunOnUIThread(Action action)

@@ -178,6 +178,13 @@
   "Shell.DefaultPwdWarn": "⚠ 仍有账号使用默认密码 — 请在 设置 → 用户与权限 中修改",
 
   "Col.Code": "代码",
+  "Shell.RootCause": "根本原因 · 引发 {0} 条报警",
+  "Col.Root": "根源",
+  "Alarm.SelectHint": "选择一条报警以查看常见原因和处理方法。",
+  "Alarm.Cause": "常见原因：",
+  "Alarm.Remedy": "处理方法：",
+  "Alarm.CausedBy": "由 [{0}] 引发——请先处理根本原因",
+  "Alarm.IsRoot": "根本原因",
   "Col.Level": "等级",
   "Col.Station": "工位",
   "Col.Message": "信息",

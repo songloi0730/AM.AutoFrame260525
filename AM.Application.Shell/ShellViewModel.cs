@@ -390,6 +390,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         => _alarm.ActiveAlarms
             .Where(a => !a.IsAcknowledged)
             .OrderByDescending(a => a.Level)
+            .ThenByDescending(a => a.IsRootCause) // cùng mức: GỐC trước hệ quả (0016)
             .ThenByDescending(a => a.RaisedAt)
             .FirstOrDefault();
 
@@ -403,9 +404,14 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         if (top is not null)
         {
             IsBannerError = top.Level >= AlarmLevel.High;
+            int consequences = _alarm.ActiveAlarms.Count(a => a.RootCauseCode == top.AlarmCode);
             BannerText = $"[{top.AlarmCode}] {top.Message} · "
                 + $"{top.RaisedAt.ToLocalTime().ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)}"
-                + $" · {top.Station}";
+                + $" · {top.Station}"
+                + (consequences > 0
+                    ? " · " + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        Loc.Strings["Shell.RootCause"], consequences)
+                    : string.Empty);
         }
         else if (HasStepGate)
         {

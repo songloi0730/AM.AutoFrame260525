@@ -178,6 +178,13 @@
   "Shell.DefaultPwdWarn": "⚠ Còn tài khoản dùng mật khẩu mặc định — đổi trong Cài đặt → Người dùng & phân quyền",
 
   "Col.Code": "Mã",
+  "Shell.RootCause": "lỗi gốc · kéo theo {0} cảnh báo",
+  "Col.Root": "Gốc",
+  "Alarm.SelectHint": "Chọn một cảnh báo để xem nguyên nhân thường gặp và cách xử lý.",
+  "Alarm.Cause": "Nguyên nhân thường gặp: ",
+  "Alarm.Remedy": "Cách xử lý: ",
+  "Alarm.CausedBy": "Hệ quả của [{0}] — xử lý lỗi gốc trước",
+  "Alarm.IsRoot": "Lỗi gốc",
   "Col.Level": "Mức",
   "Col.Station": "Trạm",
   "Col.Message": "Thông điệp",

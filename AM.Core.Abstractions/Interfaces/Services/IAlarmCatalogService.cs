@@ -26,4 +26,11 @@ public interface IAlarmCatalogService
     /// </summary>
     /// <param name="alarmCode">Mã alarm (xem <c>AlarmCodes</c>).</param>
     string GetRemedy(int alarmCode);
+
+    /// <summary>
+    /// Nguyên nhân thường gặp của alarm theo culture hiện tại (design-notes/0016).
+    /// Fallback: culture mặc định → chuỗi rỗng (UI ẩn dòng) nếu chưa khai.
+    /// </summary>
+    /// <param name="alarmCode">Mã alarm (xem <c>AlarmCodes</c>).</param>
+    string GetCause(int alarmCode);
 }

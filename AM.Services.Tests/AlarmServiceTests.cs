@@ -306,4 +306,62 @@ public sealed class AlarmServiceTests
         // Assert — tất cả đều được thêm vào
         sut.ActiveAlarms.Should().HaveCount(10);
     }
+
+    // ─── Lỗi gốc (design-notes/0016) ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task RootCause_BurstWithinWindow_MarksFollowOns()
+    {
+        var sut = new AlarmService(new Mock<IAlarmRepository>().Object, NullLogger<AlarmService>.Instance,
+            TimeSpan.FromSeconds(5));
+
+        await sut.RaiseAsync(AlarmCodes.MotionConnectionFail, "AXIS_X");
+        await sut.RaiseAsync(AlarmCodes.MotionTimeout, "AXIS_X");
+        await sut.RaiseAsync(AlarmCodes.IoPartMissing, "PICK");
+
+        var byCode = sut.ActiveAlarms.ToDictionary(a => a.AlarmCode);
+        byCode[AlarmCodes.MotionConnectionFail].IsRootCause.Should().BeTrue();
+        byCode[AlarmCodes.MotionTimeout].RootCauseCode.Should().Be(AlarmCodes.MotionConnectionFail);
+        byCode[AlarmCodes.IoPartMissing].RootCauseCode.Should().Be(AlarmCodes.MotionConnectionFail);
+    }
+
+    [Fact]
+    public async Task RootCause_AfterWindow_StartsNewBurst()
+    {
+        var sut = new AlarmService(new Mock<IAlarmRepository>().Object, NullLogger<AlarmService>.Instance,
+            TimeSpan.FromMilliseconds(30));
+
+        await sut.RaiseAsync(AlarmCodes.MotionConnectionFail, "AXIS_X");
+        await Task.Delay(120);
+        await sut.RaiseAsync(AlarmCodes.VisionGrabFail, "CAM");
+
+        sut.ActiveAlarms.Should().OnlyContain(a => a.IsRootCause, "hai alarm cách nhau quá cửa sổ là hai chùm riêng");
+    }
+
+    [Fact]
+    public async Task RootCause_RootClearedWithinWindow_NextAlarmIsNewRoot()
+    {
+        var sut = new AlarmService(new Mock<IAlarmRepository>().Object, NullLogger<AlarmService>.Instance,
+            TimeSpan.FromSeconds(5));
+
+        await sut.RaiseAsync(AlarmCodes.MotionConnectionFail, "AXIS_X");
+        await sut.ClearAsync(AlarmCodes.MotionConnectionFail);
+        await sut.RaiseAsync(AlarmCodes.MotionTimeout, "AXIS_X");
+
+        sut.ActiveAlarms.Single().IsRootCause.Should().BeTrue("gốc đã xoá thì không gán hệ quả vào nó");
+    }
+
+    [Fact]
+    public async Task RootCause_DuplicateRaise_DoesNotChangeExisting()
+    {
+        var sut = new AlarmService(new Mock<IAlarmRepository>().Object, NullLogger<AlarmService>.Instance,
+            TimeSpan.FromSeconds(5));
+
+        await sut.RaiseAsync(AlarmCodes.MotionConnectionFail, "AXIS_X");
+        await sut.RaiseAsync(AlarmCodes.MotionTimeout, "AXIS_X");
+        await sut.RaiseAsync(AlarmCodes.MotionConnectionFail, "AXIS_X"); // trùng — bỏ qua
+
+        sut.ActiveAlarms.Should().HaveCount(2);
+        sut.ActiveAlarms.Single(a => a.AlarmCode == AlarmCodes.MotionConnectionFail).IsRootCause.Should().BeTrue();
+    }
 }

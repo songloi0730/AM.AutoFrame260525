@@ -22,7 +22,7 @@ public sealed class JsonAlarmCatalogServiceTests : IDisposable
         _dir = Path.Combine(Path.GetTempPath(), $"alarmcat-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_dir);
         File.WriteAllText(Path.Combine(_dir, "Alarms.vi.json"),
-            """{ "10001": { "name": "Quá thời gian", "remedy": "Kiểm tra servo" } }""");
+            """{ "10001": { "name": "Quá thời gian", "remedy": "Kiểm tra servo", "cause": "Kẹt cơ khí" } }""");
         File.WriteAllText(Path.Combine(_dir, "Alarms.en.json"),
             """{ "10001": { "name": "Motion timeout", "remedy": "Check servo" }, "20003": { "name": "NG detected", "remedy": "Inspect part" } }""");
     }
@@ -49,6 +49,17 @@ public sealed class JsonAlarmCatalogServiceTests : IDisposable
         _loc.CurrentCulture = "en";
         var sut = Create();
         sut.GetRemedy(10001).Should().Be("Check servo");
+    }
+
+    [Fact]
+    public void GetCause_ReturnsCause_EmptyWhenNotDeclared()
+    {
+        _loc.CurrentCulture = "vi";
+        var sut = Create();
+        sut.GetCause(10001).Should().Be("Kẹt cơ khí");
+
+        _loc.CurrentCulture = "en";
+        sut.GetCause(20003).Should().BeEmpty("mã có trong catalog nhưng chưa khai 'cause' ⇒ UI ẩn dòng");
     }
 
     [Fact]

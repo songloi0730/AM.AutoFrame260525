@@ -4,6 +4,37 @@
 
 ---
 
+## [Session 101] 2026-11-13 — Đ3 alarm: lỗi gốc + Nguyên nhân/Cách xử lý trên màn Cảnh báo
+
+**Commit:** (điền sau)
+**Người thực hiện:** Claude Code + Nhan
+**Bối cảnh:** Chủ dự án chọn Đ3. Rà mã thấy: catalog có "Cách xử lý" cho cả 57 mã nhưng **không màn nào hiển thị**; banner
+cùng mức chọn alarm MỚI NHẤT ⇒ trong một chùm hiện hệ quả cuối; Reset máy không xoá alarm.
+
+**Đã làm:**
+- `docs/design-notes/0016-alarm-loi-goc-nguyen-nhan.md` (MỚI) + index: phương án xác định lỗi gốc (cửa sổ thời gian / bảng quan
+  hệ / tham chiếu khi raise), hiển thị, và lý do KHÔNG làm hoà catalog + "Reset nói lý do".
+- `AM.Core/Models/AlarmModel.cs`: `RootCauseCode`, `IsRootCause`.
+- `AM.Services/AlarmService.cs`: alarm raise trong 200 ms kể từ gốc (gốc còn active) ⇒ hệ quả; ctor thêm cửa sổ tuỳ chỉnh;
+  log kèm RootCause. `ServiceCollectionExtensions.cs`: đăng ký AlarmService bằng factory (2 ctor).
+- `AM.Application.Shell/ShellViewModel.cs`: banner cùng mức GỐC trước hệ quả, ghi "lỗi gốc · kéo theo n cảnh báo".
+- `IAlarmCatalogService.GetCause` + `JsonAlarmCatalogService` (trường `cause`); `lang/Alarms.{vi,en,zh}.json`: nguyên nhân
+  thường gặp cho 24 mã hay gặp (chuyển động, vision, IO, giao tiếp, NG, an toàn).
+- `AM.Modules.Alarm`: cột "Gốc" (hệ quả "↳ mã gốc") + khung chi tiết dòng đang chọn (tên, Lỗi gốc/Hệ quả của…, Nguyên nhân
+  thường gặp, Cách xử lý); giữ dòng chọn qua lần cập nhật danh sách. `lang/strings.*`: +7 key ×3.
+- Test: +4 `AlarmServiceTests` (chùm trong cửa sổ, quá cửa sổ, gốc đã xoá, raise trùng), +1 `JsonAlarmCatalogServiceTests`
+  (`GetCause`). `docs/Reference_Automation_Software_Survey.md`: cập nhật ma trận #15/#17/#18/#19.
+
+**Kiểm chứng:** build 0 warning; 366 test (365 + chập chờn, xem dưới). Smoke UIA: thẻ Cảnh báo có cột "Gốc"; chọn dòng 70012 →
+"[70012] Luật chống va chạm đang bị tắt" · "Lỗi gốc" · "Cách xử lý: …"; dòng Nguyên nhân ẩn vì mã này chưa khai.
+**Test chập chờn (ghi nhận, không do thay đổi này):** `ManualSafetyBehaviorTests.Resume_ZAxisDisplacedDuringPause_RefusesUntilFixed`
+và `MasterControllerIntegrationTests.MasterController_FullLifecycle_…` hỏng 2/15 lượt chạy full sln (chỉ khi máy đang
+build/tải nặng); chạy riêng hoặc `--no-build` luôn đạt; hai test dùng `Mock<IAlarmService>` và timeout 2 s. Nên nới timeout
+hoặc tách chạy tuần tự — việc riêng.
+**Chưa làm:** banner lỗi gốc chưa thấy trong app với một chùm THẬT (logic đã test ở service); lỗi gốc chưa lưu vào lịch sử DB.
+
+---
+
 ## [Session 100] 2026-11-12 — Thẻ "Chống va chạm" trong Cài đặt + smoke UIA chống va chạm
 
 **Commit:** `d0454d8`

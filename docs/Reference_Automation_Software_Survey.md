@@ -285,11 +285,11 @@ script tự do. Kiểu "khai báo tài nguyên bằng attribute" của RefAuto-G
 | 12 | Watchdog vòng điều khiển | ❌ (chưa thấy) | A |
 | 13 | Rèm sáng phải RESET mới chạy lại | 🟡 (chưa thành văn) | A |
 | 14 | Về gốc chỉ thành công khi thấy cảm biến thật | 🟡 (tuỳ driver) | A, B |
-| 15 | Alarm: Nguyên nhân + Cách xử lý + Chi tiết động | 🟡 (có Cách xử lý) | A |
+| 15 | Alarm: Nguyên nhân + Cách xử lý + Chi tiết động | ✅ S101 (khung chi tiết màn Cảnh báo; trước đó Cách xử lý có trong catalog nhưng không màn nào hiện) | A |
 | 16 | Alarm: mức thuộc phần mềm, lời văn thuộc người dùng | ✅ | A |
-| 17 | Alarm: đánh dấu lỗi gốc trong cụm | ❌ | A |
-| 18 | Alarm: hoà mã mới vào catalog người dùng | ❌ (chưa kiểm) | A |
-| 19 | RESET bị từ chối phải nói lý do | 🟡 (pre-check Start có, RESET chưa rõ) | A |
+| 17 | Alarm: đánh dấu lỗi gốc trong cụm | ✅ S101 (cửa sổ 200 ms, design-notes/0016) | A |
+| 18 | Alarm: hoà mã mới vào catalog người dùng | ➖ không áp dụng (catalog đi kèm bản cài, không có bản người dùng — 0016) | A |
+| 19 | RESET bị từ chối phải nói lý do | ➖ Reset ở đây không xoá alarm; câu hỏi "Reset có nên xoá alarm hết nguyên nhân" để chủ dự án quyết (0016) | A |
 | 20 | Lỗi kèm lựa chọn xử lý (thử lại / lấy tay / đặt không vision) | 🟡 (recovery actions ADR 0002) | C |
 | 21 | Quyền theo cấp + mức rủi ro | ✅ (chặt hơn đa số) | E |
 | 22 | Xem trước giao diện theo cấp | ❌ | F |
@@ -329,7 +329,7 @@ thay limit cứng / relay an toàn.
 
 Đây là quyết định an toàn — nên ghi design-note nếu đổi.
 
-### Đ3. Alarm: lỗi gốc + Nguyên nhân + Chi tiết động + hoà mã mới (ma trận #15, #17, #18, #19)
+### Đ3. Alarm: lỗi gốc + Nguyên nhân + Chi tiết động + hoà mã mới (ma trận #15, #17, #18, #19) · ✅ ĐÃ LÀM S101 (design-notes/0016)
 Ít rủi ro, giá trị cao cho operator. Một phương án hợp lý: thêm `cause` vào catalog JSON, `Detail` động vào
 `AlarmModel`, cờ `IsRootCause` (alarm đầu tiên trong cửa sổ 200 ms) cho banner; khi nạp catalog thì hoà mã có trong
 bản mẫu mà file người dùng thiếu; RESET không xoá được alarm nào thì hiện lý do trên banner.

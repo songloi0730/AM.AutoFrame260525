@@ -97,7 +97,9 @@ internal static class ServiceCollectionExtensions
     /// <summary>Business + infrastructure services (Alarm/Recipe/Parameter/HardwareManager/StationSync/Watchdog).</summary>
     public static IServiceCollection AddCoreServices(this IServiceCollection services, IConfiguration config)
     {
-        services.AddSingleton<IAlarmService, AlarmService>();
+        // Factory tường minh: AlarmService có 2 ctor (thêm cửa sổ gom lỗi gốc — 0016), tránh container phải chọn ctor.
+        services.AddSingleton<IAlarmService>(sp => new AlarmService(
+            sp.GetRequiredService<IAlarmRepository>(), sp.GetRequiredService<ILogger<AlarmService>>()));
         // IRecipeService đăng ký ở AddDemoMachine (kèm seed recipe theo máy) — service không cứng loại recipe.
         services.AddSingleton<IParameterService, ParameterService>(sp =>
             new ParameterService(sp.GetRequiredService<ILogger<ParameterService>>(), "parameters.json"));
