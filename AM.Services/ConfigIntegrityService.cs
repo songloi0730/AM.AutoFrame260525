@@ -21,7 +21,7 @@ namespace AM.Services;
 /// config trên máy thì cũng sửa được manifest, nhưng thao tác đó để lại dấu vết bất thường
 /// và mọi lần ký hợp lệ đều có audit.
 /// </summary>
-public sealed class ConfigIntegrityService : IConfigIntegrityService
+public sealed class ConfigIntegrityService : IConfigIntegrityService, IAlarmConditionSource
 {
     /// <summary>Tên file manifest cạnh executable.</summary>
     public const string ManifestFileName = "config.manifest.json";
@@ -64,6 +64,16 @@ public sealed class ConfigIntegrityService : IConfigIntegrityService
 
     /// <inheritdoc/>
     public IReadOnlyList<string> Targets => _targets;
+
+    /// <inheritdoc/>
+    public string? GetPersistingReason(int alarmCode)
+    {
+        if (alarmCode != AlarmCodes.SystemConfigModified) return null;
+        var bad = VerifyAll().Where(s => s.State is ConfigFileState.Modified or ConfigFileState.Missing)
+            .Select(s => s.FileName).ToList();
+        return bad.Count == 0 ? null
+            : $"File cấu hình vẫn lệch manifest: {string.Join(", ", bad)} — kiểm tra rồi Ký lại ở Cài đặt → Thông số máy";
+    }
 
     /// <inheritdoc/>
     public IReadOnlyList<ConfigFileStatus> VerifyAll()

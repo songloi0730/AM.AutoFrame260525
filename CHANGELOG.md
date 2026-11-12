@@ -4,6 +4,34 @@
 
 ---
 
+## [Session 102] 2026-11-13 — Reset xoá alarm đã hết nguyên nhân, alarm còn nguyên nhân thì giữ và nói lý do
+
+**Commit:** (điền sau)
+**Người thực hiện:** Claude Code + Nhan
+**Bối cảnh:** Câu hỏi mở của 0016 — chủ dự án chốt "Có, làm Reset xoá". Trước đó Reset chỉ đổi trạng thái máy, operator phải
+xoá tay từng alarm ở màn Cảnh báo.
+
+**Đã làm:**
+- `docs/design-notes/0017-reset-xoa-alarm-het-nguyen-nhan.md` (MỚI) + index; 0016 ghi đã chốt; `HMI_Button_Spec.md` dòng Reset.
+- `AM.Core`: `AlarmClearResult` + `KeptAlarm` (MỚI), `ResetCompletedEventArgs` (MỚI).
+- `AM.Core.Abstractions`: `IAlarmConditionSource` (MỚI); `IAlarmService.ClearResolvedAsync` + `RegisterConditionSource`
+  (default interface method — test double cũ không phải sửa); `IMasterController.ResetCompleted`.
+- `AM.Services/AlarmService.cs`: xoá alarm raise trước mốc Reset mà không nguồn nào báo còn; giữ alarm phát sinh trong lúc Reset;
+  nguồn ném lỗi ⇒ giữ (fail-safe) kèm lý do.
+- `AM.Services/AlarmConditionSources.cs` (MỚI): `SafetyAlarmCondition` (70001–70004 theo ISafetyInput), `IoForcedAlarmCondition`
+  (70010), `BrakeAlarmCondition` (10009). `MoveGuard` (70012) và `ConfigIntegrityService` (40013) cũng là nguồn.
+- `BaseMasterController.ResetAsync`: Reset xong ⇒ `ClearResolvedAsync` ⇒ `ResetCompleted` (nút mềm + nút vật lý chung đường).
+- `App.xaml.cs`: đăng ký 5 nguồn lúc khởi động. `ShellViewModel`: còn alarm bị giữ ⇒ hỏi trên banner "Reset xong: đã xoá n,
+  còn m chưa xoá được… [mã] lý do" + nút "Đã hiểu". `lang/strings.*`: +2 key ×3.
+- Test: +2 `AlarmServiceTests`, +2 `BaseMasterControllerTests` (tích hợp: Reset khi E-Stop còn nhấn ⇒ xoá 10001, giữ 70001
+  "E-Stop vẫn đang nhấn"; nhả rồi Reset lại ⇒ sạch; alarm sau mốc Reset và nguồn lỗi đều bị giữ). `TestDoubles`: `ReleaseEstop`,
+  `NullAlarmRepository`. **370/370 test pass.**
+
+**Kiểm chứng:** build 0 warning; app khởi động, đăng ký nguồn không lỗi. **Chưa smoke Reset trên app**: chế độ mô phỏng không
+có đường nào từ giao diện đưa máy vào trạng thái lỗi (E-Stop giả lập chỉ đặt bằng mã) — đường Reset được kiểm bằng test tích hợp.
+
+---
+
 ## [Session 101] 2026-11-13 — Đ3 alarm: lỗi gốc + Nguyên nhân/Cách xử lý trên màn Cảnh báo
 
 **Commit:** `0de62ab`

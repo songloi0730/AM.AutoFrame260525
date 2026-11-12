@@ -98,6 +98,9 @@ public partial class App
             // S99 — move-protection.json hỏng → alarm 40014 (đang KHÔNG có luật chống va chạm nào, design-notes/0015)
             _serviceProvider.GetRequiredService<AM.Infrastructure.Motion.MoveGuard>().ReportStatusAtBoot();
 
+            // S102 — nguồn điều kiện cho Reset (0017): alarm còn nguyên nhân thì Reset KHÔNG xoá và nói lý do
+            RegisterAlarmConditionSources(_serviceProvider);
+
             // 4b''''. Đăng ký handler thao tác trạm máy Demo (Approach C — composition root biết máy cụ thể).
             //         ClampRelease CỐ TÌNH không đăng ký → minh hoạ UI "chưa cấu hình HAL" của mô hình hybrid.
             RegisterDemoRecoveryActions(_serviceProvider);
@@ -131,6 +134,24 @@ public partial class App
     }
 
     private const string LanguageKey = "ui.culture";
+
+    /// <summary>
+    /// Đăng ký nguồn điều kiện alarm (design-notes/0017): an toàn, Force IO, phanh Z, luật va chạm tắt, cấu hình lệch.
+    /// Đăng ký ở đây (sau khi build DI) để tránh vòng phụ thuộc giữa các nguồn và IAlarmService.
+    /// </summary>
+    private static void RegisterAlarmConditionSources(IServiceProvider sp)
+    {
+        var alarms = sp.GetRequiredService<IAlarmService>();
+        alarms.RegisterConditionSource(new AM.Services.SafetyAlarmCondition(sp.GetRequiredService<ISafetyInput>()));
+        alarms.RegisterConditionSource(new AM.Services.IoForcedAlarmCondition(sp.GetRequiredService<IIoModule>()));
+        alarms.RegisterConditionSource(sp.GetRequiredService<AM.Infrastructure.Motion.MoveGuard>());
+        if (sp.GetRequiredService<IConfigIntegrityService>() is IAlarmConditionSource integrity)
+            alarms.RegisterConditionSource(integrity);
+        var motion = sp.GetRequiredService<IMotionController>();
+        var raw = (motion as IMotionControllerDecorator)?.Inner ?? motion;
+        if (raw is IAxisBrake brake)
+            alarms.RegisterConditionSource(new AM.Services.BrakeAlarmCondition(brake, axisIndex: 2)); // Z — quy ước XYZU máy demo
+    }
 
     /// <summary>
     /// Đăng ký handler thao tác trạm của máy Demo (Approach C — docs/design-notes/0002): map id → lệnh HAL thật qua IIoModule.

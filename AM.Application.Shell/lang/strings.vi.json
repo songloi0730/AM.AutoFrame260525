@@ -179,6 +179,8 @@
 
   "Col.Code": "Mã",
   "Shell.RootCause": "lỗi gốc · kéo theo {0} cảnh báo",
+  "Shell.ResetKept": "Reset xong: đã xoá {0} cảnh báo, còn {1} chưa xoá được vì nguyên nhân vẫn còn —",
+  "Shell.ResetAck": "Đã hiểu",
   "Col.Root": "Gốc",
   "Alarm.SelectHint": "Chọn một cảnh báo để xem nguyên nhân thường gặp và cách xử lý.",
   "Alarm.Cause": "Nguyên nhân thường gặp: ",

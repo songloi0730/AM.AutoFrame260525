@@ -122,6 +122,9 @@ public abstract class BaseMasterController : IMasterController
     /// <inheritdoc/>
     public event EventHandler<CycleCompletedEventArgs>? CycleCompleted;
 
+    /// <inheritdoc/>
+    public event EventHandler<ResetCompletedEventArgs>? ResetCompleted;
+
     // ─── Operator commands ────────────────────────────────────────────────────
 
     /// <inheritdoc/>
@@ -212,6 +215,7 @@ public abstract class BaseMasterController : IMasterController
     public async Task ResetAsync(CancellationToken ct = default)
     {
         if (!FireTrigger(MachineTrigger.Reset)) return;
+        var resetStartedAt = DateTime.UtcNow; // alarm phát sinh sau mốc này là MỚI — không xoá (0017)
 
         try
         {
@@ -225,6 +229,10 @@ public abstract class BaseMasterController : IMasterController
 
             FireTrigger(targetTrigger);
             Logger.LogInformation("[MasterController] Reset completed → {State}", _state);
+
+            // 0017: Reset xoá alarm đã hết nguyên nhân; còn nguyên nhân thì giữ + lý do cho UI
+            var cleared = await AlarmService.ClearResolvedAsync(resetStartedAt, ct).ConfigureAwait(false);
+            ResetCompleted?.Invoke(this, new ResetCompletedEventArgs(cleared));
         }
         catch (AlarmException ex)
         {

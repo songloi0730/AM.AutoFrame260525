@@ -52,6 +52,21 @@ public interface IAlarmService
     Task ClearAllAsync(CancellationToken ct = default);
 
     /// <summary>
+    /// Reset xoá alarm đã hết nguyên nhân (design-notes/0017): alarm raise TRƯỚC <paramref name="raisedBefore"/> và không
+    /// nguồn điều kiện nào báo còn ⇒ xoá; còn lại giữ kèm lý do. Mặc định (test double) không làm gì.
+    /// </summary>
+    /// <param name="raisedBefore">Mốc bắt đầu Reset (UTC) — alarm phát sinh sau mốc này là mới, giữ lại.</param>
+    /// <param name="ct">Token huỷ.</param>
+    Task<AlarmClearResult> ClearResolvedAsync(DateTime raisedBefore, CancellationToken ct = default)
+        => Task.FromResult(AlarmClearResult.Empty);
+
+    /// <summary>Đăng ký nguồn điều kiện (gọi lúc khởi động). Mặc định (test double) bỏ qua.</summary>
+    /// <param name="source">Nguồn điều kiện.</param>
+    void RegisterConditionSource(IAlarmConditionSource source)
+    {
+    }
+
+    /// <summary>
     /// Lấy lịch sử alarm theo khoảng thời gian.
     /// </summary>
     /// <param name="from">Thời điểm bắt đầu (UTC).</param>

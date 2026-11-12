@@ -55,6 +55,12 @@ internal sealed class FakeSafetyInput : AM.Core.Abstractions.Interfaces.Hardware
         SafetyStateChanged?.Invoke(this, new SafetyStateChangedEventArgs(IsEStopOk, IsGuardClosed, IsLightCurtainClear));
     }
 
+    public void ReleaseEstop()
+    {
+        IsEStopOk = true;
+        SafetyStateChanged?.Invoke(this, new SafetyStateChangedEventArgs(IsEStopOk, IsGuardClosed, IsLightCurtainClear));
+    }
+
     public void TriggerGuardOpen()
     {
         IsGuardClosed = false;
@@ -144,4 +150,13 @@ internal sealed class TestMasterController : BaseMasterController
     protected override Task ResetCoreAsync(CancellationToken ct) { ResetCoreCount++; return Task.CompletedTask; }
     protected override Task RunOneCycleAsync(CancellationToken ct) => _cycleBody?.Invoke(ct) ?? Task.CompletedTask;
     protected override bool ShouldReinitialize() => _reinitAfterReset;
+}
+
+/// <summary>Kho alarm rỗng — cho test dùng AlarmService thật (0017).</summary>
+internal sealed class NullAlarmRepository : AM.Core.Abstractions.Interfaces.Repositories.IAlarmRepository
+{
+    public Task AddAsync(AlarmModel alarm, CancellationToken ct = default) => Task.CompletedTask;
+    public Task<IReadOnlyList<AlarmModel>> GetByDateRangeAsync(DateTime from, DateTime endDate, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<AlarmModel>>([]);
+    public Task<int> DeleteOlderThanAsync(DateTime cutoff, CancellationToken ct = default) => Task.FromResult(0);
 }

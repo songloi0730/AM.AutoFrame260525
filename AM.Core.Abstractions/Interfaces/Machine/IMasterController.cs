@@ -45,6 +45,12 @@ public interface IMasterController : IAsyncDisposable
     /// <summary>Event raised khi một cycle hoàn thành.</summary>
     event EventHandler<CycleCompletedEventArgs>? CycleCompleted;
 
+    /// <summary>
+    /// Reset hoàn tất (nút mềm hoặc nút vật lý) — kèm kết quả xoá alarm: alarm hết nguyên nhân đã xoá, alarm còn
+    /// nguyên nhân giữ lại kèm lý do để UI nói cho operator (design-notes/0017).
+    /// </summary>
+    event EventHandler<ResetCompletedEventArgs>? ResetCompleted;
+
     // ─── Operator Commands ────────────────────────────────────────────────────────
 
     /// <summary>

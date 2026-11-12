@@ -364,4 +364,40 @@ public sealed class AlarmServiceTests
         sut.ActiveAlarms.Should().HaveCount(2);
         sut.ActiveAlarms.Single(a => a.AlarmCode == AlarmCodes.MotionConnectionFail).IsRootCause.Should().BeTrue();
     }
+
+    // ─── Reset xoá alarm đã hết nguyên nhân (design-notes/0017) ───────────────────
+
+    [Fact]
+    public async Task ClearResolved_ClearsEventAlarms_KeepsPersistingConditionWithReason()
+    {
+        var sut = CreateSut();
+        var source = new Mock<AM.Core.Abstractions.Interfaces.Services.IAlarmConditionSource>();
+        source.Setup(s => s.GetPersistingReason(AlarmCodes.SafetyIoForced)).Returns("Còn 1 ngõ ra bị Force");
+        sut.RegisterConditionSource(source.Object);
+        await sut.RaiseAsync(AlarmCodes.MotionTimeout, "AXIS_X");
+        await sut.RaiseAsync(AlarmCodes.SafetyIoForced, "IO");
+        await Task.Delay(20);
+
+        var result = await sut.ClearResolvedAsync(DateTime.UtcNow);
+
+        result.ClearedCodes.Should().Equal(AlarmCodes.MotionTimeout);
+        result.Kept.Should().ContainSingle().Which.Reason.Should().Contain("Force");
+        sut.ActiveAlarms.Select(a => a.AlarmCode).Should().Equal(AlarmCodes.SafetyIoForced);
+    }
+
+    [Fact]
+    public async Task ClearResolved_ConditionGone_ClearsIt()
+    {
+        var sut = CreateSut();
+        var source = new Mock<AM.Core.Abstractions.Interfaces.Services.IAlarmConditionSource>();
+        source.Setup(s => s.GetPersistingReason(It.IsAny<int>())).Returns((string?)null);
+        sut.RegisterConditionSource(source.Object);
+        await sut.RaiseAsync(AlarmCodes.SafetyIoForced, "IO");
+        await Task.Delay(20);
+
+        var result = await sut.ClearResolvedAsync(DateTime.UtcNow);
+
+        result.Kept.Should().BeEmpty();
+        sut.HasActiveAlarms.Should().BeFalse();
+    }
 }

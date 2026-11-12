@@ -21,7 +21,7 @@ namespace AM.Infrastructure.Motion;
 /// Triển khai <see cref="IMoveGuard"/> cho MỘT motion controller (các trục trong axismap.json thuộc controller đó).
 /// Đọc vị trí/trạng thái về gốc từ controller THẬT (không qua lớp bọc) và DI qua <see cref="IIoTagMap"/>.
 /// </summary>
-public sealed class MoveGuard : IMoveGuard, IDisposable
+public sealed class MoveGuard : IMoveGuard, IAlarmConditionSource, IDisposable
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -139,6 +139,12 @@ public sealed class MoveGuard : IMoveGuard, IDisposable
 
     /// <inheritdoc/>
     public bool IsBypassed(string ruleId) => _bypassed.ContainsKey(ruleId);
+
+    /// <inheritdoc/>
+    public string? GetPersistingReason(int alarmCode)
+        => alarmCode == AlarmCodes.SafetyCollisionRuleBypassed && !_bypassed.IsEmpty
+            ? $"Luật chống va chạm vẫn đang tắt: {string.Join(", ", _bypassed.Keys)} — bật lại ở Cài đặt → Chống va chạm"
+            : null;
 
     /// <inheritdoc/>
     public async Task SetBypassAsync(string ruleId, bool bypassed, string reason, CancellationToken ct = default)

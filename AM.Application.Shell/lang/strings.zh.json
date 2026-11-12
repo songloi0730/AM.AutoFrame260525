@@ -179,6 +179,8 @@
 
   "Col.Code": "代码",
   "Shell.RootCause": "根本原因 · 引发 {0} 条报警",
+  "Shell.ResetKept": "复位完成：已清除 {0} 条报警，{1} 条因原因仍存在未能清除 —",
+  "Shell.ResetAck": "知道了",
   "Col.Root": "根源",
   "Alarm.SelectHint": "选择一条报警以查看常见原因和处理方法。",
   "Alarm.Cause": "常见原因：",

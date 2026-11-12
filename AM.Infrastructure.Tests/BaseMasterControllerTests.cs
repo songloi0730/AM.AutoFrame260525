@@ -183,5 +183,66 @@ public sealed class BaseMasterControllerTests
         sut.State.Should().Be(MachineState.Running, "cửa mở KHÔNG estop từ software");
     }
 
+    // ─── Reset xoá alarm đã hết nguyên nhân (design-notes/0017) ─────────────────────
+
+    [Fact]
+    public async Task Reset_ClearsResolvedAlarms_KeepsEstopWhileStillPressed_AndReportsWhy()
+    {
+        var alarms = new AM.Services.AlarmService(new NullAlarmRepository(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<AM.Services.AlarmService>.Instance);
+        var safety = new FakeSafetyInput();
+        alarms.RegisterConditionSource(new AM.Services.SafetyAlarmCondition(safety));
+        var sut = new TestMasterController(alarms, safety: safety);
+        AM.Core.Models.EventArgs.ResetCompletedEventArgs? report = null;
+        sut.ResetCompleted += (_, e) => report = e;
+
+        sut.Fire(MachineTrigger.Initialize);
+        sut.Fire(MachineTrigger.InitializeDone);
+        sut.Fire(MachineTrigger.Start);
+        await alarms.RaiseAsync(10001, "AXIS_X", "timeout");   // alarm sự kiện
+        safety.TriggerEstop();                                   // → RunAlarm + 70001 (fire-and-forget)
+        await WaitUntilAsync(() => alarms.ActiveAlarms.Any(a => a.AlarmCode == 70001));
+        await Task.Delay(20); // mốc Reset sau thời điểm raise
+
+        await sut.ResetAsync();
+
+        report.Should().NotBeNull();
+        report!.Result.ClearedCodes.Should().Contain(10001);
+        report.Result.Kept.Should().ContainSingle(k => k.AlarmCode == 70001 && k.Reason.Contains("E-Stop"));
+        alarms.ActiveAlarms.Select(a => a.AlarmCode).Should().Equal(70001);
+
+        // Nhả E-Stop rồi Reset lại (qua alarm state) ⇒ 70001 được xoá
+        safety.ReleaseEstop();
+        sut.Fire(MachineTrigger.Start);
+        sut.Fire(MachineTrigger.Error); // Running → RunAlarm
+        await sut.ResetAsync();
+        alarms.ActiveAlarms.Should().BeEmpty();
+        report.Result.Kept.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClearResolved_KeepsAlarmRaisedDuringReset_AndFailsSafeOnBrokenSource()
+    {
+        var alarms = new AM.Services.AlarmService(new NullAlarmRepository(),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<AM.Services.AlarmService>.Instance);
+        alarms.RegisterConditionSource(new ThrowingSource(20001));
+        await alarms.RaiseAsync(20001, "CAM");
+        var mark = DateTime.UtcNow;
+        await Task.Delay(20);
+        await alarms.RaiseAsync(30001, "PICK"); // phát sinh SAU mốc Reset
+
+        var result = await alarms.ClearResolvedAsync(mark);
+
+        result.ClearedCodes.Should().BeEmpty();
+        result.Kept.Should().Contain(k => k.AlarmCode == 30001 && k.Reason.Contains("trong lúc Reset"));
+        result.Kept.Should().Contain(k => k.AlarmCode == 20001 && k.Reason.Contains("không kiểm được"));
+    }
+
+    private sealed class ThrowingSource(int code) : AM.Core.Abstractions.Interfaces.Services.IAlarmConditionSource
+    {
+        public string? GetPersistingReason(int alarmCode)
+            => alarmCode == code ? throw new InvalidOperationException("sensor read failed") : null;
+    }
+
     private sealed record MachineStateChangedCapture(MachineState Old, MachineState New, MachineTrigger Trigger);
 }

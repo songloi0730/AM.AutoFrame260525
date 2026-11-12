@@ -74,7 +74,7 @@ Role: OP = Operator, EN = Engineer, AD = Admin (OP+ nghĩa là Operator trở l�
 | ▶ Start | IDLE + pre-check đạt | STARTING → EXECUTE | Pre-check fail: popup liệt kê điều kiện thiếu + nút nhảy tới chỗ xử lý | OP+ |
 | ⏸ Pause / Resume | EXECUTE / PAUSED | Dừng điểm an toàn gần nhất, giữ chân không + vị trí; nhãn tự đổi | — | OP+ |
 | ⏹ Stop | EXECUTE, PAUSED | STOPPING → STOPPED | Popup chọn: Dừng hết chu kỳ / Dừng ngay | OP+ |
-| ↺ Reset | STOPPED, ABORTED, COMPLETE và mọi alarm đã ACK | RESETTING → IDLE, xoá cờ lỗi, tư thế an toàn | Còn alarm chưa ACK: toast + nhảy tab Alarm | OP+ |
+| ↺ Reset | STOPPED, ABORTED, COMPLETE và mọi alarm đã ACK | RESETTING → IDLE, xoá cờ lỗi, tư thế an toàn; **xoá mọi alarm đã hết nguyên nhân** (S102, design-notes/0017) | Còn alarm chưa ACK: toast + nhảy tab Alarm. Alarm còn nguyên nhân (E-Stop nhấn, Force IO, phanh nhả, luật va chạm tắt, cấu hình lệch, alarm phát sinh trong lúc Reset) **ở lại** và banner hỏi "Đã hiểu" liệt kê "[mã] lý do" | OP+ |
 | Dry run | toggle khi IDLE | Chế độ chạy không vật liệu, vision giả lập, badge → DRY | — | EN+ |
 | Manual | không ở EXECUTE | Mở màn Vận hành tay (cũng vào được trực tiếp từ nav) | ManualOperationView | LineLead+ |
 

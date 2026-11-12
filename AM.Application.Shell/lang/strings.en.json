@@ -179,6 +179,8 @@
 
   "Col.Code": "Code",
   "Shell.RootCause": "root cause · {0} follow-on alarm(s)",
+  "Shell.ResetKept": "Reset done: cleared {0} alarm(s), {1} kept because the cause is still present —",
+  "Shell.ResetAck": "Understood",
   "Col.Root": "Root",
   "Alarm.SelectHint": "Select an alarm to see common causes and how to fix it.",
   "Alarm.Cause": "Common causes: ",

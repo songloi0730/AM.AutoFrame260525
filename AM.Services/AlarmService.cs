@@ -28,6 +28,7 @@ public sealed class AlarmService : IAlarmService
     /// <summary>Cửa sổ mặc định gom chùm alarm (alarm raise trong khoảng này sau gốc = hệ quả) — design-notes/0016.</summary>
     public static readonly TimeSpan DefaultRootCauseWindow = TimeSpan.FromMilliseconds(200);
 
+    private readonly List<IAlarmConditionSource> _conditionSources = new(); // 0017 — dưới _lockObj
     private readonly long _rootCauseWindowMs;
     private int? _burstRootCode;   // gốc của chùm đang mở (null = chưa có chùm)
     private long _burstStartTick;  // Environment.TickCount64 lúc gốc được raise
@@ -216,6 +217,73 @@ public sealed class AlarmService : IAlarmService
 
         _logger.LogInformation("All {Count} alarms cleared", cleared.Count);
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public void RegisterConditionSource(IAlarmConditionSource source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        lock (_lockObj)
+        {
+            if (!_conditionSources.Contains(source)) _conditionSources.Add(source);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<AlarmClearResult> ClearResolvedAsync(DateTime raisedBefore, CancellationToken ct = default)
+    {
+        _logger.LogDebug("Starting {Method}", nameof(ClearResolvedAsync));
+        List<AlarmModel> snapshot;
+        List<IAlarmConditionSource> sources;
+        lock (_lockObj)
+        {
+            snapshot = new List<AlarmModel>(_activeAlarms);
+            sources = new List<IAlarmConditionSource>(_conditionSources);
+        }
+
+        var cleared = new List<int>();
+        var kept = new List<KeptAlarm>();
+        foreach (var alarm in snapshot)
+        {
+            if (alarm.RaisedAt >= raisedBefore)
+            {
+                kept.Add(new KeptAlarm(alarm.AlarmCode, "phát sinh trong lúc Reset"));
+                continue;
+            }
+            string? reason = PersistingReason(sources, alarm.AlarmCode);
+            if (reason is not null)
+            {
+                kept.Add(new KeptAlarm(alarm.AlarmCode, reason));
+                continue;
+            }
+            await ClearAsync(alarm.AlarmCode, ct).ConfigureAwait(false);
+            cleared.Add(alarm.AlarmCode);
+        }
+
+        _logger.LogInformation("[ALARM RESET] Xoá {Cleared} alarm, giữ {Kept}: {KeptList}", cleared.Count, kept.Count,
+            string.Join("; ", kept.Select(k => $"{k.AlarmCode}: {k.Reason}")));
+        return new AlarmClearResult(cleared, kept);
+    }
+
+    // Hỏi mọi nguồn; một nguồn lỗi không được chặn Reset — coi như "còn" (thận trọng) và ghi log.
+    private string? PersistingReason(List<IAlarmConditionSource> sources, int alarmCode)
+    {
+        foreach (var source in sources)
+        {
+            try
+            {
+                string? reason = source.GetPersistingReason(alarmCode);
+                if (reason is not null) return reason;
+            }
+#pragma warning disable CA1031 // nguồn điều kiện của bên thứ ba: lỗi ⇒ giữ alarm (fail-safe), không làm hỏng Reset
+            catch (Exception ex)
+#pragma warning restore CA1031
+            {
+                _logger.LogError(ex, "Nguồn điều kiện {Source} lỗi khi xét alarm {Code}", source.GetType().Name, alarmCode);
+                return "không kiểm được nguyên nhân (nguồn điều kiện lỗi) — xoá tay ở màn Cảnh báo sau khi xác minh";
+            }
+        }
+        return null;
     }
 
     /// <inheritdoc/>

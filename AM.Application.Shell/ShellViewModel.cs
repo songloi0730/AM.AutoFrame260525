@@ -163,6 +163,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         RefreshAlarm();
 
         _master.StateChanged += OnStateChanged;
+        _master.ResetCompleted += OnResetCompleted; // 0017 — nói lý do alarm Reset không xoá được
         _alarm.AlarmRaised += OnAlarmChanged;
         _alarm.AlarmCleared += OnAlarmChanged;
         _recipe.RecipeChanged += OnRecipeChanged;
@@ -226,6 +227,17 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     /// <summary>Cho chạy nhóm bước kế tiếp khi engine đứng ở gate từng-bước.</summary>
     [RelayCommand]
     private void StepNext() => _engine.StepOnce();
+
+    // ─── Reset không xoá được alarm nào thì phải NÓI VÌ SAO (design-notes/0017) ─────
+    // Dùng khung hỏi trên banner có sẵn (1 nút "Đã hiểu") — operator hay bấm Reset loạn nhất đúng lúc này.
+    private void OnResetCompleted(object? sender, ResetCompletedEventArgs e)
+    {
+        if (e.Result.Kept.Count == 0) return;
+        string lines = string.Join("; ", e.Result.Kept.Select(k => $"[{k.AlarmCode}] {k.Reason}"));
+        string message = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            Loc.Strings["Shell.ResetKept"], e.Result.ClearedCodes.Count, e.Result.Kept.Count) + " " + lines;
+        _ = _promptService.AskAsync(new OperatorPromptRequest("Reset", message, [Loc.Strings["Shell.ResetAck"]]));
+    }
 
     // ─── Operator prompt (sequence engine — banner 3 nút, S78 Prompt D) ────────
 
@@ -446,6 +458,7 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
         _timer.Stop();
         _timer.Tick -= OnTick;
         _master.StateChanged -= OnStateChanged;
+        _master.ResetCompleted -= OnResetCompleted;
         _alarm.AlarmRaised -= OnAlarmChanged;
         _alarm.AlarmCleared -= OnAlarmChanged;
         _recipe.RecipeChanged -= OnRecipeChanged;

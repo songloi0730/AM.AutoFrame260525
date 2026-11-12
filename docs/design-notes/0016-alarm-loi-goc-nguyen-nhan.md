@@ -49,7 +49,7 @@ giao tiếp); mã còn lại điền dần.
   (`AlarmPolicy`/`[AlarmInfo]`), file chỉ có lời văn.
 - **"RESET bị từ chối phải nói lý do"**: Reset ở đây là lệnh state machine, không xoá alarm, nên không có tình huống "Reset
   không xoá được alarm". Câu hỏi lớn hơn — **Reset có nên xoá các alarm đã hết nguyên nhân không** (RefAuto-A làm vậy) —
-  là quyết định vận hành của chủ dự án, ghi lại để bàn riêng.
+  là quyết định vận hành của chủ dự án, ghi lại để bàn riêng. → **Đã chốt "Có" ở S102, xem 0017.**
 - **Lưu lỗi gốc vào lịch sử DB**: cần migration EF; lịch sử + Pareto hiện đủ dùng. Làm khi có nhu cầu phân tích chùm.
 
 ## Hệ quả
