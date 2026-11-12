@@ -6,7 +6,7 @@
 
 ## [Session 102] 2026-11-13 — Reset xoá alarm đã hết nguyên nhân, alarm còn nguyên nhân thì giữ và nói lý do
 
-**Commit:** (điền sau)
+**Commit:** `17df4fa`
 **Người thực hiện:** Claude Code + Nhan
 **Bối cảnh:** Câu hỏi mở của 0016 — chủ dự án chốt "Có, làm Reset xoá". Trước đó Reset chỉ đổi trạng thái máy, operator phải
 xoá tay từng alarm ở màn Cảnh báo.

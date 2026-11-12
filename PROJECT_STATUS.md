@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-11-13
 **Session:** #102 — **Reset xoá alarm đã hết nguyên nhân (design-notes/0017)**: nguồn điều kiện (`IAlarmConditionSource`: E-Stop/cửa/rèm, Force IO, phanh Z, luật va chạm tắt, cấu hình lệch) báo alarm nào còn nguyên nhân ⇒ giữ + banner hỏi "Đã hiểu" liệt kê "[mã] lý do"; còn lại xoá (vẫn trong Lịch sử). Alarm phát sinh trong lúc Reset và nguồn lỗi ⇒ giữ (fail-safe). 370/370 test pass. **Chưa smoke trên app** (mô phỏng không có cách đưa máy vào lỗi từ UI — gợi ý: thêm nút giả lập E-Stop ở chế độ simulation). Đ2, Đ4–Đ7 chờ chọn.
-**Commit:** (điền sau)
+**Commit:** `17df4fa`  ·  (S101: `0de62ab` · S100: `d0454d8`)
 
 ---
 
