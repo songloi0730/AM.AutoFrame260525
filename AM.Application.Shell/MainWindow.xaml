@@ -693,6 +693,31 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- S103 — GIẢ LẬP E-Stop: chỉ hiện ở chế độ mô phỏng (ISafetyInput là SimulatedSafetyInput).
+                         Không phải nút EMG mềm: máy thật không bao giờ có nút này (RefAuto-A §3.1 quy tắc 6). -->
+                    <Button Style="{StaticResource ActionButton}" Margin="0,0,16,0"
+                            Command="{Binding ToggleSimEstopCommand}"
+                            Visibility="{Binding IsSimSafety, Converter={StaticResource BoolToVis}}"
+                            BorderBrush="{StaticResource Warn.TextBrush}" BorderThickness="1"
+                            ToolTip="{Binding [Shell.SimEstopTip], Source={x:Static loc:Loc.Strings}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource ActionIcon}" Text="&#xE7BA;"
+                                       Foreground="{StaticResource Warn.TextBrush}"/>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource ActionLabel}">
+                                        <Setter Property="Text" Value="{Binding [Shell.SimEstopPress], Source={x:Static loc:Loc.Strings}}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSimEstopPressed}" Value="True">
+                                                <Setter Property="Text" Value="{Binding [Shell.SimEstopRelease], Source={x:Static loc:Loc.Strings}}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+
                     <Border Width="1" Height="28" Background="{DynamicResource Border.DefaultBrush}"
                             Margin="0,0,16,0"/>
 

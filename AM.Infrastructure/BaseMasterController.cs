@@ -214,6 +214,17 @@ public abstract class BaseMasterController : IMasterController
     /// <inheritdoc/>
     public async Task ResetAsync(CancellationToken ct = default)
     {
+        // S103 — mạch an toàn chưa đạt thì TỪ CHỐI Reset (giữ trạng thái lỗi) và nói lý do. Nếu cho Reset, máy về Idle
+        // trong khi E-Stop còn nhấn, rồi nút Reset khoá (chỉ bật ở trạng thái lỗi) ⇒ alarm 70001 kẹt, không Reset được nữa.
+        if (Safety is not null && !Safety.IsAllSafe
+            && State is MachineState.InitAlarm or MachineState.RunAlarm)
+        {
+            string reason = DescribeUnsafe(Safety);
+            Logger.LogWarning("[MasterController] Reset bị từ chối — {Reason}", reason);
+            ResetCompleted?.Invoke(this, ResetCompletedEventArgs.Refused(reason));
+            return;
+        }
+
         if (!FireTrigger(MachineTrigger.Reset)) return;
         var resetStartedAt = DateTime.UtcNow; // alarm phát sinh sau mốc này là MỚI — không xoá (0017)
 
@@ -238,6 +249,15 @@ public abstract class BaseMasterController : IMasterController
         {
             await AlarmService.RaiseAsync(ex.AlarmCode, ex.Station, ex.Message, ct).ConfigureAwait(false);
         }
+    }
+
+    private static string DescribeUnsafe(ISafetyInput safety)
+    {
+        var parts = new List<string>();
+        if (!safety.IsEStopOk) parts.Add("E-Stop vẫn đang nhấn — xoay nhả nút E-Stop");
+        if (!safety.IsGuardClosed) parts.Add("cửa an toàn vẫn đang mở");
+        if (!safety.IsLightCurtainClear) parts.Add("rèm sáng vẫn bị che");
+        return parts.Count == 0 ? "mạch an toàn chưa đạt" : string.Join("; ", parts);
     }
 
     /// <summary>

@@ -4,6 +4,33 @@
 
 ---
 
+## [Session 103] 2026-11-13 — Nút giả lập E-Stop (chế độ mô phỏng) + Reset bị từ chối khi mạch an toàn chưa đạt
+
+**Commit:** (điền sau)
+**Người thực hiện:** Claude Code + Nhan
+**Bối cảnh:** S102 chưa smoke được Reset trên app vì mô phỏng không có cách đưa máy vào lỗi từ giao diện; chủ dự án chọn thêm nút
+giả lập.
+
+**Đã làm:**
+- `ShellViewModel.cs` + `MainWindow.xaml`: nút "Giả lập: nhấn/nhả E-Stop" trên action bar (viền vàng cảnh báo, tooltip "chỉ có
+  ở chế độ mô phỏng"); gọi `SimulatedSafetyInput.ForceState` ⇒ phát `SafetyStateChanged` như nút thật. **Chỉ hiện khi
+  `UseSimulation=true` VÀ safety là bản mô phỏng** — phát hiện: bản phần cứng thật hiện vẫn đăng ký `SimulatedSafetyInput`
+  (chưa có driver an toàn thật), nên kiểm kiểu thôi là máy thật cũng có nút. Nhãn bind thẳng Loc (đọc chuỗi trong constructor
+  ra khoá thô vì Loc chưa nạp).
+- **Sửa lỗi lộ ra khi smoke**: Reset khi E-Stop còn nhấn trước đây vẫn về Idle (giữ 70001) rồi nút Reset khoá ⇒ 70001 kẹt.
+  `BaseMasterController.ResetAsync` nay **từ chối** khi `!IsAllSafe` ở trạng thái lỗi: không đổi trạng thái, không gọi
+  `ResetCoreAsync`, không xoá alarm, phát `ResetCompleted` với `IsRefused` + lý do; Shell hiện "Reset bị từ chối — …".
+  `ResetCompletedEventArgs.Refused`. `lang/strings.*`: +4 key ×3. design-notes/0017 bổ sung; `HMI_Button_Spec.md` dòng Reset.
+- Test: `BaseMasterControllerTests` đổi thành `Reset_WhileEstopPressed_IsRefused_ThenClearsAfterRelease`. **370/370 pass.**
+
+**Smoke UIA (app thật, chế độ mô phỏng):** đăng nhập → Khởi tạo → Chạy → "Giả lập: nhấn E-Stop" ⇒ LỖI VẬN HÀNH + banner
+`[70001]` · Reset khi còn nhấn ⇒ banner "Reset bị từ chối — E-Stop vẫn đang nhấn — xoay nhả nút E-Stop…", máy giữ LỖI ·
+nhả ⇒ Reset ⇒ Sẵn sàng, log `[ALARM RESET] Xoá 1 alarm, giữ 0`, banner sạch.
+**Bẫy gặp lại (S90):** `dotnet test` cả solution không làm mới dll trong `bin` cho app — smoke lần đầu chạy dll cũ; luôn build
+Shell tường minh trước smoke.
+
+---
+
 ## [Session 102] 2026-11-13 — Reset xoá alarm đã hết nguyên nhân, alarm còn nguyên nhân thì giữ và nói lý do
 
 **Commit:** `17df4fa`

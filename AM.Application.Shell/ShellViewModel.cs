@@ -126,8 +126,14 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     /// <summary>Tạo VM Shell (resolve trên UI thread để capture SynchronizationContext).</summary>
     public ShellViewModel(IMasterController master, IAlarmService alarm, IRecipeService recipe,
         IUserService user, IHardwareManagerService hardware, ISequenceEngine engine,
-        Sequencing.BannerOperatorPromptService promptService)
+        Sequencing.BannerOperatorPromptService promptService, AM.Core.Abstractions.Interfaces.Hardware.ISafetyInput safety,
+        Microsoft.Extensions.Options.IOptions<Configuration.AutoMachineOptions> options)
     {
+        ArgumentNullException.ThrowIfNull(safety);
+        ArgumentNullException.ThrowIfNull(options);
+        // S103 — nút giả lập E-Stop CHỈ khi UseSimulation=true VÀ safety là bản mô phỏng. Cần CẢ HAI: hiện bản phần cứng
+        // thật vẫn đăng ký SimulatedSafetyInput (chưa có driver an toàn thật) — nếu chỉ kiểm kiểu, máy thật sẽ có nút này.
+        _simSafety = options.Value.UseSimulation ? safety as AM.Hardware.IO.SimulatedSafetyInput : null;
         ArgumentNullException.ThrowIfNull(master);
         ArgumentNullException.ThrowIfNull(alarm);
         ArgumentNullException.ThrowIfNull(recipe);
@@ -228,10 +234,36 @@ internal sealed partial class ShellViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void StepNext() => _engine.StepOnce();
 
+    // ─── Giả lập E-Stop (S103) — chỉ chế độ mô phỏng, để thử Reset/alarm mà không cần phần cứng ─────
+    private readonly AM.Hardware.IO.SimulatedSafetyInput? _simSafety;
+
+    /// <summary>Đang chạy với ngõ vào an toàn mô phỏng ⇒ hiện nút giả lập E-Stop.</summary>
+    public bool IsSimSafety => _simSafety is not null;
+
+    /// <summary>E-Stop mô phỏng đang nhấn (XAML đổi nhãn "nhấn"/"nhả" theo Loc — đổi ngôn ngữ vẫn đúng).</summary>
+    [ObservableProperty] private bool _isSimEstopPressed;
+
+    /// <summary>Đảo trạng thái E-Stop mô phỏng (phát SafetyStateChanged như nút thật ⇒ master dừng khẩn).</summary>
+    [RelayCommand]
+    private void ToggleSimEstop()
+    {
+        if (_simSafety is null) return;
+        bool press = _simSafety.IsEStopOk;
+        _simSafety.ForceState(!press, _simSafety.IsGuardClosed, _simSafety.IsLightCurtainClear);
+        IsSimEstopPressed = press;
+    }
+
     // ─── Reset không xoá được alarm nào thì phải NÓI VÌ SAO (design-notes/0017) ─────
     // Dùng khung hỏi trên banner có sẵn (1 nút "Đã hiểu") — operator hay bấm Reset loạn nhất đúng lúc này.
     private void OnResetCompleted(object? sender, ResetCompletedEventArgs e)
     {
+        if (e.IsRefused)
+        {
+            string refused = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                Loc.Strings["Shell.ResetRefused"], e.RefusedReason);
+            _ = _promptService.AskAsync(new OperatorPromptRequest("Reset", refused, [Loc.Strings["Shell.ResetAck"]]));
+            return;
+        }
         if (e.Result.Kept.Count == 0) return;
         string lines = string.Join("; ", e.Result.Kept.Select(k => $"[{k.AlarmCode}] {k.Reason}"));
         string message = string.Format(System.Globalization.CultureInfo.CurrentCulture,

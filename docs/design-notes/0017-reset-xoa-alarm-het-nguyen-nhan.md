@@ -43,3 +43,17 @@ Alarm trong AM.AutoFrame có hai loại:
 - Reset KHÔNG được bỏ qua điều kiện an toàn: E-Stop còn nhấn ⇒ 70001 ở lại và được nói rõ.
 - Nguồn điều kiện mới (máy cụ thể) phải tự đăng ký; quên đăng ký ⇒ alarm đó bị coi là sự kiện và bị xoá — ghi trong
   checklist thêm alarm điều kiện.
+
+## Bổ sung S103 — Reset bị TỪ CHỐI khi mạch an toàn chưa đạt
+
+Smoke trên app (nút giả lập E-Stop, S103) lộ ra: Reset khi E-Stop còn nhấn vẫn đưa máy về Idle (giữ 70001), sau đó nút Reset
+khoá vì chỉ bật ở trạng thái lỗi ⇒ **70001 kẹt, không còn cách xoá bằng Reset**. Sửa: `BaseMasterController.ResetAsync` kiểm
+`ISafetyInput.IsAllSafe` trước; chưa đạt ⇒ không đổi trạng thái, không gọi `ResetCoreAsync` (về gốc khi mất động lực vốn cũng
+hỏng), không xoá alarm nào, phát `ResetCompleted` với `IsRefused` + lý do ⇒ banner "Reset bị từ chối — E-Stop vẫn đang nhấn…".
+Đúng thực hành RefAuto-A (RESET không xoá được phải nói vì sao). Nguồn điều kiện an toàn (`SafetyAlarmCondition`) vẫn giữ để
+phủ trường hợp alarm an toàn còn sót khi Reset từ trạng thái khác.
+
+**Nút giả lập E-Stop** (action bar, chỉ khi `UseSimulation=true` VÀ `ISafetyInput` là `SimulatedSafetyInput`): cần CẢ HAI
+điều kiện vì bản phần cứng thật hiện vẫn đăng ký `SimulatedSafetyInput` (chưa có driver an toàn thật) — nếu chỉ kiểm kiểu, máy
+thật sẽ có nút này. Đây KHÔNG phải nút EMG mềm (RefAuto-A §3.1 quy tắc 6): nó giả lập nút vật lý để thử, máy thật không có.
+

@@ -186,7 +186,7 @@ public sealed class BaseMasterControllerTests
     // ─── Reset xoá alarm đã hết nguyên nhân (design-notes/0017) ─────────────────────
 
     [Fact]
-    public async Task Reset_ClearsResolvedAlarms_KeepsEstopWhileStillPressed_AndReportsWhy()
+    public async Task Reset_WhileEstopPressed_IsRefused_ThenClearsAfterRelease()
     {
         var alarms = new AM.Services.AlarmService(new NullAlarmRepository(),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<AM.Services.AlarmService>.Instance);
@@ -202,22 +202,24 @@ public sealed class BaseMasterControllerTests
         await alarms.RaiseAsync(10001, "AXIS_X", "timeout");   // alarm sự kiện
         safety.TriggerEstop();                                   // → RunAlarm + 70001 (fire-and-forget)
         await WaitUntilAsync(() => alarms.ActiveAlarms.Any(a => a.AlarmCode == 70001));
-        await Task.Delay(20); // mốc Reset sau thời điểm raise
 
-        await sut.ResetAsync();
+        await sut.ResetAsync();                                  // E-Stop còn nhấn ⇒ từ chối
 
         report.Should().NotBeNull();
-        report!.Result.ClearedCodes.Should().Contain(10001);
-        report.Result.Kept.Should().ContainSingle(k => k.AlarmCode == 70001 && k.Reason.Contains("E-Stop"));
-        alarms.ActiveAlarms.Select(a => a.AlarmCode).Should().Equal(70001);
+        report!.IsRefused.Should().BeTrue();
+        report.RefusedReason.Should().Contain("E-Stop");
+        sut.State.Should().Be(MachineState.RunAlarm, "máy giữ trạng thái lỗi để Reset lại được sau khi nhả");
+        sut.ResetCoreCount.Should().Be(0);
+        alarms.ActiveAlarms.Should().HaveCount(2, "Reset bị từ chối không xoá alarm nào");
 
-        // Nhả E-Stop rồi Reset lại (qua alarm state) ⇒ 70001 được xoá
         safety.ReleaseEstop();
-        sut.Fire(MachineTrigger.Start);
-        sut.Fire(MachineTrigger.Error); // Running → RunAlarm
+        await Task.Delay(20);
         await sut.ResetAsync();
+
+        report.IsRefused.Should().BeFalse();
+        report.Result.ClearedCodes.Should().BeEquivalentTo([10001, 70001]);
         alarms.ActiveAlarms.Should().BeEmpty();
-        report.Result.Kept.Should().BeEmpty();
+        sut.State.Should().Be(MachineState.Idle);
     }
 
     [Fact]
