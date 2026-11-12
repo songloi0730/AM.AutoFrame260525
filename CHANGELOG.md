@@ -6,7 +6,7 @@
 
 ## [Session 101] 2026-11-13 — Đ3 alarm: lỗi gốc + Nguyên nhân/Cách xử lý trên màn Cảnh báo
 
-**Commit:** (điền sau)
+**Commit:** `0de62ab`
 **Người thực hiện:** Claude Code + Nhan
 **Bối cảnh:** Chủ dự án chọn Đ3. Rà mã thấy: catalog có "Cách xử lý" cho cả 57 mã nhưng **không màn nào hiển thị**; banner
 cùng mức chọn alarm MỚI NHẤT ⇒ trong một chùm hiện hệ quả cuối; Reset máy không xoá alarm.

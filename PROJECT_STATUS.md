@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-11-13
 **Session:** #101 — **Đ3 alarm (design-notes/0016)**: đánh dấu **lỗi gốc** (alarm raise trong 200 ms sau gốc = hệ quả, `RootCauseCode`); banner cùng mức hiện GỐC trước + "kéo theo n"; màn Cảnh báo có cột "Gốc" + **khung chi tiết** (tên, Lỗi gốc/Hệ quả, **Nguyên nhân thường gặp** — mới, 24 mã ×3 ngữ — và **Cách xử lý** — có trong catalog từ lâu nhưng trước đây KHÔNG màn nào hiện). Smoke UIA đạt. **Mở cho chủ dự án**: Reset máy có nên xoá alarm đã hết nguyên nhân không (hiện không xoá). **Test chập chờn** 2 test Demo khi máy tải nặng (ghi trong CHANGELOG S101). Đ2, Đ4–Đ7 chờ chọn.
-**Commit:** (điền sau)
+**Commit:** `0de62ab`  ·  (S100: `d0454d8` · S99: `98321bf`)
 
 ---
 
