@@ -10,6 +10,12 @@
 
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-11-12
+**Session:** #100 — **Thẻ "Chống va chạm" trong Cài đặt** (luật + điều kiện + trạng thái; tắt tạm = Administrator, xác nhận 2 bước, lý do bắt buộc, audit; bật lại 1 chạm) + **smoke UIA đạt**: tắt/bật/tự bật lại khi đăng xuất, Engineer bị từ chối có lý do, màn tay chặn Home X khi Z chưa về gốc (70011) và X→900 (10005), cho X→100. Đ1 hoàn tất; **Đ2–Đ7 chờ chọn**.
+**Commit:** (điền sau)
+
+---
+
+## 🗓️ Session #99
 **Session:** #99 — **Đ1 chống va chạm phía PC (`MoveGuard`, design-notes/0015)**. Mọi lệnh MoveAbs/MoveRel/HomeAxis/Jog (màn tay, Mechanism, IAxis adapter) đi qua lớp bọc `IMotionController` đăng ký DI: **giới hạn mềm TỪ CHỐI + alarm 10005** (trước: màn tay không kiểm, sequence kẹp im lặng) + luật `move-protection.json` ("trục di chuyển [qua vùng] ⇒ cần trục khác trong khoảng / DI") → chặn kèm lý do, alarm 70011; jog liên tục giám sát nhìn trước mỗi 20 ms, vi phạm tự dừng; trục kia chưa về gốc ⇒ chặn; file hỏng ⇒ không luật nào + alarm 40014; bypass Administrator (API) + alarm 70012, tự bật lại khi đổi user. Demo: X/Y chỉ chạy khi Z ≥ −0,5; `axismap.json` đổi tên trục → X/Y/Z/U. **361/361 test pass**, app chạy nạp 2 luật. **Còn**: nút bypass trên UI, smoke UIA màn tay; Đ2–Đ7 chờ chọn.
 **Commit:** `98321bf`  ·  (S98: `3adbb7b` · S97: `0dd1ef1`)
 

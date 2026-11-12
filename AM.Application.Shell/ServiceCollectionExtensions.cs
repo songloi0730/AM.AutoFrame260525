@@ -252,6 +252,12 @@ internal static class ServiceCollectionExtensions
             sp.GetRequiredService<IConfigIntegrityService>(),
             sp.GetRequiredService<ILogger<AM.Modules.Settings.MachineConfigViewModel>>(),
             config.GetValue<string>("AutoMachine:Security:MachineId") ?? string.Empty));
+        // Thẻ Chống va chạm (S99, design-notes/0015)
+        services.AddSingleton(sp => new AM.Modules.Settings.MoveProtectionViewModel(
+            sp.GetRequiredService<IMoveGuard>(),
+            sp.GetRequiredService<IUserService>(),
+            sp.GetRequiredService<IAuditService>(),
+            sp.GetRequiredService<ILogger<AM.Modules.Settings.MoveProtectionViewModel>>()));
         services.AddSingleton<AM.Modules.Settings.SettingsViewModel>(); // gom Chẩn đoán + Kỹ thuật + Người dùng
         services.AddSingleton<LoggingViewModel>();
         services.AddSingleton<ShellViewModel>(); // header + alarm bar + connection chips

@@ -89,8 +89,10 @@ dạng "trục di chuyển → điều kiện cần" có chiều rõ ràng, nh�
   không có gì chặn. Ghi rõ trong checklist nghiệm thu P5.
 - Chưa có: điều kiện tổng/hiệu hai trục (giàn kép), kiểm thứ tự trong HomeAll, trình soạn luật trên UI (sửa JSON +
   ký lại manifest). Làm khi có máy cần.
-- **Bypass mới có API** (`IMoveGuard.SetBypassAsync` + alarm 70012 + tự bật lại khi đổi user); nút tắt/bật trên UI
-  (thẻ trong Cài đặt kèm audit) là việc tiếp theo.
+- Bypass: `IMoveGuard.SetBypassAsync` + alarm 70012 + tự bật lại khi đổi user; UI (S100) là thẻ **Cài đặt → Chống va
+  chạm**: danh sách luật + điều kiện, tắt = Administrator + xác nhận bước 2 + lý do bắt buộc + audit
+  `MoveGuard.Bypass <id>`; bật lại = 1 chạm, không cần quyền (về trạng thái an toàn) + audit `MoveGuard.Enable <id>`;
+  dưới quyền bấm "Tắt tạm…" được giải thích lý do thay vì nút chết.
 - Máy demo: `axismap.json` đổi tên trục `PickX/PickZ/PlaceX/PlaceZ` → `X/Y/Z/U` cho khớp chỉ số mà Mechanism và màn tay
   thực dùng (0=X, 1=Y, 2=Z); giới hạn mềm theo chỉ số giữ nguyên. Luật demo: X và Y chỉ chạy khi Z ≥ −0,5 mm.
 - Thực hiện S99: `MoveGuard`, `GuardedMotionController`/`GuardedJogMotionController` (AM.Infrastructure/Motion),

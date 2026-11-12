@@ -1,0 +1,147 @@
+<UserControl x:Class="AM.Modules.Settings.MoveProtectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:loc="clr-namespace:AM.UI.Localization;assembly=AM.UI.Localization"
+             mc:Ignorable="d">
+    <!-- Thẻ Chống va chạm (S99, design-notes/0015) — ISA-101: yên tĩnh khi bình thường;
+         chỉ luật ĐANG TẮT mới có màu cảnh báo. -->
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Background" Value="{DynamicResource Panel.BackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Border.DefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+            <TextBlock Text="{Binding [Set.Collision], Source={x:Static loc:Loc.Strings}}"
+                       FontSize="18" FontWeight="Bold" Margin="0,0,0,6"
+                       Foreground="{DynamicResource Text.HeadingBrush}"/>
+            <TextBlock Text="{Binding [Coll.Hint], Source={x:Static loc:Loc.Strings}}"
+                       TextWrapping="Wrap" FontSize="12" Margin="0,0,0,12"
+                       Foreground="{DynamicResource Text.SecondaryBrush}"/>
+
+            <!-- File luật hỏng: không luật nào được nạp -->
+            <Border Style="{StaticResource Card}" Background="{StaticResource Warn.BackgroundBrush}"
+                    Visibility="{Binding HasLoadError, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding [Coll.LoadError], Source={x:Static loc:Loc.Strings}}"
+                               FontWeight="SemiBold" Foreground="{StaticResource Warn.TextBrush}"/>
+                    <TextBlock Text="{Binding LoadErrorText}" TextWrapping="Wrap" FontFamily="Consolas"
+                               FontSize="12" Margin="0,4,0,0" Foreground="{StaticResource Warn.TextBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}"
+                    Visibility="{Binding HasNoRules, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="{Binding [Coll.NoRules], Source={x:Static loc:Loc.Strings}}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Text.SecondaryBrush}"/>
+            </Border>
+
+            <!-- Danh sách luật -->
+            <ItemsControl ItemsSource="{Binding Rules}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBypassed}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource Status.AlarmBrush}"/>
+                                            <Setter Property="BorderThickness" Value="2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <Button Height="40" MinWidth="120" Padding="14,0" Cursor="Hand"
+                                            Content="{Binding [Coll.Bypass], Source={x:Static loc:Loc.Strings}}"
+                                            Command="{Binding DataContext.BeginBypassCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                            CommandParameter="{Binding}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsBypassed}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                    <Button Height="40" MinWidth="120" Padding="14,0" Cursor="Hand"
+                                            Content="{Binding [Coll.Enable], Source={x:Static loc:Loc.Strings}}"
+                                            Command="{Binding DataContext.EnableCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding IsBypassed, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="{Binding [Coll.Active], Source={x:Static loc:Loc.Strings}}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource Text.SecondaryBrush}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsBypassed}" Value="True">
+                                                            <Setter Property="Text" Value="{Binding [Coll.Bypassed], Source={x:Static loc:Loc.Strings}}"/>
+                                                            <Setter Property="Foreground" Value="{StaticResource Status.AlarmBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding Id}" FontFamily="Consolas" FontWeight="SemiBold" FontSize="13"
+                                                   Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                    </DockPanel>
+                                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,2,0,4"
+                                               Foreground="{DynamicResource Text.PrimaryBrush}"/>
+                                    <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource Text.SecondaryBrush}">
+                                        <Run Text="{Binding Moving, Mode=OneWay}"/>
+                                        <Run Text=" ⇒ "/>
+                                        <Run Text="{Binding Conditions, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Bước 2: xác nhận tắt -->
+            <Border Style="{StaticResource Card}" BorderBrush="{StaticResource Status.AlarmBrush}" BorderThickness="2"
+                    Visibility="{Binding IsConfirming, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding ConfirmTitle}" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{DynamicResource Text.HeadingBrush}"/>
+                    <TextBlock Text="{Binding [Coll.ConfirmWarn], Source={x:Static loc:Loc.Strings}}"
+                               TextWrapping="Wrap" Margin="0,6,0,10" Foreground="{StaticResource Status.AlarmBrush}"/>
+                    <TextBlock Text="{Binding [Coll.Reason], Source={x:Static loc:Loc.Strings}}" FontSize="11"
+                               Margin="0,0,0,2" Foreground="{DynamicResource Text.SecondaryBrush}"/>
+                    <TextBox Text="{Binding BypassReason, UpdateSourceTrigger=PropertyChanged}" Height="32"
+                             VerticalContentAlignment="Center" Padding="6,0" Margin="0,0,0,10"
+                             AutomationProperties.Name="{Binding [Coll.Reason], Source={x:Static loc:Loc.Strings}}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Height="40" Padding="18,0" Margin="0,0,8,0" Cursor="Hand"
+                                Content="{Binding [Coll.Confirm], Source={x:Static loc:Loc.Strings}}"
+                                Command="{Binding ConfirmBypassCommand}"/>
+                        <Button Height="40" Padding="18,0" Cursor="Hand"
+                                Content="{Binding [Coll.Cancel], Source={x:Static loc:Loc.Strings}}"
+                                Command="{Binding CancelBypassCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,0,0,8"
+                       Foreground="{DynamicResource Text.PrimaryBrush}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

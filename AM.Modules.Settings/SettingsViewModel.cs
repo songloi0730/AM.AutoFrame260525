@@ -54,6 +54,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>VM thẻ Thông số máy (S93 — tên máy/line/IP + toàn vẹn cấu hình SHA-256).</summary>
     public MachineConfigViewModel Machine { get; }
 
+    /// <summary>VM thẻ Chống va chạm (S99 — luật move-protection.json, tắt tạm/bật lại).</summary>
+    public MoveProtectionViewModel Collision { get; }
+
     /// <summary>Thông tin "Giới thiệu" (phiên bản app + .NET) — không localize từng dòng.</summary>
     public string AboutText { get; }
 
@@ -77,6 +80,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool ShowHost        => Section == "host";
     public bool ShowLogs        => Section == "logs";
     public bool ShowMachine     => Section == "machine";
+    public bool ShowCollision   => Section == "collision";
 
     private readonly IKioskService _kiosk;
     private readonly IUserService _user;
@@ -92,12 +96,14 @@ public sealed partial class SettingsViewModel : ObservableObject
         UserAdminViewModel users, AM.Modules.Calibration.RareCalibrationPanelViewModel calib,
         AuditViewModel audit, BackupViewModel backup, HardwareViewModel hardware, HostViewModel host,
         AM.Modules.Logging.LoggingViewModel logs, MachineConfigViewModel machine,
-        IKioskService kiosk, IUserService user)
+        MoveProtectionViewModel collision, IKioskService kiosk, IUserService user)
     {
         ArgumentNullException.ThrowIfNull(logs);
         ArgumentNullException.ThrowIfNull(machine);
+        ArgumentNullException.ThrowIfNull(collision);
         Logs = logs;
         Machine = machine;
+        Collision = collision;
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(engineering);
         ArgumentNullException.ThrowIfNull(users);
@@ -168,5 +174,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowHost));
         OnPropertyChanged(nameof(ShowLogs));
         OnPropertyChanged(nameof(ShowMachine));
+        OnPropertyChanged(nameof(ShowCollision));
     }
 }

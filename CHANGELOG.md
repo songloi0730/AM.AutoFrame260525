@@ -4,6 +4,31 @@
 
 ---
 
+## [Session 100] 2026-11-12 — Thẻ "Chống va chạm" trong Cài đặt + smoke UIA chống va chạm
+
+**Commit:** (điền sau)
+**Người thực hiện:** Claude Code + Nhan
+**Bối cảnh:** Tiếp S99 — chủ dự án chọn làm tiếp nút tắt luật trên giao diện + thử màn Vận hành tay.
+
+**Đã làm:**
+- `AM.Modules.Settings/MoveProtectionViewModel.cs` + `MoveProtectionView.xaml(.cs)` (MỚI): danh sách luật (id, mô tả,
+  "trục ⇒ điều kiện", trạng thái Đang hiệu lực/ĐANG TẮT — chỉ luật tắt mới có màu đỏ), cảnh báo file luật hỏng / chưa
+  có luật; tắt tạm = Administrator, xác nhận bước 2, lý do bắt buộc, audit; bật lại 1 chạm không cần quyền; UserChanged
+  post về UI thread (bài học S92) để đọc trạng thái sau khi guard tự bật lại luật.
+- `SettingsViewModel.cs` / `SettingsView.xaml`: thẻ mới trên lưới + vùng chi tiết; `ServiceCollectionExtensions.cs`: đăng ký VM;
+  `lang/strings.{vi,en,zh}.json`: +19 key ×3.
+- `docs/design-notes/0015`: cập nhật phần bypass.
+
+**Smoke UIA trên app thật (admin → engineer):** thẻ hiện 2 luật demo · tắt với lý do trống → "Nhập lý do…" · nhập lý do →
+banner `[70012] … đang TẮT: X_NEEDS_Z_SAFE (lý do)` + dòng đỏ ĐANG TẮT · Bật lại → alarm đã xử lý · tắt lại rồi Đăng xuất →
+luật tự bật lại (log 70012 đã xử lý) · engineer bấm Tắt tạm → "cần quyền Administrator" · màn Vận hành tay: servo X ON,
+Home X khi Z chưa về gốc → `[70011] X bị chặn [X_NEEDS_Z_SAFE]: Z chưa về gốc` · Home Z rồi Home X → cho phép ·
+X tới 900 → `[10005] X: đích 900.000 ngoài giới hạn mềm [-500.000, 500.000]` · X tới 100 → chạy, không lỗi.
+Build 0 warning. Không thêm unit test VM (theo lệ dự án: VM Cài đặt kiểm bằng smoke; logic lõi đã có 21 test S99).
+**Chưa kiểm trên app:** jog liên tục bị dừng giữa chừng (đã có unit test).
+
+---
+
 ## [Session 99] 2026-11-12 — Đ1 chống va chạm phía PC (MoveGuard) + giới hạn mềm từ chối thay vì kẹp
 
 **Commit:** `98321bf`

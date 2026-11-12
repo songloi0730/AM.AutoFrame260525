@@ -146,6 +146,14 @@
                             <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.MachineDesc], Source={x:Static loc:Loc.Strings}}"/>
                         </StackPanel>
                     </Button>
+                    <!-- Chống va chạm (S99, design-notes/0015): luật move-protection.json + tắt tạm/bật lại -->
+                    <Button Style="{StaticResource MenuCard}" Tag="&#xE7BA;"
+                            Command="{Binding OpenCommand}" CommandParameter="collision">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding [Set.Collision], Source={x:Static loc:Loc.Strings}}"/>
+                            <TextBlock Style="{StaticResource CardDesc}" Text="{Binding [Set.CollisionDesc], Source={x:Static loc:Loc.Strings}}"/>
+                        </StackPanel>
+                    </Button>
                     <!-- Nhật ký hệ thống (S92 — chuyển từ tab nav vào đây cho gọn thanh nav) -->
                     <Button Style="{StaticResource MenuCard}" Tag="&#xE9D5;"
                             Command="{Binding OpenCommand}" CommandParameter="logs">
@@ -204,6 +212,8 @@
                                      Visibility="{Binding DataContext.ShowLogs, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <local:MachineConfigView DataContext="{Binding Machine}"
                                          Visibility="{Binding DataContext.ShowMachine, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
+                <local:MoveProtectionView DataContext="{Binding Collision}"
+                                          Visibility="{Binding DataContext.ShowCollision, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVis}}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left" CornerRadius="8" Padding="20"
                         Background="{DynamicResource Panel.BackgroundBrush}"
                         BorderBrush="{DynamicResource Border.DefaultBrush}" BorderThickness="1"
