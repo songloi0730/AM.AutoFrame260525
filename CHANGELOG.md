@@ -6,7 +6,7 @@
 
 ## [Session 100] 2026-11-12 — Thẻ "Chống va chạm" trong Cài đặt + smoke UIA chống va chạm
 
-**Commit:** (điền sau)
+**Commit:** `d0454d8`
 **Người thực hiện:** Claude Code + Nhan
 **Bối cảnh:** Tiếp S99 — chủ dự án chọn làm tiếp nút tắt luật trên giao diện + thử màn Vận hành tay.
 

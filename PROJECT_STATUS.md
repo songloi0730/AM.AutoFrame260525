@@ -11,7 +11,7 @@
 ## 🗓️ Cập nhật lần cuối
 **Ngày:** 2026-11-12
 **Session:** #100 — **Thẻ "Chống va chạm" trong Cài đặt** (luật + điều kiện + trạng thái; tắt tạm = Administrator, xác nhận 2 bước, lý do bắt buộc, audit; bật lại 1 chạm) + **smoke UIA đạt**: tắt/bật/tự bật lại khi đăng xuất, Engineer bị từ chối có lý do, màn tay chặn Home X khi Z chưa về gốc (70011) và X→900 (10005), cho X→100. Đ1 hoàn tất; **Đ2–Đ7 chờ chọn**.
-**Commit:** (điền sau)
+**Commit:** `d0454d8`  ·  (S99: `98321bf` · S98: `3adbb7b`)
 
 ---
 
